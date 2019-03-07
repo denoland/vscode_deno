@@ -8,11 +8,11 @@ Adds Deno support for VS Code using the [TypeScript Deno language service plugin
 
 This extension works using VS Code's **built-in version** of TypeScript. You do not need to configure the plugin in your `tsconfig.json` if you are using VS Code's version of TypeScript.
 
-If you are using VS Code 1.30 or older and are [using a **workspace version** of typescript](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions), you must currently configure the TS Server plugin manually by following [these instructions][https://github.com/justjavac/typescript-deno-plugin#configuration]
+If you are using VS Code 1.30 or older and are [using a **workspace version** of typescript](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions), you must currently configure the TS Server plugin manually by following [these instructions](https://github.com/justjavac/typescript-deno-plugin#configuration)
 
 ## Configuration
 
-You can configure the Deno extension using a `tsconfig` as described [here][https://github.com/justjavac/typescript-deno-plugin#configuration], or configure it with VS Code settings. This requires VS Code 1.30+ and TS 3.2+. Note the VS Code based configuration overrides the `tsconfig` configuration.
+You can configure the Deno extension using a `tsconfig` as described [here](https://github.com/justjavac/typescript-deno-plugin#configuration), or configure it with VS Code settings. This requires VS Code 1.30+ and TS 3.2+. Note the VS Code based configuration overrides the `tsconfig` configuration.
 
  * `deno.enabled` - Enable/disable this extension. Default is `true`.
 
