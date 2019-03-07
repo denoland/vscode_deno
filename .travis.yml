@@ -9,11 +9,11 @@ node_js:
 
 sudo: false
 
-matrix:
-  include:
-    - os: linux
-    - os: mac
-    - os: windows
+# matrix:
+#   include:
+#     - os: linux
+#     - os: mac
+#     - os: windows
 
 install:
   - yarn
