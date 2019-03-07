@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "justjavac",
   "icon": "deno.png",
   "galleryBanner": {
@@ -100,11 +100,11 @@
   },
   "devDependencies": {
     "@types/node": "^10.12.18",
+    "@types/which": "^1.3.1",
     "typescript": "^3.2.4",
     "vscode": "^1.1.27"
   },
   "dependencies": {
-    "file-type": "^10.9.0",
     "typescript-deno-plugin": "^1.1.0",
     "vscode-nls": "^4.0.0",
     "which": "^1.3.1"

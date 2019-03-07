@@ -181,6 +181,11 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("deno.enable", enable),
     commands.registerCommand("deno.disable", disable),
     commands.registerCommand("deno.showOutputChannel", async () => {
+      if (denoStatus === Status.ok) {
+        outputChannel.show();
+        return;
+      }
+
       const show = localize("showOutputChannel", "Show Output");
       const help = localize("getHelp", "Get Help");
 
@@ -233,7 +238,9 @@ export async function activate(context: ExtensionContext) {
       "See https://github.com/denoland/deno_install for more installation options.\n"
     );
   } else {
-    statusBarItem.tooltip = versions.text;
+    statusBarItem.tooltip = versions.raw;
+    outputChannel.appendLine("Found deno, version:");
+    outputChannel.appendLine(versions.raw);
   }
 
   function showStatusBarItem(show: boolean): void {
