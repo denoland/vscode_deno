@@ -6,10 +6,16 @@
 /e2e
 /examples
 
+/.vscode
+/.github
+
 tsconfig.json
 tslint.json
 .travis.yml
-.vscode
 node_modules
 *.test.js
 *.js.map
+
+CODE_OF_CONDUCT.md
+CODING_STANDARDS.md
+CONTRIBUTING.md
