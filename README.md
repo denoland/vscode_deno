@@ -15,7 +15,7 @@ This plugin requires TypeScript 2.3 or later. It can provide intellisense in Typ
 
 ### With VS Code
 
-The simplest way to use this plugin is to install the [TypeScript Deno Plugin VS Code extension](). This extension enables the plugin when using VS Code's version of TypeScript.
+The simplest way to use this plugin is to install the [TypeScript Deno Plugin VS Code extension](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno). This extension enables the plugin when using VS Code's version of TypeScript.
 
 If you are using a workspace version of TypeScript, you must manually install the plugin alongside the version of TypeScript in your workspace.
 
@@ -31,7 +31,9 @@ or **use yarn**:
 yarn add -D typescript-deno-plugin typescript
 ```
 
-Then add a `plugins` section to your [tsconfig.json](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html).
+### Configuration
+
+After install typescript-deno-plugin, Then you can add a `plugins` section to your [tsconfig.json](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html).
 
 ```json
 {
