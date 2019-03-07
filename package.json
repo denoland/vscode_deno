@@ -1,0 +1,110 @@
+{
+  "name": "vscode-deno",
+  "displayName": "%deno.displayName%",
+  "description": "%deno.description%",
+  "version": "1.0.1",
+  "publisher": "justjavac",
+  "icon": "deno.png",
+  "galleryBanner": {
+    "color": "#3B3738",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/justjavac/vscode-deno"
+  },
+  "bugs": {
+    "url": "https://github.com/justjavac/vscode-deno/issues"
+  },
+  "engines": {
+    "vscode": "^1.25.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "deno"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onCommand:deno.init",
+    "onCommand:deno.recompile",
+    "onCommand:deno.types",
+    "onCommand:deno.prefetch",
+    "onCommand:deno.fmt",
+    "onCommand:deno.enable",
+    "onCommand:deno.disable"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "typescriptServerPlugins": [
+      {
+        "name": "typescript-deno-plugin",
+        "enableForWorkspaceTypeScriptVersions": true
+      }
+    ],
+    "commands": [
+      {
+        "command": "deno.enable",
+        "title": "%deno.command.enable%",
+        "category": "deno"
+      },
+      {
+        "command": "deno.disable",
+        "title": "%deno.command.disable%",
+        "category": "deno"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Deno",
+      "properties": {
+        "deno.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "%deno.config.enabled%"
+        },
+        "deno.packageManager": {
+          "type": "string",
+          "enum": [
+            "npm",
+            "yarn",
+            "pnpm"
+          ],
+          "default": "npm",
+          "description": "%deno.config.packageManager%"
+        },
+        "deno.alwaysShowStatus": {
+          "type": "boolean",
+          "default": true,
+          "description": "%deno.config.alwaysShowStatus%",
+          "scope": "window"
+        },
+        "deno.autoFmtOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "%deno.config.autoFmtOnSave%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn compile",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "watch": "tsc -watch -p ./",
+    "compile": "tsc -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.18",
+    "typescript": "^3.2.4",
+    "vscode": "^1.1.27"
+  },
+  "dependencies": {
+    "typescript-deno-plugin": "^1.1.0",
+    "vscode-nls": "^4.0.0"
+  }
+}
