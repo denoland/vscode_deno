@@ -1,0 +1,23 @@
+branches:
+  only:
+    - master
+
+language: node_js
+
+node_js:
+  - "10"
+
+sudo: false
+
+matrix:
+  include:
+    - os: linux
+    - os: mac
+    - os: windows
+
+install:
+  - yarn
+
+script:
+  - yarn lint
+  - yarn compile

@@ -1,0 +1,15 @@
+.npmignore
+/src
+/test
+/out/test
+/out/**/*.map
+/e2e
+/examples
+
+tsconfig.json
+tslint.json
+.travis.yml
+.vscode
+node_modules
+*.test.js
+*.js.map
