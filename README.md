@@ -1,3 +1,5 @@
+# VS Code Deno extension
+
 Adds Deno support for VS Code using the [TypeScript Deno language service plugin](https://github.com/justjavac/typescript-deno-plugin). 
 
 [![](https://vsmarketplacebadge.apphb.com/version/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
