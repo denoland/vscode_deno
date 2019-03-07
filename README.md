@@ -10,6 +10,32 @@ This extension works using VS Code's **built-in version** of TypeScript. You do 
 
 If you are using VS Code 1.30 or older and are [using a **workspace version** of typescript](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions), you must currently configure the TS Server plugin manually by following [these instructions](https://github.com/justjavac/typescript-deno-plugin#configuration)
 
+## Preview
+
+### without this plugin
+
+If we write `from "./hello.ts"`, the editor(VS Code) will prompt for a tilde error. Because the default TypeScript project does not need to write the extension `.ts`.
+
+> ts(2691): An import path cannot end with a '.ts' extension. Consider importing './hello' instead.
+
+![ts(2691)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2691-1.png)
+
+![ts(2691)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2691-2.png)
+
+Deno allows imports from URLs, like the browser. But TypeScript can **not** find the module from URLs.
+
+> ts(2307): Cannot find module 'https://deno.land/x/std/log/mod'.
+
+![ts(2307)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2307.png)
+
+### after install this plugin
+
+Deno caches remote imports in a special directory specified by the `$DENO_DIR` environmental variable. It defaults to the system's cache directory if $DENO_DIR is not specified. 
+
+This plugin can resove remote imports as local path.
+
+![with-plugin](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/with-plugin.png)
+
 ## Configuration
 
 You can configure the Deno extension using a `tsconfig` as described [here](https://github.com/justjavac/typescript-deno-plugin#configuration), or configure it with VS Code settings. This requires VS Code 1.30+ and TS 3.2+. Note the VS Code based configuration overrides the `tsconfig` configuration.
