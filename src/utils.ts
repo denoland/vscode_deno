@@ -12,7 +12,7 @@ export interface DenoVersion {
   deno: string;
   v8: string;
   typescript: string;
-  text: string;
+  raw: string;
 }
 
 export function packageExists() {
@@ -71,7 +71,7 @@ export async function getVersions(): Promise<DenoVersion | undefined> {
       deno: deno.substr(6),
       v8: v8.substr(4),
       typescript: typescript.substr(12),
-      text: stdout
+      raw: stdout
     };
   } catch (e) {
     return;
