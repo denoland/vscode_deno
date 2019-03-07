@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3 - 2019-03-07
+
+- fix bug
+
 ## 1.0.2 - 2019-03-07
 
 - add screenshots
