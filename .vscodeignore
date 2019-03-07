@@ -9,7 +9,6 @@ src/**
 
 images/**/*.gif
 images/**/*.png
-node_modules/**
 
 .gitattributes
 .gitignore
