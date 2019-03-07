@@ -2,6 +2,13 @@
 
 > Deno language service plugin for TypeScript.
 
+[![npm package](https://nodei.co/npm/typescript-deno-plugin.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/typescript-deno-plugin/)
+
+[![Build Status](https://travis-ci.com/justjavac/typescript-deno-plugin.svg?branch=master)](https://travis-ci.com/justjavac/typescript-deno-plugin)
+[![NPM version](https://img.shields.io/npm/v/typescript-deno-plugin.svg)](https://www.npmjs.com/package/typescript-deno-plugin)
+[![NPM Downloads](https://img.shields.io/npm/dm/typescript-deno-plugin.svg?style=flat)](https://npmcharts.com/compare/typescript-deno-plugin?minimal=true)
+[![Install Size](https://packagephobia.now.sh/badge?p=typescript-deno-plugin)](https://packagephobia.now.sh/result?p=typescript-deno-plugin)
+
 ## Editor Support
 
 This plugin requires TypeScript 2.3 or later. It can provide intellisense in TypeScript files within any editors that uses TypeScript to power their language features.
