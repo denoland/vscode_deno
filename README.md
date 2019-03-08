@@ -30,7 +30,7 @@ Deno allows imports from URLs, like the browser. But TypeScript can **not** find
 
 ### after install this plugin
 
-Deno caches remote imports in a special directory specified by the `$DENO_DIR` environmental variable. It defaults to the system's cache directory if $DENO_DIR is not specified. 
+Deno caches remote imports in a special directory specified by the `$DENO_DIR` environmental variable. It defaults to the system's cache directory if `$DENO_DIR` is not specified. 
 
 This plugin can resove remote imports as local path.
 
