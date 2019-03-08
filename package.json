@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "justjavac",
   "icon": "deno.png",
   "galleryBanner": {
@@ -41,7 +41,7 @@
     "onCommand:deno.enable",
     "onCommand:deno.disable"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension",
   "contributes": {
     "typescriptServerPlugins": [
       {
@@ -128,16 +128,20 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn compile",
+    "vscode:prepublish": "webpack --mode production",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "watch": "tsc -watch -p ./",
-    "compile": "tsc -p ./"
+    "compile": "webpack --mode none",
+    "watch": "webpack --mode none --watch"
   },
   "devDependencies": {
     "@types/node": "^10.12.18",
+    "@types/webpack": "^4.4.25",
     "@types/which": "^1.3.1",
+    "ts-loader": "^5.3.3",
     "typescript": "^3.2.4",
-    "vscode": "^1.1.27"
+    "vscode": "^1.1.27",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3"
   },
   "dependencies": {
     "typescript-deno-plugin": "^1.1.0",
