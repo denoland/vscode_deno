@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "JSON schema for Deno denolib.json files",
+  "definitions": {
+    "person": {
+      "description": "A person who has been involved in creating or maintaining this package",
+      "type": ["object", "string"],
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        }
+      }
+    },
+    "name": {
+      "description": "The name of the package.",
+      "type": "string",
+      "maxLength": 214,
+      "minLength": 1,
+      "pattern": "^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$"
+    },
+    "version": {
+      "description": "Version must be parseable by node-semver, which is used for import.",
+      "type": "string"
+    },
+    "description": {
+      "description": "This helps people discover your package, as it's listed in 'search'.",
+      "type": "string"
+    },
+    "keywords": {
+      "description": "This helps people discover your package as it's listed in 'search'.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "homepage": {
+      "description": "The url to the project homepage.",
+      "type": "string",
+      "oneOf": [{ "format": "uri" }, { "enum": ["."] }]
+    },
+    "bugs": {
+      "description": "The url to your project's issue tracker and / or the email address to which issues should be reported. These are helpful for people who encounter issues with your package.",
+      "type": ["object", "string"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The url to your project's issue tracker.",
+          "format": "uri"
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address to which issues should be reported.",
+          "format": "email"
+        }
+      }
+    },
+    "license": {
+      "type": "string",
+      "description": "You should specify a license for your package so that people know how they are permitted to use it, and any restrictions you're placing on it."
+    },
+    "licenses": {
+      "description": "You should specify a license for your package so that people know how they are permitted to use it, and any restrictions you're placing on it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+    "author": {
+      "$ref": "#/definitions/person"
+    },
+    "contributors": {
+      "description": "A list of people who contributed to this package.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/person"
+      }
+    },
+    "maintainers": {
+      "description": "A list of people who maintains this package.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/person"
+      }
+    },
+    "main": {
+      "description": "The main field is a module ID that is the primary entry point to your program.",
+      "type": "string"
+    },
+    "repository": {
+      "description": "Specify the place where your code lives. This is helpful for people who want to contribute.",
+      "type": ["object", "string"],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "engines": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "private": {
+      "type": "boolean",
+      "description": "If set to true, then package will not be searched."
+    }
+  }
+}

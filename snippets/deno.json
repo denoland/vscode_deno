@@ -1,0 +1,7 @@
+{
+  "Import 'log' modules": {
+    "prefix": "log",
+    "body": ["import * as log from \"https://deno.land/x/std/log/mod.ts\";", "$0"],
+    "description": "Import 'log' modules"
+  }
+}

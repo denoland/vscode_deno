@@ -31,6 +31,8 @@
     "onLanguage:javascriptreact",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
+    "onLanguage:json",
+    "onLanguage:jsonc",
     "onCommand:deno.init",
     "onCommand:deno.recompile",
     "onCommand:deno.types",
@@ -90,7 +92,40 @@
           "description": "%deno.config.autoFmtOnSave%"
         }
       }
-    }
+    },
+    "languages": [
+      {
+        "id": "ignore",
+        "filenames": [
+          ".denoignore"
+        ]
+      },
+      {
+        "id": "jsonc",
+        "filenames": [
+          ".denorc"
+        ],
+        "filenamePatterns": [
+          "denorc.*.json"
+        ]
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": ".denorc",
+        "url": "./schemas/denorc.schema.json"
+      },
+      {
+        "fileMatch": "denorc.*.json",
+        "url": "./schemas/denorc.schema.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "typescript",
+        "path": "./snippets/deno.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn compile",
