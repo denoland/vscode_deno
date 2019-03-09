@@ -7,9 +7,6 @@ src/**
 **/*.map
 *.vsix
 
-node_modules
-out/
-
 images/**/*.gif
 images/**/*.png
 
@@ -23,7 +20,6 @@ images/**/*.png
 
 tsconfig*.json
 package-lock.json
-webpack.config.js
 
 CODE_OF_CONDUCT.md
 CODING_STANDARDS.md
