@@ -1,10 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-
-import { promisify } from "util";
-import { exec } from "child_process";
-
-const execute = promisify(exec);
+import * as execa from "execa";
 
 import { TextDocument, workspace } from "vscode";
 
@@ -59,7 +55,7 @@ export function isJavaScriptDocument(document: TextDocument) {
 
 export async function getVersions(): Promise<DenoVersion | undefined> {
   try {
-    const { stdout, stderr } = await execute("deno -v");
+    const { stdout, stderr } = await execa("deno", ["-v"]);
 
     if (stderr) {
       return;
