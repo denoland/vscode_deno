@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.7 - 2019-03-11
+
+- use `execa` instead of `child_process.exec` #6
+- refactor: improve performance #7 #9
+- add import snippets for deno std #8
+
 ## 1.0.4 - 2019-03-07
 
 - Fix warning on found #3
