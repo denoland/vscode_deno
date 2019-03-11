@@ -1,6 +1,8 @@
 import * as path from "path";
-import * as cp from "child_process";
+import * as execa from "execa";
 import * as which from "which";
+
+type onLookupFunc = (path: string) => void
 
 export interface DenoVersion {
   deno: string;
@@ -116,7 +118,7 @@ function parseVersion(raw: string): DenoVersion {
 
 export function findDeno(
   hint: string | undefined,
-  onLookup: (path: string) => void
+  onLookup: onLookupFunc
 ): Promise<IDeno> {
   const first = hint
     ? findSpecificDeno(hint, onLookup)
@@ -138,48 +140,34 @@ export function findDeno(
     );
 }
 
-function findDenoDarwin(onLookup: (path: string) => void): Promise<IDeno> {
-  return new Promise<IDeno>((c, e) => {
-    cp.exec("which deno", (err, DenoPathBuffer) => {
-      if (err) {
-        return e("Deno not found");
-      }
+async function findDenoDarwin(
+  onLookup: onLookupFunc
+): Promise<IDeno> {
+  const { stdout: denoPath } = await execa("which", ["deno"]);
+  const path = denoPath.toString().replace(/^\s+|\s+$/g, "");
 
-      const path = DenoPathBuffer.toString().replace(/^\s+|\s+$/g, "");
+  async function getVersion(path: string): Promise<DenoVersion> {
+    onLookup(path);
 
-      function getVersion(path: string) {
-        onLookup(path);
+    // make sure deno executes
+    const { stdout } = await execa("deno", ["--version"]);
+    return parseVersion(stdout.trim());
+  }
 
-        // make sure deno executes
-        cp.exec("deno --version", (err, stdout) => {
-          if (err) {
-            return e("Deno not found");
-          }
+  if (path !== "/usr/bin/deno") {
+    return { path, version: await getVersion(path) };
+  }
 
-          return c({ path, version: parseVersion(stdout.trim()) });
-        });
-      }
+  const result = await execa("xcode-select", ["-p"]);
 
-      if (path !== "/usr/bin/deno") {
-        return getVersion(path);
-      }
+  if (result.code === 2) {
+    throw new Error("Deno not found");
+  }
 
-      // must check if XCode is installed
-      cp.exec("xcode-select -p", (err: any) => {
-        if (err && err.code === 2) {
-          // Deno is not installed, and launching /usr/bin/deno
-          // will prompt the user to install it
-
-          return e("Deno not found");
-        }
-
-        getVersion(path);
-      });
-    });
-  });
+  return { path, version: await getVersion(path) };
 }
 
-function findDenoWin32(onLookup: (path: string) => void): Promise<IDeno> {
+function findDenoWin32(onLookup: onLookupFunc): Promise<IDeno> {
   return findSystemDenoWin32(process.env["ProgramW6432"] as string, onLookup)
     .then(undefined, () =>
       findSystemDenoWin32(process.env["ProgramFiles(x86)"] as string, onLookup)
@@ -198,7 +186,7 @@ function findDenoWin32(onLookup: (path: string) => void): Promise<IDeno> {
 
 function findSystemDenoWin32(
   base: string,
-  onLookup: (path: string) => void
+  onLookup: onLookupFunc
 ): Promise<IDeno> {
   if (!base) {
     return Promise.reject<IDeno>("Not found");
@@ -207,37 +195,29 @@ function findSystemDenoWin32(
   return findSpecificDeno(path.join(base, "deno.exe"), onLookup);
 }
 
-function findDenoWin32InPath(onLookup: (path: string) => void): Promise<IDeno> {
+function findDenoWin32InPath(onLookup: onLookupFunc): Promise<IDeno> {
   const whichPromise = new Promise<string>((c, e) =>
     which("deno.exe", (err, path) => (err ? e(err) : c(path)))
   );
   return whichPromise.then(path => findSpecificDeno(path, onLookup));
 }
 
-function findSpecificDeno(
+async function findSpecificDeno(
   path: string,
-  onLookup: (path: string) => void
+  onLookup: onLookupFunc
 ): Promise<IDeno> {
-  return new Promise<IDeno>((c, e) => {
-    onLookup(path);
+  onLookup(path);
 
-    const buffers: Buffer[] = [];
-    const child = cp.spawn(path, ["--version"]);
-    child.stdout.on("data", (b: Buffer) => buffers.push(b));
-    child.on("error", cpErrorHandler(e));
-    child.on("exit", code =>
-      code
-        ? e(new Error("Not found"))
-        : c({
-            path,
-            version: parseVersion(
-              Buffer.concat(buffers)
-                .toString("utf8")
-                .trim()
-            )
-          })
-    );
-  });
+  const ps = await execa(path, ["--version"]);
+
+  if (ps.code) {
+    throw new Error("Not found");
+  }
+
+  return {
+    path,
+    version: parseVersion(ps.stdout)
+  };
 }
 
 function cpErrorHandler(cb: (reason?: any) => void): (reason?: any) => void {
