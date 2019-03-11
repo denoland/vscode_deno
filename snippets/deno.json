@@ -1,7 +1,67 @@
 {
+  "Import 'benching' modules": {
+    "prefix": "import",
+    "body": ["import * as benching from \"https://deno.land/x/std/benching/mod.ts\";", "$0"],
+    "description": "import 'benching' modules"
+  },
+  "Import 'bytes' modules": {
+    "prefix": "import",
+    "body": ["import * as bytes from \"https://deno.land/x/std/bytes/bytes.ts\";", "$0"],
+    "description": "Import 'bytes' modules"
+  },
+  "Import 'colors' modules": {
+    "prefix": "import",
+    "body": ["import * as colors from \"https://deno.land/x/std/colors/mod.ts\";", "$0"],
+    "description": "Import 'colors' modules"
+  },
+  "Import 'datetime' modules": {
+    "prefix": "import",
+    "body": ["import * as datetime from \"https://deno.land/x/std/datetime/mod.ts\";", "$0"],
+    "description": "Import 'datetime' modules"
+  },
+  "Import 'flags' modules": {
+    "prefix": "import",
+    "body": ["import * as flags from \"https://deno.land/x/std/flags/mod.ts\";", "$0"],
+    "description": "Import 'flags' modules"
+  },
+  "Import 'http' modules": {
+    "prefix": "import",
+    "body": ["import * as http from \"https://deno.land/x/std/http/http.ts\";", "$0"],
+    "description": "Import 'http' modules"
+  },
   "Import 'log' modules": {
-    "prefix": "log",
+    "prefix": "import",
     "body": ["import * as log from \"https://deno.land/x/std/log/mod.ts\";", "$0"],
-    "description": "Import 'log' modules"
+    "description": "import 'log' modules"
+  },
+  "Import 'media_types' modules": {
+    "prefix": "import",
+    "body": ["import * as media_types from \"https://deno.land/x/std/media_types/mod.ts\";", "$0"],
+    "description": "import 'media_types' modules"
+  },
+  "Import 'prettier' modules": {
+    "prefix": "import",
+    "body": ["import * as prettier from \"https://deno.land/x/std/prettier/prettier.ts\";", "$0"],
+    "description": "import 'prettier' modules"
+  },
+  "Import 'testing' modules": {
+    "prefix": "import",
+    "body": ["import * as testing from \"https://deno.land/x/std/testing/mod.ts\";", "$0"],
+    "description": "import 'testing' modules"
+  },
+  "Import 'strings' modules": {
+    "prefix": "import",
+    "body": ["import * as strings from \"https://deno.land/x/std/strings/strings.ts\";", "$0"],
+    "description": "import 'strings' modules"
+  },
+  "Import 'textproto' modules": {
+    "prefix": "import",
+    "body": ["import * as textproto from \"https://deno.land/x/std/textproto/mod.ts\";", "$0"],
+    "description": "import 'textproto' modules"
+  },
+  "Import 'ws' modules": {
+    "prefix": "import",
+    "body": ["import * as ws from \"https://deno.land/x/std/ws/mod.ts\";", "$0"],
+    "description": "import 'ws' modules"
   }
 }
