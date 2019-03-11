@@ -164,7 +164,7 @@ export async function activate(context: ExtensionContext) {
     return;
   }
 
-  workspace.onDidChangeConfiguration(
+  const configurationListener= workspace.onDidChangeConfiguration(
     e => {
       if (e.affectsConfiguration(configurationSection)) {
         synchronizeConfiguration(api);
@@ -178,6 +178,7 @@ export async function activate(context: ExtensionContext) {
   synchronizeConfiguration(api);
 
   const disposables = [
+    configurationListener,
     commands.registerCommand("deno.enable", enable),
     commands.registerCommand("deno.disable", disable),
     commands.registerCommand("deno.showOutputChannel", async () => {
