@@ -164,7 +164,7 @@ export async function activate(context: ExtensionContext) {
     return;
   }
 
-  const configurationListener= workspace.onDidChangeConfiguration(
+  const configurationListener = workspace.onDidChangeConfiguration(
     e => {
       if (e.affectsConfiguration(configurationSection)) {
         synchronizeConfiguration(api);

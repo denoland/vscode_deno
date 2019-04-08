@@ -2,7 +2,7 @@ import * as path from "path";
 import * as execa from "execa";
 import * as which from "which";
 
-type onLookupFunc = (path: string) => void
+type onLookupFunc = (path: string) => void;
 
 export interface DenoVersion {
   deno: string;
@@ -140,9 +140,7 @@ export function findDeno(
     );
 }
 
-async function findDenoDarwin(
-  onLookup: onLookupFunc
-): Promise<IDeno> {
+async function findDenoDarwin(onLookup: onLookupFunc): Promise<IDeno> {
   const { stdout: denoPath } = await execa("which", ["deno"]);
   const path = denoPath.toString().replace(/^\s+|\s+$/g, "");
 

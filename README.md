@@ -3,7 +3,7 @@
 [![Version](https://vsmarketplacebadge.apphb.com/version/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
 [![Downloads](https://vsmarketplacebadge.apphb.com/downloads/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
 
-Adds Deno support for VS Code using the [TypeScript Deno language service plugin](https://github.com/justjavac/typescript-deno-plugin). 
+Adds Deno support for VS Code using the [TypeScript Deno language service plugin](https://github.com/justjavac/typescript-deno-plugin).
 
 ## Usage
 
@@ -31,7 +31,7 @@ Deno allows imports from URLs, like the browser. But TypeScript can **not** find
 
 ### after install this plugin
 
-Deno caches remote imports in a special directory specified by the `$DENO_DIR` environmental variable. It defaults to the system's cache directory if `$DENO_DIR` is not specified. 
+Deno caches remote imports in a special directory specified by the `$DENO_DIR` environmental variable. It defaults to the system's cache directory if `$DENO_DIR` is not specified.
 
 This plugin can resove remote imports as local path.
 
@@ -41,13 +41,13 @@ This plugin can resove remote imports as local path.
 
 You can configure the Deno extension using a `tsconfig` as described [here](https://github.com/justjavac/typescript-deno-plugin#configuration), or configure it with VS Code settings. This requires VS Code 1.30+ and TS 3.2+. Note the VS Code based configuration overrides the `tsconfig` configuration.
 
- * `deno.enabled` - Enable/disable this extension. Default is `true`.
+- `deno.enabled` - Enable/disable this extension. Default is `true`.
 
- * `deno.packageManager` - The package manager you use to install node modules. Default is `npm`. (**Not implemented**)
+- `deno.packageManager` - The package manager you use to install node modules. Default is `npm`. (**Not implemented**)
 
- * `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
+- `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
 
- * `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`. (**Not implemented**)
+- `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`. (**Not implemented**)
 
 ## Commands
 
