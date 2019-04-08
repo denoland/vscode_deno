@@ -4,7 +4,7 @@
   "description": "Deno language service plugin for TypeScript",
   "main": "out/index.js",
   "scripts": {
-    "prepublish": "npm run compile",
+    "prepublish": "tsc",
     "compile": "tsc",
     "lint": "tslint -c tslint.json 'src/**/*.ts'"
   },
