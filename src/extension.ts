@@ -77,7 +77,9 @@ function enable() {
 
   let disabledFolders = folders.filter(
     folder =>
-      !workspace.getConfiguration(configurationSection, folder.uri).get("enable", true)
+      !workspace
+        .getConfiguration(configurationSection, folder.uri)
+        .get("enable", true)
   );
 
   if (disabledFolders.length === 0) {
@@ -100,7 +102,9 @@ function enable() {
     if (!folder) {
       return;
     }
-    workspace.getConfiguration(configurationSection, folder.uri).update("enable", true);
+    workspace
+      .getConfiguration(configurationSection, folder.uri)
+      .update("enable", true);
   });
 }
 
@@ -115,7 +119,9 @@ function disable() {
   }
 
   let enabledFolders = folders.filter(folder =>
-    workspace.getConfiguration(configurationSection, folder.uri).get("enable", true)
+    workspace
+      .getConfiguration(configurationSection, folder.uri)
+      .get("enable", true)
   );
 
   if (enabledFolders.length === 0) {
