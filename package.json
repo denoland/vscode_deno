@@ -22,10 +22,10 @@
   "categories": ["Programming Languages", "Other"],
   "keywords": ["deno"],
   "activationEvents": [
-    "onLanguage:javascript",
-    "onLanguage:javascriptreact",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
+    "workspaceContains:**/.denorc",
+    "workspaceContains:**/.denoignore",
     "onLanguage:json",
     "onLanguage:jsonc",
     "onCommand:deno.init",
