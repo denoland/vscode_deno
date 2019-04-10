@@ -1,5 +1,6 @@
 # VS Code Deno extension
 
+[![Build Status](https://travis-ci.com/justjavac/vscode-deno.svg?branch=master)](https://travis-ci.com/justjavac/vscode-deno)
 [![Version](https://vsmarketplacebadge.apphb.com/version/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
 [![Downloads](https://vsmarketplacebadge.apphb.com/downloads/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
 
