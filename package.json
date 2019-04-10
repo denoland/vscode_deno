@@ -26,8 +26,6 @@
     "onLanguage:typescriptreact",
     "workspaceContains:**/.denorc",
     "workspaceContains:**/.denoignore",
-    "onLanguage:json",
-    "onLanguage:jsonc",
     "onCommand:deno.init",
     "onCommand:deno.recompile",
     "onCommand:deno.types",
