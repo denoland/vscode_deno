@@ -48,7 +48,7 @@ You can configure the Deno extension using a `tsconfig` as described [here](http
 
 - `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
 
-- `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`.
+- `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`. (**Not implemented**)
 
 ## Commands
 
