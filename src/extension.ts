@@ -20,6 +20,8 @@ import {
   isJavaScriptDocument,
   getVersions
 } from "./utils";
+import * as execa from "execa";
+import * as path from "path";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
 const pluginId = "typescript-deno-plugin";
@@ -181,10 +183,40 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions
   );
 
+  const TextDocumentListener = workspace.onDidSaveTextDocument(
+    async document => {
+      const workspaceDenoConfig = workspace.getConfiguration(
+        configurationSection
+      );
+      const denoEnable = workspaceDenoConfig.get("enable", true);
+      const autoFmtOnSave = workspaceDenoConfig.get("autoFmtOnSave", false);
+
+      // if not enable the deno or not enable ``auto format on save``
+      if (!denoEnable || !autoFmtOnSave) {
+        return;
+      }
+
+      // TODO: ignore the large file. it will slowdown the extension
+      if (isTypeScriptDocument(document) || isJavaScriptDocument(document)) {
+        try {
+          // !!!: deno only support relative file path in currently
+          const filename = path.basename(document.uri.fsPath);
+          const cwd = path.dirname(document.uri.fsPath);
+          await execa("deno", [filename, "--fmt"], {
+            cwd
+          });
+        } catch {
+          // NOBUG: ignore error
+        }
+      }
+    }
+  );
+
   synchronizeConfiguration(api);
 
   const disposables = [
     configurationListener,
+    TextDocumentListener,
     commands.registerCommand("deno.enable", enable),
     commands.registerCommand("deno.disable", disable),
     commands.registerCommand("deno.showOutputChannel", async () => {
