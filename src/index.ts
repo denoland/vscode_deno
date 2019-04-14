@@ -1,4 +1,5 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
+import * as fs from "fs";
 import * as path from "path";
 
 import * as mockRequire from "mock-require";
@@ -87,9 +88,33 @@ function convertRemoteToLocalCache(moduleName: string): string {
     }
   }
 
-  // "https://deno.land/x/std/log/mod.ts" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod.ts"
+  // "https://deno.land/x/std/log/mod" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod" (no ".ts" because stripped)
   const name = path.join(denoDir, "deps", moduleName.replace("://", "/"));
-  logger.info(`convert "${moduleName}" to "${name}".`);
+  const redirectedName = fallbackHeader(name);
+  logger.info(`convert "${moduleName}" to "${redirectedName}".`);
 
-  return name;
+  return redirectedName;
+}
+
+interface IDenoModuleHeaders {
+  mime_type: string;
+  redirect_to: string;
+}
+
+/**
+ * If moduleName is not found, recursively search for headers and "redirect_to" property.
+ */
+function fallbackHeader(modulePath: string): string {
+  const validPath = modulePath.endsWith(".ts") ? modulePath : `${modulePath}.ts`;
+  if (fs.existsSync(validPath)) {
+    return modulePath;
+  }
+
+  const headersPath = `${validPath}.headers.json`;
+  if (fs.existsSync(headersPath)) {
+    const headers: IDenoModuleHeaders = JSON.parse(fs.readFileSync(headersPath, { encoding: "utf-8" }));
+    logger.info(`redirect "${modulePath}" to "${headers.redirect_to}".`);
+    return convertRemoteToLocalCache(stripExtNameDotTs(headers.redirect_to));
+  }
+  return modulePath;
 }
