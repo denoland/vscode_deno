@@ -19,7 +19,8 @@
     "url": "https://github.com/justjavac/typescript-deno-plugin.git"
   },
   "dependencies": {
-    "mock-require": "^3.0.3"
+    "mock-require": "^3.0.3",
+    "request": "^2.88.0"
   },
   "devDependencies": {
     "@types/mock-require": "^2.0.0",
