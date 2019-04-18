@@ -67,6 +67,23 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
         return { ...OPTIONS, ...projectSetting };
       };
 
+      const getScriptFileNames = info.languageServiceHost.getScriptFileNames!;
+      info.languageServiceHost.getScriptFileNames = () => {
+        const scriptFileNames = getScriptFileNames.call(
+          info.languageServiceHost
+        );
+
+        const denoDir = getDenoDir();
+        const denoDtsPath = path.resolve(denoDir, "lib.deno_runtime.d.ts");
+
+        if (!fs.existsSync(denoDtsPath)) {
+          // TODO: generate or download lib.deno_runtime.d.ts
+        }
+
+        scriptFileNames.push(denoDtsPath);
+        return scriptFileNames;
+      };
+
       return info.languageService;
     }
   };
@@ -90,7 +107,7 @@ function convertRemoteToLocalCache(moduleName: string): string {
 
   const denoDir = getDenoDir();
   // "https://deno.land/x/std/log/mod" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod" (no ".ts" because stripped)
-  const name = path.join(denoDir, "deps", moduleName.replace("://", "/"));
+  const name = path.resolve(denoDir, "deps", moduleName.replace("://", "/"));
   const redirectedName = fallbackHeader(name);
   logger.info(`convert "${moduleName}" to "${redirectedName}".`);
 
@@ -106,14 +123,18 @@ interface IDenoModuleHeaders {
  * If moduleName is not found, recursively search for headers and "redirect_to" property.
  */
 function fallbackHeader(modulePath: string): string {
-  const validPath = modulePath.endsWith(".ts") ? modulePath : `${modulePath}.ts`;
+  const validPath = modulePath.endsWith(".ts")
+    ? modulePath
+    : `${modulePath}.ts`;
   if (fs.existsSync(validPath)) {
     return modulePath;
   }
 
   const headersPath = `${validPath}.headers.json`;
   if (fs.existsSync(headersPath)) {
-    const headers: IDenoModuleHeaders = JSON.parse(fs.readFileSync(headersPath, { encoding: "utf-8" }));
+    const headers: IDenoModuleHeaders = JSON.parse(
+      fs.readFileSync(headersPath, { encoding: "utf-8" })
+    );
     logger.info(`redirect "${modulePath}" to "${headers.redirect_to}".`);
     // TODO: avoid Circular
     return convertRemoteToLocalCache(stripExtNameDotTs(headers.redirect_to));
