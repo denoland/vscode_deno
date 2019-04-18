@@ -124,10 +124,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,ts,json,md}": [
-      "yarn format",
-      "git add"
-    ]
+    "**/*.{js,ts,json,md}": ["yarn format", "git add"]
   },
   "devDependencies": {
     "@types/execa": "^0.9.0",
