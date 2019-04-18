@@ -115,8 +115,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "watch": "tsc -watch -p ./",
     "compile": "tsc -p ./",
-    "check": "deno --fmt --ignore \"node_modules\" --check",
-    "format": "deno --fmt --ignore \"node_modules\""
+    "check": "deno --allow-read --allow-write https://deno.land/std/prettier/main.ts --check --ignore \"node_modules\"",
+    "format": "deno --allow-read --allow-write https://deno.land/std/prettier/main.ts --check --ignore \"node_modules\""
   },
   "husky": {
     "hooks": {
@@ -124,7 +124,10 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,ts,json,md}": ["deno --fmt", "git add"]
+    "**/*.{js,ts,json,md}": [
+      "yarn format",
+      "git add"
+    ]
   },
   "devDependencies": {
     "@types/execa": "^0.9.0",
