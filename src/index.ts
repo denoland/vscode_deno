@@ -88,7 +88,11 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
       };
 
       return info.languageService;
-    }
+    },
+
+    onConfigurationChanged(config: any) {
+      logger.info(`onConfigurationChanged: ${JSON.stringify(config)}`)
+    },
   };
 };
 
