@@ -69,7 +69,57 @@ export async function getVersions(): Promise<DenoVersion | undefined> {
       typescript: typescript.substr(12),
       raw: stdout
     };
-  } catch (e) {
+  } catch {
     return;
   }
 }
+
+// TODO: duplicate
+export function getDenoDir(): string {
+  // ref https://deno.land/manual.html
+  // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
+  // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
+  // On macOS: $HOME/Library/Caches/deno
+  // If something fails, it falls back to $HOME/.deno
+  let denoDir = process.env.DENO_DIR;
+  if (denoDir === undefined) {
+    switch (process.platform) {
+      case "win32":
+        denoDir = `${process.env.LOCALAPPDATA}\\deno`;
+        break;
+      case "darwin":
+        denoDir = `${process.env.HOME}/Library/Caches/deno`;
+        break;
+      case "linux":
+        denoDir = `${process.env.HOME}/.cache/deno`;
+        break;
+      default:
+        denoDir = `${process.env.HOME}/.deno`;
+    }
+  }
+
+  return denoDir;
+}
+
+// Generate Deno's .d.ts file
+export async function generateDtsForDeno(): Promise<void> {
+  try {
+    const denoDir: string = getDenoDir();
+    if (!fs.existsSync(denoDir)) {
+      fs.mkdirSync(denoDir, { recursive: true });
+    }
+
+    const { stdout, stderr } = await execa("deno", ["--types"]);
+
+    if (stderr) {
+      return;
+    }
+
+    fs.writeFileSync(path.resolve(denoDir, "lib.deno_runtime.d.ts"), stdout);
+  } catch {
+    return;
+  }
+}
+
+// TODO: download Deno's .d.ts file
+export function downloadDtsForDeno(): void {}

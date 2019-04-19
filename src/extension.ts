@@ -11,6 +11,7 @@ import {
   WorkspaceConfiguration,
   Uri
 } from "vscode";
+import * as path from "path";
 
 import * as nls from "vscode-nls";
 
@@ -18,10 +19,13 @@ import { outputChannel } from "./output";
 import {
   isTypeScriptDocument,
   isJavaScriptDocument,
-  getVersions
+  getVersions,
+  generateDtsForDeno,
+  downloadDtsForDeno
 } from "./utils";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
+const denoExtensionId = "justjavac.vscode-deno";
 const pluginId = "typescript-deno-plugin";
 const configurationSection = "deno";
 
@@ -152,6 +156,7 @@ interface SynchronizedConfiguration {
   alwaysShowStatus?: boolean;
   autoFmtOnSave?: boolean;
   enable?: boolean;
+  dtsPath?: string;
 }
 
 export async function activate(context: ExtensionContext) {
@@ -244,10 +249,12 @@ export async function activate(context: ExtensionContext) {
     outputChannel.appendLine(
       "See https://github.com/denoland/deno_install for more installation options.\n"
     );
+    downloadDtsForDeno();
   } else {
     statusBarItem.tooltip = versions.raw;
     outputChannel.appendLine("Found deno, version:");
     outputChannel.appendLine(versions.raw);
+    generateDtsForDeno();
   }
 
   function showStatusBarItem(show: boolean): void {
@@ -309,7 +316,13 @@ export async function activate(context: ExtensionContext) {
 export function deactivate() {}
 
 function synchronizeConfiguration(api: any) {
-  api.configurePlugin(pluginId, getConfiguration());
+  const config = getConfiguration();
+
+  if (!config.dtsPath) {
+    config.dtsPath = bundledDtsPath();
+  }
+
+  api.configurePlugin(pluginId, config);
 }
 
 function getConfiguration(): SynchronizedConfiguration {
@@ -319,6 +332,7 @@ function getConfiguration(): SynchronizedConfiguration {
   withConfigValue(config, outConfig, "enable");
   withConfigValue(config, outConfig, "alwaysShowStatus");
   withConfigValue(config, outConfig, "autoFmtOnSave");
+  withConfigValue(config, outConfig, "dtsPath");
 
   return outConfig;
 }
@@ -351,4 +365,15 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
   if (typeof value !== "undefined") {
     outConfig[key] = value;
   }
+}
+
+function bundledDtsPath(): string {
+  const { extensionPath } = extensions.getExtension(denoExtensionId);
+  return path.resolve(
+    extensionPath,
+    "node_modules",
+    "typescript-deno-plugin",
+    "lib",
+    "lib.deno_runtime.d.ts"
+  );
 }

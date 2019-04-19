@@ -6,5 +6,6 @@
   "deno.config.enabled": "是否启用 Deno。",
   "deno.config.packageManager": "用于运行脚本的程序包管理器。",
   "deno.config.alwaysShowStatus": "总是在状态栏显示 Deno 图标。",
-  "deno.config.autoFmtOnSave": "是否在保存时进行格式化。"
+  "deno.config.autoFmtOnSave": "是否在保存时进行格式化。",
+  "deno.config.dtsPath": "Deno 的类型声明文件(.d.ts)路径。"
 }
