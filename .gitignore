@@ -15,9 +15,6 @@ node_modules
 # Intermediary compilation files
 out
 
-# Deployment files
-lib
-
 # VS Code
 .vscode/*
 !.vscode/settings.json

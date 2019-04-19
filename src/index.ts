@@ -73,14 +73,17 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
           info.languageServiceHost
         );
 
-        const denoDir = getDenoDir();
-        const denoDtsPath = path.resolve(denoDir, "lib.deno_runtime.d.ts");
+        const denoDtsPath =
+          getDtsPathForVscode(info) ||
+          getGlobalDtsPath() ||
+          getLocalDtsPath(info);
 
-        if (!fs.existsSync(denoDtsPath)) {
-          // TODO: generate or download lib.deno_runtime.d.ts
+        if (denoDtsPath) {
+          scriptFileNames.push(denoDtsPath);
         }
 
-        scriptFileNames.push(denoDtsPath);
+        logger.info(`dts path: ${denoDtsPath}`);
+
         return scriptFileNames;
       };
 
@@ -140,4 +143,43 @@ function fallbackHeader(modulePath: string): string {
     return convertRemoteToLocalCache(stripExtNameDotTs(headers.redirect_to));
   }
   return modulePath;
+}
+
+function getDtsPathForVscode(
+  info: ts.server.PluginCreateInfo
+): string | undefined {
+  const bundledDtsPath = info.config.dtsPath;
+
+  if (bundledDtsPath && fs.existsSync(bundledDtsPath)) {
+    return bundledDtsPath;
+  }
+
+  return undefined;
+}
+
+function getGlobalDtsPath(): string | undefined {
+  const denoDir = getDenoDir();
+  const globalDtsPath = path.resolve(denoDir, "lib.deno_runtime.d.ts");
+
+  if (fs.existsSync(globalDtsPath)) {
+    return globalDtsPath;
+  }
+
+  return undefined;
+}
+
+function getLocalDtsPath(info: ts.server.PluginCreateInfo): string | undefined {
+  const localDtsPath = path.resolve(
+    info.project.getCurrentDirectory(),
+    "node_modules",
+    "typescript-deno-plugin",
+    "lib",
+    "lib.deno_runtime.d.ts"
+  );
+
+  if (fs.existsSync(localDtsPath)) {
+    return localDtsPath;
+  }
+
+  return undefined;
 }
