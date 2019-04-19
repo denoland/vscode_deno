@@ -31,7 +31,7 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
   mockRequire("typescript", typescript);
 
   return {
-    create(info: ts.server.PluginCreateInfo): ts_module.LanguageService {
+    create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
       logger = Logger.forPlugin(info);
       logger.info("Create.");
 
@@ -91,7 +91,7 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
     },
 
     onConfigurationChanged(config: any) {
-      logger.info(`onConfigurationChanged: ${JSON.stringify(config)}`)
+      logger.info(`onConfigurationChanged: ${JSON.stringify(config)}`);
     },
   };
 };
@@ -150,7 +150,7 @@ function fallbackHeader(modulePath: string): string {
 }
 
 function getDtsPathForVscode(
-  info: ts.server.PluginCreateInfo
+  info: ts_module.server.PluginCreateInfo
 ): string | undefined {
   const bundledDtsPath = info.config.dtsPath;
 

@@ -1,6 +1,6 @@
 {
   "name": "typescript-deno-plugin",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Deno language service plugin for TypeScript",
   "main": "out/index.js",
   "scripts": {
@@ -20,12 +20,11 @@
   },
   "dependencies": {
     "mock-require": "^3.0.3",
-    "vscode-languageserver": "^5.2.1"
+    "typescript": "^3.4.4"
   },
   "devDependencies": {
     "@types/mock-require": "^2.0.0",
     "@types/node": "^11.10.4",
-    "tslint": "^5.13.1",
-    "typescript": "^3.3.3333"
+    "tslint": "^5.13.1"
   }
 }
