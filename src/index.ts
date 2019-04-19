@@ -10,25 +10,25 @@ import { getDenoDir } from "./shared";
 
 let logger: Logger;
 
-// see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
-const OPTIONS: ts_module.CompilerOptions = {
-  allowJs: true,
-  checkJs: true,
-  esModuleInterop: true,
-  module: ts_module.ModuleKind.ESNext,
-  moduleResolution: ts_module.ModuleResolutionKind.NodeJs,
-  noEmit: true,
-  outDir: "$deno$",
-  removeComments: true,
-  resolveJsonModule: true,
-  sourceMap: true,
-  target: ts_module.ScriptTarget.ESNext,
-  typeRoots: []
-};
-
 export = function init({ typescript }: { typescript: typeof ts_module }) {
   // Make sure Deno imports the correct version of TS
   mockRequire("typescript", typescript);
+
+  // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
+  const OPTIONS: ts_module.CompilerOptions = {
+    allowJs: true,
+    checkJs: true,
+    esModuleInterop: true,
+    module: typescript.ModuleKind.ESNext,
+    moduleResolution: typescript.ModuleResolutionKind.NodeJs,
+    noEmit: true,
+    outDir: "$deno$",
+    removeComments: true,
+    resolveJsonModule: true,
+    sourceMap: true,
+    target: typescript.ScriptTarget.ESNext,
+    typeRoots: []
+  };
 
   return {
     create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
@@ -92,7 +92,7 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
 
     onConfigurationChanged(config: any) {
       logger.info(`onConfigurationChanged: ${JSON.stringify(config)}`);
-    },
+    }
   };
 };
 
