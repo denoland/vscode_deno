@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0 - 2019-04-19
+
+- use deno formater for ci
+- add i18n(zh-cn)
+- use `configurationSection` instead of literal string [#14](https://github.com/justjavac/vscode-deno/pull/14)
+- add badge for travis [#17](https://github.com/justjavac/vscode-deno/pull/17)
+- remove unnecessary activationevents [#18](https://github.com/justjavac/vscode-deno/pull/18)
+- Generate Deno's .d.ts file [#21](https://github.com/justjavac/vscode-deno/pull/21)
+- upgrade `typescript-deno-plugin` from `1.1.0` to [`v1.2.1`](https://github.com/justjavac/typescript-deno-plugin/blob/master/CHANGELOG.md#121---2019-04-19)
+  - add headers fallback when module is not found [#3](https://github.com/justjavac/typescript-deno-plugin/pull/3)
+  - set default compilation options [#4](https://github.com/justjavac/typescript-deno-plugin/pull/4)
+  - add deno declaration files [#5](https://github.com/justjavac/typescript-deno-plugin/pull/5) [#7](https://github.com/justjavac/typescript-deno-plugin/pull/7)
+
 ## 1.0.7 - 2019-03-11
 
 - use `execa` instead of `child_process.exec` #6
