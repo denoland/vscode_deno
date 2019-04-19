@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.1.0 - 2019-04-19
+## 1.2.1 - 2019-04-19
+
+- fix 'can not found module `typescript/lib/tsserverlibrary`' bug
+
+## 1.2.0 - 2019-04-19 [YANKED]
 
 - use deno formater for ci
 - add i18n(zh-cn)

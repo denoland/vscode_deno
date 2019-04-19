@@ -2139,12 +2139,11 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
 typescript-deno-plugin@^1.2.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.2.1.tgz#be135a4a5d9c9c22186b2fd300ba4887b8c16164"
-  integrity sha512-V7TI5o9W5bdHarRAroGvedaem/zVux1ftDFRlcx7DQZHdefhJ1t8CqLde6C8tL7FZ0lnM9jF/NW3a7stMB7oZw==
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.2.4.tgz#0bd989821bf077404d8546462cd0ef7c099122a3"
+  integrity sha512-E5NbeB1SwtjnAkUSYuSWhkI9scQU/DmCp34fNgBuzz54io7SjtHOpJoMx8xw9dzyctQ4TkG2QKh4ly17S4n1ug==
   dependencies:
     mock-require "^3.0.3"
-    request "^2.88.0"
 
 typescript@^3.2.4:
   version "3.4.4"
