@@ -15,6 +15,7 @@ tslint.json
 node_modules
 *.test.js
 *.js.map
+yarn.lock
 
 CODE_OF_CONDUCT.md
 CODING_STANDARDS.md
