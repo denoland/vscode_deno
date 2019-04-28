@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 - 2019-04-28
+
+- Upgrade deno v0.3.9 check [#28](https://github.com/justjavac/vscode-deno/pull/28)
+
 ## 1.2.1 - 2019-04-19
 
 - fix 'can not found module `typescript/lib/tsserverlibrary`' bug
