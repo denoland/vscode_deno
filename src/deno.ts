@@ -206,7 +206,7 @@ async function findSpecificDeno(
 ): Promise<IDeno> {
   onLookup(path);
 
-  const ps = await execa(path, ["--version"]);
+  const ps = await execa(path, ["version"]);
 
   if (ps.code) {
     throw new Error("Not found");

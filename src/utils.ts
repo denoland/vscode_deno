@@ -55,7 +55,7 @@ export function isJavaScriptDocument(document: TextDocument) {
 
 export async function getVersions(): Promise<DenoVersion | undefined> {
   try {
-    const { stdout, stderr } = await execa("deno", ["-v"]);
+    const { stdout, stderr } = await execa("deno", ["version"]);
 
     if (stderr) {
       return;
@@ -109,7 +109,7 @@ export async function generateDtsForDeno(): Promise<void> {
       fs.mkdirSync(denoDir, { recursive: true });
     }
 
-    const { stdout, stderr } = await execa("deno", ["--types"]);
+    const { stdout, stderr } = await execa("deno", ["types"]);
 
     if (stderr) {
       return;
