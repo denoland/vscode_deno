@@ -87,6 +87,42 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
         return scriptFileNames;
       };
 
+      const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails;
+      info.languageService.getCompletionEntryDetails = (
+        fileName: string,
+        position: number,
+        name: string,
+        formatOptions?: ts_module.FormatCodeOptions | ts_module.FormatCodeSettings,
+        source?: string,
+        preferences?: ts_module.UserPreferences) => {
+
+        const details = getCompletionEntryDetails.call(
+          info.languageService,
+          fileName,
+          position,
+          name,
+          formatOptions,
+          source,
+          preferences
+        );
+
+        if (details) {
+          if (details.codeActions && details.codeActions.length) {
+            for (const ca of details.codeActions) {
+              for (const change of ca.changes) {
+                if (!change.isNewFile) {
+                  for (const tc of change.textChanges) {
+                    tc.newText = tc.newText.replace(/^(import .* from ['"])(\..*)(['"];\n)/i, "$1$2.ts$3");
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        return details;
+      };
+
       return info.languageService;
     },
 
