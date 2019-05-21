@@ -234,7 +234,7 @@ export async function activate(context: ExtensionContext) {
 
   if (versions === undefined) {
     denoStatus = Status.warn;
-    statusBarItem.tooltip = "Deno does not installed";
+    statusBarItem.tooltip = "Deno is not installed";
     outputChannel.appendLine("Failed to detect Deno.");
     outputChannel.appendLine("You can use one-line commands to install Deno.");
     if (process.platform === "win32") {
