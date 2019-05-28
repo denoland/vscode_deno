@@ -113,15 +113,25 @@
         "language": "typescript",
         "path": "./snippets/deno.json"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "[typescript]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "justjavac.vscode-deno"
+      },
+      "[markdown]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "justjavac.vscode-deno"
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn compile",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "watch": "tsc -watch -p ./",
     "compile": "tsc -p ./",
-    "check": "deno --allow-read --allow-write https://deno.land/std/prettier/main.ts --check --ignore \"node_modules\"",
-    "format": "deno --allow-read --allow-write https://deno.land/std/prettier/main.ts --ignore \"node_modules\""
+    "check": "deno run --allow-read --allow-write https://deno.land/std/prettier/main.ts --check --ignore \"node_modules\" --ignore \"out\"",
+    "format": "deno run --allow-read --allow-write https://deno.land/std/prettier/main.ts --write --ignore \"node_modules\" --ignore \"out\""
   },
   "husky": {
     "hooks": {
