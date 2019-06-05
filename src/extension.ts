@@ -18,7 +18,7 @@ import {
 import * as path from "path";
 
 import * as nls from "vscode-nls";
-import * as execa from "execa";
+import execa from "execa";
 
 import { outputChannel } from "./output";
 import {
@@ -336,7 +336,7 @@ export async function activate(context: ExtensionContext) {
 
     showStatusBarItem(
       isTypeScriptDocument(editor.document) ||
-        isJavaScriptDocument(editor.document)
+      isJavaScriptDocument(editor.document)
     );
   }
 
@@ -344,7 +344,7 @@ export async function activate(context: ExtensionContext) {
   updateStatusBarVisibility(window.activeTextEditor);
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 function synchronizeConfiguration(api: any) {
   const config = getConfiguration();

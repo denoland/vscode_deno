@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as execa from "execa";
+import execa from "execa";
 
 import { TextDocument, workspace } from "vscode";
 

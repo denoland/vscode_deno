@@ -1,6 +1,6 @@
 import * as path from "path";
-import * as execa from "execa";
-import * as which from "which";
+import execa from "execa";
+import which from "which";
 
 type onLookupFunc = (path: string) => void;
 
