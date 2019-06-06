@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2 - 2019-06-06
+
+- deep merge `compilerOptions` [#34](https://github.com/justjavac/vscode-deno/issues/34)
+
+## 1.3.1 - [YANKED]
+
 ## 1.3.0 - 2019-04-28
 
 - Upgrade deno v0.3.9 check [#28](https://github.com/justjavac/vscode-deno/pull/28)
