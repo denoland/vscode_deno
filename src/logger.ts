@@ -1,5 +1,5 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
-import * as ts_module from "typescript/lib/tsserverlibrary";
+import ts_module from "typescript/lib/tsserverlibrary";
 
 const pluginId = "typescript-deno-plugin";
 
