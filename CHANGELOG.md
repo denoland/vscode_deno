@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.5 - 2019-06-05
+
+- deep merge `compilerOptions` [#34](https://github.com/justjavac/vscode-deno/issues/34)
+
 ## 1.2.2 - 1.2.3 - 2019-04-19
 
 - fix typescript not found bug

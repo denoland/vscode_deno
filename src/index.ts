@@ -2,15 +2,16 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import * as mockRequire from "mock-require";
-import * as ts_module from "typescript/lib/tsserverlibrary";
+import merge from "merge-deep";
+import mockRequire from "mock-require";
+import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
 import { getDenoDir } from "./shared";
 
 let logger: Logger;
 
-export = function init({ typescript }: { typescript: typeof ts_module }) {
+module.exports = function init({ typescript }: { typescript: typeof ts_module }) {
   // Make sure Deno imports the correct version of TS
   mockRequire("typescript", typescript);
 
@@ -27,7 +28,7 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
     resolveJsonModule: true,
     sourceMap: true,
     target: typescript.ScriptTarget.ESNext,
-    typeRoots: []
+    typeRoots: [],
   };
 
   return {
@@ -47,36 +48,34 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
         moduleNames: string[],
         containingFile: string,
         reusedNames?: string[],
-        redirectedReference?: ts_module.ResolvedProjectReference
+        redirectedReference?: ts_module.ResolvedProjectReference,
       ) => {
-        moduleNames = moduleNames
-          .map(stripExtNameDotTs)
-          .map(convertRemoteToLocalCache);
+        moduleNames = moduleNames.map(stripExtNameDotTs).map(convertRemoteToLocalCache);
 
         return resolveModuleNames.call(
           info.languageServiceHost,
           moduleNames,
           containingFile,
           reusedNames,
-          redirectedReference
+          redirectedReference,
         );
       };
 
-      const projectSetting = info.project.getCompilationSettings();
+      const getCompilationSettings = info.languageServiceHost.getCompilationSettings;
+
       info.languageServiceHost.getCompilationSettings = () => {
-        return { ...OPTIONS, ...projectSetting };
+        const projectConfig = getCompilationSettings.call(info.languageServiceHost);
+        const compilationSettings = merge(OPTIONS, projectConfig);
+        logger.info(`compilationSettings:${JSON.stringify(compilationSettings)}`);
+        return compilationSettings;
       };
 
       const getScriptFileNames = info.languageServiceHost.getScriptFileNames!;
       info.languageServiceHost.getScriptFileNames = () => {
-        const scriptFileNames = getScriptFileNames.call(
-          info.languageServiceHost
-        );
+        const scriptFileNames = getScriptFileNames.call(info.languageServiceHost);
 
         const denoDtsPath =
-          getDtsPathForVscode(info) ||
-          getGlobalDtsPath() ||
-          getLocalDtsPath(info);
+          getDtsPathForVscode(info) || getGlobalDtsPath() || getLocalDtsPath(info);
 
         if (denoDtsPath) {
           scriptFileNames.push(denoDtsPath);
@@ -94,8 +93,8 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
         name: string,
         formatOptions?: ts_module.FormatCodeOptions | ts_module.FormatCodeSettings,
         source?: string,
-        preferences?: ts_module.UserPreferences) => {
-
+        preferences?: ts_module.UserPreferences,
+      ) => {
         const details = getCompletionEntryDetails.call(
           info.languageService,
           fileName,
@@ -103,7 +102,7 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
           name,
           formatOptions,
           source,
-          preferences
+          preferences,
         );
 
         if (details) {
@@ -112,7 +111,10 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
               for (const change of ca.changes) {
                 if (!change.isNewFile) {
                   for (const tc of change.textChanges) {
-                    tc.newText = tc.newText.replace(/^(import .* from ['"])(\..*)(['"];\n)/i, "$1$2.ts$3");
+                    tc.newText = tc.newText.replace(
+                      /^(import .* from ['"])(\..*)(['"];\n)/i,
+                      "$1$2.ts$3",
+                    );
                   }
                 }
               }
@@ -128,7 +130,7 @@ export = function init({ typescript }: { typescript: typeof ts_module }) {
 
     onConfigurationChanged(config: any) {
       logger.info(`onConfigurationChanged: ${JSON.stringify(config)}`);
-    }
+    },
   };
 };
 
@@ -166,9 +168,7 @@ interface IDenoModuleHeaders {
  * If moduleName is not found, recursively search for headers and "redirect_to" property.
  */
 function fallbackHeader(modulePath: string): string {
-  const validPath = modulePath.endsWith(".ts")
-    ? modulePath
-    : `${modulePath}.ts`;
+  const validPath = modulePath.endsWith(".ts") ? modulePath : `${modulePath}.ts`;
   if (fs.existsSync(validPath)) {
     return modulePath;
   }
@@ -176,7 +176,7 @@ function fallbackHeader(modulePath: string): string {
   const headersPath = `${validPath}.headers.json`;
   if (fs.existsSync(headersPath)) {
     const headers: IDenoModuleHeaders = JSON.parse(
-      fs.readFileSync(headersPath, { encoding: "utf-8" })
+      fs.readFileSync(headersPath, { encoding: "utf-8" }),
     );
     logger.info(`redirect "${modulePath}" to "${headers.redirect_to}".`);
     // TODO: avoid Circular
@@ -185,9 +185,7 @@ function fallbackHeader(modulePath: string): string {
   return modulePath;
 }
 
-function getDtsPathForVscode(
-  info: ts_module.server.PluginCreateInfo
-): string | undefined {
+function getDtsPathForVscode(info: ts_module.server.PluginCreateInfo): string | undefined {
   const bundledDtsPath = info.config.dtsPath;
 
   if (bundledDtsPath && fs.existsSync(bundledDtsPath)) {
@@ -214,7 +212,7 @@ function getLocalDtsPath(info: ts.server.PluginCreateInfo): string | undefined {
     "node_modules",
     "typescript-deno-plugin",
     "lib",
-    "lib.deno_runtime.d.ts"
+    "lib.deno_runtime.d.ts",
   );
 
   if (fs.existsSync(localDtsPath)) {

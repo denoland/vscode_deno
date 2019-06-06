@@ -1,5 +1,0 @@
-{
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.tsserver.log": "verbose",
-    "typescript.tsserver.trace": "verbose"
-}

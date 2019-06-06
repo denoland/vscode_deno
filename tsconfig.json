@@ -7,9 +7,11 @@
     "noImplicitAny": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "lib": ["es6"],
     "strict": true,
     "baseUrl": "./src"
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts", "types/**/*.d.ts"]
 }

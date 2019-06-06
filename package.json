@@ -1,6 +1,6 @@
 {
   "name": "typescript-deno-plugin",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Deno language service plugin for TypeScript",
   "main": "out/index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "url": "https://github.com/justjavac/typescript-deno-plugin.git"
   },
   "dependencies": {
+    "merge-deep": "^3.0.2",
     "mock-require": "^3.0.3"
   },
   "devDependencies": {
