@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.6 - 2019-06-19
+
+- update deno types to 0.9.0 [#14](https://github.com/justjavac/typescript-deno-plugin/pull/14)
+
 ## 1.2.5 - 2019-06-05
 
 - deep merge `compilerOptions` [#34](https://github.com/justjavac/vscode-deno/issues/34)
