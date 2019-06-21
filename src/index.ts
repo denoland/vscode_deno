@@ -134,7 +134,22 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
   };
 };
 
+function getModuleWithQueryString(moduleName: string): string | undefined {
+  let name = moduleName;
+  for (const index = name.indexOf("?"); index !== -1; name = name.substring(index + 1)) {
+    if (name.substring(0, index).endsWith(".ts")) {
+      const cutLength = moduleName.length - name.length;
+      return moduleName.substring(0, index + cutLength);
+    }
+  }
+}
+
 function stripExtNameDotTs(moduleName: string): string {
+  const moduleWithQuery = getModuleWithQueryString(moduleName);
+  if (moduleWithQuery) {
+    return moduleWithQuery;
+  }
+
   if (!moduleName.endsWith(".ts")) {
     return moduleName;
   }
