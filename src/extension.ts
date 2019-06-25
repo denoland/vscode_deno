@@ -192,9 +192,13 @@ export async function activate(context: ExtensionContext) {
   );
 
   const formatter = languages.registerDocumentFormattingEditProvider(
-    ["typescript", "markdown"],
+    ["typescript", "javascript", "markdown", "json"],
     {
       async provideDocumentFormattingEdits(document: TextDocument) {
+        if (document.isUntitled) {
+          return;
+        }
+        await document.save();
         const filename = path.basename(document.uri.fsPath);
         const cwd = path.dirname(document.uri.fsPath);
         const r = await execa(
