@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.3 - 2019-08-29
+
+- fix deno version for ci [#52](https://github.com/justjavac/vscode-deno/issues/51)
+- upgrade typescript-deno-plugin@1.2.7 [#51](https://github.com/justjavac/vscode-deno/issues/51)
+- Bump lodash from 4.17.11 to 4.17.14 [#45](https://github.com/justjavac/vscode-deno/issues/51)
+
 ## 1.3.2 - 2019-06-06
 
 - deep merge `compilerOptions` [#34](https://github.com/justjavac/vscode-deno/issues/34)
