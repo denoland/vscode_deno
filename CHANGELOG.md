@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.7 - 2019-08-29
+
+- Add support for query strings in import urls [#16](https://github.com/justjavac/typescript-deno-plugin/pull/16)
+- update deno types to 0.16.0
+
 ## 1.2.6 - 2019-06-19
 
 - update deno types to 0.9.0 [#14](https://github.com/justjavac/typescript-deno-plugin/pull/14)
