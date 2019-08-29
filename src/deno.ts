@@ -158,7 +158,7 @@ async function findDenoDarwin(onLookup: onLookupFunc): Promise<IDeno> {
 
   const result = await execa("xcode-select", ["-p"]);
 
-  if (result.code === 2) {
+  if (result.exitCode === 2) {
     throw new Error("Deno not found");
   }
 
@@ -208,7 +208,7 @@ async function findSpecificDeno(
 
   const ps = await execa(path, ["version"]);
 
-  if (ps.code) {
+  if (ps.exitCode) {
     throw new Error("Not found");
   }
 
