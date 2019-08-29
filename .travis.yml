@@ -3,7 +3,7 @@ language: node_js
 
 env:
   global:
-    - DENO_VERSION=v0.6.0
+    - DENO_VERSION=v0.16.0
     - YARN_VERSION=1.15.2
 
 node_js:
