@@ -8,8 +8,6 @@ declare namespace Deno {
   export let pid: number;
   /** Reflects the NO_COLOR environment variable: https://no-color.org/ */
   export let noColor: boolean;
-  /** Path to the current deno process's executable file. */
-  export let execPath: string;
   /** Check if running in terminal.
    *
    *       console.log(Deno.isTTY().stdout);
@@ -36,6 +34,16 @@ declare namespace Deno {
     [index: string]: string;
   };
   /**
+   * Returns the current user's home directory.
+   * Requires the `--allow-env` flag.
+   */
+  export function homeDir(): string;
+  /**
+   * Returns the path to the current deno executable.
+   * Requires the `--allow-env` flag.
+   */
+  export function execPath(): string;
+  /**
    * `cwd()` Return a string representing the current working directory.
    * If the current directory can be reached via multiple paths
    * (due to symbolic links), `cwd()` may return
@@ -48,10 +56,8 @@ declare namespace Deno {
    * throws `NotFound` exception if directory not available
    */
   export function chdir(directory: string): void;
-  export interface ReadResult {
-    nread: number;
-    eof: boolean;
-  }
+  export const EOF: null;
+  export type EOF = null;
   export enum SeekMode {
     SEEK_START = 0,
     SEEK_CURRENT = 1,
@@ -59,35 +65,26 @@ declare namespace Deno {
   }
   export interface Reader {
     /** Reads up to p.byteLength bytes into `p`. It resolves to the number
-     * of bytes read (`0` <= `n` <= `p.byteLength`) and any error encountered.
+     * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error encountered.
      * Even if `read()` returns `n` < `p.byteLength`, it may use all of `p` as
      * scratch space during the call. If some data is available but not
      * `p.byteLength` bytes, `read()` conventionally returns what is available
      * instead of waiting for more.
      *
-     * When `read()` encounters an error or end-of-file condition after
-     * successfully reading `n` > `0` bytes, it returns the number of bytes read.
-     * It may return the (non-nil) error from the same call or return the error
-     * (and `n` == `0`) from a subsequent call. An instance of this general case
-     * is that a `Reader` returning a non-zero number of bytes at the end of the
-     * input stream may return either `err` == `EOF` or `err` == `null`. The next
-     * `read()` should return `0`, `EOF`.
+     * When `read()` encounters end-of-file condition, it returns EOF symbol.
+     *
+     * When `read()` encounters an error, it rejects with an error.
      *
      * Callers should always process the `n` > `0` bytes returned before
-     * considering the `EOF`. Doing so correctly handles I/O errors that happen
-     * after reading some bytes and also both of the allowed `EOF` behaviors.
-     *
-     * Implementations of `read()` are discouraged from returning a zero byte
-     * count with a `null` error, except when `p.byteLength` == `0`. Callers
-     * should treat a return of `0` and `null` as indicating that nothing
-     * happened; in particular it does not indicate `EOF`.
+     * considering the EOF. Doing so correctly handles I/O errors that happen
+     * after reading some bytes and also both of the allowed EOF behaviors.
      *
      * Implementations must not retain `p`.
      */
-    read(p: Uint8Array): Promise<ReadResult>;
+    read(p: Uint8Array): Promise<number | EOF>;
   }
   export interface SyncReader {
-    readSync(p: Uint8Array): ReadResult;
+    readSync(p: Uint8Array): number | EOF;
   }
   export interface Writer {
     /** Writes `p.byteLength` bytes from `p` to the underlying data
@@ -158,27 +155,27 @@ declare namespace Deno {
   export function open(filename: string, mode?: OpenMode): Promise<File>;
   /** Read synchronously from a file ID into an array buffer.
    *
-   * Return `ReadResult` for the operation.
+   * Return `number | EOF` for the operation.
    *
    *      const file = Deno.openSync("/foo/bar.txt");
    *      const buf = new Uint8Array(100);
-   *      const { nread, eof } = Deno.readSync(file.rid, buf);
+   *      const nread = Deno.readSync(file.rid, buf);
    *      const text = new TextDecoder().decode(buf);
    *
    */
-  export function readSync(rid: number, p: Uint8Array): ReadResult;
+  export function readSync(rid: number, p: Uint8Array): number | EOF;
   /** Read from a file ID into an array buffer.
    *
-   * Resolves with the `ReadResult` for the operation.
+   * Resolves with the `number | EOF` for the operation.
    *
    *       (async () => {
    *         const file = await Deno.open("/foo/bar.txt");
    *         const buf = new Uint8Array(100);
-   *         const { nread, eof } = await Deno.read(file.rid, buf);
+   *         const nread = await Deno.read(file.rid, buf);
    *         const text = new TextDecoder().decode(buf);
    *       })();
    */
-  export function read(rid: number, p: Uint8Array): Promise<ReadResult>;
+  export function read(rid: number, p: Uint8Array): Promise<number | EOF>;
   /** Write synchronously to the file ID the contents of the array buffer.
    *
    * Resolves with the number of bytes written.
@@ -236,8 +233,8 @@ declare namespace Deno {
     constructor(rid: number);
     write(p: Uint8Array): Promise<number>;
     writeSync(p: Uint8Array): number;
-    read(p: Uint8Array): Promise<ReadResult>;
-    readSync(p: Uint8Array): ReadResult;
+    read(p: Uint8Array): Promise<number | EOF>;
+    readSync(p: Uint8Array): number | EOF;
     seek(offset: number, whence: SeekMode): Promise<void>;
     seekSync(offset: number, whence: SeekMode): void;
     close(): void;
@@ -323,8 +320,8 @@ declare namespace Deno {
      * is drained. The return value n is the number of bytes read. If the
      * buffer has no data to return, eof in the response will be true.
      */
-    readSync(p: Uint8Array): ReadResult;
-    read(p: Uint8Array): Promise<ReadResult>;
+    readSync(p: Uint8Array): number | EOF;
+    read(p: Uint8Array): Promise<number | EOF>;
     writeSync(p: Uint8Array): number;
     write(p: Uint8Array): Promise<number>;
     /** _grow() grows the buffer to guarantee space for n more bytes.
@@ -355,6 +352,12 @@ declare namespace Deno {
   /** Read synchronously `r` until EOF and return the content as `Uint8Array`.
    */
   export function readAllSync(r: SyncReader): Uint8Array;
+  /** Write all the content of `arr` to `w`.
+   */
+  export function writeAll(w: Writer, arr: Uint8Array): Promise<void>;
+  /** Write synchronously all the content of `arr` to `w`.
+   */
+  export function writeAllSync(w: SyncWriter, arr: Uint8Array): void;
   /** Creates a new directory with the specified path synchronously.
    * If `recursive` is set to true, nested directories will be created (also known
    * as "mkdir -p").
@@ -676,6 +679,38 @@ declare namespace Deno {
     data: Uint8Array,
     options?: WriteFileOptions
   ): Promise<void>;
+  interface Location {
+    /** The full url for the module, e.g. `file://some/file.ts` or
+     * `https://some/file.ts`. */
+    filename: string;
+    /** The line number in the file.  It is assumed to be 1-indexed. */
+    line: number;
+    /** The column number in the file.  It is assumed to be 1-indexed. */
+    column: number;
+  }
+  /** Given a current location in a module, lookup the source location and
+   * return it.
+   *
+   * When Deno transpiles code, it keep source maps of the transpiled code.  This
+   * function can be used to lookup the original location.  This is automatically
+   * done when accessing the `.stack` of an error, or when an uncaught error is
+   * logged.  This function can be used to perform the lookup for creating better
+   * error handling.
+   *
+   * **Note:** `line` and `column` are 1 indexed, which matches display
+   * expectations, but is not typical of most index numbers in Deno.
+   *
+   * An example:
+   *
+   *       const orig = Deno.applySourceMap({
+   *         location: "file://my/module.ts",
+   *         line: 5,
+   *         column: 15
+   *       });
+   *       console.log(`${orig.filename}:${orig.line}:${orig.column}`);
+   *
+   */
+  export function applySourceMap(location: Location): Location;
   export enum ErrorKind {
     NoError = 0,
     NotFound = 1,
@@ -716,10 +751,18 @@ declare namespace Deno {
     TooLarge = 36,
     InvalidUri = 37,
     InvalidSeekMode = 38,
-    OpNotAvaiable = 39,
+    OpNotAvailable = 39,
     WorkerInitFailed = 40,
     UnixError = 41,
-    ImportMapError = 42
+    NoAsyncSupport = 42,
+    NoSyncSupport = 43,
+    ImportMapError = 44,
+    InvalidPath = 45,
+    ImportPrefixMissing = 46,
+    UnsupportedFetchScheme = 47,
+    TooManyRedirects = 48,
+    Diagnostic = 49,
+    JSError = 50
   }
   /** A Deno specific error.  The `kind` property is set to a specific error code
    * which can be used to in application logic.
@@ -902,13 +945,14 @@ declare namespace Deno {
     env?: {
       [key: string]: string;
     };
-    stdout?: ProcessStdio;
-    stderr?: ProcessStdio;
-    stdin?: ProcessStdio;
+    stdout?: ProcessStdio | number;
+    stderr?: ProcessStdio | number;
+    stdin?: ProcessStdio | number;
   }
   /** Send a signal to process under given PID. Unix only at this moment.
    * If pid is negative, the signal will be sent to the process group identified
    * by -pid.
+   * Requires the `--allow-run` flag.
    */
   export function kill(pid: number, signo: number): void;
   export class Process {
@@ -946,7 +990,8 @@ declare namespace Deno {
    * mapping.
    *
    * By default subprocess inherits stdio of parent process. To change that
-   * `opt.stdout`, `opt.stderr` and `opt.stdin` can be specified independently.
+   * `opt.stdout`, `opt.stderr` and `opt.stdin` can be specified independently -
+   * they can be set to either `ProcessStdio` or `rid` of open file.
    */
   export function run(opt: RunOptions): Process;
   enum LinuxSignal {
@@ -1024,7 +1069,6 @@ declare namespace Deno {
     depth: number;
     colors: boolean;
     indentLevel: number;
-    collapsedAt: number | null;
   }>;
   class CSI {
     static kClear: string;
@@ -1034,7 +1078,6 @@ declare namespace Deno {
   class Console {
     private printFunc;
     indentLevel: number;
-    collapsedAt: number | null;
     [isConsoleInstance]: boolean;
     /** Writes the arguments to stdout */
     log: (...args: unknown[]) => void;
@@ -1050,7 +1093,6 @@ declare namespace Deno {
         depth: number;
         colors: boolean;
         indentLevel: number;
-        collapsedAt: number | null;
       }>
     ) => void;
     /** Writes the arguments to stdout */
@@ -1073,8 +1115,13 @@ declare namespace Deno {
     groupCollapsed: (...label: unknown[]) => void;
     groupEnd: () => void;
     clear: () => void;
+    trace: (...args: unknown[]) => void;
     static [Symbol.hasInstance](instance: Console): boolean;
   }
+  /** A symbol which can be used as a key for a custom method which will be called
+   * when `Deno.inspect()` is called, or when the object is logged to the console.
+   */
+  export const customInspect: unique symbol;
   /**
    * `inspect()` converts input into string that has the same format
    * as printed by `console.log(...)`;
@@ -1088,8 +1135,6 @@ declare namespace Deno {
     arch: Arch;
     /** The operating system. */
     os: OperatingSystem;
-    /** The arguments passed to GN during build. See `gn help buildargs`. */
-    args: string;
   }
   export const build: BuildInfo;
   export const platform: BuildInfo;
@@ -1108,12 +1153,13 @@ declare interface Window {
   atob: typeof textEncoding.atob;
   btoa: typeof textEncoding.btoa;
   fetch: typeof fetchTypes.fetch;
-  clearTimeout: typeof timers.clearTimer;
-  clearInterval: typeof timers.clearTimer;
+  clearTimeout: typeof timers.clearTimeout;
+  clearInterval: typeof timers.clearInterval;
   console: consoleTypes.Console;
   setTimeout: typeof timers.setTimeout;
   setInterval: typeof timers.setInterval;
   location: domTypes.Location;
+  onload: Function | undefined;
   crypto: Crypto;
   Blob: typeof blob.DenoBlob;
   File: domTypes.DomFileConstructor;
@@ -1137,6 +1183,17 @@ declare interface Window {
   workerClose: typeof workers.workerClose;
   postMessage: typeof workers.postMessage;
   Worker: typeof workers.WorkerImpl;
+  addEventListener: (
+    type: string,
+    callback: (event: domTypes.Event) => void | null,
+    options?: boolean | domTypes.AddEventListenerOptions | undefined
+  ) => void;
+  dispatchEvent: (event: domTypes.Event) => boolean;
+  removeEventListener: (
+    type: string,
+    callback: (event: domTypes.Event) => void | null,
+    options?: boolean | domTypes.EventListenerOptions | undefined
+  ) => void;
   Deno: typeof Deno;
 }
 
@@ -1144,12 +1201,13 @@ declare const window: Window;
 declare const atob: typeof textEncoding.atob;
 declare const btoa: typeof textEncoding.btoa;
 declare const fetch: typeof fetchTypes.fetch;
-declare const clearTimeout: typeof timers.clearTimer;
-declare const clearInterval: typeof timers.clearTimer;
+declare const clearTimeout: typeof timers.clearTimeout;
+declare const clearInterval: typeof timers.clearInterval;
 declare const console: consoleTypes.Console;
 declare const setTimeout: typeof timers.setTimeout;
 declare const setInterval: typeof timers.setInterval;
 declare const location: domTypes.Location;
+declare const onload: Function | undefined;
 declare const crypto: Crypto;
 declare const Blob: typeof blob.DenoBlob;
 declare const File: domTypes.DomFileConstructor;
@@ -1173,6 +1231,17 @@ declare const workerMain: typeof workers.workerMain;
 declare const workerClose: typeof workers.workerClose;
 declare const postMessage: typeof workers.postMessage;
 declare const Worker: typeof workers.WorkerImpl;
+declare const addEventListener: (
+  type: string,
+  callback: (event: domTypes.Event) => void | null,
+  options?: boolean | domTypes.AddEventListenerOptions | undefined
+) => void;
+declare const dispatchEvent: (event: domTypes.Event) => boolean;
+declare const removeEventListener: (
+  type: string,
+  callback: (event: domTypes.Event) => void | null,
+  options?: boolean | domTypes.EventListenerOptions | undefined
+) => void;
 
 declare type Blob = blob.DenoBlob;
 declare type File = domTypes.DomFile;
@@ -1263,11 +1332,15 @@ declare namespace domTypes {
     TEXT_NODE = 3,
     DOCUMENT_FRAGMENT_NODE = 11
   }
+  export const eventTargetHost: unique symbol;
+  export const eventTargetListeners: unique symbol;
+  export const eventTargetMode: unique symbol;
+  export const eventTargetNodeType: unique symbol;
   export interface EventTarget {
-    host: EventTarget | null;
-    listeners: { [type in string]: EventListener[] };
-    mode: string;
-    nodeType: NodeType;
+    [eventTargetHost]: EventTarget | null;
+    [eventTargetListeners]: { [type in string]: EventListener[] };
+    [eventTargetMode]: string;
+    [eventTargetNodeType]: NodeType;
     addEventListener(
       type: string,
       callback: (event: Event) => void | null,
@@ -1782,6 +1855,7 @@ declare namespace domTypes {
 
 declare namespace blob {
   export const bytesSymbol: unique symbol;
+  export const blobBytesWeakMap: WeakMap<domTypes.Blob, Uint8Array>;
   export class DenoBlob implements domTypes.Blob {
     private readonly [bytesSymbol];
     readonly size: number;
@@ -1801,7 +1875,6 @@ declare namespace consoleTypes {
     depth: number;
     colors: boolean;
     indentLevel: number;
-    collapsedAt: number | null;
   }>;
   export class CSI {
     static kClear: string;
@@ -1811,7 +1884,6 @@ declare namespace consoleTypes {
   export class Console {
     private printFunc;
     indentLevel: number;
-    collapsedAt: number | null;
     [isConsoleInstance]: boolean;
     /** Writes the arguments to stdout */
     log: (...args: unknown[]) => void;
@@ -1827,7 +1899,6 @@ declare namespace consoleTypes {
         depth: number;
         colors: boolean;
         indentLevel: number;
-        collapsedAt: number | null;
       }>
     ) => void;
     /** Writes the arguments to stdout */
@@ -1850,8 +1921,13 @@ declare namespace consoleTypes {
     groupCollapsed: (...label: unknown[]) => void;
     groupEnd: () => void;
     clear: () => void;
+    trace: (...args: unknown[]) => void;
     static [Symbol.hasInstance](instance: Console): boolean;
   }
+  /** A symbol which can be used as a key for a custom method which will be called
+   * when `Deno.inspect()` is called, or when the object is logged to the console.
+   */
+  export const customInspect: unique symbol;
   /**
    * `inspect()` converts input into string that has the same format
    * as printed by `console.log(...)`;
@@ -1876,6 +1952,7 @@ declare namespace event {
     });
   }
   export class Event implements domTypes.Event {
+    isTrusted: boolean;
     private _canceledFlag;
     private _dispatchedFlag;
     private _initializedFlag;
@@ -1895,7 +1972,6 @@ declare namespace event {
     eventPhase: number;
     readonly initialized: boolean;
     inPassiveListener: boolean;
-    isTrusted: boolean;
     path: domTypes.EventPath[];
     relatedTarget: domTypes.EventTarget;
     target: domTypes.EventTarget;
@@ -1992,13 +2068,17 @@ declare namespace eventTarget {
     readonly callback: (event: domTypes.Event) => void | null;
     readonly options: domTypes.AddEventListenerOptions | boolean;
   }
+  export const eventTargetAssignedSlot: unique symbol;
+  export const eventTargetHasActivationBehavior: unique symbol;
   export class EventTarget implements domTypes.EventTarget {
-    host: domTypes.EventTarget | null;
-    listeners: { [type in string]: domTypes.EventListener[] };
-    mode: string;
-    nodeType: domTypes.NodeType;
-    private _assignedSlot;
-    private _hasActivationBehavior;
+    [domTypes.eventTargetHost]: domTypes.EventTarget | null;
+    [domTypes.eventTargetListeners]: {
+      [type in string]: domTypes.EventListener[]
+    };
+    [domTypes.eventTargetMode]: string;
+    [domTypes.eventTargetNodeType]: domTypes.NodeType;
+    private [eventTargetAssignedSlot];
+    private [eventTargetHasActivationBehavior];
     addEventListener(
       type: string,
       callback: (event: domTypes.Event) => void | null,
@@ -2010,41 +2090,13 @@ declare namespace eventTarget {
       options?: domTypes.EventListenerOptions | boolean
     ): void;
     dispatchEvent(event: domTypes.Event): boolean;
-    _dispatch(
-      eventImpl: domTypes.Event,
-      targetOverride?: domTypes.EventTarget
-    ): boolean;
-    _invokeEventListeners(
-      tuple: domTypes.EventPath,
-      eventImpl: domTypes.Event
-    ): void;
-    _innerInvokeEventListeners(
-      eventImpl: domTypes.Event,
-      targetListeners: { [type in string]: domTypes.EventListener[] }
-    ): boolean;
-    _normalizeAddEventHandlerOptions(
-      options: boolean | domTypes.AddEventListenerOptions | undefined
-    ): domTypes.AddEventListenerOptions;
-    _normalizeEventHandlerOptions(
-      options: boolean | domTypes.EventListenerOptions | undefined
-    ): domTypes.EventListenerOptions;
-    _appendToEventPath(
-      eventImpl: domTypes.Event,
-      target: domTypes.EventTarget,
-      targetOverride: domTypes.EventTarget | null,
-      relatedTarget: domTypes.EventTarget | null,
-      touchTargets: domTypes.EventTarget[],
-      slotInClosedTree: boolean
-    ): void;
     readonly [Symbol.toStringTag]: string;
   }
 }
 
 declare namespace io {
-  export interface ReadResult {
-    nread: number;
-    eof: boolean;
-  }
+  export const EOF: null;
+  export type EOF = null;
   export enum SeekMode {
     SEEK_START = 0,
     SEEK_CURRENT = 1,
@@ -2052,35 +2104,26 @@ declare namespace io {
   }
   export interface Reader {
     /** Reads up to p.byteLength bytes into `p`. It resolves to the number
-     * of bytes read (`0` <= `n` <= `p.byteLength`) and any error encountered.
+     * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error encountered.
      * Even if `read()` returns `n` < `p.byteLength`, it may use all of `p` as
      * scratch space during the call. If some data is available but not
      * `p.byteLength` bytes, `read()` conventionally returns what is available
      * instead of waiting for more.
      *
-     * When `read()` encounters an error or end-of-file condition after
-     * successfully reading `n` > `0` bytes, it returns the number of bytes read.
-     * It may return the (non-nil) error from the same call or return the error
-     * (and `n` == `0`) from a subsequent call. An instance of this general case
-     * is that a `Reader` returning a non-zero number of bytes at the end of the
-     * input stream may return either `err` == `EOF` or `err` == `null`. The next
-     * `read()` should return `0`, `EOF`.
+     * When `read()` encounters end-of-file condition, it returns EOF symbol.
+     *
+     * When `read()` encounters an error, it rejects with an error.
      *
      * Callers should always process the `n` > `0` bytes returned before
-     * considering the `EOF`. Doing so correctly handles I/O errors that happen
-     * after reading some bytes and also both of the allowed `EOF` behaviors.
-     *
-     * Implementations of `read()` are discouraged from returning a zero byte
-     * count with a `null` error, except when `p.byteLength` == `0`. Callers
-     * should treat a return of `0` and `null` as indicating that nothing
-     * happened; in particular it does not indicate `EOF`.
+     * considering the EOF. Doing so correctly handles I/O errors that happen
+     * after reading some bytes and also both of the allowed EOF behaviors.
      *
      * Implementations must not retain `p`.
      */
-    read(p: Uint8Array): Promise<ReadResult>;
+    read(p: Uint8Array): Promise<number | EOF>;
   }
   export interface SyncReader {
-    readSync(p: Uint8Array): ReadResult;
+    readSync(p: Uint8Array): number | EOF;
   }
   export interface Writer {
     /** Writes `p.byteLength` bytes from `p` to the underlying data
@@ -2154,26 +2197,29 @@ declare namespace fetchTypes {
     formData(): Promise<domTypes.FormData>;
     json(): Promise<any>;
     text(): Promise<string>;
-    read(p: Uint8Array): Promise<io.ReadResult>;
+    read(p: Uint8Array): Promise<number | io.EOF>;
     close(): void;
     cancel(): Promise<void>;
     getReader(): domTypes.ReadableStreamReader;
     tee(): [domTypes.ReadableStream, domTypes.ReadableStream];
+    [Symbol.asyncIterator](): AsyncIterableIterator<Uint8Array>;
   }
   export class Response implements domTypes.Response {
-    readonly status: number;
     readonly url: string;
+    readonly status: number;
     statusText: string;
     readonly type = "basic";
-    redirected: boolean;
+    readonly redirected: boolean;
     headers: domTypes.Headers;
     readonly trailer: Promise<domTypes.Headers>;
     bodyUsed: boolean;
     readonly body: Body;
     constructor(
+      url: string,
       status: number,
       headersList: Array<[string, string]>,
       rid: number,
+      redirected_: boolean,
       body_?: null | Body
     );
     arrayBuffer(): Promise<ArrayBuffer>;
@@ -2215,11 +2261,16 @@ declare namespace textEncoding {
     decode(input?: domTypes.BufferSource, options?: TextDecodeOptions): string;
     readonly [Symbol.toStringTag]: string;
   }
+  interface TextEncoderEncodeIntoResult {
+    read: number;
+    written: number;
+  }
   export class TextEncoder {
     /** Returns "utf-8". */
     readonly encoding = "utf-8";
     /** Returns the result of running UTF-8's encoder. */
     encode(input?: string): Uint8Array;
+    encodeInto(input: string, dest: Uint8Array): TextEncoderEncodeIntoResult;
     readonly [Symbol.toStringTag]: string;
   }
 }
@@ -2229,17 +2280,17 @@ declare namespace timers {
   /** Sets a timer which executes a function once after the timer expires. */
   export function setTimeout(
     cb: (...args: Args) => void,
-    delay: number,
+    delay?: number,
     ...args: Args
   ): number;
   /** Repeatedly calls a function , with a fixed time delay between each call. */
   export function setInterval(
     cb: (...args: Args) => void,
-    delay: number,
+    delay?: number,
     ...args: Args
   ): number;
-  /** Clears a previously set timer by id. AKA clearTimeout and clearInterval. */
-  export function clearTimer(id: number): void;
+  export function clearTimeout(id?: number): void;
+  export function clearInterval(id?: number): void;
 }
 
 declare namespace urlSearchParams {
@@ -2348,6 +2399,7 @@ declare namespace urlSearchParams {
 }
 
 declare namespace url {
+  export const blobURLMap: Map<string, domTypes.Blob>;
   export class URL {
     private _parts;
     private _searchParams;
@@ -2367,6 +2419,8 @@ declare namespace url {
     constructor(url: string, base?: string | URL);
     toString(): string;
     toJSON(): string;
+    static createObjectURL(b: domTypes.Blob): string;
+    static revokeObjectURL(url: string): void;
   }
 }
 
@@ -2386,6 +2440,14 @@ declare namespace workers {
     postMessage(data: any): void;
     closed: Promise<void>;
   }
+  export interface WorkerOptions {}
+  /** Extended Deno Worker initialization options.
+   * `noDenoNamespace` hides global `window.Deno` namespace for
+   * spawned worker and nested workers spawned by it (default: false).
+   */
+  export interface DenoWorkerOptions extends WorkerOptions {
+    noDenoNamespace?: boolean;
+  }
   export class WorkerImpl implements Worker {
     private readonly rid;
     private isClosing;
@@ -2393,7 +2455,7 @@ declare namespace workers {
     onerror?: () => void;
     onmessage?: (data: any) => void;
     onmessageerror?: () => void;
-    constructor(specifier: string);
+    constructor(specifier: string, options?: DenoWorkerOptions);
     readonly closed: Promise<void>;
     postMessage(data: any): void;
     private run;

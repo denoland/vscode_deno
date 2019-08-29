@@ -6,7 +6,8 @@
   "scripts": {
     "prepublish": "tsc",
     "compile": "tsc",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "types": "deno types > lib/lib.deno_runtime.d.ts"
   },
   "keywords": [
     "deno",
