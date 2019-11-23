@@ -19,13 +19,8 @@
   "engines": {
     "vscode": "^1.25.0"
   },
-  "categories": [
-    "Programming Languages",
-    "Other"
-  ],
-  "keywords": [
-    "deno"
-  ],
+  "categories": ["Programming Languages", "Other"],
+  "keywords": ["deno"],
   "activationEvents": [
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
@@ -70,11 +65,7 @@
         },
         "deno.packageManager": {
           "type": "string",
-          "enum": [
-            "npm",
-            "yarn",
-            "pnpm"
-          ],
+          "enum": ["npm", "yarn", "pnpm"],
           "default": "npm",
           "description": "%deno.config.packageManager%"
         },
@@ -90,10 +81,7 @@
           "description": "%deno.config.autoFmtOnSave%"
         },
         "deno.dtsPath": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null,
           "description": "%deno.config.dtsPath%"
         }
@@ -102,18 +90,12 @@
     "languages": [
       {
         "id": "ignore",
-        "filenames": [
-          ".denoignore"
-        ]
+        "filenames": [".denoignore"]
       },
       {
         "id": "jsonc",
-        "filenames": [
-          ".denorc"
-        ],
-        "filenamePatterns": [
-          "denorc.*.json"
-        ]
+        "filenames": [".denorc"],
+        "filenamePatterns": ["denorc.*.json"]
       }
     ],
     "jsonValidation": [
@@ -148,8 +130,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "watch": "tsc -watch -p ./",
     "compile": "tsc -p ./",
-    "check": "deno run --allow-read --allow-write https://deno.land/std/prettier/main.ts --check --ignore \"node_modules\" --ignore \"out\" --ignore \"package.json\"",
-    "format": "deno run --allow-read --allow-write https://deno.land/std/prettier/main.ts --write --ignore \"node_modules\" --ignore \"out\" --ignore \"package.json\""
+    "check": "deno run --allow-read --allow-write https://deno.land/std@v0.24.0/prettier/main.ts --check --ignore \"node_modules\" --ignore \"out\" --ignore \"package.json\" --ignore \".github\"",
+    "format": "deno run --allow-read --allow-write https://deno.land/std@v0.24.0/prettier/main.ts --write --ignore \"node_modules\" --ignore \"out\" --ignore \"package.json\" --ignore \".github\""
   },
   "husky": {
     "hooks": {
@@ -157,10 +139,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,ts,json,md}": [
-      "yarn format",
-      "git add"
-    ]
+    "**/*.{js,ts,json,md}": ["yarn format", "git add"]
   },
   "devDependencies": {
     "@types/node": "^12.7.2",
