@@ -55,19 +55,22 @@ export function isJavaScriptDocument(document: TextDocument) {
 
 export async function getVersions(): Promise<DenoVersion | undefined> {
   try {
-    const { stdout, stderr } = await execa("deno", ["version"]);
+    const { stdout, stderr } = await execa("deno", [
+      "eval",
+      "console.log(JSON.stringify(Deno.version))"
+    ]);
 
     if (stderr) {
       return;
     }
 
-    const [deno, v8, typescript] = stdout.split("\n");
+    const { deno, v8, typescript } = JSON.parse(stdout);
 
     return {
-      deno: deno.substr(6),
-      v8: v8.substr(4),
-      typescript: typescript.substr(12),
-      raw: stdout
+      deno,
+      v8,
+      typescript,
+      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`
     };
   } catch {
     return;
