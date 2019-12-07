@@ -17,7 +17,7 @@
     "url": "https://github.com/justjavac/vscode-deno/issues"
   },
   "engines": {
-    "vscode": "^1.25.0"
+    "vscode": "^1.40.0"
   },
   "categories": ["Programming Languages", "Other"],
   "keywords": ["deno"],
