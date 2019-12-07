@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 - 2019-12-07
+
+- suport vscode >= 1.14.0
+- upgrade `execa@3.4.0`, `which@2.0.2`
+- fix deno finder [#58](https://github.com/justjavac/vscode-deno/issues/58)
+
 ## 1.3.3 - 2019-08-29
 
 - fix deno version for ci [#52](https://github.com/justjavac/vscode-deno/issues/51)
