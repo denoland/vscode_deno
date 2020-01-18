@@ -9,45 +9,35 @@ import {
   WorkspaceFolder,
   QuickPickItem,
   WorkspaceConfiguration,
-  Uri,
   languages,
   TextDocument,
   Range,
   TextEdit
 } from "vscode";
 import * as path from "path";
+import { readFile, writeFile } from "fs";
+import { promisify } from "util";
 
-import * as nls from "vscode-nls";
-import execa from "execa";
-
-import { outputChannel } from "./output";
-import {
-  isTypeScriptDocument,
-  isJavaScriptDocument,
-  getVersions,
-  generateDtsForDeno,
-  downloadDtsForDeno
-} from "./utils";
+import { isTypeScriptDocument, isJavaScriptDocument } from "./utils";
+import { deno, FormatableLanguages } from "./deno";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
 const denoExtensionId = "justjavac.vscode-deno";
 const pluginId = "typescript-deno-plugin";
 const configurationSection = "deno";
 
-const localize = nls.loadMessageBundle();
-
-enum Status {
-  ok = 1,
-  warn = 2,
-  error = 3
-}
-
-interface StatusParams {
-  state: Status;
-}
-
 interface WorkspaceFolderItem extends QuickPickItem {
   folder: WorkspaceFolder;
+}
+
+interface SynchronizedConfiguration {
+  alwaysShowStatus?: boolean;
+  enable?: boolean;
+  dtsPath?: string;
+}
+
+interface TypescriptAPI {
+  configurePlugin(pluginId: string, configuration: {}): void;
 }
 
 async function pickFolder(
@@ -75,7 +65,7 @@ async function pickFolder(
 }
 
 function enable() {
-  let folders = workspace.workspaceFolders;
+  const folders = workspace.workspaceFolders;
 
   if (!folders) {
     window.showWarningMessage(
@@ -84,7 +74,7 @@ function enable() {
     return;
   }
 
-  let disabledFolders = folders.filter(
+  const disabledFolders = folders.filter(
     folder =>
       !workspace
         .getConfiguration(configurationSection, folder.uri)
@@ -153,204 +143,13 @@ function disable() {
     if (!folder) {
       return;
     }
-    workspace.getConfiguration("deno", folder.uri).update("enable", false);
+    workspace
+      .getConfiguration(configurationSection, folder.uri)
+      .update("enable", false);
   });
 }
 
-interface SynchronizedConfiguration {
-  alwaysShowStatus?: boolean;
-  autoFmtOnSave?: boolean;
-  enable?: boolean;
-  dtsPath?: string;
-}
-
-export async function activate(context: ExtensionContext) {
-  const extension = extensions.getExtension(typeScriptExtensionId);
-  if (!extension) {
-    return;
-  }
-
-  await extension.activate();
-  if (!extension.exports || !extension.exports.getAPI) {
-    return;
-  }
-
-  const api = extension.exports.getAPI(0);
-  if (!api) {
-    return;
-  }
-
-  const configurationListener = workspace.onDidChangeConfiguration(
-    e => {
-      if (e.affectsConfiguration(configurationSection)) {
-        synchronizeConfiguration(api);
-        updateStatusBarVisibility(window.activeTextEditor);
-      }
-    },
-    undefined,
-    context.subscriptions
-  );
-
-  const formatter = languages.registerDocumentFormattingEditProvider(
-    ["typescript", "javascript", "markdown", "json"],
-    {
-      async provideDocumentFormattingEdits(document: TextDocument) {
-        if (document.isUntitled) {
-          return;
-        }
-        await document.save();
-        const filename = path.basename(document.uri.fsPath);
-        const cwd = path.dirname(document.uri.fsPath);
-        const r = await execa(
-          "deno",
-          [
-            "run",
-            "--allow-read",
-            "https://deno.land/std/prettier/main.ts",
-            filename
-          ],
-          { cwd }
-        );
-        const fullRange = new Range(
-          document.positionAt(0),
-          document.positionAt(document.getText().length - 1)
-        );
-        return [new TextEdit(fullRange, r.stdout)];
-      }
-    }
-  );
-
-  synchronizeConfiguration(api);
-
-  const disposables = [
-    configurationListener,
-    formatter,
-    commands.registerCommand("deno.enable", enable),
-    commands.registerCommand("deno.disable", disable),
-    commands.registerCommand("deno.showOutputChannel", async () => {
-      if (denoStatus === Status.ok) {
-        outputChannel.show();
-        return;
-      }
-
-      const show = localize("showOutputChannel", "Show Output");
-      const help = localize("getHelp", "Get Help");
-
-      const choice = await window.showWarningMessage(
-        localize(
-          "notfound",
-          "Deno not found. Install it by using deno_install or click {0} button for more help.",
-          help
-        ),
-        show,
-        help
-      );
-
-      if (choice === show) {
-        outputChannel.show();
-      } else if (choice === help) {
-        commands.executeCommand(
-          "vscode.open",
-          Uri.parse("https://github.com/denoland/deno_install")
-        );
-      }
-    })
-  ];
-
-  context.subscriptions.push(...disposables, outputChannel);
-
-  const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 0);
-  let denoStatus: Status = Status.ok;
-
-  statusBarItem.text = "Deno";
-  statusBarItem.command = "deno.showOutputChannel";
-
-  const versions = await getVersions();
-
-  if (versions === undefined) {
-    denoStatus = Status.warn;
-    statusBarItem.tooltip = "Deno is not installed";
-    outputChannel.appendLine("Failed to detect Deno.");
-    outputChannel.appendLine("You can use one-line commands to install Deno.");
-    if (process.platform === "win32") {
-      outputChannel.appendLine(
-        "> iwr https://deno.land/x/install/install.ps1 | iex"
-      );
-    } else {
-      outputChannel.appendLine(
-        "> curl -fsSL https://deno.land/x/install/install.sh | sh"
-      );
-    }
-    outputChannel.appendLine(
-      "See https://github.com/denoland/deno_install for more installation options.\n"
-    );
-    downloadDtsForDeno();
-  } else {
-    statusBarItem.tooltip = versions.raw;
-    outputChannel.appendLine("Found deno, version:");
-    outputChannel.appendLine(versions.raw);
-    generateDtsForDeno();
-  }
-
-  function showStatusBarItem(show: boolean): void {
-    if (show) {
-      statusBarItem.show();
-    } else {
-      statusBarItem.hide();
-    }
-  }
-
-  function updateStatus(status: Status) {
-    if (denoStatus !== Status.ok && status === Status.ok) {
-      // an error got addressed fix, write to the output that the status is OK
-      // client.info("vscode-deno: Status is OK");
-    }
-    denoStatus = status;
-    updateStatusBarVisibility(window.activeTextEditor);
-  }
-
-  function updateStatusBarVisibility(editor: TextEditor | undefined): void {
-    switch (denoStatus) {
-      case Status.ok:
-        statusBarItem.text = `Deno ${versions.deno}`;
-        break;
-      case Status.warn:
-        statusBarItem.text = "$(alert) Deno";
-        break;
-      case Status.error:
-        statusBarItem.text = "$(issue-opened) Deno";
-        break;
-      default:
-        statusBarItem.text = `Deno ${versions.deno}`;
-    }
-    let uri = editor ? editor.document.uri : undefined;
-    let enabled = workspace.getConfiguration("deno", uri)["enable"];
-    let alwaysShowStatus = workspace.getConfiguration("deno", uri)[
-      "alwaysShowStatus"
-    ];
-
-    if (
-      !editor ||
-      !enabled ||
-      (denoStatus === Status.ok && !alwaysShowStatus)
-    ) {
-      showStatusBarItem(false);
-      return;
-    }
-
-    showStatusBarItem(
-      isTypeScriptDocument(editor.document) ||
-        isJavaScriptDocument(editor.document)
-    );
-  }
-
-  window.onDidChangeActiveTextEditor(updateStatusBarVisibility);
-  updateStatusBarVisibility(window.activeTextEditor);
-}
-
-export function deactivate() {}
-
-function synchronizeConfiguration(api: any) {
+function synchronizeConfiguration(api: TypescriptAPI) {
   const config = getConfiguration();
 
   if (!config.dtsPath) {
@@ -366,7 +165,6 @@ function getConfiguration(): SynchronizedConfiguration {
 
   withConfigValue(config, outConfig, "enable");
   withConfigValue(config, outConfig, "alwaysShowStatus");
-  withConfigValue(config, outConfig, "autoFmtOnSave");
   withConfigValue(config, outConfig, "dtsPath");
 
   return outConfig;
@@ -409,3 +207,159 @@ function bundledDtsPath(): string {
     "lib.deno_runtime.d.ts"
   );
 }
+
+// get typescript api from build-in extension
+// https://github.com/microsoft/vscode/blob/master/extensions/typescript-language-features/src/api.ts
+async function getTypescriptAPI(
+  context: ExtensionContext
+): Promise<TypescriptAPI> {
+  context.extensionPath;
+  const extension = extensions.getExtension(typeScriptExtensionId);
+  if (!extension) {
+    return;
+  }
+
+  await extension.activate();
+
+  if (!extension.exports || !extension.exports.getAPI) {
+    return;
+  }
+
+  const api = extension.exports.getAPI(0);
+
+  if (!api) {
+    return;
+  }
+
+  return api;
+}
+
+export async function activate(context: ExtensionContext) {
+  const api = await getTypescriptAPI(context);
+
+  if (!api) {
+    window.showErrorMessage("Can not get Typescript APIs.");
+    return;
+  }
+
+  try {
+    await deno.init();
+    const currentDenoTypesContent = await deno.getTypes();
+    const typeFilepath = bundledDtsPath();
+
+    const typesContent = await promisify(readFile)(typeFilepath, {
+      encoding: "utf8"
+    });
+
+    if (typesContent.toString() !== currentDenoTypesContent.toString()) {
+      await promisify(writeFile)(typeFilepath, currentDenoTypesContent, {
+        encoding: "utf8"
+      });
+    }
+  } catch (err) {
+    await window.showErrorMessage(err.message);
+    return;
+  }
+
+  synchronizeConfiguration(api);
+
+  const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 0);
+
+  statusBar.text = `Deno ${deno.version.deno}`;
+  statusBar.tooltip = deno.version.raw;
+
+  function updateStatusBarVisibility(editor: TextEditor | undefined): void {
+    // not typescript | javascript file
+    if (
+      !isTypeScriptDocument(editor?.document) &&
+      !isJavaScriptDocument(editor?.document)
+    ) {
+      statusBar.hide();
+      return;
+    }
+
+    const uri = editor ? editor.document.uri : undefined;
+    const enabled = workspace
+      .getConfiguration(configurationSection, uri)
+      .get("enable");
+
+    // if vscode-deno have been disable for workspace
+    if (!enabled) {
+      statusBar.hide();
+      return;
+    }
+
+    const alwaysShowStatus = workspace
+      .getConfiguration(configurationSection, uri)
+      .get("alwaysShowStatus");
+
+    // if setting always hidden
+    if (!alwaysShowStatus) {
+      statusBar.hide();
+      return;
+    }
+
+    statusBar.show();
+  }
+
+  updateStatusBarVisibility(window.activeTextEditor);
+
+  const disposables = [
+    window.onDidChangeActiveTextEditor(updateStatusBarVisibility),
+    workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration(configurationSection)) {
+        synchronizeConfiguration(api);
+        updateStatusBarVisibility(window.activeTextEditor);
+      }
+    }),
+    languages.registerDocumentFormattingEditProvider(
+      [
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact",
+        "markdown",
+        "json"
+      ],
+      {
+        async provideDocumentFormattingEdits(document: TextDocument) {
+          if (!deno.executablePath) {
+            window.showWarningMessage("Can not found deno in $PATH");
+            return [];
+          }
+
+          let formatted: string;
+
+          const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
+
+          const cwd = workspaceFolder?.uri?.fsPath ?? document.uri.fsPath;
+
+          try {
+            formatted = await deno.format(
+              document.getText(),
+              document.languageId as FormatableLanguages,
+              {
+                cwd
+              }
+            );
+          } catch (err) {
+            window.showErrorMessage(err.message);
+            return [];
+          }
+
+          const fullRange = new Range(
+            document.positionAt(0),
+            document.positionAt(document.getText().length)
+          );
+          return [new TextEdit(fullRange, formatted)];
+        }
+      }
+    ),
+    commands.registerCommand("deno.enable", enable),
+    commands.registerCommand("deno.disable", disable)
+  ];
+
+  context.subscriptions.push(...disposables);
+}
+
+export function deactivate() {}

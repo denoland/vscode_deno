@@ -1,0 +1,75 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        deno: ['v0.30.0']
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    name: test in ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Deno
+        uses: denolib/setup-deno@master
+        with:
+          deno-version: ${{ matrix.deno }}
+
+      - name: Environment
+        run: |
+          node -v
+          npm -v
+          yarn --version
+
+      - name: Install
+        run: |
+          yarn
+
+      - name: Check code format
+        run: |
+          yarn run check
+
+      - name: Compile
+        run: |
+          yarn compile
+
+      - name: Package
+        run: |
+          npx vsce package -o ./vscode-deno.vsix
+
+      - uses: actions/upload-artifact@v1
+        if: runner.os == 'linux'
+        with:
+          name: package
+          path: ./vscode-deno.vsix
+
+  release:
+    runs-on: ubuntu-latest
+    name: 'Release to vscode market and github'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: package
+
+      - uses: softprops/action-gh-release@v1
+        name: publish to Github
+        env:
+          # require Github Personal Access Token
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          files: |
+            ./package/vscode-deno.vsix
+          draft: false
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - name: publish to vscode market
+        # require Azure DevOps Personal Access Token
+        run: npx vsce publish --packagePath ./package/vscode-deno.vsix --pat ${{ secrets.ADO_TOKEN }}

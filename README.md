@@ -1,6 +1,5 @@
 # VS Code Deno extension
 
-[![Build Status](https://travis-ci.com/justjavac/vscode-deno.svg?branch=master)](https://travis-ci.com/justjavac/vscode-deno)
 [![Version](https://vsmarketplacebadge.apphb.com/version/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
 [![Downloads](https://vsmarketplacebadge.apphb.com/downloads/justjavac.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=justjavac.vscode-deno)
 
@@ -44,11 +43,7 @@ You can configure the Deno extension using a `tsconfig` as described [here](http
 
 - `deno.enabled` - Enable/disable this extension. Default is `true`.
 
-- `deno.packageManager` - The package manager you use to install node modules. Default is `npm`. (**Not implemented**)
-
 - `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
-
-- `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`. (**Not implemented**)
 
 ## Commands
 

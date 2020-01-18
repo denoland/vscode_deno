@@ -1,233 +1,173 @@
-import * as path from "path";
+import { Readable } from "stream";
 import execa from "execa";
 import which from "which";
 
-type onLookupFunc = (path: string) => void;
-
-export interface DenoVersion {
+interface Version {
   deno: string;
   v8: string;
   typescript: string;
   raw: string;
 }
 
-export interface IDeno {
-  path: string;
-  version: DenoVersion;
+export type FormatableLanguages =
+  | "typescript"
+  | "typescriptreact"
+  | "javascript"
+  | "javascriptreact"
+  | "markdown"
+  | "json";
+
+type PrettierParser = "typescript" | "babel" | "markdown" | "json";
+
+interface FormatOptions {
+  cwd: string;
 }
 
-export interface IDenoErrorData {
-  error?: Error;
-  message?: string;
-  stdout?: string;
-  stderr?: string;
-  exitCode?: number;
-  DenoErrorCode?: string;
-  DenoCommand?: string;
-}
+class Deno {
+  public version: Version;
+  public executablePath: string;
+  public DENO_DIR = this.getDenoDir();
+  constructor() {}
+  public async init() {
+    this.executablePath = await this.getExecutablePath();
 
-export class DenoError {
-  error?: Error;
-  message: string;
-  stdout?: string;
-  stderr?: string;
-  exitCode?: number;
-  DenoErrorCode?: string;
-  DenoCommand?: string;
-
-  constructor(data: IDenoErrorData) {
-    if (data.error) {
-      this.error = data.error;
-      this.message = data.error.message;
-    } else {
-      this.error = undefined;
-      this.message = "";
-    }
-
-    this.message = this.message || data.message || "Deno error";
-    this.stdout = data.stdout;
-    this.stderr = data.stderr;
-    this.exitCode = data.exitCode;
-    this.DenoErrorCode = data.DenoErrorCode;
-    this.DenoCommand = data.DenoCommand;
-  }
-
-  toString(): string {
-    let result =
-      this.message +
-      " " +
-      JSON.stringify(
-        {
-          exitCode: this.exitCode,
-          DenoErrorCode: this.DenoErrorCode,
-          DenoCommand: this.DenoCommand,
-          stdout: this.stdout,
-          stderr: this.stderr
-        },
-        null,
-        2
+    if (!this.executablePath) {
+      throw new Error(
+        "Can not found deno in $PATH. Please restart the extension after setting."
       );
-
-    if (this.error) {
-      result += (<any>this.error).stack;
     }
 
-    return result;
+    this.version = await this.getDenoVersion();
   }
-}
+  public async getTypes(): Promise<Buffer> {
+    const { stdout } = await execa(this.executablePath, ["types"]);
 
-export interface IDenoOptions {
-  denoPath: string;
-  version: string;
-  env?: any;
-}
+    return Buffer.from(stdout, "utf8");
+  }
+  // format code
+  // echo "console.log(123)" | deno run https://deno.land/std/prettier/main.ts --stdin --stdin-parser=babel
+  public async format(
+    code: string,
+    language: FormatableLanguages,
+    options: FormatOptions
+  ): Promise<string> {
+    let parser: PrettierParser;
 
-export const enum DenoErrorCodes {
-  BadConfigFile = "BadConfigFile",
-  DenoNotFound = "DenoNotFound",
-  CantCreatePipe = "CantCreatePipe",
-  CantAccessRemote = "CantAccessRemote",
-  RepositoryNotFound = "RepositoryNotFound",
-  RepositoryIsLocked = "RepositoryIsLocked",
-  BranchNotFullyMerged = "BranchNotFullyMerged",
-  NoRemoteReference = "NoRemoteReference",
-  InvalidBranchName = "InvalidBranchName",
-  BranchAlreadyExists = "BranchAlreadyExists",
-  NoLocalChanges = "NoLocalChanges",
-  NoStashFound = "NoStashFound",
-  LocalChangesOverwritten = "LocalChangesOverwritten",
-  NoUpstreamBranch = "NoUpstreamBranch",
-  IsInSubmodule = "IsInSubmodule",
-  WrongCase = "WrongCase",
-  CantLockRef = "CantLockRef",
-  CantRebaseMultipleBranches = "CantRebaseMultipleBranches",
-  PatchDoesNotApply = "PatchDoesNotApply",
-  NoPathFound = "NoPathFound"
-}
+    switch (language.toLowerCase()) {
+      case "typescript":
+      case "typescriptreact":
+        parser = "typescript";
+        break;
+      case "javascript":
+      case "javascriptreact":
+        parser = "babel";
+        break;
+      case "markdown":
+        parser = "markdown";
+        break;
+      case "json":
+        parser = "json";
+        break;
+      default:
+        return Promise.reject(`Can not format '${language}' code.`);
+    }
 
-function parseVersion(raw: string): DenoVersion {
-  const [deno, v8, typescript] = raw.split("\n");
+    const reader = Readable.from([code]);
 
-  return {
-    deno: deno.substr(6),
-    v8: v8.substr(4),
-    typescript: typescript.substr(12),
-    raw
-  };
-}
-
-export function findDeno(
-  hint: string | undefined,
-  onLookup: onLookupFunc
-): Promise<IDeno> {
-  const first = hint
-    ? findSpecificDeno(hint, onLookup)
-    : Promise.reject<IDeno>(null);
-
-  return first
-    .then(undefined, () => {
-      switch (process.platform) {
-        case "darwin":
-          return findDenoDarwin(onLookup);
-        case "win32":
-          return findDenoWin32(onLookup);
-        default:
-          return findSpecificDeno("deno", onLookup);
+    const subprocess = execa(
+      this.executablePath,
+      [
+        "run",
+        "--allow-read",
+        `https://deno.land/std@v${this.version.deno}/prettier/main.ts`,
+        "--stdin",
+        "--stdin-parser",
+        parser,
+        "--config",
+        "auto",
+        "--ignore-path",
+        "auto"
+      ],
+      {
+        cwd: options.cwd
       }
-    })
-    .then(null, () =>
-      Promise.reject(new Error("Deno installation not found."))
     );
-}
 
-async function findDenoDarwin(onLookup: onLookupFunc): Promise<IDeno> {
-  const { stdout: denoPath } = await execa("which", ["deno"]);
-  const path = denoPath.toString().replace(/^\s+|\s+$/g, "");
-
-  async function getVersion(path: string): Promise<DenoVersion> {
-    onLookup(path);
-
-    // make sure deno executes
-    const { stdout } = await execa("deno", ["--version"]);
-    return parseVersion(stdout.trim());
-  }
-
-  if (path !== "/usr/bin/deno") {
-    return { path, version: await getVersion(path) };
-  }
-
-  const result = await execa("xcode-select", ["-p"]);
-
-  if (result.exitCode === 2) {
-    throw new Error("Deno not found");
-  }
-
-  return { path, version: await getVersion(path) };
-}
-
-function findDenoWin32(onLookup: onLookupFunc): Promise<IDeno> {
-  return findSystemDenoWin32(process.env["ProgramW6432"] as string, onLookup)
-    .then(undefined, () =>
-      findSystemDenoWin32(process.env["ProgramFiles(x86)"] as string, onLookup)
-    )
-    .then(undefined, () =>
-      findSystemDenoWin32(process.env["ProgramFiles"] as string, onLookup)
-    )
-    .then(undefined, () =>
-      findSystemDenoWin32(
-        path.join(process.env["LocalAppData"] as string, "Programs"),
-        onLookup
-      )
-    )
-    .then(undefined, () => findDenoWin32InPath(onLookup));
-}
-
-function findSystemDenoWin32(
-  base: string,
-  onLookup: onLookupFunc
-): Promise<IDeno> {
-  if (!base) {
-    return Promise.reject<IDeno>("Not found");
-  }
-
-  return findSpecificDeno(path.join(base, "deno.exe"), onLookup);
-}
-
-function findDenoWin32InPath(onLookup: onLookupFunc): Promise<IDeno> {
-  const whichPromise = new Promise<string>((c, e) =>
-    which("deno.exe", (err, path) => (err ? e(err) : c(path)))
-  );
-  return whichPromise.then(path => findSpecificDeno(path, onLookup));
-}
-
-async function findSpecificDeno(
-  path: string,
-  onLookup: onLookupFunc
-): Promise<IDeno> {
-  onLookup(path);
-
-  const ps = await execa(path, ["version"]);
-
-  if (ps.exitCode) {
-    throw new Error("Not found");
-  }
-
-  return {
-    path,
-    version: parseVersion(ps.stdout)
-  };
-}
-
-function cpErrorHandler(cb: (reason?: any) => void): (reason?: any) => void {
-  return err => {
-    if (/ENOENT/.test(err.message)) {
-      err = new DenoError({
-        error: err,
-        message: "Failed to execute deno (ENOENT)",
-        DenoErrorCode: DenoErrorCodes.DenoNotFound
+    const formattedCode = (await new Promise((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      subprocess.on("exit", exitCode => {
+        if (exitCode != 0) {
+          reject(new Error(stderr));
+        } else {
+          resolve(stdout);
+        }
       });
+      subprocess.on("error", err => {
+        reject(err);
+      });
+      subprocess.stdout.on("data", data => {
+        stdout += data;
+      });
+
+      subprocess.stderr.on("data", data => {
+        stderr += data;
+      });
+
+      reader.pipe(subprocess.stdin);
+    })) as string;
+
+    return formattedCode;
+  }
+  private getDenoDir(): string {
+    let denoDir = process.env["DENO_DIR"];
+
+    if (denoDir) {
+      return denoDir;
     }
 
-    cb(err);
-  };
+    switch (process.platform) {
+      case "win32":
+        denoDir = `${process.env.LOCALAPPDATA}\\deno`;
+        break;
+      case "darwin":
+        denoDir = `${process.env.HOME}/Library/Caches/deno`;
+        break;
+      case "linux":
+        denoDir = `${process.env.HOME}/.cache/deno`;
+        break;
+      default:
+        denoDir = `${process.env.HOME}/.deno`;
+    }
+
+    return denoDir;
+  }
+  private async getExecutablePath(): Promise<string> {
+    const denoPath = await which("deno").catch(() => Promise.resolve(""));
+
+    return denoPath;
+  }
+  private async getDenoVersion(): Promise<Version> {
+    const { stdout, stderr } = await execa(this.executablePath, [
+      "eval",
+      "console.log(JSON.stringify(Deno.version))"
+    ]);
+
+    if (stderr) {
+      return;
+    }
+
+    const { deno, v8, typescript } = JSON.parse(stdout);
+
+    return {
+      deno,
+      v8,
+      typescript,
+      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`
+    };
+  }
 }
+
+const deno = new Deno();
+
+export { deno };
