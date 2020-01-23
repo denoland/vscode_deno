@@ -18,7 +18,11 @@ import * as path from "path";
 import { readFile, writeFile } from "fs";
 import { promisify } from "util";
 
-import { isTypeScriptDocument, isJavaScriptDocument } from "./utils";
+import {
+  isTypeScriptDocument,
+  isJavaScriptDocument,
+  isFilepathExist
+} from "./utils";
 import { deno, FormatableLanguages } from "./deno";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
@@ -108,7 +112,7 @@ function enable() {
 }
 
 function disable() {
-  let folders = workspace.workspaceFolders;
+  const folders = workspace.workspaceFolders;
 
   if (!folders) {
     window.showErrorMessage(
@@ -117,7 +121,7 @@ function disable() {
     return;
   }
 
-  let enabledFolders = folders.filter(folder =>
+  const enabledFolders = folders.filter(folder =>
     workspace
       .getConfiguration(configurationSection, folder.uri)
       .get("enable", true)
@@ -153,7 +157,7 @@ function synchronizeConfiguration(api: TypescriptAPI) {
   const config = getConfiguration();
 
   if (!config.dtsPath) {
-    config.dtsPath = bundledDtsPath();
+    config.dtsPath = getDenoDtsFilepath();
   }
 
   api.configurePlugin(pluginId, config);
@@ -197,7 +201,7 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
   }
 }
 
-function bundledDtsPath(): string {
+function getDenoDtsFilepath(): string {
   const { extensionPath } = extensions.getExtension(denoExtensionId);
   return path.resolve(
     extensionPath,
@@ -235,29 +239,37 @@ async function getTypescriptAPI(
 }
 
 export async function activate(context: ExtensionContext) {
+  try {
+    await deno.init();
+    const currentDenoTypesContent = await deno.getTypes();
+    const typeFilepath = getDenoDtsFilepath();
+    const isExistDtsFile = await isFilepathExist(typeFilepath);
+
+    // if dst file not exist. then create a new one
+    if (!isExistDtsFile) {
+      await promisify(writeFile)(typeFilepath, currentDenoTypesContent, {
+        encoding: "utf8"
+      });
+    } else {
+      const typesContent = await promisify(readFile)(typeFilepath, {
+        encoding: "utf8"
+      });
+
+      if (typesContent.toString() !== currentDenoTypesContent.toString()) {
+        await promisify(writeFile)(typeFilepath, currentDenoTypesContent, {
+          encoding: "utf8"
+        });
+      }
+    }
+  } catch (err) {
+    await window.showErrorMessage(err.message);
+    return;
+  }
+
   const api = await getTypescriptAPI(context);
 
   if (!api) {
     window.showErrorMessage("Can not get Typescript APIs.");
-    return;
-  }
-
-  try {
-    await deno.init();
-    const currentDenoTypesContent = await deno.getTypes();
-    const typeFilepath = bundledDtsPath();
-
-    const typesContent = await promisify(readFile)(typeFilepath, {
-      encoding: "utf8"
-    });
-
-    if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-      await promisify(writeFile)(typeFilepath, currentDenoTypesContent, {
-        encoding: "utf8"
-      });
-    }
-  } catch (err) {
-    await window.showErrorMessage(err.message);
     return;
   }
 

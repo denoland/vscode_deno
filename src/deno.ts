@@ -142,8 +142,10 @@ class Deno {
 
     return denoDir;
   }
-  private async getExecutablePath(): Promise<string> {
-    const denoPath = await which("deno").catch(() => Promise.resolve(""));
+  private async getExecutablePath(): Promise<string | undefined> {
+    const denoPath = await which("deno").catch(() =>
+      Promise.resolve(undefined)
+    );
 
     return denoPath;
   }
