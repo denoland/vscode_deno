@@ -26,7 +26,6 @@ import {
 import { deno, FormatableLanguages } from "./deno";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
-const denoExtensionId = "justjavac.vscode-deno";
 const pluginId = "typescript-deno-plugin";
 const configurationSection = "deno";
 
@@ -202,14 +201,7 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
 }
 
 function getDenoDtsFilepath(): string {
-  const { extensionPath } = extensions.getExtension(denoExtensionId);
-  return path.resolve(
-    extensionPath,
-    "node_modules",
-    "typescript-deno-plugin",
-    "lib",
-    "lib.deno_runtime.d.ts"
-  );
+  return path.join(deno.DENO_DIR, "lib.deno_runtime.d.ts");
 }
 
 // get typescript api from build-in extension
