@@ -3,7 +3,6 @@ import * as fs from "fs";
 import * as path from "path";
 
 import merge from "deepmerge";
-import mockRequire from "mock-require";
 import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
@@ -24,9 +23,6 @@ module.exports = function init({
 }: {
   typescript: typeof ts_module;
 }) {
-  // Make sure Deno imports the correct version of TS
-  mockRequire("typescript", typescript);
-
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
   const OPTIONS: ts_module.CompilerOptions = {
     allowJs: true,
@@ -72,7 +68,8 @@ module.exports = function init({
           moduleNames,
           containingFile,
           reusedNames,
-          redirectedReference
+          redirectedReference,
+          {}
         );
       };
 

@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        deno: ['v0.30.0']
+        deno: ["v0.30.0"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
     name: test in ${{ matrix.os }}
     steps:
@@ -27,6 +27,13 @@ jobs:
       - name: Install
         run: |
           yarn
+
+      - name: Build typescript-deno-plugin
+        working-directory: ./typescript-deno-plugin
+        run: |
+          yarn
+          yarn run compile
+          yarn lint
 
       - name: Check code format
         run: |
@@ -48,13 +55,21 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    name: 'Release to vscode market and github'
+    name: "Release to vscode market and github"
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     needs: build
     steps:
       - uses: actions/download-artifact@v1
         with:
           name: package
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+
+      - name: publish to vscode market
+        # require Azure DevOps Personal Access Token
+        run: npx vsce publish --packagePath ./package/vscode-deno.vsix --pat ${{ secrets.ADO_TOKEN }}
 
       - uses: softprops/action-gh-release@v1
         name: publish to Github
@@ -65,11 +80,3 @@ jobs:
           files: |
             ./package/vscode-deno.vsix
           draft: false
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '12.x'
-
-      - name: publish to vscode market
-        # require Azure DevOps Personal Access Token
-        run: npx vsce publish --packagePath ./package/vscode-deno.vsix --pat ${{ secrets.ADO_TOKEN }}
