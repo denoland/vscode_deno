@@ -6,8 +6,7 @@
     "lib": ["es6"],
     "sourceMap": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "rootDir": "src"
+    "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", ".vscode-test"]
+  "exclude": ["node_modules", ".vscode-test", "typescript-deno-plugin"]
 }

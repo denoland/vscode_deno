@@ -3,7 +3,7 @@
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
   "version": "1.4.0",
-  "publisher": "justjavac",
+  "publisher": "axetroy",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -11,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/justjavac/vscode-deno"
+    "url": "https://github.com/axetroy/vscode-deno"
   },
   "bugs": {
-    "url": "https://github.com/justjavac/vscode-deno/issues"
+    "url": "https://github.com/axetroy/vscode-deno/issues"
   },
   "engines": {
     "vscode": "^1.40.0"
@@ -68,13 +68,7 @@
           "description": "%deno.config.dtsPath%"
         }
       }
-    },
-    "snippets": [
-      {
-        "language": "typescript",
-        "path": "./snippets/deno.json"
-      }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn compile",
@@ -102,7 +96,7 @@
   },
   "dependencies": {
     "execa": "^4.0.0",
-    "typescript-deno-plugin": "^1.2.7",
+    "typescript-deno-plugin": "./typescript-deno-plugin",
     "vscode-nls": "^4.1.1",
     "which": "^2.0.2"
   }

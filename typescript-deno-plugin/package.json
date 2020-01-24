@@ -1,0 +1,23 @@
+{
+  "name": "typescript-deno-plugin",
+  "version": "0.1.0",
+  "description": "Deno language service plugin for TypeScript",
+  "main": "out/index.js",
+  "scripts": {
+    "prepublish": "tsc",
+    "compile": "tsc && cp ./package.json ../node_modules/typescript-deno-plugin/package.json",
+    "watch": "cp ./package.json ../node_modules/typescript-deno-plugin/package.json && tsc -w -p ./",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "types": "deno types > lib/lib.deno_runtime.d.ts"
+  },
+  "dependencies": {
+    "deepmerge": "^4.2.2",
+    "mock-require": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/mock-require": "^2.0.0",
+    "@types/node": "^12.0.4",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.1"
+  }
+}

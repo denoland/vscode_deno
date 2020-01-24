@@ -1,3 +1,7 @@
+import * as path from "path";
+import { readFile, writeFile } from "fs";
+import { promisify } from "util";
+
 import {
   workspace,
   window,
@@ -14,9 +18,6 @@ import {
   Range,
   TextEdit
 } from "vscode";
-import * as path from "path";
-import { readFile, writeFile } from "fs";
-import { promisify } from "util";
 
 import {
   isTypeScriptDocument,
@@ -206,10 +207,7 @@ function getDenoDtsFilepath(): string {
 
 // get typescript api from build-in extension
 // https://github.com/microsoft/vscode/blob/master/extensions/typescript-language-features/src/api.ts
-async function getTypescriptAPI(
-  context: ExtensionContext
-): Promise<TypescriptAPI> {
-  context.extensionPath;
+async function getTypescriptAPI(): Promise<TypescriptAPI> {
   const extension = extensions.getExtension(typeScriptExtensionId);
   if (!extension) {
     return;
@@ -258,7 +256,7 @@ export async function activate(context: ExtensionContext) {
     return;
   }
 
-  const api = await getTypescriptAPI(context);
+  const api = await getTypescriptAPI();
 
   if (!api) {
     window.showErrorMessage("Can not get Typescript APIs.");

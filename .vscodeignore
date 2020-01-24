@@ -1,28 +1,13 @@
 .vscode/**
 .github/**
-typings/**
 out/test/**
 test/**
 src/**
 **/*.map
 *.vsix
 
-images/**/*.gif
-images/**/*.png
-
-.gitattributes
 .gitignore
 .gitmodules
-.appveyor.yml
-.travis.yml
-.npmrc
-.yarnrc
 
 tsconfig*.json
 package-lock.json
-
-CODE_OF_CONDUCT.md
-CODING_STANDARDS.md
-CONTRIBUTING.md
-
-vsc-extension-quickstart.md
