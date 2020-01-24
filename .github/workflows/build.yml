@@ -38,7 +38,7 @@ jobs:
 
       - name: Package
         run: |
-          npx vsce package -o ./vscode-deno.vsix
+          npx vsce package -o ./vscode-deno.vsix --yarn
 
       - uses: actions/upload-artifact@v1
         if: runner.os == 'linux'

@@ -11,3 +11,4 @@ src/**
 
 tsconfig*.json
 package-lock.json
+typescript-deno-plugin
