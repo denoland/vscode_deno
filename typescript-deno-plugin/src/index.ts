@@ -31,12 +31,8 @@ module.exports = function init({
     module: typescript.ModuleKind.ESNext,
     moduleResolution: typescript.ModuleResolutionKind.NodeJs,
     noEmit: true,
-    outDir: "$deno$",
-    removeComments: true,
     resolveJsonModule: true,
-    sourceMap: true,
-    target: typescript.ScriptTarget.ESNext,
-    typeRoots: []
+    sourceMap: true
   };
 
   return {
@@ -44,9 +40,19 @@ module.exports = function init({
       logger = Logger.forPlugin(info);
 
       logger.info(`Create typescript-deno-plugin`);
-
+      const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
+        info.languageServiceHost
+      );
+      const getScriptFileNames = info.languageServiceHost.getScriptFileNames.bind(
+        info.languageServiceHost
+      );
       // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-      const resolveModuleNames = info.languageServiceHost.resolveModuleNames;
+      const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
+        info.languageServiceHost
+      );
+      const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails.bind(
+        info.languageService
+      );
 
       if (resolveModuleNames === undefined) {
         logger.info("resolveModuleNames is undefined.");
@@ -63,8 +69,7 @@ module.exports = function init({
           .map(stripExtNameDotTs)
           .map(convertRemoteToLocalCache);
 
-        return resolveModuleNames.call(
-          info.languageServiceHost,
+        return resolveModuleNames(
           moduleNames,
           containingFile,
           reusedNames,
@@ -73,25 +78,28 @@ module.exports = function init({
         );
       };
 
-      const getCompilationSettings =
-        info.languageServiceHost.getCompilationSettings;
-
       info.languageServiceHost.getCompilationSettings = () => {
-        const projectConfig = getCompilationSettings.call(
-          info.languageServiceHost
+        const projectConfig = getCompilationSettings();
+
+        // Solve the problem that `import.meta.url` is not parsed correctly
+        const mustOverwriteOptions: ts_module.CompilerOptions = {
+          module: OPTIONS.module,
+          moduleResolution: OPTIONS.moduleResolution
+        };
+
+        const compilationSettings = merge(
+          merge(OPTIONS, projectConfig),
+          mustOverwriteOptions
         );
-        const compilationSettings = merge(OPTIONS, projectConfig);
+
         logger.info(
           `compilationSettings:${JSON.stringify(compilationSettings)}`
         );
         return compilationSettings;
       };
 
-      const getScriptFileNames = info.languageServiceHost.getScriptFileNames!;
       info.languageServiceHost.getScriptFileNames = () => {
-        const scriptFileNames = getScriptFileNames.call(
-          info.languageServiceHost
-        );
+        const scriptFileNames = getScriptFileNames();
 
         const denoDtsPath = getDtsPathForVscode(info) || getGlobalDtsPath();
 
@@ -104,8 +112,6 @@ module.exports = function init({
         return scriptFileNames;
       };
 
-      const getCompletionEntryDetails =
-        info.languageService.getCompletionEntryDetails;
       info.languageService.getCompletionEntryDetails = (
         fileName: string,
         position: number,
@@ -116,8 +122,7 @@ module.exports = function init({
         source?: string,
         preferences?: ts_module.UserPreferences
       ) => {
-        const details = getCompletionEntryDetails.call(
-          info.languageService,
+        const details = getCompletionEntryDetails(
           fileName,
           position,
           name,
