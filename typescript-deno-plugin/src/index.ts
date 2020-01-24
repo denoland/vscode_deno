@@ -18,6 +18,15 @@ function existsSync(filepath: string) {
   }
 }
 
+interface IConfig {
+  enable: boolean;
+  dtsFilepath?: string;
+}
+
+let config: IConfig = {
+  enable: true
+};
+
 module.exports = function init({
   typescript
 }: {
@@ -65,6 +74,15 @@ module.exports = function init({
         reusedNames?: string[],
         redirectedReference?: ts_module.ResolvedProjectReference
       ) => {
+        if (!config.enable) {
+          return resolveModuleNames(
+            moduleNames,
+            containingFile,
+            reusedNames,
+            redirectedReference,
+            {}
+          );
+        }
         moduleNames = moduleNames
           .map(stripExtNameDotTs)
           .map(convertRemoteToLocalCache);
@@ -80,6 +98,10 @@ module.exports = function init({
 
       info.languageServiceHost.getCompilationSettings = () => {
         const projectConfig = getCompilationSettings();
+
+        if (!config.enable) {
+          return projectConfig;
+        }
 
         // Solve the problem that `import.meta.url` is not parsed correctly
         const mustOverwriteOptions: ts_module.CompilerOptions = {
@@ -100,6 +122,10 @@ module.exports = function init({
 
       info.languageServiceHost.getScriptFileNames = () => {
         const scriptFileNames = getScriptFileNames();
+
+        if (!config.enable) {
+          return scriptFileNames;
+        }
 
         const denoDtsPath = getDtsPathForVscode(info) || getGlobalDtsPath();
 
@@ -131,6 +157,10 @@ module.exports = function init({
           preferences
         );
 
+        if (!config.enable) {
+          return details;
+        }
+
         if (details) {
           if (details.codeActions && details.codeActions.length) {
             for (const ca of details.codeActions) {
@@ -154,8 +184,9 @@ module.exports = function init({
       return info.languageService;
     },
 
-    onConfigurationChanged(config: any) {
-      logger.info(`onConfigurationChanged: ${JSON.stringify(config)}`);
+    onConfigurationChanged(c: IConfig) {
+      config = merge(config, c);
+      logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     }
   };
 };

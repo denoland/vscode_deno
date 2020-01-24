@@ -160,6 +160,10 @@ function synchronizeConfiguration(api: TypescriptAPI) {
     config.dtsPath = getDenoDtsFilepath();
   }
 
+  if ("enable" in config === false) {
+    config.enable = true;
+  }
+
   api.configurePlugin(pluginId, config);
 }
 
