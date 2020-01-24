@@ -46,7 +46,6 @@ module.exports = function init({
   return {
     create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
       logger = Logger.forPlugin(info);
-      logger.info("Create.");
 
       logger.info(`Create typescript-deno-plugin`);
 

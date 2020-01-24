@@ -8,7 +8,8 @@
     "compile": "tsc && cp ./package.json ../node_modules/typescript-deno-plugin/package.json",
     "watch": "cp ./package.json ../node_modules/typescript-deno-plugin/package.json && tsc -w -p ./",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "types": "deno types > lib/lib.deno_runtime.d.ts"
+    "types": "deno types > lib/lib.deno_runtime.d.ts",
+    "postinstall": "npm run compile"
   },
   "dependencies": {
     "deepmerge": "^4.2.2",
