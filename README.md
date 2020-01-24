@@ -25,8 +25,8 @@ If you are using VS Code 1.30 or older and are [using a **workspace version** of
 
 This extension contributes the following commands to the Command palette.
 
-- `Enable Deno` - Enable this extension.
-- `Disable Deno` - Disable this extension.
+- `Enable Deno` - Enable this extension including enable `typescript-deno-plugin`.
+- `Disable Deno` - Disable this extension including disable `typescript-deno-plugin`.
 
 ## Contribute
 
