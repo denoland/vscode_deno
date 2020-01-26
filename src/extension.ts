@@ -1,6 +1,5 @@
 import * as path from "path";
-import { readFile, writeFile } from "fs";
-import { promisify } from "util";
+import { promises as fs } from "fs";
 
 import {
   workspace,
@@ -16,7 +15,11 @@ import {
   languages,
   TextDocument,
   Range,
-  TextEdit
+  TextEdit,
+  Position,
+  CancellationToken,
+  CompletionItem,
+  CompletionItemKind
 } from "vscode";
 
 import {
@@ -42,6 +45,11 @@ interface SynchronizedConfiguration {
 interface TypescriptAPI {
   configurePlugin(pluginId: string, configuration: {}): void;
 }
+
+const config: SynchronizedConfiguration = {
+  enable: true,
+  dtsFilepaths: []
+};
 
 async function pickFolder(
   folders: WorkspaceFolder[],
@@ -167,13 +175,12 @@ function synchronizeConfiguration(api: TypescriptAPI) {
 }
 
 function getConfiguration(): SynchronizedConfiguration {
-  const config = workspace.getConfiguration(configurationSection);
-  const outConfig: SynchronizedConfiguration = {};
+  const _config = workspace.getConfiguration(configurationSection);
 
-  withConfigValue(config, outConfig, "enable");
-  withConfigValue(config, outConfig, "dtsFilepaths");
+  withConfigValue(_config, config, "enable");
+  withConfigValue(_config, config, "dtsFilepaths");
 
-  return outConfig;
+  return config;
 }
 
 function withConfigValue<C, K extends Extract<keyof C, string>>(
@@ -230,6 +237,46 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
   return api;
 }
 
+interface Deps {
+  url: string;
+  filepath: string;
+}
+
+async function getDepsFile(
+  rootDir = path.join(deno.DENO_DIR, "deps"),
+  deps: Deps[] = []
+): Promise<Deps[]> {
+  const files = await fs.readdir(rootDir);
+
+  const promises = files.map(filename => {
+    const filepath = path.join(rootDir, filename);
+    return fs.stat(filepath).then(stat => {
+      if (stat.isDirectory()) {
+        return getDepsFile(filepath, deps);
+      } else if (
+        stat.isFile() &&
+        /\.tsx?$/.test(filepath) &&
+        !filepath.endsWith(".d.ts")
+      ) {
+        const url = filepath
+          .replace(path.join(deno.DENO_DIR, "deps"), "")
+          .replace(/^(\/|\\\\)/, "")
+          .replace(/http(\/|\\\\)/, "http://")
+          .replace(/https(\/|\\\\)/, "https://");
+
+        deps.push({
+          url: url,
+          filepath: filepath
+        });
+      }
+    });
+  });
+
+  await Promise.all(promises);
+
+  return deps;
+}
+
 export async function activate(context: ExtensionContext) {
   try {
     await deno.init();
@@ -239,16 +286,16 @@ export async function activate(context: ExtensionContext) {
 
     // if dst file not exist. then create a new one
     if (!isExistDtsFile) {
-      await promisify(writeFile)(typeFilepath, currentDenoTypesContent, {
+      await fs.writeFile(typeFilepath, currentDenoTypesContent, {
         encoding: "utf8"
       });
     } else {
-      const typesContent = await promisify(readFile)(typeFilepath, {
+      const typesContent = await fs.readFile(typeFilepath, {
         encoding: "utf8"
       });
 
       if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await promisify(writeFile)(typeFilepath, currentDenoTypesContent, {
+        await fs.writeFile(typeFilepath, currentDenoTypesContent, {
           encoding: "utf8"
         });
       }
@@ -348,6 +395,38 @@ export async function activate(context: ExtensionContext) {
           return [new TextEdit(fullRange, formatted)];
         }
       }
+    ),
+    languages.registerCompletionItemProvider(
+      ["typescript", "typescriptreact"],
+      {
+        provideCompletionItems: async (
+          document: TextDocument,
+          position: Position,
+          token: CancellationToken
+        ) => {
+          if (!config.enable) {
+            return [];
+          }
+          const deps = await getDepsFile();
+
+          const completes: CompletionItem[] = deps.map(dep => {
+            return {
+              label: dep.url,
+              detail: dep.url,
+              sortText: dep.url,
+              documentation: dep.filepath.replace(deno.DENO_DIR, "$DENO_DIR"),
+              kind: CompletionItemKind.File,
+              insertText: dep.url,
+              cancel: token,
+              range: new Range(position.translate(0, -5), position)
+            } as CompletionItem;
+          });
+
+          return completes;
+        }
+      },
+      "http",
+      "https"
     ),
     commands.registerCommand("deno.enable", enable),
     commands.registerCommand("deno.disable", disable)

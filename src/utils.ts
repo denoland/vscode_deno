@@ -1,5 +1,4 @@
-import { stat } from "fs";
-import { promisify } from "util";
+import { promises as fs } from "fs";
 import { TextDocument } from "vscode";
 
 export function isTypeScriptDocument(document: TextDocument) {
@@ -19,7 +18,8 @@ export function isJavaScriptDocument(document: TextDocument) {
 }
 
 export async function isFilepathExist(filepath: string): Promise<boolean> {
-  return promisify(stat)(filepath)
+  return fs
+    .stat(filepath)
     .then(() => {
       return Promise.resolve(true);
     })
