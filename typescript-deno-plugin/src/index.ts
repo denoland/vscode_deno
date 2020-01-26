@@ -38,6 +38,7 @@ module.exports = function init({
     allowJs: true,
     checkJs: true,
     esModuleInterop: true,
+    jsx: typescript.JsxEmit.React,
     module: typescript.ModuleKind.ESNext,
     moduleResolution: typescript.ModuleResolutionKind.NodeJs,
     noEmit: true,
@@ -109,6 +110,7 @@ module.exports = function init({
 
         // Solve the problem that `import.meta.url` is not parsed correctly
         const mustOverwriteOptions: ts_module.CompilerOptions = {
+          jsx: OPTIONS.jsx,
           module: OPTIONS.module,
           moduleResolution: OPTIONS.moduleResolution
         };
