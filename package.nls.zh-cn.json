@@ -4,6 +4,5 @@
   "deno.command.enable": "启用 Deno",
   "deno.command.disable": "禁用 Deno",
   "deno.config.enabled": "是否启用 Deno。",
-  "deno.config.alwaysShowStatus": "总是在状态栏显示 Deno 图标。",
   "deno.config.dtsPath": "Deno 的类型声明文件(.d.ts)路径。"
 }

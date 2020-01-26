@@ -62,6 +62,9 @@ module.exports = function init({
       const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails.bind(
         info.languageService
       );
+      const getCompletionsAtPosition = info.languageService.getCompletionsAtPosition.bind(
+        info.languageService
+      );
 
       if (resolveModuleNames === undefined) {
         logger.info("resolveModuleNames is undefined.");
@@ -138,6 +141,22 @@ module.exports = function init({
         return scriptFileNames;
       };
 
+      info.languageService.getCompletionsAtPosition = (
+        filename,
+        position,
+        options
+      ) => {
+        const prior = getCompletionsAtPosition(filename, position, options);
+
+        if (!config.enable) {
+          return prior;
+        }
+
+        logger.info(`completeions ${JSON.stringify(prior)}`);
+
+        return prior;
+      };
+
       info.languageService.getCompletionEntryDetails = (
         fileName: string,
         position: number,
@@ -162,7 +181,7 @@ module.exports = function init({
         }
 
         if (details) {
-          if (details.codeActions && details.codeActions.length) {
+          if (details.codeActions?.length) {
             for (const ca of details.codeActions) {
               for (const change of ca.changes) {
                 if (!change.isNewFile) {
@@ -222,7 +241,7 @@ function stripExtNameDotTs(moduleName: string): string {
 }
 
 function convertRemoteToLocalCache(moduleName: string): string {
-  if (!moduleName.startsWith("http://") && !moduleName.startsWith("https://")) {
+  if (!/^https?:\/\//.test(moduleName)) {
     return moduleName;
   }
 

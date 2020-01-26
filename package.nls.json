@@ -4,6 +4,5 @@
   "deno.command.enable": "Enable Deno",
   "deno.command.disable": "Disable Deno",
   "deno.config.enabled": "Controls whether deno is enabled or not.",
-  "deno.config.alwaysShowStatus": "Always show the Deno status bar item.",
   "deno.config.dtsPath": "The Path of TypeScript declaration file(.d.ts)"
 }

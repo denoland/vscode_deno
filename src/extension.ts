@@ -35,7 +35,6 @@ interface WorkspaceFolderItem extends QuickPickItem {
 }
 
 interface SynchronizedConfiguration {
-  alwaysShowStatus?: boolean;
   enable?: boolean;
   dtsPath?: string;
 }
@@ -172,7 +171,6 @@ function getConfiguration(): SynchronizedConfiguration {
   const outConfig: SynchronizedConfiguration = {};
 
   withConfigValue(config, outConfig, "enable");
-  withConfigValue(config, outConfig, "alwaysShowStatus");
   withConfigValue(config, outConfig, "dtsPath");
 
   return outConfig;
@@ -291,16 +289,6 @@ export async function activate(context: ExtensionContext) {
 
     // if vscode-deno have been disable for workspace
     if (!enabled) {
-      statusBar.hide();
-      return;
-    }
-
-    const alwaysShowStatus = workspace
-      .getConfiguration(configurationSection, uri)
-      .get("alwaysShowStatus");
-
-    // if setting always hidden
-    if (!alwaysShowStatus) {
       statusBar.hide();
       return;
     }

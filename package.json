@@ -56,12 +56,6 @@
           "default": true,
           "description": "%deno.config.enabled%"
         },
-        "deno.alwaysShowStatus": {
-          "type": "boolean",
-          "default": true,
-          "description": "%deno.config.alwaysShowStatus%",
-          "scope": "window"
-        },
         "deno.dtsPath": {
           "type": "string",
           "default": null,
