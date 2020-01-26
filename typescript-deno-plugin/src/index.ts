@@ -304,7 +304,7 @@ function getDtsPathForVscode(info: ts.server.PluginCreateInfo): string[] {
       }
       return "";
     })
-    .filter(v => v);
+    .filter(v => v.endsWith(".d.ts"));
 }
 
 function getGlobalDtsPath(): string[] {
