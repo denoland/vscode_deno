@@ -19,8 +19,6 @@ If you are using VS Code 1.30 or older and are [using a **workspace version** of
 
 - `deno.enabled` - Enable/disable this extension. Default is `true`.
 
-- `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
-
 ## Commands
 
 This extension contributes the following commands to the Command palette.
