@@ -5,6 +5,8 @@ test/**
 src/**
 **/*.map
 *.vsix
+*.gif
+*.png
 
 .gitignore
 .gitmodules
