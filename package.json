@@ -56,10 +56,13 @@
           "default": true,
           "description": "%deno.config.enabled%"
         },
-        "deno.dtsPath": {
-          "type": "string",
-          "default": null,
-          "description": "%deno.config.dtsPath%"
+        "deno.dtsFilepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "%deno.config.dtsFilepaths%"
         }
       }
     }

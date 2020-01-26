@@ -4,5 +4,5 @@
   "deno.command.enable": "启用 Deno",
   "deno.command.disable": "禁用 Deno",
   "deno.config.enabled": "是否启用 Deno。",
-  "deno.config.dtsPath": "Deno 的类型声明文件(.d.ts)路径。"
+  "deno.config.dtsFilepaths": "Typescript 的声明文件(.d.ts)路径。它可以是相对于项目目录的相对路径或者是绝对路径"
 }

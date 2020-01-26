@@ -19,6 +19,8 @@ If you are using VS Code 1.30 or older and are [using a **workspace version** of
 
 - `deno.enabled` - Enable/disable this extension. Default is `true`.
 
+- `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). It can be a relative which path relative to the project directory or an absolute path. Default is `[]`
+
 ## Commands
 
 This extension contributes the following commands to the Command palette.

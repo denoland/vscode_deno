@@ -20,10 +20,11 @@ function existsSync(filepath: string) {
 
 interface IConfig {
   enable: boolean;
-  dtsFilepath?: string;
+  dtsFilepaths?: string[];
 }
 
 let config: IConfig = {
+  dtsFilepaths: [],
   enable: true
 };
 
@@ -130,13 +131,16 @@ module.exports = function init({
           return scriptFileNames;
         }
 
-        const denoDtsPath = getDtsPathForVscode(info) || getGlobalDtsPath();
+        let dtsFilepaths = getDtsPathForVscode(info);
 
-        if (denoDtsPath) {
-          scriptFileNames.push(denoDtsPath);
+        if (!dtsFilepaths.length) {
+          dtsFilepaths = getGlobalDtsPath();
         }
 
-        logger.info(`dts path: ${denoDtsPath}`);
+        for (const filepath of dtsFilepaths) {
+          scriptFileNames.push(filepath);
+          logger.info(`load dts filepath: ${filepath}`);
+        }
 
         return scriptFileNames;
       };
@@ -205,6 +209,7 @@ module.exports = function init({
 
     onConfigurationChanged(c: IConfig) {
       config = merge(config, c);
+      config.dtsFilepaths = c.dtsFilepaths;
       logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     }
   };
@@ -266,6 +271,7 @@ function fallbackHeader(modulePath: string): string {
   const validPath = modulePath.endsWith(".ts")
     ? modulePath
     : `${modulePath}.ts`;
+
   if (existsSync(validPath)) {
     return modulePath;
   }
@@ -282,43 +288,32 @@ function fallbackHeader(modulePath: string): string {
   return modulePath;
 }
 
-function getDtsPathForVscode(
-  info: ts_module.server.PluginCreateInfo
-): string | undefined {
-  const bundledDtsPath = info.config.dtsPath;
+function getDtsPathForVscode(info: ts.server.PluginCreateInfo): string[] {
+  const dtsFilepaths = config.dtsFilepaths || [];
 
-  if (bundledDtsPath && existsSync(bundledDtsPath)) {
-    return bundledDtsPath;
-  }
+  const projectDir = info.project.getCurrentDirectory();
 
-  return undefined;
+  return dtsFilepaths
+    .map(filepath => {
+      const absFilepath = path.isAbsolute(filepath)
+        ? filepath
+        : path.resolve(projectDir, filepath);
+
+      if (existsSync(absFilepath)) {
+        return absFilepath;
+      }
+      return "";
+    })
+    .filter(v => v);
 }
 
-function getGlobalDtsPath(): string | undefined {
+function getGlobalDtsPath(): string[] {
   const denoDir = getDenoDir();
   const globalDtsPath = path.resolve(denoDir, "lib.deno_runtime.d.ts");
 
   if (existsSync(globalDtsPath)) {
-    return globalDtsPath;
+    return [globalDtsPath];
   }
 
-  return undefined;
+  return [];
 }
-
-// function getLocalDtsPath(info: ts.server.PluginCreateInfo): string | undefined {
-//   const localDtsPath = path.resolve(
-//     info.project.getCurrentDirectory(),
-//     "node_modules",
-//     "typescript-deno-plugin",
-//     "lib",
-//     "lib.deno_runtime.d.ts"
-//   );
-
-//   process.stdout.write(`获取本地目录 ${localDtsPath}`);
-
-//   if (existsSync(localDtsPath)) {
-//     return localDtsPath;
-//   }
-
-//   return undefined;
-// }

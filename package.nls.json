@@ -4,5 +4,5 @@
   "deno.command.enable": "Enable Deno",
   "deno.command.disable": "Disable Deno",
   "deno.config.enabled": "Controls whether deno is enabled or not.",
-  "deno.config.dtsPath": "The Path of TypeScript declaration file(.d.ts)"
+  "deno.config.dtsFilepaths": "The file paths of the TypeScript declaration file(.d.ts). It can be a relative which path relative to the project directory or an absolute path."
 }

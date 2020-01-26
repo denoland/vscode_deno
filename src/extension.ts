@@ -36,7 +36,7 @@ interface WorkspaceFolderItem extends QuickPickItem {
 
 interface SynchronizedConfiguration {
   enable?: boolean;
-  dtsPath?: string;
+  dtsFilepaths?: string[];
 }
 
 interface TypescriptAPI {
@@ -155,8 +155,8 @@ function disable() {
 function synchronizeConfiguration(api: TypescriptAPI) {
   const config = getConfiguration();
 
-  if (!config.dtsPath) {
-    config.dtsPath = getDenoDtsFilepath();
+  if (!config.dtsFilepaths) {
+    config.dtsFilepaths = [getDenoDtsFilepath()];
   }
 
   if ("enable" in config === false) {
@@ -171,7 +171,7 @@ function getConfiguration(): SynchronizedConfiguration {
   const outConfig: SynchronizedConfiguration = {};
 
   withConfigValue(config, outConfig, "enable");
-  withConfigValue(config, outConfig, "dtsPath");
+  withConfigValue(config, outConfig, "dtsFilepaths");
 
   return outConfig;
 }
