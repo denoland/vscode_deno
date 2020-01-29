@@ -8,6 +8,8 @@ import ts_module from "typescript/lib/tsserverlibrary";
 import { Logger } from "./logger";
 import { getDenoDir } from "./shared";
 
+const TYPESCRIPT_EXT_REG = /\.tsx?$/;
+
 let logger: Logger;
 
 function existsSync(filepath: string) {
@@ -42,8 +44,21 @@ module.exports = function init({
     module: typescript.ModuleKind.ESNext,
     moduleResolution: typescript.ModuleResolutionKind.NodeJs,
     noEmit: true,
+    noEmitHelpers: true,
     resolveJsonModule: true,
     sourceMap: true
+  };
+
+  // No matter how tsconfig.json is set in the working directory
+  // It will always overwrite the configuration
+  const mustOverwriteOptions: ts_module.CompilerOptions = {
+    jsx: OPTIONS.jsx,
+    module: OPTIONS.module,
+    moduleResolution: OPTIONS.moduleResolution,
+    resolveJsonModule: OPTIONS.resolveJsonModule,
+    strict: OPTIONS.strict,
+    noEmit: OPTIONS.noEmit,
+    noEmitHelpers: OPTIONS.noEmitHelpers
   };
 
   return {
@@ -67,39 +82,9 @@ module.exports = function init({
       const getCompletionsAtPosition = info.languageService.getCompletionsAtPosition.bind(
         info.languageService
       );
-
-      if (resolveModuleNames === undefined) {
-        logger.info("resolveModuleNames is undefined.");
-        return info.languageService;
-      }
-
-      info.languageServiceHost.resolveModuleNames = (
-        moduleNames: string[],
-        containingFile: string,
-        reusedNames?: string[],
-        redirectedReference?: ts_module.ResolvedProjectReference
-      ) => {
-        if (!config.enable) {
-          return resolveModuleNames(
-            moduleNames,
-            containingFile,
-            reusedNames,
-            redirectedReference,
-            {}
-          );
-        }
-        moduleNames = moduleNames
-          .map(stripExtNameDotTs)
-          .map(convertRemoteToLocalCache);
-
-        return resolveModuleNames(
-          moduleNames,
-          containingFile,
-          reusedNames,
-          redirectedReference,
-          {}
-        );
-      };
+      const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
+        info.languageService
+      );
 
       info.languageServiceHost.getCompilationSettings = () => {
         const projectConfig = getCompilationSettings();
@@ -107,13 +92,6 @@ module.exports = function init({
         if (!config.enable) {
           return projectConfig;
         }
-
-        // Solve the problem that `import.meta.url` is not parsed correctly
-        const mustOverwriteOptions: ts_module.CompilerOptions = {
-          jsx: OPTIONS.jsx,
-          module: OPTIONS.module,
-          moduleResolution: OPTIONS.moduleResolution
-        };
 
         const compilationSettings = merge(
           merge(OPTIONS, projectConfig),
@@ -206,10 +184,6 @@ module.exports = function init({
         return details;
       };
 
-      const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
-        info.languageService
-      );
-
       info.languageService.getSemanticDiagnostics = (filename: string) => {
         const diagnostics = getSemanticDiagnostics(filename);
 
@@ -217,14 +191,61 @@ module.exports = function init({
           return diagnostics;
         }
 
-        const ignoreCodesInDeno = [
-          // 2691, // can not import module which end with `.ts`
-          1308 // support top level await 只允许在异步函数中使用 "await" 表达式
-        ];
+        const ignoreCodeMapInDeno: { [k: number]: boolean } = {
+          // 2691:true, // can not import module which end with `.ts`
+          1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
+        };
 
         return diagnostics.filter(v => {
-          return !ignoreCodesInDeno.includes(v.code);
+          if (v.code === 2691) {
+            v.code = 2307; // ts error code which can not found module
+            const reg = /“[^”]+”/g;
+            const message =
+              typeof v.messageText === "string"
+                ? v.messageText
+                : v.messageText.messageText;
+
+            const matcher = message.match(reg);
+            const [, moduleName] = matcher || [];
+
+            v.messageText = `Cannot find module ${moduleName}`;
+          }
+          return !ignoreCodeMapInDeno[v.code];
         });
+      };
+
+      if (!resolveModuleNames) {
+        logger.info("resolveModuleNames is undefined.");
+        return info.languageService;
+      }
+
+      info.languageServiceHost.resolveModuleNames = (
+        moduleNames: string[],
+        containingFile: string,
+        reusedNames?: string[],
+        redirectedReference?: ts_module.ResolvedProjectReference
+      ) => {
+        if (!config.enable) {
+          return resolveModuleNames(
+            moduleNames,
+            containingFile,
+            reusedNames,
+            redirectedReference,
+            {}
+          );
+        }
+
+        moduleNames = moduleNames
+          .map(stripExtNameDotTs)
+          .map(convertRemoteToLocalCache);
+
+        return resolveModuleNames(
+          moduleNames,
+          containingFile,
+          reusedNames,
+          redirectedReference,
+          {}
+        );
       };
 
       return info.languageService;
@@ -258,11 +279,11 @@ function stripExtNameDotTs(moduleName: string): string {
     return moduleWithQuery;
   }
 
-  if (/\.tsx?$/.test(moduleName) === false) {
+  if (TYPESCRIPT_EXT_REG.test(moduleName) === false) {
     return moduleName;
   }
 
-  const name = moduleName.replace(/\.tsx?$/, "");
+  const name = moduleName.replace(TYPESCRIPT_EXT_REG, "");
   logger.info(`strip "${moduleName}" to "${name}".`);
 
   return name;
@@ -291,7 +312,7 @@ interface IDenoModuleHeaders {
  * If moduleName is not found, recursively search for headers and "redirect_to" property.
  */
 function fallbackHeader(modulePath: string): string {
-  const validPath = modulePath.endsWith(".ts")
+  const validPath = TYPESCRIPT_EXT_REG.test(modulePath)
     ? modulePath
     : `${modulePath}.ts`;
 
