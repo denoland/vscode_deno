@@ -33,7 +33,6 @@ jobs:
         run: |
           yarn
           yarn run compile
-          yarn lint
 
       - name: Check code format
         run: |

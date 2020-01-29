@@ -206,6 +206,27 @@ module.exports = function init({
         return details;
       };
 
+      const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
+        info.languageService
+      );
+
+      info.languageService.getSemanticDiagnostics = (filename: string) => {
+        const diagnostics = getSemanticDiagnostics(filename);
+
+        if (!config.enable) {
+          return diagnostics;
+        }
+
+        const ignoreCodesInDeno = [
+          // 2691, // can not import module which end with `.ts`
+          1308 // support top level await 只允许在异步函数中使用 "await" 表达式
+        ];
+
+        return diagnostics.filter(v => {
+          return !ignoreCodesInDeno.includes(v.code);
+        });
+      };
+
       return info.languageService;
     },
 
@@ -237,11 +258,11 @@ function stripExtNameDotTs(moduleName: string): string {
     return moduleWithQuery;
   }
 
-  if (!moduleName.endsWith(".ts")) {
+  if (/\.tsx?$/.test(moduleName) === false) {
     return moduleName;
   }
 
-  const name = moduleName.slice(0, -3);
+  const name = moduleName.replace(/\.tsx?$/, "");
   logger.info(`strip "${moduleName}" to "${name}".`);
 
   return name;
