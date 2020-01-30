@@ -41,12 +41,14 @@ interface DenoInfo {
   DENO_DIR: string;
   version: string;
   executablePath: string;
+  dtsFilepath: string;
 }
 
 let denoInfo: DenoInfo = {
   DENO_DIR: "",
   version: "",
-  executablePath: ""
+  executablePath: "",
+  dtsFilepath: ""
 };
 
 const config: SynchronizedConfiguration = {
@@ -167,9 +169,9 @@ function synchronizeConfiguration(api: TypescriptAPI) {
   const config = getConfiguration();
 
   if (!config.dtsFilepaths) {
-    const dtsFilepath = getDenoDtsFilepath();
+    const dtsFilepath = denoInfo.dtsFilepath;
     if (dtsFilepath) {
-      config.dtsFilepaths = [getDenoDtsFilepath()];
+      config.dtsFilepaths = [dtsFilepath];
     }
   }
 
@@ -214,13 +216,6 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
   if (typeof value !== "undefined") {
     outConfig[key] = value;
   }
-}
-
-function getDenoDtsFilepath(): string {
-  if (!denoInfo.DENO_DIR) {
-    return "";
-  }
-  return path.join(denoInfo.DENO_DIR, "lib.deno_runtime.d.ts");
 }
 
 // get typescript api from build-in extension

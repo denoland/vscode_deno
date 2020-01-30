@@ -1,6 +1,7 @@
 import { Readable } from "stream";
 import execa from "execa";
 import which from "which";
+import { join } from "path";
 
 interface Version {
   deno: string;
@@ -26,7 +27,8 @@ interface FormatOptions {
 class Deno {
   public version!: Version | void;
   public executablePath!: string | void;
-  public DENO_DIR = this.getDenoDir();
+  public readonly DENO_DIR = this.getDenoDir();
+  public readonly dtsFilepath = join(this.DENO_DIR, "lib.deno_runtime.d.ts");
   constructor() {}
   public async init() {
     this.executablePath = await this.getExecutablePath();

@@ -61,31 +61,29 @@ connection.onInitialize(
   }
 );
 
-function getDenoDtsFilepath(): string {
-  return path.join(deno.DENO_DIR, "lib.deno_runtime.d.ts");
-}
-
 connection.onInitialized(async () => {
   try {
     await deno.init();
     const currentDenoTypesContent = await deno.getTypes();
-    const typeFilepath = getDenoDtsFilepath();
-    const isExistDtsFile = await isFilepathExist(typeFilepath);
+    const isExistDtsFile = await isFilepathExist(deno.dtsFilepath);
+    const fileOptions = { encoding: "utf8" };
 
     // if dst file not exist. then create a new one
     if (!isExistDtsFile) {
-      await fs.writeFile(typeFilepath, currentDenoTypesContent, {
-        encoding: "utf8"
-      });
+      await fs.writeFile(
+        deno.dtsFilepath,
+        currentDenoTypesContent,
+        fileOptions
+      );
     } else {
-      const typesContent = await fs.readFile(typeFilepath, {
-        encoding: "utf8"
-      });
+      const typesContent = await fs.readFile(deno.dtsFilepath, fileOptions);
 
       if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await fs.writeFile(typeFilepath, currentDenoTypesContent, {
-          encoding: "utf8"
-        });
+        await fs.writeFile(
+          deno.dtsFilepath,
+          currentDenoTypesContent,
+          fileOptions
+        );
       }
     }
   } catch (err) {
@@ -95,9 +93,10 @@ connection.onInitialized(async () => {
   connection.sendNotification("init", {
     version: deno.version ? deno.version.deno : undefined,
     executablePath: deno.executablePath,
-    DENO_DIR: deno.DENO_DIR
+    DENO_DIR: deno.DENO_DIR,
+    dtsFilepath: deno.dtsFilepath
   });
-  connection.console.log("server start");
+  connection.console.log("server initialized.");
 });
 
 connection.onDocumentFormatting(async params => {
