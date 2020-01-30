@@ -23,6 +23,9 @@ const configurationNamespace = "deno";
 
 process.title = "Deno Language Server";
 
+// The workspace folder this server is operating on
+let workspaceFolder: string = process.cwd();
+
 // The example settings
 interface ISettings {
   enable: boolean;
@@ -45,7 +48,7 @@ const connection: IConnection = createConnection(
 const documents = new TextDocuments(TextDocument);
 
 connection.onInitialize(
-  (): InitializeResult => {
+  (params): InitializeResult => {
     return {
       serverInfo: {
         name: process.title
@@ -115,7 +118,7 @@ connection.onDocumentFormatting(async params => {
     text,
     doc.languageId as FormatableLanguages,
     {
-      cwd: "./"
+      cwd: workspaceFolder
     }
   );
 
@@ -228,6 +231,10 @@ connection.onDidChangeConfiguration(change => {
   console.log(`detect config change ${JSON.stringify(denoConfig)}`);
 
   globalSettings = { ...globalSettings, ...denoConfig };
+});
+
+connection.onNotification("workspace", filepath => {
+  workspaceFolder = filepath;
 });
 
 // connection.onDidChangeTextDocument(params => {

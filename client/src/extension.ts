@@ -362,6 +362,19 @@ export async function activate(context: ExtensionContext) {
     client.onNotification("error", (message: string) => {
       window.showErrorMessage(message);
     });
+
+    context.subscriptions.push(
+      workspace.onDidOpenTextDocument(document => {
+        const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
+
+        const workspaceFilepath =
+          workspaceFolder?.uri.fsPath ||
+          path.dirname(document.uri.fsPath) ||
+          process.cwd();
+
+        client.sendNotification("workspace", workspaceFilepath);
+      })
+    );
   });
 
   context.subscriptions.push(client.start());
