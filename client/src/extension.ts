@@ -1,5 +1,4 @@
 import * as path from "path";
-import { promises as fs } from "fs";
 
 import {
   workspace,
@@ -11,23 +10,14 @@ import {
   TextEditor,
   WorkspaceFolder,
   QuickPickItem,
-  WorkspaceConfiguration,
-  languages,
-  TextDocument,
-  Range,
-  TextEdit,
-  Position,
-  CancellationToken,
-  CompletionItem,
-  CompletionItemKind
+  WorkspaceConfiguration
 } from "vscode";
-
 import {
-  isTypeScriptDocument,
-  isJavaScriptDocument,
-  isFilepathExist
-} from "./utils";
-import { deno, FormatableLanguages } from "./deno";
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind
+} from "vscode-languageclient";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
 const pluginId = "typescript-deno-plugin";
@@ -45,6 +35,18 @@ interface SynchronizedConfiguration {
 interface TypescriptAPI {
   configurePlugin(pluginId: string, configuration: {}): void;
 }
+
+interface DenoInfo {
+  DENO_DIR: string;
+  version: string;
+  executablePath: string;
+}
+
+let denoInfo: DenoInfo = {
+  DENO_DIR: "",
+  version: "",
+  executablePath: ""
+};
 
 const config: SynchronizedConfiguration = {
   enable: true,
@@ -164,7 +166,10 @@ function synchronizeConfiguration(api: TypescriptAPI) {
   const config = getConfiguration();
 
   if (!config.dtsFilepaths) {
-    config.dtsFilepaths = [getDenoDtsFilepath()];
+    const dtsFilepath = getDenoDtsFilepath();
+    if (dtsFilepath) {
+      config.dtsFilepaths = [getDenoDtsFilepath()];
+    }
   }
 
   if ("enable" in config === false) {
@@ -211,7 +216,10 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
 }
 
 function getDenoDtsFilepath(): string {
-  return path.join(deno.DENO_DIR, "lib.deno_runtime.d.ts");
+  if (!denoInfo.DENO_DIR) {
+    return "";
+  }
+  return path.join(denoInfo.DENO_DIR, "lib.deno_runtime.d.ts");
 }
 
 // get typescript api from build-in extension
@@ -237,74 +245,7 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
   return api;
 }
 
-interface Deps {
-  url: string;
-  filepath: string;
-}
-
-async function getDepsFile(
-  rootDir = path.join(deno.DENO_DIR, "deps"),
-  deps: Deps[] = []
-): Promise<Deps[]> {
-  const files = await fs.readdir(rootDir);
-
-  const promises = files.map(filename => {
-    const filepath = path.join(rootDir, filename);
-    return fs.stat(filepath).then(stat => {
-      if (stat.isDirectory()) {
-        return getDepsFile(filepath, deps);
-      } else if (
-        stat.isFile() &&
-        /\.tsx?$/.test(filepath) &&
-        !filepath.endsWith(".d.ts")
-      ) {
-        const url = filepath
-          .replace(path.join(deno.DENO_DIR, "deps"), "")
-          .replace(/^(\/|\\\\)/, "")
-          .replace(/http(\/|\\\\)/, "http://")
-          .replace(/https(\/|\\\\)/, "https://");
-
-        deps.push({
-          url: url,
-          filepath: filepath
-        });
-      }
-    });
-  });
-
-  await Promise.all(promises);
-
-  return deps;
-}
-
 export async function activate(context: ExtensionContext) {
-  try {
-    await deno.init();
-    const currentDenoTypesContent = await deno.getTypes();
-    const typeFilepath = getDenoDtsFilepath();
-    const isExistDtsFile = await isFilepathExist(typeFilepath);
-
-    // if dst file not exist. then create a new one
-    if (!isExistDtsFile) {
-      await fs.writeFile(typeFilepath, currentDenoTypesContent, {
-        encoding: "utf8"
-      });
-    } else {
-      const typesContent = await fs.readFile(typeFilepath, {
-        encoding: "utf8"
-      });
-
-      if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await fs.writeFile(typeFilepath, currentDenoTypesContent, {
-          encoding: "utf8"
-        });
-      }
-    }
-  } catch (err) {
-    await window.showErrorMessage(err.message);
-    return;
-  }
-
   const api = await getTypescriptAPI();
 
   if (!api) {
@@ -316,14 +257,25 @@ export async function activate(context: ExtensionContext) {
 
   const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 0);
 
-  statusBar.text = `Deno ${deno.version.deno}`;
-  statusBar.tooltip = deno.version.raw;
+  statusBar.text = `Deno ${denoInfo.version}`;
+  statusBar.tooltip = denoInfo.executablePath;
 
   function updateStatusBarVisibility(editor: TextEditor | undefined): void {
+    // if no editor
+    if (!editor) {
+      statusBar.hide();
+      return;
+    }
     // not typescript | javascript file
     if (
-      !isTypeScriptDocument(editor?.document) &&
-      !isJavaScriptDocument(editor?.document)
+      ![
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact",
+        "markdown",
+        "json"
+      ].includes(editor.document.languageId)
     ) {
       statusBar.hide();
       return;
@@ -343,8 +295,6 @@ export async function activate(context: ExtensionContext) {
     statusBar.show();
   }
 
-  updateStatusBarVisibility(window.activeTextEditor);
-
   const disposables = [
     window.onDidChangeActiveTextEditor(updateStatusBarVisibility),
     workspace.onDidChangeConfiguration(e => {
@@ -353,86 +303,73 @@ export async function activate(context: ExtensionContext) {
         updateStatusBarVisibility(window.activeTextEditor);
       }
     }),
-    languages.registerDocumentFormattingEditProvider(
-      [
-        "typescript",
-        "typescriptreact",
-        "javascript",
-        "javascriptreact",
-        "markdown",
-        "json"
-      ],
-      {
-        async provideDocumentFormattingEdits(document: TextDocument) {
-          if (!deno.executablePath) {
-            window.showWarningMessage("Can not found deno in $PATH");
-            return [];
-          }
-
-          let formatted: string;
-
-          const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
-
-          const cwd = workspaceFolder?.uri?.fsPath ?? document.uri.fsPath;
-
-          try {
-            formatted = await deno.format(
-              document.getText(),
-              document.languageId as FormatableLanguages,
-              {
-                cwd
-              }
-            );
-          } catch (err) {
-            window.showErrorMessage(err.message);
-            return [];
-          }
-
-          const fullRange = new Range(
-            document.positionAt(0),
-            document.positionAt(document.getText().length)
-          );
-          return [new TextEdit(fullRange, formatted)];
-        }
-      }
-    ),
-    languages.registerCompletionItemProvider(
-      ["typescript", "typescriptreact"],
-      {
-        provideCompletionItems: async (
-          document: TextDocument,
-          position: Position,
-          token: CancellationToken
-        ) => {
-          if (!config.enable) {
-            return [];
-          }
-          const deps = await getDepsFile();
-
-          const completes: CompletionItem[] = deps.map(dep => {
-            return {
-              label: dep.url,
-              detail: dep.url,
-              sortText: dep.url,
-              documentation: dep.filepath.replace(deno.DENO_DIR, "$DENO_DIR"),
-              kind: CompletionItemKind.File,
-              insertText: dep.url,
-              cancel: token,
-              range: new Range(position.translate(0, -5), position)
-            } as CompletionItem;
-          });
-
-          return completes;
-        }
-      },
-      "http",
-      "https"
-    ),
     commands.registerCommand("deno.enable", enable),
     commands.registerCommand("deno.disable", disable)
   ];
 
   context.subscriptions.push(...disposables);
+
+  // create server connection
+  const port = 9523;
+
+  // The server is implemented in node
+  const serverModule = context.asAbsolutePath(
+    path.join("server", "out", "server.js")
+  );
+
+  // The debug options for the server
+  const debugOptions = { execArgv: ["--nolazy", `--inspect=${port}`] };
+
+  // If the extension is launched in debug mode then the debug server options are used
+  // Otherwise the run options are used
+  const serverOptions: ServerOptions = {
+    run: { module: serverModule, transport: TransportKind.ipc },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: debugOptions
+    }
+  };
+
+  // Options to control the language client
+  const clientOptions: LanguageClientOptions = {
+    documentSelector: [
+      { scheme: "file", language: "javascript" },
+      { scheme: "file", language: "javascriptreact" },
+      { scheme: "file", language: "typescript" },
+      { scheme: "file", language: "typescriptreact" },
+      { scheme: "file", language: "markdown" },
+      { scheme: "file", language: "json" }
+    ],
+    synchronize: {
+      configurationSection: configurationSection
+    }
+  };
+
+  // Create the language client and start the client.
+  const client = new LanguageClient(
+    "Deno Language Server",
+    "Deno Language Server",
+    serverOptions,
+    clientOptions
+  );
+
+  client.onReady().then(() => {
+    console.log("Deno Language Server is ready!");
+    client.onNotification("init", (info: DenoInfo) => {
+      denoInfo = { ...denoInfo, ...info };
+      statusBar.text = `Deno ${denoInfo.version}`;
+      statusBar.tooltip = denoInfo.executablePath;
+      synchronizeConfiguration(api);
+    });
+    client.onNotification("error", (message: string) => {
+      window.showErrorMessage(message);
+    });
+  });
+
+  context.subscriptions.push(client.start());
+
+  console.log(`Congratulations, your extension "vscode-deno" is now active!`);
 }
 
 export function deactivate() {}

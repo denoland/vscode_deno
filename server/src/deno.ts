@@ -24,8 +24,8 @@ interface FormatOptions {
 }
 
 class Deno {
-  public version: Version;
-  public executablePath: string;
+  public version!: Version | void;
+  public executablePath!: string | void;
   public DENO_DIR = this.getDenoDir();
   constructor() {}
   public async init() {
@@ -40,7 +40,7 @@ class Deno {
     this.version = await this.getDenoVersion();
   }
   public async getTypes(): Promise<Buffer> {
-    const { stdout } = await execa(this.executablePath, ["types"]);
+    const { stdout } = await execa(this.executablePath as string, ["types"]);
 
     return Buffer.from(stdout, "utf8");
   }
@@ -74,12 +74,16 @@ class Deno {
 
     const reader = Readable.from([code]);
 
+    const version = this.version ? this.version.deno : undefined;
+
     const subprocess = execa(
-      this.executablePath,
+      this.executablePath as string,
       [
         "run",
         "--allow-read",
-        `https://deno.land/std@v${this.version.deno}/prettier/main.ts`,
+        `https://deno.land/std${
+          version ? "@v" + version : ""
+        }/prettier/main.ts`,
         "--stdin",
         "--stdin-parser",
         parser,
@@ -96,21 +100,21 @@ class Deno {
     const formattedCode = (await new Promise((resolve, reject) => {
       let stdout = "";
       let stderr = "";
-      subprocess.on("exit", exitCode => {
+      subprocess.on("exit", (exitCode: number) => {
         if (exitCode != 0) {
           reject(new Error(stderr));
         } else {
           resolve(stdout);
         }
       });
-      subprocess.on("error", err => {
+      subprocess.on("error", (err: Error) => {
         reject(err);
       });
-      subprocess.stdout.on("data", data => {
+      subprocess.stdout.on("data", (data: Buffer) => {
         stdout += data;
       });
 
-      subprocess.stderr.on("data", data => {
+      subprocess.stderr.on("data", (data: Buffer) => {
         stderr += data;
       });
 
@@ -149,8 +153,8 @@ class Deno {
 
     return denoPath;
   }
-  private async getDenoVersion(): Promise<Version> {
-    const { stdout, stderr } = await execa(this.executablePath, [
+  private async getDenoVersion(): Promise<Version | undefined> {
+    const { stdout, stderr } = await execa(this.executablePath as string, [
       "eval",
       "console.log(JSON.stringify(Deno.version))"
     ]);

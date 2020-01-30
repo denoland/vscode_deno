@@ -3,10 +3,14 @@
     "module": "commonjs",
     "target": "es6",
     "outDir": "out",
-    "lib": ["es6"],
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "rootDir": "src",
+    "sourceMap": true
   },
-  "exclude": ["node_modules", ".vscode-test", "typescript-deno-plugin"]
+  "include": ["src"],
+  "exclude": ["node_modules", ".vscode-test"],
+  "references": [
+    { "path": "./client" },
+    { "path": "./server" },
+    { "path": "./typescript-deno-plugin" }
+  ]
 }

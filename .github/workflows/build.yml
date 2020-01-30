@@ -28,12 +28,6 @@ jobs:
         run: |
           yarn
 
-      - name: Build typescript-deno-plugin
-        working-directory: ./typescript-deno-plugin
-        run: |
-          yarn
-          yarn run compile
-
       - name: Check code format
         run: |
           yarn run check
