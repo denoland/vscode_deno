@@ -339,7 +339,8 @@ export async function activate(context: ExtensionContext) {
     ],
     synchronize: {
       configurationSection: configurationSection
-    }
+    },
+    progressOnInitialization: true
   };
 
   // Create the language client and start the client.

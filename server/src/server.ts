@@ -53,8 +53,7 @@ connection.onInitialize(
       capabilities: {
         documentFormattingProvider: true,
         completionProvider: {
-          triggerCharacters: ["http", "https"],
-          resolveProvider: true
+          triggerCharacters: ["http", "https"]
         }
       }
     };
@@ -134,7 +133,7 @@ interface Deps {
 }
 
 async function getDepsFile(
-  rootDir = path.join(deno.DENO_DIR, "deps"),
+  rootDir = deno.DENO_DEPS_DIR,
   deps: Deps[] = []
 ): Promise<Deps[]> {
   const files = await fs.readdir(rootDir);
@@ -150,7 +149,7 @@ async function getDepsFile(
         !filepath.endsWith(".d.ts")
       ) {
         const url = filepath
-          .replace(path.join(deno.DENO_DIR, "deps"), "")
+          .replace(deno.DENO_DEPS_DIR, "")
           .replace(/^(\/|\\\\)/, "")
           .replace(/http(\/|\\\\)/, "http://")
           .replace(/https(\/|\\\\)/, "https://");
@@ -168,17 +167,37 @@ async function getDepsFile(
   return deps;
 }
 
-connection.onCompletionResolve(
-  (item: CompletionItem): CompletionItem => {
-    return item;
-  }
-);
-
+// FIXME: all completion will trigger this.
+// It seem it's a bug for vscode
 connection.onCompletion(async params => {
-  if (!globalSettings.enable) {
+  const { position, partialResultToken, context, textDocument } = params;
+
+  const doc = documents.get(textDocument.uri);
+
+  if (!globalSettings.enable || !doc) {
     return [];
   }
-  const { position, partialResultToken } = params;
+
+  const currentLine = doc.getText(
+    Range.create(Position.create(position.line, 0), position)
+  );
+
+  const IMPORT_REG = /import\s['"][a-zA-Z]$/;
+  const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z]$/;
+  const DYNAMIC_REG = /import\s*\(['"][a-zA-Z]$/;
+
+  const isImport =
+    IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"
+    IMPORT_FROM_REG.test(currentLine) || // import xxxx from "https://xxxx.xxxx"
+    DYNAMIC_REG.test(currentLine); // import("https://xxxx.xxxx")
+
+  if (
+    currentLine.length > 1000 || // if is a large file
+    !isImport
+  ) {
+    return [];
+  }
+
   const deps = await getDepsFile();
 
   const range = Range.create(

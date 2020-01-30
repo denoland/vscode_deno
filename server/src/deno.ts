@@ -28,6 +28,7 @@ class Deno {
   public version!: Version | void;
   public executablePath!: string | void;
   public readonly DENO_DIR = this.getDenoDir();
+  public readonly DENO_DEPS_DIR = join(this.DENO_DIR, "deps");
   public readonly dtsFilepath = join(this.DENO_DIR, "lib.deno_runtime.d.ts");
   constructor() {}
   public async init() {
