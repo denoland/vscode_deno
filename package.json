@@ -85,11 +85,11 @@
     "**/*.{js,ts,json,md}": ["yarn format", "git add"]
   },
   "devDependencies": {
-    "@types/node": "^12.7.2",
-    "husky": "^3.0.4",
-    "lint-staged": "^9.2.5",
-    "typescript": "^3.7.5",
-    "vscode": "^1.1.36"
+    "@types/node": "12.12.26",
+    "husky": "3.1.0",
+    "lint-staged": "9.5.0",
+    "typescript": "3.7.5",
+    "vscode": "1.1.36"
   },
   "dependencies": {
     "deepmerge": "^4.2.2",
