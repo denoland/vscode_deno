@@ -18,6 +18,7 @@ import {
   ServerOptions,
   TransportKind
 } from "vscode-languageclient";
+import getport from "get-port";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
 const pluginId = "typescript-deno-plugin";
@@ -310,7 +311,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(...disposables);
 
   // create server connection
-  const port = 9523;
+  const port = await getport({ port: 9523 });
 
   // The server is implemented in node
   const serverModule = context.asAbsolutePath(
