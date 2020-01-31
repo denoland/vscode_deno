@@ -356,6 +356,7 @@ export async function activate(context: ExtensionContext) {
       { scheme: "file", language: "markdown" },
       { scheme: "file", language: "json" }
     ],
+    diagnosticCollectionName: "deno",
     synchronize: {
       configurationSection: configurationSection
     },

@@ -1,5 +1,6 @@
 import * as path from "path";
 import { promises as fs } from "fs";
+import * as ts from "typescript";
 
 import {
   IPCMessageReader,
@@ -12,7 +13,10 @@ import {
   TextEdit,
   CompletionItem,
   CompletionItemKind,
-  Position
+  Position,
+  Diagnostic,
+  DiagnosticSeverity,
+  TextDocumentSyncKind
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -55,6 +59,10 @@ connection.onInitialize(
       },
       capabilities: {
         documentFormattingProvider: true,
+        textDocumentSync: {
+          openClose: true,
+          change: TextDocumentSyncKind.Full
+        },
         completionProvider: {
           triggerCharacters: ["http", "https"]
         }
@@ -228,7 +236,7 @@ connection.onDidChangeConfiguration(change => {
   const denoConfig = (change.settings[configurationNamespace] ||
     defaultSettings) as ISettings;
 
-  console.log(`detect config change ${JSON.stringify(denoConfig)}`);
+  connection.console.log(`detect config change ${JSON.stringify(denoConfig)}`);
 
   globalSettings = { ...globalSettings, ...denoConfig };
 });
@@ -237,10 +245,140 @@ connection.onNotification("workspace", filepath => {
   workspaceFolder = filepath;
 });
 
-// connection.onDidChangeTextDocument(params => {
-//   // TODO: send diagnostics
-//   // connection.sendDiagnostics()
-// });
+function validator(document: TextDocument) {
+  if (!["typescript", "typescriptreact"].includes(document.languageId)) {
+    return;
+  }
+
+  if (!globalSettings.enable) {
+    connection.sendDiagnostics({
+      uri: document.uri,
+      version: document.version,
+      diagnostics: []
+    });
+    return;
+  }
+
+  let sourceFile;
+  try {
+    // Parse a file
+    sourceFile = ts.createSourceFile(
+      document.uri.toString(),
+      document.getText(),
+      ts.ScriptTarget.ESNext,
+      false,
+      ts.ScriptKind.TSX
+    );
+  } catch (err) {
+    return;
+  }
+
+  const moduleNodes: ts.LiteralLikeNode[] = [];
+
+  function delint(SourceFile: ts.SourceFile) {
+    delintNode(SourceFile);
+
+    function delintNode(node: ts.Node) {
+      let moduleNode: ts.LiteralLikeNode | null = null;
+      switch (node.kind) {
+        // import('xxx')
+        case ts.SyntaxKind.CallExpression:
+          const expression = (node as ts.CallExpression).expression;
+          const args = (node as ts.CallExpression).arguments;
+          const isDynamicImport =
+            expression?.kind === ts.SyntaxKind.ImportKeyword;
+          if (isDynamicImport) {
+            const argv = args[0] as ts.StringLiteral;
+
+            if (argv && ts.isStringLiteral(argv)) {
+              moduleNode = argv;
+            }
+          }
+          break;
+        // import ts = require('typescript')
+        case ts.SyntaxKind.ImportEqualsDeclaration:
+          const ref = (node as ts.ImportEqualsDeclaration)
+            .moduleReference as ts.ExternalModuleReference;
+
+          if (ref.expression && ts.isStringLiteral(ref.expression)) {
+            moduleNode = ref.expression;
+          }
+          break;
+        // import * as from 'xx'
+        // import 'xx'
+        // import xx from 'xx'
+        case ts.SyntaxKind.ImportDeclaration:
+          const spec = (node as ts.ImportDeclaration).moduleSpecifier;
+          if (spec && ts.isStringLiteral(spec)) {
+            moduleNode = spec;
+          }
+          break;
+        // export { window } from "xxx";
+        // export * from "xxx";
+        case ts.SyntaxKind.ExportDeclaration:
+          const exportSpec = (node as ts.ExportDeclaration).moduleSpecifier;
+          if (exportSpec && ts.isStringLiteral(exportSpec)) {
+            moduleNode = exportSpec;
+          }
+          break;
+      }
+
+      if (moduleNode) {
+        moduleNodes.push(moduleNode);
+      }
+
+      ts.forEachChild(node, delintNode);
+    }
+  }
+
+  // delint it
+  delint(sourceFile);
+
+  const extensionNameReg = /\.[a-zA-Z\d]+$/;
+  const validExtensionNameMap = {
+    ".ts": true,
+    ".tsx": true,
+    ".js": true,
+    ".jsx": true,
+    ".json": true,
+    ".wasm": true
+  };
+
+  const diagnostics: Diagnostic[] = moduleNodes
+    .map(moduleNode => {
+      const [extensionName] = moduleNode.text.match(extensionNameReg) || [];
+
+      if (validExtensionNameMap[extensionName]) {
+        return;
+      }
+
+      const range = Range.create(
+        document.positionAt(moduleNode.pos),
+        document.positionAt(moduleNode.end)
+      );
+
+      return Diagnostic.create(
+        range,
+        `Please specify valid extension name of the imported module. (${process.title})`,
+        DiagnosticSeverity.Error
+      );
+    })
+    .filter(v => v);
+
+  connection.sendDiagnostics({
+    uri: document.uri,
+    version: document.version,
+    diagnostics: diagnostics
+  });
+}
+
+documents.onDidOpen(params => {
+  validator(params.document);
+});
+
+documents.onDidChangeContent(params => {
+  validator(params.document);
+});
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
