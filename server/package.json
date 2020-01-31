@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "execa": "4.0.0",
-    "typescript": "^3.7.5",
+    "typescript": "3.7.5",
     "vscode-languageserver": "6.1.0",
     "vscode-languageserver-textdocument": "1.0.0",
     "which": "2.0.2"
