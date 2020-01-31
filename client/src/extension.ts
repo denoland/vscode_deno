@@ -56,6 +56,8 @@ const config: SynchronizedConfiguration = {
   dtsFilepaths: []
 };
 
+let client: LanguageClient;
+
 async function pickFolder(
   folders: WorkspaceFolder[],
   placeHolder: string
@@ -218,6 +220,19 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
   }
 }
 
+function syncWorkspace(editor: TextEditor) {
+  if (!editor || !client) return;
+  const document = editor.document;
+  const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
+
+  const workspaceFilepath =
+    workspaceFolder?.uri.fsPath ||
+    path.dirname(document.uri.fsPath) ||
+    process.cwd();
+
+  client.sendNotification("workspace", workspaceFilepath);
+}
+
 // get typescript api from build-in extension
 // https://github.com/microsoft/vscode/blob/master/extensions/typescript-language-features/src/api.ts
 async function getTypescriptAPI(): Promise<TypescriptAPI> {
@@ -313,17 +328,21 @@ export async function activate(context: ExtensionContext) {
     path.join("server", "out", "server.js")
   );
 
-  // The debug options for the server
-  const debugOptions = { execArgv: ["--nolazy", `--inspect=${port}`] };
-
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
   const serverOptions: ServerOptions = {
-    run: { module: serverModule, transport: TransportKind.ipc },
+    run: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: { cwd: process.cwd() }
+    },
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
-      options: debugOptions
+      options: {
+        cwd: process.cwd(),
+        execArgv: ["--nolazy", `--inspect=${port}`]
+      }
     }
   };
 
@@ -344,7 +363,7 @@ export async function activate(context: ExtensionContext) {
   };
 
   // Create the language client and start the client.
-  const client = new LanguageClient(
+  client = new LanguageClient(
     "Deno Language Server",
     "Deno Language Server",
     serverOptions,
@@ -353,6 +372,7 @@ export async function activate(context: ExtensionContext) {
 
   client.onReady().then(() => {
     console.log("Deno Language Server is ready!");
+    syncWorkspace(window.activeTextEditor);
     client.onNotification("init", (info: DenoInfo) => {
       denoInfo = { ...denoInfo, ...info };
       statusBar.text = `Deno ${denoInfo.version}`;
@@ -364,16 +384,7 @@ export async function activate(context: ExtensionContext) {
     });
 
     context.subscriptions.push(
-      workspace.onDidOpenTextDocument(document => {
-        const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
-
-        const workspaceFilepath =
-          workspaceFolder?.uri.fsPath ||
-          path.dirname(document.uri.fsPath) ||
-          process.cwd();
-
-        client.sendNotification("workspace", workspaceFilepath);
-      })
+      window.onDidChangeActiveTextEditor(syncWorkspace)
     );
   });
 
@@ -382,4 +393,10 @@ export async function activate(context: ExtensionContext) {
   console.log(`Congratulations, your extension "vscode-deno" is now active!`);
 }
 
-export function deactivate() {}
+export async function deactivate() {
+  if (!client) {
+    return;
+  }
+
+  await client.stop();
+}
