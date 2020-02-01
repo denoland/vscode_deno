@@ -50,7 +50,7 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
         reusedNames?: string[],
         redirectedReference?: ts_module.ResolvedProjectReference,
       ) => {
-        moduleNames = moduleNames.map(stripExtNameDotTs).map(convertRemoteToLocalCache);
+        moduleNames = moduleNames.map(convertRemoteToLocalCache).map(stripExtNameDotTs);
 
         return resolveModuleNames.call(
           info.languageServiceHost,
@@ -137,11 +137,13 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
 function getModuleWithQueryString(moduleName: string): string | undefined {
   let name = moduleName;
   for (const index = name.indexOf("?"); index !== -1; name = name.substring(index + 1)) {
-    if (name.substring(0, index).endsWith(".ts")) {
+    const sub = name.substring(0, index);
+    if (sub.endsWith(".ts") || sub.endsWith(".tsx")) {
       const cutLength = moduleName.length - name.length;
-      return moduleName.substring(0, index + cutLength);
+      return moduleName.substring(0, index + cutLength) || undefined;
     }
   }
+  return undefined;
 }
 
 function stripExtNameDotTs(moduleName: string): string {
@@ -149,15 +151,11 @@ function stripExtNameDotTs(moduleName: string): string {
   if (moduleWithQuery) {
     return moduleWithQuery;
   }
-
-  if (!moduleName.endsWith(".ts")) {
-    return moduleName;
+  const next = moduleName.replace(/\.tsx?$/, "");
+  if (next !== moduleName) {
+    logger.info(`strip "${moduleName}" to "${next}".`);
   }
-
-  const name = moduleName.slice(0, -3);
-  logger.info(`strip "${moduleName}" to "${name}".`);
-
-  return name;
+  return next;
 }
 
 function convertRemoteToLocalCache(moduleName: string): string {
@@ -183,19 +181,18 @@ interface IDenoModuleHeaders {
  * If moduleName is not found, recursively search for headers and "redirect_to" property.
  */
 function fallbackHeader(modulePath: string): string {
-  const validPath = modulePath.endsWith(".ts") ? modulePath : `${modulePath}.ts`;
-  if (fs.existsSync(validPath)) {
+  if (fs.existsSync(modulePath)) {
     return modulePath;
   }
 
-  const headersPath = `${validPath}.headers.json`;
+  const headersPath = `${modulePath}.headers.json`;
   if (fs.existsSync(headersPath)) {
     const headers: IDenoModuleHeaders = JSON.parse(
       fs.readFileSync(headersPath, { encoding: "utf-8" }),
     );
-    logger.info(`redirect "${modulePath}" to "${headers.redirect_to}".`);
+    logger.info(`redirect '${modulePath}' to '${headers.redirect_to}'.`);
     // TODO: avoid Circular
-    return convertRemoteToLocalCache(stripExtNameDotTs(headers.redirect_to));
+    return convertRemoteToLocalCache(headers.redirect_to);
   }
   return modulePath;
 }
