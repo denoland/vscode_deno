@@ -11,6 +11,23 @@ Adds Deno support for vs code
 
 ![screenshot](screenshot.gif)
 
+## Usage
+
+1. Download and enable extension from [vscode market](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
+
+2. Enable Deno for you project
+
+create a a file `.vscode/setting.json` in your project folder
+
+```json5
+// .vscode/setting.json
+{
+  "deno.enable": true
+}
+```
+
+3. Enjoy!
+
 ## Configuration
 
 - `deno.enabled` - Enable/disable this extension. Default is `false`.
@@ -71,4 +88,26 @@ This extension contributes the following commands to the Command palette.
 
 ## Contribute
 
-Report a bug or a suggestion by posting an issue on the [git repository](https://github.com/axetroy/vscode-deno).
+1. Fork project
+
+2. Clone into your computer
+
+```bash
+$ git clone https://github.com/your_github_name/vscode-deno.git
+$ cd vscode-deno
+$ yarn # or npm install
+```
+
+3. Disable extension in vscode if you have extension before
+
+4. Start debug extension
+
+Open vscode and find the `Debug` item in the sidebar
+
+And then run `Launch Client` debugger.
+
+Wait for vscode debugger to open a new window
+
+5. Try update code and restart debug
+
+6. Finally, push to your own fork and send a PR
