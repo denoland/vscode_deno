@@ -158,8 +158,6 @@ connection.onCompletion(async params => {
     return [];
   }
 
-  console.log(context);
-
   const config = await getWorkspaceConfig(doc.uri);
 
   if (!config.enable) {
@@ -310,7 +308,7 @@ async function validator(document: TextDocument) {
     ".wasm": true
   };
 
-  const diagnostics: Diagnostic[] = moduleNodes
+  const invalidImportModulesDiagnostics: Diagnostic[] = moduleNodes
     .map(moduleNode => {
       const [extensionName] = moduleNode.text.match(extensionNameReg) || [];
 
@@ -331,10 +329,35 @@ async function validator(document: TextDocument) {
     })
     .filter(v => v);
 
+  const NotHTTPSImportModulesDiagnostics: Diagnostic[] = moduleNodes
+    .map(moduleNode => {
+      if (/^https?:\/\//.test(moduleNode.text)) {
+        if (/^https:\/\//.test(moduleNode.text) === false) {
+          const range = Range.create(
+            document.positionAt(moduleNode.pos),
+            document.positionAt(moduleNode.end)
+          );
+
+          return Diagnostic.create(
+            range,
+            `For security, we recommend using the HTTPS module (${process.title})`,
+            DiagnosticSeverity.Warning
+          );
+        }
+
+        return;
+      } else {
+        return;
+      }
+    })
+    .filter(v => v);
+
   connection.sendDiagnostics({
     uri: document.uri,
     version: document.version,
-    diagnostics: diagnostics
+    diagnostics: invalidImportModulesDiagnostics.concat(
+      NotHTTPSImportModulesDiagnostics
+    )
   });
 }
 
