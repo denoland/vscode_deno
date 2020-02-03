@@ -17,7 +17,7 @@ Adds Deno support for vs code
 
 2. Enable Deno for your project
 
-create a a file `.vscode/setting.json` in your project folder
+create a file `.vscode/setting.json` in your project folder
 
 ```json5
 // .vscode/setting.json
@@ -98,16 +98,16 @@ $ cd vscode-deno
 $ yarn # or npm install
 ```
 
-3. Disable extension in vscode if you have extension before
+3. Disable extension in vs code if you have extension before
 
 4. Start debug extension
 
-> Open vscode and find the `Debug` item in the sidebar
+> Open vs code and find the `Debug` item in the sidebar
 >
 > And then run `Launch Client` debugger.
 >
-> Wait for vscode debugger to open a new window
+> Wait for vs code debugger to open a new window
 
 5. Try update code and restart debug
 
-6. Finally, push to your own fork and send a PR
+6. Finally, push to your fork and send a PR
