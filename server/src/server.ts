@@ -298,7 +298,6 @@ async function validator(document: TextDocument) {
   // delint it
   delint(sourceFile);
 
-  const extensionNameReg = /\.[a-zA-Z\d]+$/;
   const validExtensionNameMap = {
     ".ts": true,
     ".tsx": true,
@@ -310,27 +309,34 @@ async function validator(document: TextDocument) {
 
   const invalidImportModulesDiagnostics: Diagnostic[] = moduleNodes
     .map(moduleNode => {
-      const [extensionName] = moduleNode.text.match(extensionNameReg) || [];
-
-      if (validExtensionNameMap[extensionName]) {
-        return;
-      }
-
       const range = Range.create(
         document.positionAt(moduleNode.pos),
         document.positionAt(moduleNode.end)
       );
 
-      return Diagnostic.create(
-        range,
-        `Please specify valid extension name of the imported module. (${process.title})`,
-        DiagnosticSeverity.Error
-      );
-    })
-    .filter(v => v);
+      if (
+        /^\..+/.test(moduleNode.text) === false &&
+        /^https?:\/\/.*/.test(moduleNode.text) === false
+      ) {
+        return Diagnostic.create(
+          range,
+          `Deno only supports importting \`relative/HTTP\` module (${process.title})`,
+          DiagnosticSeverity.Error
+        );
+      }
 
-  const NotHTTPSImportModulesDiagnostics: Diagnostic[] = moduleNodes
-    .map(moduleNode => {
+      {
+        const [extensionName] = moduleNode.text.match(/\.[a-zA-Z\d]+$/) || [];
+
+        if (!validExtensionNameMap[extensionName]) {
+          return Diagnostic.create(
+            range,
+            `Please specify valid extension name of the imported module. (${process.title})`,
+            DiagnosticSeverity.Error
+          );
+        }
+      }
+
       if (/^https?:\/\//.test(moduleNode.text)) {
         if (/^https:\/\//.test(moduleNode.text) === false) {
           const range = Range.create(
@@ -344,20 +350,16 @@ async function validator(document: TextDocument) {
             DiagnosticSeverity.Warning
           );
         }
-
-        return;
-      } else {
-        return;
       }
+
+      return;
     })
     .filter(v => v);
 
   connection.sendDiagnostics({
     uri: document.uri,
     version: document.version,
-    diagnostics: invalidImportModulesDiagnostics.concat(
-      NotHTTPSImportModulesDiagnostics
-    )
+    diagnostics: invalidImportModulesDiagnostics
   });
 }
 
