@@ -19,6 +19,7 @@ import {
   TextDocumentSyncKind
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { WorkspaceFolder } from "vscode";
 
 import { deno, FormatableLanguages } from "./deno";
 import { isFilepathExist } from "./utils";
@@ -27,10 +28,6 @@ const configurationNamespace = "deno";
 
 process.title = "Deno Language Server";
 
-// The workspace folder this server is operating on
-let workspaceFolder: string = process.cwd();
-
-// The example settings
 interface ISettings {
   enable: boolean;
 }
@@ -38,8 +35,6 @@ interface ISettings {
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ISettings = { enable: true };
-let globalSettings: ISettings = defaultSettings;
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 const connection: IConnection = createConnection(
@@ -53,10 +48,8 @@ const documents = new TextDocuments(TextDocument);
 
 connection.onInitialize(
   (params): InitializeResult => {
+    process.title = `${process.title}`;
     return {
-      serverInfo: {
-        name: process.title
-      },
       capabilities: {
         documentFormattingProvider: true,
         textDocumentSync: {
@@ -109,10 +102,24 @@ connection.onInitialized(async () => {
   connection.console.log("server initialized.");
 });
 
+async function getWorkspace(uri: string) {
+  const workspaceFolder:
+    | WorkspaceFolder
+    | undefined = await connection.sendRequest("getWorkspaceFolder", uri);
+
+  return workspaceFolder;
+}
+
+async function getWorkspaceConfig(uri: string) {
+  const config: ISettings = await connection.sendRequest(
+    "getWorkspaceConfig",
+    uri
+  );
+
+  return config;
+}
+
 connection.onDocumentFormatting(async params => {
-  if (!globalSettings.enable) {
-    return [];
-  }
   const uri = params.textDocument.uri;
   const doc = documents.get(uri);
 
@@ -122,11 +129,19 @@ connection.onDocumentFormatting(async params => {
 
   const text = doc.getText();
 
+  const workspaceFolder = await getWorkspace(uri);
+
+  const cwd = workspaceFolder?.uri.fsPath || "./";
+
+  connection.console.log(
+    `Formatting '${uri.toString()}' at ${workspaceFolder?.uri.fsPath}`
+  );
+
   const formatted = await deno.format(
     text,
     doc.languageId as FormatableLanguages,
     {
-      cwd: workspaceFolder
+      cwd
     }
   );
 
@@ -185,7 +200,13 @@ connection.onCompletion(async params => {
 
   const doc = documents.get(textDocument.uri);
 
-  if (!globalSettings.enable || !doc) {
+  if (!doc) {
+    return [];
+  }
+
+  const config = await getWorkspaceConfig(doc.uri);
+
+  if (!config.enable) {
     return [];
   }
 
@@ -232,25 +253,14 @@ connection.onCompletion(async params => {
   return completes;
 });
 
-connection.onDidChangeConfiguration(change => {
-  const denoConfig = (change.settings[configurationNamespace] ||
-    defaultSettings) as ISettings;
-
-  connection.console.log(`detect config change ${JSON.stringify(denoConfig)}`);
-
-  globalSettings = { ...globalSettings, ...denoConfig };
-});
-
-connection.onNotification("workspace", filepath => {
-  workspaceFolder = filepath;
-});
-
-function validator(document: TextDocument) {
+async function validator(document: TextDocument) {
   if (!["typescript", "typescriptreact"].includes(document.languageId)) {
     return;
   }
 
-  if (!globalSettings.enable) {
+  const config = await getWorkspaceConfig(document.uri);
+
+  if (!config.enable) {
     connection.sendDiagnostics({
       uri: document.uri,
       version: document.version,

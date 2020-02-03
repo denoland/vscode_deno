@@ -10,7 +10,8 @@ import {
   TextEditor,
   WorkspaceFolder,
   QuickPickItem,
-  WorkspaceConfiguration
+  WorkspaceConfiguration,
+  Uri
 } from "vscode";
 import {
   LanguageClient,
@@ -57,6 +58,7 @@ const config: SynchronizedConfiguration = {
 };
 
 let client: LanguageClient;
+let api: TypescriptAPI;
 
 async function pickFolder(
   folders: WorkspaceFolder[],
@@ -170,6 +172,15 @@ function disable() {
 function synchronizeConfiguration(api: TypescriptAPI) {
   const config = getConfiguration();
 
+  api.configurePlugin(pluginId, config);
+}
+
+function getConfiguration(uri?: Uri): SynchronizedConfiguration {
+  const _config = workspace.getConfiguration(configurationSection, uri);
+
+  withConfigValue(_config, config, "enable");
+  withConfigValue(_config, config, "dtsFilepaths");
+
   if (!config.dtsFilepaths) {
     const dtsFilepath = denoInfo.dtsFilepath;
     if (dtsFilepath) {
@@ -182,13 +193,6 @@ function synchronizeConfiguration(api: TypescriptAPI) {
   }
 
   api.configurePlugin(pluginId, config);
-}
-
-function getConfiguration(): SynchronizedConfiguration {
-  const _config = workspace.getConfiguration(configurationSection);
-
-  withConfigValue(_config, config, "enable");
-  withConfigValue(_config, config, "dtsFilepaths");
 
   return config;
 }
@@ -203,21 +207,10 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
     return;
   }
 
-  // Make sure the user has actually set the value.
-  // VS Code will return the default values instead of `undefined`, even if user has not don't set anything.
-  if (
-    typeof configSetting.globalValue === "undefined" &&
-    typeof configSetting.workspaceFolderValue === "undefined" &&
-    typeof configSetting.workspaceValue === "undefined"
-  ) {
-    return;
-  }
-
-  const value = config.get<C[K] | undefined>(key, undefined);
-
-  if (typeof value !== "undefined") {
-    outConfig[key] = value;
-  }
+  outConfig[key] =
+    configSetting.workspaceFolderValue ??
+    configSetting.workspaceValue ??
+    configSetting.globalValue;
 }
 
 function syncWorkspace(editor: TextEditor) {
@@ -257,7 +250,7 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
 }
 
 export async function activate(context: ExtensionContext) {
-  const api = await getTypescriptAPI();
+  api = await getTypescriptAPI();
 
   if (!api) {
     window.showErrorMessage("Can not get Typescript APIs.");
@@ -387,6 +380,18 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(
       window.onDidChangeActiveTextEditor(syncWorkspace)
     );
+
+    client.onRequest("getWorkspaceFolder", async (uri: string) => {
+      return workspace.getWorkspaceFolder(Uri.parse(uri));
+    });
+
+    client.onRequest("getWorkspaceConfig", async (uri: string) => {
+      const workspaceFolder = workspace.getWorkspaceFolder(Uri.parse(uri));
+
+      const config = getConfiguration(workspaceFolder?.uri || Uri.parse(uri));
+
+      return config;
+    });
   });
 
   context.subscriptions.push(client.start());

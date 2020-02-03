@@ -54,7 +54,8 @@
         "deno.enable": {
           "type": "boolean",
           "default": true,
-          "description": "%deno.config.enabled%"
+          "description": "%deno.config.enabled%",
+          "scope": "resource"
         },
         "deno.dtsFilepaths": {
           "type": "array",
@@ -62,7 +63,8 @@
             "type": "string"
           },
           "default": [],
-          "description": "%deno.config.dtsFilepaths%"
+          "description": "%deno.config.dtsFilepaths%",
+          "scope": "resource"
         }
       }
     }
