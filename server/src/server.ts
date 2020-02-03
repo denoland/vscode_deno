@@ -147,46 +147,6 @@ connection.onDocumentFormatting(async params => {
   return [TextEdit.replace(range, formatted)];
 });
 
-interface Deps {
-  url: string;
-  filepath: string;
-}
-
-async function getDepsFile(
-  rootDir = deno.DENO_DEPS_DIR,
-  deps: Deps[] = []
-): Promise<Deps[]> {
-  const files = await fs.readdir(rootDir);
-
-  const promises = files.map(filename => {
-    const filepath = path.join(rootDir, filename);
-    return fs.stat(filepath).then(stat => {
-      if (stat.isDirectory()) {
-        return getDepsFile(filepath, deps);
-      } else if (
-        stat.isFile() &&
-        /\.tsx?$/.test(filepath) &&
-        !filepath.endsWith(".d.ts")
-      ) {
-        const url = filepath
-          .replace(deno.DENO_DEPS_DIR, "")
-          .replace(/^(\/|\\\\)/, "")
-          .replace(/http(\/|\\\\)/, "http://")
-          .replace(/https(\/|\\\\)/, "https://");
-
-        deps.push({
-          url: url,
-          filepath: filepath
-        });
-      }
-    });
-  });
-
-  await Promise.all(promises);
-
-  return deps;
-}
-
 // FIXME: all completion will trigger this.
 // It seem it's a bug for vscode
 connection.onCompletion(async params => {
@@ -197,6 +157,8 @@ connection.onCompletion(async params => {
   if (!doc) {
     return [];
   }
+
+  console.log(context);
 
   const config = await getWorkspaceConfig(doc.uri);
 
@@ -224,7 +186,7 @@ connection.onCompletion(async params => {
     return [];
   }
 
-  const deps = await getDepsFile();
+  const deps = await deno.getDependencies();
 
   const range = Range.create(
     Position.create(position.line, position.character - 5),

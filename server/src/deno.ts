@@ -1,7 +1,9 @@
 import { Readable } from "stream";
+import * as path from "path";
+import { promises as fs } from "fs";
+
 import execa from "execa";
 import which from "which";
-import { join } from "path";
 
 interface Version {
   deno: string;
@@ -24,13 +26,20 @@ interface FormatOptions {
   cwd: string;
 }
 
+interface Deps {
+  url: string;
+  filepath: string;
+}
+
 class Deno {
   public version!: Version | void;
   public executablePath!: string | void;
   public readonly DENO_DIR = this.getDenoDir();
-  public readonly DENO_DEPS_DIR = join(this.DENO_DIR, "deps");
-  public readonly dtsFilepath = join(this.DENO_DIR, "lib.deno_runtime.d.ts");
-  constructor() {}
+  public readonly DENO_DEPS_DIR = path.join(this.DENO_DIR, "deps");
+  public readonly dtsFilepath = path.join(
+    this.DENO_DIR,
+    "lib.deno_runtime.d.ts"
+  );
   public async init() {
     this.executablePath = await this.getExecutablePath();
 
@@ -125,6 +134,41 @@ class Deno {
     })) as string;
 
     return formattedCode;
+  }
+  // get deno dependencies files
+  public async getDependencies(
+    rootDir = this.DENO_DEPS_DIR,
+    deps: Deps[] = []
+  ) {
+    const files = await fs.readdir(rootDir);
+
+    const promises = files.map(filename => {
+      const filepath = path.join(rootDir, filename);
+      return fs.stat(filepath).then(stat => {
+        if (stat.isDirectory()) {
+          return this.getDependencies(filepath, deps);
+        } else if (
+          stat.isFile() &&
+          /\.tsx?$/.test(filepath) &&
+          !filepath.endsWith(".d.ts")
+        ) {
+          const url = filepath
+            .replace(deno.DENO_DEPS_DIR, "")
+            .replace(/^(\/|\\\\)/, "")
+            .replace(/http(\/|\\\\)/, "http://")
+            .replace(/https(\/|\\\\)/, "https://");
+
+          deps.push({
+            url: url,
+            filepath: filepath
+          });
+        }
+      });
+    });
+
+    await Promise.all(promises);
+
+    return deps;
   }
   private getDenoDir(): string {
     let denoDir = process.env["DENO_DIR"];
