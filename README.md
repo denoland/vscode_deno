@@ -15,7 +15,7 @@ Adds Deno support for vs code
 
 1. Download and enable extension from [vscode market](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
 
-2. Enable Deno for you project
+2. Enable Deno for your project
 
 create a a file `.vscode/setting.json` in your project folder
 
@@ -102,11 +102,11 @@ $ yarn # or npm install
 
 4. Start debug extension
 
-Open vscode and find the `Debug` item in the sidebar
-
-And then run `Launch Client` debugger.
-
-Wait for vscode debugger to open a new window
+> Open vscode and find the `Debug` item in the sidebar
+>
+> And then run `Launch Client` debugger.
+>
+> Wait for vscode debugger to open a new window
 
 5. Try update code and restart debug
 
