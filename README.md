@@ -1,6 +1,6 @@
 > Fork from [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno)
 >
-> Thanks for his contribution
+> Thanks for their contributions
 
 # VS Code Deno extension
 
