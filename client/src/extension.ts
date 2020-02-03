@@ -47,8 +47,12 @@ interface DenoInfo {
 
 async function pickFolder(
   folders: WorkspaceFolder[],
-  placeHolder: string
+  placeHolder: string,
+  multipleWorkspaces: boolean
 ): Promise<WorkspaceFolder> {
+  if (!multipleWorkspaces && folders.length === 1) {
+    return folders[0];
+  }
   const selected = await window.showQuickPick(
     folders.map<WorkspaceFolderItem>(folder => {
       return {
@@ -314,7 +318,8 @@ class Extension {
 
     pickFolder(
       disabledFolders,
-      "Select a workspace folder to enable Deno for"
+      "Select a workspace folder to enable Deno for",
+      folders.length > 1
     ).then(folder => {
       if (!folder) {
         return;
@@ -356,7 +361,8 @@ class Extension {
 
     pickFolder(
       enabledFolders,
-      "Select a workspace folder to disable Deno for"
+      "Select a workspace folder to disable Deno for",
+      folders.length > 1
     ).then(folder => {
       if (!folder) {
         return;
