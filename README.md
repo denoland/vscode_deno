@@ -13,9 +13,18 @@ Adds Deno support for vs code
 
 ## Configuration
 
-- `deno.enabled` - Enable/disable this extension. Default is `true`.
+- `deno.enabled` - Enable/disable this extension. Default is `false`.
 
 - `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). It can be a relative which path relative to the project directory or an absolute path. Default is `[]`
+
+We recommend that you do not set global configuration. It should be configured in `.vscode/setting.json` in the project directory
+
+```json5
+// .vscode/setting.json
+{
+  "deno.enable": true
+}
+```
 
 Extensions also provide Deno's formatting tools, setting in `.vscode/setting.json`
 

@@ -137,7 +137,7 @@ class Extension {
     }
 
     if ("enable" in config === false) {
-      config.enable = true;
+      config.enable = false;
     }
 
     return config;

@@ -24,17 +24,11 @@ import { WorkspaceFolder } from "vscode";
 import { deno, FormatableLanguages } from "./deno";
 import { isFilepathExist } from "./utils";
 
-const configurationNamespace = "deno";
-
 process.title = "Deno Language Server";
 
 interface ISettings {
   enable: boolean;
 }
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 const connection: IConnection = createConnection(
