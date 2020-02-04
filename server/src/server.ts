@@ -1,5 +1,4 @@
 import { promises as fs } from "fs";
-import * as ts from "typescript";
 
 import {
   IPCMessageReader,
@@ -13,21 +12,17 @@ import {
   CompletionItem,
   CompletionItemKind,
   Position,
-  Diagnostic,
-  DiagnosticSeverity,
   TextDocumentSyncKind
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { WorkspaceFolder } from "vscode";
+import * as ts from "typescript";
 
 import { deno, FormatableLanguages } from "./deno";
-import { isFilepathExist } from "./utils";
+import { Diagnostics } from "./diagnostics";
+import { Bridge } from "./bridge";
 
-process.title = "Deno Language Server";
-
-interface ISettings {
-  enable: boolean;
-}
+const SERVER_NAME = "Deno Language Server";
+process.title = SERVER_NAME;
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 const connection: IConnection = createConnection(
@@ -35,13 +30,15 @@ const connection: IConnection = createConnection(
   new IPCMessageWriter(process)
 );
 
+const bridge = new Bridge(connection);
+const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge);
+
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 const documents = new TextDocuments(TextDocument);
 
 connection.onInitialize(
   (params): InitializeResult => {
-    process.title = `${process.title}`;
     return {
       capabilities: {
         documentFormattingProvider: true,
@@ -61,7 +58,7 @@ connection.onInitialized(async () => {
   try {
     await deno.init();
     const currentDenoTypesContent = await deno.getTypes();
-    const isExistDtsFile = await isFilepathExist(deno.dtsFilepath);
+    const isExistDtsFile = await ts.sys.fileExists(deno.dtsFilepath);
     const fileOptions = { encoding: "utf8" };
 
     // if dst file not exist. then create a new one
@@ -95,22 +92,6 @@ connection.onInitialized(async () => {
   connection.console.log("server initialized.");
 });
 
-async function getWorkspace(uri: string) {
-  const workspaceFolder: WorkspaceFolder
-    | undefined = await connection.sendRequest("getWorkspaceFolder", uri);
-
-  return workspaceFolder;
-}
-
-async function getWorkspaceConfig(uri: string) {
-  const config: ISettings = await connection.sendRequest(
-    "getWorkspaceConfig",
-    uri
-  );
-
-  return config;
-}
-
 connection.onDocumentFormatting(async params => {
   const uri = params.textDocument.uri;
   const doc = documents.get(uri);
@@ -121,7 +102,7 @@ connection.onDocumentFormatting(async params => {
 
   const text = doc.getText();
 
-  const workspaceFolder = await getWorkspace(uri);
+  const workspaceFolder = await bridge.getWorkspace(uri);
 
   const cwd = workspaceFolder?.uri.fsPath || "./";
 
@@ -156,7 +137,7 @@ connection.onCompletion(async params => {
     return [];
   }
 
-  const config = await getWorkspaceConfig(doc.uri);
+  const config = await bridge.getWorkspaceConfig(doc.uri);
 
   if (!config.enable) {
     return [];
@@ -207,178 +188,8 @@ connection.onCompletion(async params => {
   return completes;
 });
 
-async function validator(document: TextDocument) {
-  if (!["typescript", "typescriptreact"].includes(document.languageId)) {
-    return;
-  }
-
-  const config = await getWorkspaceConfig(document.uri);
-
-  if (!config.enable) {
-    connection.sendDiagnostics({
-      uri: document.uri,
-      version: document.version,
-      diagnostics: []
-    });
-    return;
-  }
-
-  let sourceFile;
-  try {
-    // Parse a file
-    sourceFile = ts.createSourceFile(
-      document.uri.toString(),
-      document.getText(),
-      ts.ScriptTarget.ESNext,
-      false,
-      ts.ScriptKind.TSX
-    );
-  } catch (err) {
-    return;
-  }
-
-  const moduleNodes: ts.LiteralLikeNode[] = [];
-
-  function delint(SourceFile: ts.SourceFile) {
-    delintNode(SourceFile);
-
-    function delintNode(node: ts.Node) {
-      let moduleNode: ts.LiteralLikeNode | null = null;
-      switch (node.kind) {
-        // import('xxx')
-        case ts.SyntaxKind.CallExpression:
-          const expression = (node as ts.CallExpression).expression;
-          const args = (node as ts.CallExpression).arguments;
-          const isDynamicImport =
-            expression?.kind === ts.SyntaxKind.ImportKeyword;
-          if (isDynamicImport) {
-            const argv = args[0] as ts.StringLiteral;
-
-            if (argv && ts.isStringLiteral(argv)) {
-              moduleNode = argv;
-            }
-          }
-          break;
-        // import ts = require('typescript')
-        case ts.SyntaxKind.ImportEqualsDeclaration:
-          const ref = (node as ts.ImportEqualsDeclaration)
-            .moduleReference as ts.ExternalModuleReference;
-
-          if (ref.expression && ts.isStringLiteral(ref.expression)) {
-            moduleNode = ref.expression;
-          }
-          break;
-        // import * as from 'xx'
-        // import 'xx'
-        // import xx from 'xx'
-        case ts.SyntaxKind.ImportDeclaration:
-          const spec = (node as ts.ImportDeclaration).moduleSpecifier;
-          if (spec && ts.isStringLiteral(spec)) {
-            moduleNode = spec;
-          }
-          break;
-        // export { window } from "xxx";
-        // export * from "xxx";
-        case ts.SyntaxKind.ExportDeclaration:
-          const exportSpec = (node as ts.ExportDeclaration).moduleSpecifier;
-          if (exportSpec && ts.isStringLiteral(exportSpec)) {
-            moduleNode = exportSpec;
-          }
-          break;
-      }
-
-      if (moduleNode) {
-        moduleNodes.push(moduleNode);
-      }
-
-      ts.forEachChild(node, delintNode);
-    }
-  }
-
-  // delint it
-  delint(sourceFile);
-
-  const validExtensionNameMap = {
-    ".ts": true,
-    ".tsx": true,
-    ".js": true,
-    ".jsx": true,
-    ".json": true,
-    ".wasm": true
-  };
-
-  const invalidImportModulesDiagnostics: Diagnostic[] = moduleNodes
-    .map(moduleNode => {
-      const numberOfSpaces = Math.abs(
-        // why plus 2?
-        // because `moduleNode.text` only contain the plaintext without two quotes
-        moduleNode.end - moduleNode.pos - (moduleNode.text.length + 2)
-      );
-
-      const range = Range.create(
-        document.positionAt(moduleNode.pos + numberOfSpaces),
-        document.positionAt(moduleNode.end)
-      );
-
-      if (
-        /^\..+/.test(moduleNode.text) === false &&
-        /^https?:\/\/.*/.test(moduleNode.text) === false
-      ) {
-        return Diagnostic.create(
-          range,
-          `Deno only supports importting \`relative/HTTP\` module (${process
-            .title})`,
-          DiagnosticSeverity.Error
-        );
-      }
-
-      {
-        const [extensionName] = moduleNode.text.match(/\.[a-zA-Z\d]+$/) || [];
-
-        if (!validExtensionNameMap[extensionName]) {
-          return Diagnostic.create(
-            range,
-            `Please specify valid extension name of the imported module. (${
-              process.title})`,
-            DiagnosticSeverity.Error
-          );
-        }
-      }
-
-      if (/^https?:\/\//.test(moduleNode.text)) {
-        if (/^https:\/\//.test(moduleNode.text) === false) {
-          const range = Range.create(
-            document.positionAt(moduleNode.pos),
-            document.positionAt(moduleNode.end)
-          );
-
-          return Diagnostic.create(
-            range,
-            `For security, we recommend using the HTTPS module (${process.title
-              })`,
-            DiagnosticSeverity.Warning
-          );
-        }
-      }
-
-      return;
-    })
-    .filter(v => v);
-
-  connection.sendDiagnostics({
-    uri: document.uri,
-    version: document.version,
-    diagnostics: invalidImportModulesDiagnostics
-  });
-}
-
-documents.onDidOpen(params => {
-  validator(params.document);
-});
-
-documents.onDidChangeContent(params => {
-  validator(params.document);
-});
+documents.onDidOpen(params => diagnostics.diagnosis(params.document));
+documents.onDidChangeContent(params => diagnostics.diagnosis(params.document));
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
