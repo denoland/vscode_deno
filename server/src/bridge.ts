@@ -10,11 +10,12 @@ export class Bridge {
   constructor(private connection: IConnection) {}
   // get workspace folder from client
   async getWorkspace(uri: string): Promise<any> {
-    const workspaceFolder: WorkspaceFolder
+    const workspaceFolder:
+      | WorkspaceFolder
       | undefined = await this.connection.sendRequest(
-        "getWorkspaceFolder",
-        uri
-      );
+      "getWorkspaceFolder",
+      uri
+    );
 
     return workspaceFolder;
   }
