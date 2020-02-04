@@ -30,12 +30,12 @@ const connection: IConnection = createConnection(
   new IPCMessageWriter(process)
 );
 
-const bridge = new Bridge(connection);
-const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge);
-
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 const documents = new TextDocuments(TextDocument);
+
+const bridge = new Bridge(connection);
+const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge);
 
 connection.onInitialize(
   (params): InitializeResult => {

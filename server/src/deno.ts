@@ -12,8 +12,13 @@ interface Version {
   raw: string;
 }
 
-export type FormatableLanguages =
-  | "typescript"
+interface DenoModule {
+  filepath: string;
+  raw: string;
+  remote: boolean;
+}
+
+export type FormatableLanguages = "typescript"
   | "typescriptreact"
   | "javascript"
   | "javascriptreact"
@@ -93,9 +98,8 @@ class Deno {
       [
         "run",
         "--allow-read",
-        `https://deno.land/std${
-          version ? "@v" + version : ""
-        }/prettier/main.ts`,
+        `https://deno.land/std${version ? "@v" + version : ""
+          }/prettier/main.ts`,
         "--stdin",
         "--stdin-parser",
         parser,
@@ -170,6 +174,29 @@ class Deno {
 
     return deps;
   }
+  public resolveModule(cwd: string, moduleName: string): DenoModule {
+    let remote = false;
+    const raw = moduleName;
+    if (/^https?:\/\/.+/.test(moduleName)) {
+      remote = true;
+      moduleName = path.resolve(
+        this.DENO_DEPS_DIR,
+        moduleName.replace("://", "/")
+      );
+    } // absolute filepath
+    else if (moduleName.indexOf("/") === 0) {
+      moduleName = moduleName;
+    } // relative filepath
+    else {
+      moduleName = path.resolve(cwd, moduleName);
+    }
+
+    return {
+      filepath: moduleName,
+      raw,
+      remote
+    };
+  }
   private getDenoDir(): string {
     let denoDir = process.env["DENO_DIR"];
 
@@ -194,9 +221,8 @@ class Deno {
     return denoDir;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    const denoPath = await which("deno").catch(() =>
-      Promise.resolve(undefined)
-    );
+    const denoPath = await which("deno")
+      .catch(() => Promise.resolve(undefined));
 
     return denoPath;
   }

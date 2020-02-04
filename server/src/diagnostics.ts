@@ -1,3 +1,5 @@
+import * as path from "path";
+
 import {
   IConnection,
   Range,
@@ -6,8 +8,17 @@ import {
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
+import { URI } from "vscode-uri";
 
 import { Bridge } from "./bridge";
+import { deno } from "./deno";
+
+enum ErrorCode {
+  InvalidModule = 1001,
+  MissingExtension = 1002,
+  PreferHTTPS = 1003,
+  ModuleNotExist = 1004
+}
 
 export class Diagnostics {
   constructor(
@@ -43,7 +54,7 @@ export class Diagnostics {
         ts.ScriptKind.TSX
       );
     } catch (err) {
-      return;
+      return [];
     }
 
     const moduleNodes: ts.LiteralLikeNode[] = [];
@@ -116,69 +127,87 @@ export class Diagnostics {
       ".wasm": true
     };
 
-    const invalidImportModulesDiagnostics: Diagnostic[] = moduleNodes
-      .map(moduleNode => {
-        const numberOfSpaces = Math.abs(
-          // why plus 2?
-          // because `moduleNode.text` only contain the plaintext without two quotes
-          moduleNode.end - moduleNode.pos - (moduleNode.text.length + 2)
-        );
+    const dir = path.dirname(URI.parse(document.uri).path);
+    const diagnosticsForThisDocument = [];
 
-        const range = Range.create(
-          document.positionAt(moduleNode.pos + numberOfSpaces),
-          document.positionAt(moduleNode.end)
-        );
+    for (const moduleNode of moduleNodes) {
+      const numberOfSpaces = Math.abs(
+        // why plus 2?
+        // because `moduleNode.text` only contain the plaintext without two quotes
+        moduleNode.end - moduleNode.pos - (moduleNode.text.length + 2)
+      );
 
-        if (
-          /^\..+/.test(moduleNode.text) === false &&
-          /^https?:\/\/.*/.test(moduleNode.text) === false
-        ) {
-          return Diagnostic.create(
+      const range = Range.create(
+        document.positionAt(moduleNode.pos + numberOfSpaces),
+        document.positionAt(moduleNode.end)
+      );
+
+      const isRelativeModule = /^\..+/.test(moduleNode.text);
+      const isRemoteModule = /^https?:\/\/.*/.test(moduleNode.text);
+
+      if (!isRelativeModule && !isRemoteModule) {
+        diagnosticsForThisDocument.push(
+          Diagnostic.create(
             range,
             `Deno only supports importting \`relative/HTTP\` module.`,
             DiagnosticSeverity.Error,
-            1001,
+            ErrorCode.InvalidModule,
             this.name
-          );
-        }
+          )
+        );
+      }
 
-        {
-          const [extensionName] = moduleNode.text.match(/\.[a-zA-Z\d]+$/) ||
-            [];
+      {
+        const [extensionName] = moduleNode.text.match(/\.[a-zA-Z\d]+$/) || [];
 
-          if (!validExtensionNameMap[extensionName]) {
-            return Diagnostic.create(
+        if (!validExtensionNameMap[extensionName]) {
+          diagnosticsForThisDocument.push(
+            Diagnostic.create(
               range,
               `Please specify valid extension name of the imported module.`,
               DiagnosticSeverity.Error,
-              1002,
+              ErrorCode.MissingExtension,
               this.name
-            );
-          }
+            )
+          );
         }
+      }
 
-        if (/^https?:\/\//.test(moduleNode.text)) {
-          if (/^https:\/\//.test(moduleNode.text) === false) {
-            const range = Range.create(
-              document.positionAt(moduleNode.pos),
-              document.positionAt(moduleNode.end)
-            );
+      if (isRemoteModule) {
+        if (/^https:\/\//.test(moduleNode.text) === false) {
+          const range = Range.create(
+            document.positionAt(moduleNode.pos),
+            document.positionAt(moduleNode.end)
+          );
 
-            return Diagnostic.create(
+          diagnosticsForThisDocument.push(
+            Diagnostic.create(
               range,
               `For security, we recommend using the HTTPS module.`,
               DiagnosticSeverity.Warning,
-              1003,
+              ErrorCode.PreferHTTPS,
               this.name
-            );
-          }
+            )
+          );
         }
+      }
 
-        return;
-      })
-      .filter(v => v);
+      const module = deno.resolveModule(dir, moduleNode.text);
 
-    return invalidImportModulesDiagnostics;
+      if (!ts.sys.fileExists(module.filepath)) {
+        diagnosticsForThisDocument.push(
+          Diagnostic.create(
+            range,
+            `Cannot found module \`${module.raw}\`.`,
+            DiagnosticSeverity.Error,
+            ErrorCode.ModuleNotExist,
+            this.name
+          )
+        );
+      }
+    }
+
+    return diagnosticsForThisDocument;
   }
   async diagnosis(document: TextDocument): Promise<void> {
     this.connection.sendDiagnostics({

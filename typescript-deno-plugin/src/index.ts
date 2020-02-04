@@ -62,29 +62,37 @@ module.exports = function init({
   };
 
   return {
-    create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
+    create(info:
+      ts_module.server.PluginCreateInfo): ts_module.LanguageService
+    {
       logger = Logger.forPlugin(info);
 
       logger.info(`Create typescript-deno-plugin`);
-      const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
-        info.languageServiceHost
-      );
-      const getScriptFileNames = info.languageServiceHost.getScriptFileNames.bind(
-        info.languageServiceHost
-      );
+      const getCompilationSettings = info.languageServiceHost
+        .getCompilationSettings.bind(
+          info.languageServiceHost
+        );
+      const getScriptFileNames = info.languageServiceHost.getScriptFileNames
+        .bind(
+          info.languageServiceHost
+        );
       // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-      const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
-        info.languageServiceHost
-      );
-      const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails.bind(
-        info.languageService
-      );
-      const getCompletionsAtPosition = info.languageService.getCompletionsAtPosition.bind(
-        info.languageService
-      );
-      const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
-        info.languageService
-      );
+      const resolveModuleNames = info.languageServiceHost.resolveModuleNames
+        ?.bind(
+          info.languageServiceHost
+        );
+      const getCompletionEntryDetails = info.languageService
+        .getCompletionEntryDetails.bind(
+          info.languageService
+        );
+      const getCompletionsAtPosition = info.languageService
+        .getCompletionsAtPosition.bind(
+          info.languageService
+        );
+      const getSemanticDiagnostics = info.languageService
+        .getSemanticDiagnostics.bind(
+          info.languageService
+        );
 
       info.languageServiceHost.getCompilationSettings = () => {
         const projectConfig = getCompilationSettings();
@@ -145,8 +153,7 @@ module.exports = function init({
         fileName: string,
         position: number,
         name: string,
-        formatOptions?:
-          | ts_module.FormatCodeOptions
+        formatOptions?: ts_module.FormatCodeOptions
           | ts_module.FormatCodeSettings,
         source?: string,
         preferences?: ts_module.UserPreferences
@@ -191,25 +198,12 @@ module.exports = function init({
           return diagnostics;
         }
 
-        const ignoreCodeMapInDeno: { [k: number]: boolean } = {
+        const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
           // 2691:true, // can not import module which end with `.ts`
           1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
         };
 
         return diagnostics.filter(v => {
-          if (v.code === 2691) {
-            v.code = 2307; // ts error code which can not found module
-            const reg = /“[^”]+”/g;
-            const message =
-              typeof v.messageText === "string"
-                ? v.messageText
-                : v.messageText.messageText;
-
-            const matcher = message.match(reg);
-            const [, moduleName] = matcher || [];
-
-            v.messageText = `Cannot find module ${moduleName}`;
-          }
           return !ignoreCodeMapInDeno[v.code];
         });
       };
@@ -262,9 +256,8 @@ module.exports = function init({
 function getModuleWithQueryString(moduleName: string): string | undefined {
   let name = moduleName;
   for (
-    const index = name.indexOf("?");
-    index !== -1;
-    name = name.substring(index + 1)
+    const index = name.indexOf("?"); index !== -1; name = name
+      .substring(index + 1)
   ) {
     if (name.substring(0, index).endsWith(".ts")) {
       const cutLength = moduleName.length - name.length;
