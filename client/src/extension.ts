@@ -180,81 +180,96 @@ class Extension {
   }
   // start Deno Language Server
   private async StartDenoLanguageServer() {
-    // create server connection
-    const port = await getport({ port: 9523 });
+    if (this.client) {
+      await this.client.stop();
+      this.client = null;
+    }
+    const statusbar = window.createStatusBarItem(StatusBarAlignment.Left, -100);
+    statusbar.text = "$(loading) Initializing Deno Language Server";
+    statusbar.show();
 
-    // The server is implemented in node
-    const serverModule = this.context.asAbsolutePath(
-      path.join("server", "out", "server.js")
-    );
+    try {
+      // create server connection
+      const port = await getport({ port: 9523 });
 
-    // If the extension is launched in debug mode then the debug server options are used
-    // Otherwise the run options are used
-    const serverOptions: ServerOptions = {
-      run: {
-        module: serverModule,
-        transport: TransportKind.ipc,
-        options: { cwd: process.cwd() }
-      },
-      debug: {
-        module: serverModule,
-        transport: TransportKind.ipc,
-        options: {
-          cwd: process.cwd(),
-          execArgv: ["--nolazy", `--inspect=${port}`]
-        }
-      }
-    };
-
-    // Options to control the language client
-    const clientOptions: LanguageClientOptions = {
-      documentSelector: [
-        { scheme: "file", language: "javascript" },
-        { scheme: "file", language: "javascriptreact" },
-        { scheme: "file", language: "typescript" },
-        { scheme: "file", language: "typescriptreact" },
-        { scheme: "file", language: "markdown" },
-        { scheme: "file", language: "json" }
-      ],
-      diagnosticCollectionName: this.configurationSection,
-      synchronize: {
-        configurationSection: this.configurationSection
-      },
-      progressOnInitialization: true
-    };
-
-    // Create the language client and start the client.
-    const client = (this.client = new LanguageClient(
-      "Deno Language Server",
-      "Deno Language Server",
-      serverOptions,
-      clientOptions
-    ));
-
-    client.onReady().then(() => {
-      console.log("Deno Language Server is ready!");
-      client.onNotification("init", (info: DenoInfo) => {
-        this.denoInfo = { ...this.denoInfo, ...info };
-        this.updateStatusBarVisibility(window.activeTextEditor);
-      });
-      client.onNotification("error", window.showErrorMessage);
-
-      client.onRequest("getWorkspaceFolder", async (uri: string) =>
-        workspace.getWorkspaceFolder(Uri.parse(uri))
+      // The server is implemented in node
+      const serverModule = this.context.asAbsolutePath(
+        path.join("server", "out", "server.js")
       );
 
-      client.onRequest("getWorkspaceConfig", async (uri: string) => {
-        const workspaceFolder = workspace.getWorkspaceFolder(Uri.parse(uri));
+      // If the extension is launched in debug mode then the debug server options are used
+      // Otherwise the run options are used
+      const serverOptions: ServerOptions = {
+        run: {
+          module: serverModule,
+          transport: TransportKind.ipc,
+          options: { cwd: process.cwd() }
+        },
+        debug: {
+          module: serverModule,
+          transport: TransportKind.ipc,
+          options: {
+            cwd: process.cwd(),
+            execArgv: ["--nolazy", `--inspect=${port}`]
+          }
+        }
+      };
 
-        const config = this.getConfiguration(
-          workspaceFolder?.uri || Uri.parse(uri)
+      // Options to control the language client
+      const clientOptions: LanguageClientOptions = {
+        documentSelector: [
+          { scheme: "file", language: "javascript" },
+          { scheme: "file", language: "javascriptreact" },
+          { scheme: "file", language: "typescript" },
+          { scheme: "file", language: "typescriptreact" },
+          { scheme: "file", language: "markdown" },
+          { scheme: "file", language: "json" }
+        ],
+        diagnosticCollectionName: this.configurationSection,
+        synchronize: {
+          configurationSection: this.configurationSection
+        },
+        progressOnInitialization: true
+      };
+
+      // Create the language client and start the client.
+      const client = (this.client = new LanguageClient(
+        "Deno Language Server",
+        "Deno Language Server",
+        serverOptions,
+        clientOptions
+      ));
+
+      this.context.subscriptions.push(client.start());
+
+      await client.onReady().then(() => {
+        console.log("Deno Language Server is ready!");
+        client.onNotification("init", (info: DenoInfo) => {
+          this.denoInfo = { ...this.denoInfo, ...info };
+          this.updateStatusBarVisibility(window.activeTextEditor);
+        });
+        client.onNotification("error", window.showErrorMessage);
+
+        client.onRequest("getWorkspaceFolder", async (uri: string) =>
+          workspace.getWorkspaceFolder(Uri.parse(uri))
         );
 
-        return config;
-      });
-    });
+        client.onRequest("getWorkspaceConfig", async (uri: string) => {
+          const workspaceFolder = workspace.getWorkspaceFolder(Uri.parse(uri));
 
-    this.context.subscriptions.push(client.start());
+          const config = this.getConfiguration(
+            workspaceFolder?.uri || Uri.parse(uri)
+          );
+
+          return config;
+        });
+      });
+    } catch (err) {
+      throw err;
+    } finally {
+      statusbar.hide();
+      statusbar.dispose();
+    }
   }
   // update status bar visibility
   private updateStatusBarVisibility(
@@ -397,6 +412,10 @@ Executable ${this.denoInfo.executablePath}
 
     this.registerCommand("enable", this.enable.bind(this));
     this.registerCommand("disable", this.disable.bind(this));
+    this.registerCommand(
+      "restart_server",
+      this.StartDenoLanguageServer.bind(this)
+    );
     this.watchConfiguration(() => {
       const uri = window.activeTextEditor?.document.uri;
       if (uri) {

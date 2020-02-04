@@ -19,18 +19,14 @@
   "engines": {
     "vscode": "^1.41.0"
   },
-  "categories": [
-    "Programming Languages",
-    "Other"
-  ],
-  "keywords": [
-    "deno"
-  ],
+  "categories": ["Programming Languages", "Other"],
+  "keywords": ["deno"],
   "activationEvents": [
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onCommand:deno.enable",
-    "onCommand:deno.disable"
+    "onCommand:deno.disable",
+    "onCommand:deno.restart_server"
   ],
   "main": "./client/out/extension.js",
   "contributes": {
@@ -49,6 +45,11 @@
       {
         "command": "deno.disable",
         "title": "%deno.command.disable%",
+        "category": "deno"
+      },
+      {
+        "command": "deno.restart_server",
+        "title": "%deno.command.restart_server%",
         "category": "deno"
       }
     ],
@@ -89,10 +90,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,ts,json,md}": [
-      "yarn format",
-      "git add"
-    ]
+    "**/*.{js,ts,json,md}": ["yarn format", "git add"]
   },
   "devDependencies": {
     "@types/node": "12.12.26",
