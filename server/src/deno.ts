@@ -19,7 +19,8 @@ interface DenoModule {
   remote: boolean;
 }
 
-export type FormatableLanguages = "typescript"
+export type FormatableLanguages =
+  | "typescript"
   | "typescriptreact"
   | "javascript"
   | "javascriptreact"
@@ -99,8 +100,7 @@ class Deno {
       [
         "run",
         "--allow-read",
-        `https://deno.land/std${version ? "@v" + version : ""
-          }/prettier/main.ts`,
+        `https://deno.land/std@v0.31.0/prettier/main.ts`,
         "--stdin",
         "--stdin-parser",
         parser,
@@ -243,8 +243,9 @@ class Deno {
     return denoDir;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    const denoPath = await which("deno")
-      .catch(() => Promise.resolve(undefined));
+    const denoPath = await which("deno").catch(() =>
+      Promise.resolve(undefined)
+    );
 
     return denoPath;
   }
