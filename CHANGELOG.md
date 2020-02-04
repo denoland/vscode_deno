@@ -1,3 +1,15 @@
+# [1.14.0](https://github.com/axetroy/vscode-deno/compare/v1.13.1...v1.14.0) (2020-02-04)
+
+### Bug Fixes
+
+- lock prettier version to make sure formatter work on deno v0.32.0. We will switch to dprint in a future release and only suppport formatting typescript/javascipt code. ([78b3266](https://github.com/axetroy/vscode-deno/commit/78b3266))
+
+### Features
+
+- add `deno.restart_server` command to restart `Deno Language Server`. close [#28](https://github.com/axetroy/vscode-deno/issues/28) ([9a66f86](https://github.com/axetroy/vscode-deno/commit/9a66f86))
+- Added i18n support for Chinese Traditional ([ca93cd2](https://github.com/axetroy/vscode-deno/commit/ca93cd2))
+- improve status bar. show more information ([6fb83c4](https://github.com/axetroy/vscode-deno/commit/6fb83c4))
+
 ## [1.13.1](https://github.com/axetroy/vscode-deno/compare/v1.13.0...v1.13.1) (2020-02-04)
 
 ### Bug Fixes
