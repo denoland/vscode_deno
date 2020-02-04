@@ -1,7 +1,3 @@
-> Fork from [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno)
->
-> Thanks for their contributions
-
 # VS Code Deno extension
 
 [![Version](https://vsmarketplacebadge.apphb.com/version/axetroy.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
@@ -10,6 +6,16 @@
 Adds Deno support for vs code
 
 ![screenshot](screenshot.gif)
+
+Feature:
+
+- [x] Support Deno declaration file
+- [x] Module import intelligent
+- [x] Diagnostics
+- [x] Deno formatting tool
+- [x] C/S model with LSP
+- [ ] Support import-map for Deno (TODO)
+- [ ] Deno version upgrade detection (TODO)
 
 ## Usage
 
@@ -27,6 +33,13 @@ create a file `.vscode/setting.json` in your project folder
 ```
 
 3. Enjoy!
+
+## Difference from [justjavac.vscode-deno](https://github.com/justjavac/vscode-deno)
+
+- Almost completely rewritten
+- Fix its known issues
+- Add some new features
+- Integrated [typescript-deno-plugin](typescript-deno-plugin) means easier maintenance
 
 ## Configuration
 
@@ -111,3 +124,13 @@ $ yarn # or npm install
 5. Try update code and restart debug
 
 6. Finally, push to your fork and send a PR
+
+## Thanks
+
+This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno)
+
+Thanks for their contributions
+
+## License
+
+The [MIT License](LICENSE)
