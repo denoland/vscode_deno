@@ -187,7 +187,7 @@ export class Diagnostics {
         }
       }
 
-      const module = deno.resolveModule(dir, moduleNode.text);
+      const module = await deno.resolveModule(dir, moduleNode.text);
 
       if (!ts.sys.fileExists(module.filepath)) {
         diagnosticsForThisDocument.push(

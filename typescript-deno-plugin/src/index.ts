@@ -8,7 +8,7 @@ import ts_module from "typescript/lib/tsserverlibrary";
 import { Logger } from "./logger";
 import { getDenoDir } from "./shared";
 
-const TYPESCRIPT_EXT_REG = /\.tsx?$/;
+const TYPESCRIPT_EXT_REG = /\.(t|j)sx?$/;
 
 let logger: Logger;
 
@@ -230,8 +230,8 @@ module.exports = function init({
         }
 
         moduleNames = moduleNames
-          .map(stripExtNameDotTs)
-          .map(convertRemoteToLocalCache);
+          .map(convertRemoteToLocalCache)
+          .map(stripExtNameDotTs);
 
         return resolveModuleNames(
           moduleNames,
@@ -271,14 +271,11 @@ function stripExtNameDotTs(moduleName: string): string {
   if (moduleWithQuery) {
     return moduleWithQuery;
   }
-
   if (TYPESCRIPT_EXT_REG.test(moduleName) === false) {
     return moduleName;
   }
-
   const name = moduleName.replace(TYPESCRIPT_EXT_REG, "");
   logger.info(`strip "${moduleName}" to "${name}".`);
-
   return name;
 }
 
@@ -289,40 +286,28 @@ function convertRemoteToLocalCache(moduleName: string): string {
 
   const denoDir = getDenoDir();
   // "https://deno.land/x/std/log/mod" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod" (no ".ts" because stripped)
-  const name = path.resolve(denoDir, "deps", moduleName.replace("://", "/"));
-  const redirectedName = fallbackHeader(name);
-  logger.info(`convert "${moduleName}" to "${redirectedName}".`);
+  let filepath = path.resolve(denoDir, "deps", moduleName.replace("://", "/"));
 
-  return redirectedName;
+  if (!existsSync(filepath)) {
+    const headersPath = `${filepath}.headers.json`;
+    const headers: IDenoModuleHeaders = JSON.parse(
+      fs.readFileSync(headersPath, { encoding: "utf-8" })
+    );
+    if (moduleName !== headers.redirect_to) {
+      const redirectFilepath = convertRemoteToLocalCache(headers.redirect_to);
+      logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
+      filepath = redirectFilepath;
+    }
+  }
+
+  logger.info(`convert "${moduleName}" to "${filepath}".`);
+
+  return filepath;
 }
 
 interface IDenoModuleHeaders {
   mime_type: string;
   redirect_to: string;
-}
-
-/**
- * If moduleName is not found, recursively search for headers and "redirect_to" property.
- */
-function fallbackHeader(modulePath: string): string {
-  const validPath = TYPESCRIPT_EXT_REG.test(modulePath)
-    ? modulePath
-    : `${modulePath}.ts`;
-
-  if (existsSync(validPath)) {
-    return modulePath;
-  }
-
-  const headersPath = `${validPath}.headers.json`;
-  if (existsSync(headersPath)) {
-    const headers: IDenoModuleHeaders = JSON.parse(
-      fs.readFileSync(headersPath, { encoding: "utf-8" })
-    );
-    logger.info(`redirect "${modulePath}" to "${headers.redirect_to}".`);
-    // TODO: avoid Circular
-    return convertRemoteToLocalCache(stripExtNameDotTs(headers.redirect_to));
-  }
-  return modulePath;
 }
 
 function getDtsPathForVscode(info: ts.server.PluginCreateInfo): string[] {

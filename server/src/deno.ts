@@ -2,6 +2,7 @@ import { Readable } from "stream";
 import * as path from "path";
 import { promises as fs } from "fs";
 
+import * as ts from "typescript";
 import execa from "execa";
 import which from "which";
 
@@ -174,7 +175,10 @@ class Deno {
 
     return deps;
   }
-  public resolveModule(cwd: string, moduleName: string): DenoModule {
+  public async resolveModule(
+    cwd: string,
+    moduleName: string
+  ): Promise<DenoModule> {
     let remote = false;
     const raw = moduleName;
     if (/^https?:\/\/.+/.test(moduleName)) {
@@ -183,6 +187,24 @@ class Deno {
         this.DENO_DEPS_DIR,
         moduleName.replace("://", "/")
       );
+
+      // if file not exist, fallback to headers.json
+      if (!ts.sys.fileExists(moduleName)) {
+        const headersPath = `${moduleName}.headers.json`;
+        if (ts.sys.fileExists(headersPath)) {
+          interface IDenoModuleHeaders {
+            mime_type: string;
+            redirect_to: string;
+          }
+          const headers: IDenoModuleHeaders = JSON.parse(
+            await fs.readFile(headersPath, { encoding: "utf-8" })
+          );
+          if (headers.redirect_to !== raw) {
+            moduleName = (await this.resolveModule(cwd, headers.redirect_to))
+              .filepath;
+          }
+        }
+      }
     } // absolute filepath
     else if (moduleName.indexOf("/") === 0) {
       moduleName = moduleName;
