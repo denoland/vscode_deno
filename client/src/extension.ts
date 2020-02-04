@@ -40,7 +40,12 @@ interface TypescriptAPI {
 
 interface DenoInfo {
   DENO_DIR: string;
-  version: string;
+  version: {
+    deno: string;
+    v8: string;
+    typescript: string;
+    raw: string;
+  };
   executablePath: string;
   dtsFilepath: string;
 }
@@ -105,7 +110,12 @@ class Extension {
   // Deno Information from Deno Language Server
   private denoInfo: DenoInfo = {
     DENO_DIR: "",
-    version: "",
+    version: {
+      deno: "",
+      v8: "",
+      typescript: "",
+      raw: ""
+    },
     executablePath: "",
     dtsFilepath: ""
   };
@@ -225,8 +235,6 @@ class Extension {
       console.log("Deno Language Server is ready!");
       client.onNotification("init", (info: DenoInfo) => {
         this.denoInfo = { ...this.denoInfo, ...info };
-        this.statusBar.text = `Deno ${this.denoInfo.version}`;
-        this.statusBar.tooltip = this.denoInfo.executablePath;
         this.updateStatusBarVisibility(window.activeTextEditor);
       });
       client.onNotification("error", window.showErrorMessage);
@@ -282,6 +290,13 @@ class Extension {
       this.statusBar.hide();
       return;
     }
+
+    this.statusBar.text = `Deno ${this.denoInfo.version.deno}`;
+    this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
+TypeScript ${this.denoInfo.version.typescript}
+V8 ${this.denoInfo.version.v8}
+Executable ${this.denoInfo.executablePath}
+    `;
 
     this.statusBar.show();
   }

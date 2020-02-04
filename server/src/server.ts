@@ -84,7 +84,7 @@ connection.onInitialized(async () => {
     return;
   }
   connection.sendNotification("init", {
-    version: deno.version ? deno.version.deno : undefined,
+    version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
     DENO_DIR: deno.DENO_DIR,
     dtsFilepath: deno.dtsFilepath
