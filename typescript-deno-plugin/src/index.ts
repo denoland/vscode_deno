@@ -199,7 +199,7 @@ module.exports = function init({
         }
 
         const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
-          // 2691:true, // can not import module which end with `.ts`
+          2691: true, // can not import module which end with `.ts`
           1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
         };
 
