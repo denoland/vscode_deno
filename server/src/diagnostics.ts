@@ -28,19 +28,14 @@ export class Diagnostics {
   ) {}
   async generate(document: TextDocument): Promise<Diagnostic[]> {
     if (!["typescript", "typescriptreact"].includes(document.languageId)) {
-      return;
+      return [];
     }
 
     // get workspace config
     const config = await this.bridge.getWorkspaceConfig(document.uri);
 
     if (!config.enable) {
-      this.connection.sendDiagnostics({
-        uri: document.uri,
-        version: document.version,
-        diagnostics: []
-      });
-      return;
+      return [];
     }
 
     let sourceFile;
