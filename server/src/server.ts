@@ -96,8 +96,7 @@ connection.onInitialized(async () => {
 });
 
 async function getWorkspace(uri: string) {
-  const workspaceFolder:
-    | WorkspaceFolder
+  const workspaceFolder: WorkspaceFolder
     | undefined = await connection.sendRequest("getWorkspaceFolder", uri);
 
   return workspaceFolder;
@@ -168,13 +167,15 @@ connection.onCompletion(async params => {
   );
 
   const IMPORT_REG = /import\s['"][a-zA-Z]$/;
-  const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z]$/;
+  const IMPORT_FROM_REG =
+    /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z]$/;
   const DYNAMIC_REG = /import\s*\(['"][a-zA-Z]$/;
 
   const isImport =
     IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"
-    IMPORT_FROM_REG.test(currentLine) || // import xxxx from "https://xxxx.xxxx"
-    DYNAMIC_REG.test(currentLine); // import("https://xxxx.xxxx")
+      IMPORT_FROM_REG
+        .test(currentLine) || // import xxxx from "https://xxxx.xxxx"
+      DYNAMIC_REG.test(currentLine); // import("https://xxxx.xxxx")
 
   if (
     currentLine.length > 1000 || // if is a large file
@@ -308,8 +309,14 @@ async function validator(document: TextDocument) {
 
   const invalidImportModulesDiagnostics: Diagnostic[] = moduleNodes
     .map(moduleNode => {
+      const numberOfSpaces = Math.abs(
+        // why plus 2?
+        // because `moduleNode.text` only contain the plaintext without two quotes
+        moduleNode.end - moduleNode.pos - (moduleNode.text.length + 2)
+      );
+
       const range = Range.create(
-        document.positionAt(moduleNode.pos),
+        document.positionAt(moduleNode.pos + numberOfSpaces),
         document.positionAt(moduleNode.end)
       );
 
@@ -319,7 +326,8 @@ async function validator(document: TextDocument) {
       ) {
         return Diagnostic.create(
           range,
-          `Deno only supports importting \`relative/HTTP\` module (${process.title})`,
+          `Deno only supports importting \`relative/HTTP\` module (${process
+            .title})`,
           DiagnosticSeverity.Error
         );
       }
@@ -330,7 +338,8 @@ async function validator(document: TextDocument) {
         if (!validExtensionNameMap[extensionName]) {
           return Diagnostic.create(
             range,
-            `Please specify valid extension name of the imported module. (${process.title})`,
+            `Please specify valid extension name of the imported module. (${
+              process.title})`,
             DiagnosticSeverity.Error
           );
         }
@@ -345,7 +354,8 @@ async function validator(document: TextDocument) {
 
           return Diagnostic.create(
             range,
-            `For security, we recommend using the HTTPS module (${process.title})`,
+            `For security, we recommend using the HTTPS module (${process.title
+              })`,
             DiagnosticSeverity.Warning
           );
         }
