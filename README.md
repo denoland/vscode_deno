@@ -96,8 +96,9 @@ If you want to ignore the directory/file. create `.prettieringore` in the projec
 
 This extension contributes the following commands to the Command palette.
 
-- `Enable Deno` - Enable this extension including enable `typescript-deno-plugin`.
-- `Disable Deno` - Disable this extension including disable `typescript-deno-plugin`.
+- `deno.enable` - Enable this extension.
+- `deno.disable` - Disable this extension.
+- `deno.restart_server` - Restart Deno Language Server.
 
 ## Contribute
 
