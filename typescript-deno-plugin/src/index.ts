@@ -284,13 +284,15 @@ function convertRemoteToLocalCache(moduleName: string): string {
 
   if (!existsSync(filepath)) {
     const headersPath = `${filepath}.headers.json`;
-    const headers: IDenoModuleHeaders = JSON.parse(
-      fs.readFileSync(headersPath, { encoding: "utf-8" })
-    );
-    if (moduleName !== headers.redirect_to) {
-      const redirectFilepath = convertRemoteToLocalCache(headers.redirect_to);
-      logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
-      filepath = redirectFilepath;
+    if (existsSync(headersPath)) {
+      const headers: IDenoModuleHeaders = JSON.parse(
+        fs.readFileSync(headersPath, { encoding: "utf-8" })
+      );
+      if (moduleName !== headers.redirect_to) {
+        const redirectFilepath = convertRemoteToLocalCache(headers.redirect_to);
+        logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
+        filepath = redirectFilepath;
+      }
     }
   }
 
