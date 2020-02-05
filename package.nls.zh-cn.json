@@ -5,5 +5,6 @@
   "deno.command.disable": "禁用 Deno",
   "deno.command.restart_server": "重启 Deno 语言服务器",
   "deno.config.enabled": "是否启用 Deno",
-  "deno.config.dtsFilepaths": "Typescript 的声明文件(.d.ts)路径。它可以是相对于项目目录的相对路径或者是绝对路径"
+  "deno.config.dtsFilepaths": "Typescript 的声明文件(.d.ts)路径。它可以是相对于项目目录的相对路径或者是绝对路径",
+  "deno.config.import_map": "Import Map 的文件路径。它可以是相对于项目目录的相对路径或者是绝对路径"
 }

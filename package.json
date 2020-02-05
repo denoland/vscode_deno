@@ -71,6 +71,11 @@
           "default": [],
           "description": "%deno.config.dtsFilepaths%",
           "scope": "resource"
+        },
+        "deno.import_map": {
+          "type": "string",
+          "description": "%deno.config.import_map%",
+          "scope": "resource"
         }
       }
     }

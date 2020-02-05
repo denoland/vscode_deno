@@ -38,6 +38,9 @@ interface WorkspaceFolderItem extends QuickPickItem {
 interface SynchronizedConfiguration {
   enable?: boolean;
   dtsFilepaths?: string[];
+  import_map?: string;
+  // external
+  workspaceDir?: string;
 }
 
 interface TypescriptAPI {
@@ -54,6 +57,58 @@ interface DenoInfo {
   };
   executablePath: string;
   dtsFilepath: string;
+}
+
+interface ImportMap {
+  imports: { [key: string]: string };
+}
+
+function exists(filepath: string): Promise<boolean> {
+  return fs
+    .stat(filepath)
+    .then(() => Promise.resolve(true))
+    .catch(() => Promise.resolve(false));
+}
+
+async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
+  let importMaps: ImportMap = {
+    imports: {}
+  };
+
+  //  try resolve import maps
+  if (importMapFilepath) {
+    const importMapsFilepath = path.isAbsolute(importMapFilepath)
+      ? importMapFilepath
+      : path.resolve(workspaceDir || process.cwd(), importMapFilepath);
+
+    if (await exists(importMapsFilepath)) {
+      const importMapContent = await fs.readFile(importMapsFilepath);
+
+      try {
+        importMaps = JSON.parse(importMapContent.toString() || "{}");
+      } catch {}
+    }
+  }
+
+  return importMaps;
+}
+
+function resolveModuleFromImportMap(
+  importMaps: ImportMap,
+  moduleName: string
+): string {
+  const maps = importMaps.imports || {};
+
+  for (const prefix in maps) {
+    const mapModule = maps[prefix];
+
+    const reg = new RegExp("^" + prefix);
+    if (reg.test(moduleName)) {
+      moduleName = moduleName.replace(reg, mapModule);
+    }
+  }
+
+  return moduleName;
 }
 
 async function pickFolder(
@@ -150,6 +205,7 @@ class Extension {
 
     withConfigValue(_config, config, "enable");
     withConfigValue(_config, config, "dtsFilepaths");
+    withConfigValue(_config, config, "import_map");
 
     if (!config.dtsFilepaths) {
       const dtsFilepath = this.denoInfo.dtsFilepath;
@@ -160,6 +216,12 @@ class Extension {
 
     if ("enable" in config === false) {
       config.enable = false;
+    }
+
+    const workspaceFolder = workspace.getWorkspaceFolder(uri);
+
+    if (workspaceFolder) {
+      config.workspaceDir = workspaceFolder.uri.fsPath;
     }
 
     return config;
@@ -470,6 +532,11 @@ Executable ${this.denoInfo.executablePath}
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
+    this.tsAPI.configurePlugin(
+      TYPESCRIPT_DENO_PLUGIN_ID,
+      this.getConfiguration(window.activeTextEditor?.document.uri)
+    );
+
     this.statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 0);
 
     this.context.subscriptions.push(this.statusBar);
@@ -502,7 +569,22 @@ Executable ${this.denoInfo.executablePath}
         });
       },
       _fetch_remote_module: async (editor, text) => {
-        const ps = execa(this.denoInfo.executablePath, ["fetch", text]);
+        const config = await this.getConfiguration(editor.document.uri);
+        const workspaceFolder = workspace.getWorkspaceFolder(
+          editor.document.uri
+        );
+        const remoteModuleUrl = resolveModuleFromImportMap(
+          await getImportMaps(
+            config.import_map,
+            workspaceFolder?.uri.fsPath || process.cwd()
+          ),
+          text
+        );
+
+        const ps = execa(this.denoInfo.executablePath, [
+          "fetch",
+          remoteModuleUrl
+        ]);
 
         this.output.show();
 

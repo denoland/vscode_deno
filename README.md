@@ -14,7 +14,7 @@ Feature:
 - [x] Diagnostics and quick fix
 - [x] Deno formatting tool
 - [x] C/S model with LSP
-- [ ] Support import-map for Deno (TODO)
+- [x] Support `Import Maps` for Deno
 - [ ] Deno version upgrade detection (TODO)
 
 ## Usage

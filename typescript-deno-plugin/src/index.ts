@@ -20,14 +20,22 @@ function existsSync(filepath: string) {
   }
 }
 
+interface IImportMap {
+  imports: { [key: string]: string };
+}
+
 interface IConfig {
   enable: boolean;
   dtsFilepaths?: string[];
+  import_map?: string;
+  workspaceDir?: string;
 }
 
 let config: IConfig = {
   dtsFilepaths: [],
-  enable: true
+  enable: true,
+  import_map: "",
+  workspaceDir: ""
 };
 
 module.exports = function init({
@@ -76,12 +84,6 @@ module.exports = function init({
       const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
         info.languageServiceHost
       );
-      const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails.bind(
-        info.languageService
-      );
-      const getCompletionsAtPosition = info.languageService.getCompletionsAtPosition.bind(
-        info.languageService
-      );
       const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
         info.languageService
       );
@@ -125,65 +127,6 @@ module.exports = function init({
         return scriptFileNames;
       };
 
-      info.languageService.getCompletionsAtPosition = (
-        filename,
-        position,
-        options
-      ) => {
-        const prior = getCompletionsAtPosition(filename, position, options);
-
-        if (!config.enable) {
-          return prior;
-        }
-
-        logger.info(`completeions ${JSON.stringify(prior)}`);
-
-        return prior;
-      };
-
-      info.languageService.getCompletionEntryDetails = (
-        fileName: string,
-        position: number,
-        name: string,
-        formatOptions?:
-          | ts_module.FormatCodeOptions
-          | ts_module.FormatCodeSettings,
-        source?: string,
-        preferences?: ts_module.UserPreferences
-      ) => {
-        const details = getCompletionEntryDetails(
-          fileName,
-          position,
-          name,
-          formatOptions,
-          source,
-          preferences
-        );
-
-        if (!config.enable) {
-          return details;
-        }
-
-        if (details) {
-          if (details.codeActions?.length) {
-            for (const ca of details.codeActions) {
-              for (const change of ca.changes) {
-                if (!change.isNewFile) {
-                  for (const tc of change.textChanges) {
-                    tc.newText = tc.newText.replace(
-                      /^(import .* from ['"])(\..*)(['"];\n)/i,
-                      "$1$2.ts$3"
-                    );
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        return details;
-      };
-
       info.languageService.getSemanticDiagnostics = (filename: string) => {
         const diagnostics = getSemanticDiagnostics(filename);
 
@@ -222,9 +165,34 @@ module.exports = function init({
           );
         }
 
+        let importMaps: IImportMap;
+
+        //  try resolve import maps
+        if (config.import_map) {
+          const importMapsFilepath = path.isAbsolute(config.import_map)
+            ? config.import_map
+            : path.resolve(
+                config.workspaceDir || process.cwd(),
+                config.import_map
+              );
+
+          if (typescript.sys.fileExists(importMapsFilepath)) {
+            const importMapContent = typescript.sys.readFile(
+              importMapsFilepath
+            );
+
+            try {
+              importMaps = JSON.parse(importMapContent || "{}");
+            } catch {}
+          }
+        }
+
         moduleNames = moduleNames
+          .map(name => resolveImportMap(importMaps, name))
           .map(convertRemoteToLocalCache)
           .map(stripExtNameDotTs);
+
+        logger.info(`resolve module ${JSON.stringify(moduleNames)}`);
 
         return resolveModuleNames(
           moduleNames,
@@ -239,9 +207,9 @@ module.exports = function init({
     },
 
     onConfigurationChanged(c: IConfig) {
+      logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
       config = merge(config, c);
       config.dtsFilepaths = c.dtsFilepaths;
-      logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     }
   };
 };
@@ -258,6 +226,24 @@ function getModuleWithQueryString(moduleName: string): string | undefined {
       return moduleName.substring(0, index + cutLength);
     }
   }
+}
+
+function resolveImportMap(importMaps: IImportMap, moduleName: string): string {
+  if (!importMaps) {
+    return moduleName;
+  }
+  const maps = importMaps.imports || {};
+
+  for (const prefix in maps) {
+    const mapModule = maps[prefix];
+
+    const reg = new RegExp("^" + prefix);
+    if (reg.test(moduleName)) {
+      moduleName = moduleName.replace(reg, mapModule);
+    }
+  }
+
+  return moduleName;
 }
 
 function stripExtNameDotTs(moduleName: string): string {

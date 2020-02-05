@@ -19,6 +19,10 @@ interface DenoModule {
   remote: boolean;
 }
 
+interface ImportMap {
+  imports: { [key: string]: string };
+}
+
 export type FormatableLanguages =
   | "typescript"
   | "typescriptreact"
@@ -92,8 +96,6 @@ class Deno {
     }
 
     const reader = Readable.from([code]);
-
-    const version = this.version ? this.version.deno : undefined;
 
     const subprocess = execa(
       this.executablePath as string,
@@ -175,8 +177,48 @@ class Deno {
 
     return deps;
   }
+  public getImportMaps(importMapFilepath: string, workspaceDir: string) {
+    let importMaps: ImportMap = {
+      imports: {}
+    };
+
+    //  try resolve import maps
+    if (importMapFilepath) {
+      const importMapsFilepath = path.isAbsolute(importMapFilepath)
+        ? importMapFilepath
+        : path.resolve(workspaceDir || process.cwd(), importMapFilepath);
+
+      if (ts.sys.fileExists(importMapsFilepath)) {
+        const importMapContent = ts.sys.readFile(importMapsFilepath);
+
+        try {
+          importMaps = JSON.parse(importMapContent || "{}");
+        } catch {}
+      }
+    }
+
+    return importMaps;
+  }
+  private resolveModuleFromImportMap(
+    importMaps: ImportMap,
+    moduleName: string
+  ): string {
+    const maps = importMaps.imports || {};
+
+    for (const prefix in maps) {
+      const mapModule = maps[prefix];
+
+      const reg = new RegExp("^" + prefix);
+      if (reg.test(moduleName)) {
+        moduleName = moduleName.replace(reg, mapModule);
+      }
+    }
+
+    return moduleName;
+  }
   public async resolveModule(
-    cwd: string,
+    importMaps: ImportMap,
+    importerFolder: string,
     moduleName: string
   ): Promise<DenoModule> {
     let remote = false;
@@ -197,20 +239,33 @@ class Deno {
             redirect_to: string;
           }
           const headers: IDenoModuleHeaders = JSON.parse(
-            await fs.readFile(headersPath, { encoding: "utf-8" })
+            await fs.readFile(headersPath, { encoding: "utf8" })
           );
           if (headers.redirect_to !== raw) {
-            moduleName = (await this.resolveModule(cwd, headers.redirect_to))
-              .filepath;
+            moduleName = (
+              await this.resolveModule(
+                importMaps,
+                importerFolder,
+                headers.redirect_to
+              )
+            ).filepath;
           }
         }
       }
-    } // absolute filepath
+    }
+    // absolute filepath
     else if (moduleName.indexOf("/") === 0) {
       moduleName = moduleName;
-    } // relative filepath
+    }
+    // relative filepath
     else {
-      moduleName = path.resolve(cwd, moduleName);
+      moduleName = this.resolveModuleFromImportMap(importMaps, moduleName);
+
+      if (/^https?:\/\/.+/.test(moduleName)) {
+        return this.resolveModule(importMaps, importerFolder, moduleName);
+      } else {
+        moduleName = path.resolve(importerFolder, moduleName);
+      }
     }
 
     return {

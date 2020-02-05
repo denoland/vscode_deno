@@ -108,10 +108,12 @@ connection.onDocumentFormatting(async params => {
 
   const workspaceFolder = await bridge.getWorkspace(uri);
 
-  const cwd = workspaceFolder?.uri.fsPath || "./";
+  const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : "./";
 
   connection.console.log(
-    `Formatting '${uri.toString()}' at ${workspaceFolder?.uri.fsPath}`
+    `Formatting '${uri.toString()}' at ${
+      workspaceFolder ? workspaceFolder.uri.fsPath : ""
+    }`
   );
 
   const formatted = await deno.format(

@@ -119,7 +119,10 @@ export class Diagnostics {
     }
 
     // get workspace config
-    const config = await this.bridge.getWorkspaceConfig(document.uri);
+    const [config, workspaceDir] = await Promise.all([
+      this.bridge.getWorkspaceConfig(document.uri),
+      this.bridge.getWorkspace(document.uri)
+    ]);
 
     if (!config.enable) {
       return [];
@@ -210,6 +213,10 @@ export class Diagnostics {
     };
 
     const dir = path.dirname(URI.parse(document.uri).path);
+    const importMaps = deno.getImportMaps(
+      config.import_map,
+      workspaceDir ? workspaceDir.uri.fsPath : process.cwd()
+    );
     const diagnosticsForThisDocument = [];
 
     for (const moduleNode of moduleNodes) {
@@ -224,20 +231,7 @@ export class Diagnostics {
         document.positionAt(moduleNode.end)
       );
 
-      const isRelativeModule = /^\..+/.test(moduleNode.text);
       const isRemoteModule = /^https?:\/\/.*/.test(moduleNode.text);
-
-      if (!isRelativeModule && !isRemoteModule) {
-        diagnosticsForThisDocument.push(
-          Diagnostic.create(
-            range,
-            `Deno only supports importting \`relative/HTTP\` module.`,
-            DiagnosticSeverity.Error,
-            DiagnosticCode.InvalidModule,
-            this.name
-          )
-        );
-      }
 
       {
         const [extensionName] = moduleNode.text.match(/\.[a-zA-Z\d]+$/) || [];
@@ -282,7 +276,7 @@ export class Diagnostics {
         }
       }
 
-      const module = await deno.resolveModule(dir, moduleNode.text);
+      const module = await deno.resolveModule(importMaps, dir, moduleNode.text);
 
       if (!ts.sys.fileExists(module.filepath)) {
         diagnosticsForThisDocument.push(
