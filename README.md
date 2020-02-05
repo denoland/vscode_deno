@@ -43,7 +43,7 @@ create a file `.vscode/setting.json` in your project folder
 
 ## Configuration
 
-- `deno.enabled` - Enable/disable this extension. Default is `false`.
+- `deno.enabled` - Enable extension. Default is `false`.
 
 - `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). It can be a relative which path relative to the project directory or an absolute path. Default is `[]`
 
