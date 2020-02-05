@@ -167,12 +167,12 @@ class Extension {
   // register command for deno extension
   private registerCommand(
     command: string,
-    handler: () => void | Promise<void>
+    handler: (...argv: any[]) => void | Promise<void>
   ) {
     this.context.subscriptions.push(
       commands.registerCommand(
         this.configurationSection + "." + command,
-        handler
+        handler.bind(this)
       )
     );
   }
@@ -431,124 +431,41 @@ Executable ${this.denoInfo.executablePath}
         .update("enable", false);
     });
   }
-  private fixAddMissingExtension(uri: string, range: Range) {
-    const textEditor = window.activeTextEditor;
+  // register quickly fix code action
+  private registerQuickFix(map: {
+    [command: string]: (
+      editor: TextEditor,
+      text: string,
+      range: Range
+    ) => void | Promise<void>;
+  }) {
+    for (let command in map) {
+      const handler = map[command];
+      this.registerCommand(command, async (uri: string, range: Range) => {
+        const textEditor = window.activeTextEditor;
 
-    if (!textEditor || textEditor.document.uri.toString() !== uri) {
-      return;
+        if (!textEditor || textEditor.document.uri.toString() !== uri) {
+          return;
+        }
+
+        range = new Range(
+          range.start.line,
+          range.start.character,
+          range.end.line,
+          range.end.character
+        );
+
+        const rangeText = textEditor.document.getText(range);
+
+        return await handler.call(this, textEditor, rangeText, range);
+      });
     }
-
-    range = new Range(
-      range.start.line,
-      range.start.character,
-      range.end.line,
-      range.end.character
-    );
-
-    const text = textEditor.document.getText(range);
-
-    textEditor.edit(editor => editor.replace(range, text + ".ts"));
   }
-  private fixUseHTTPSModule(uri: string, range: Range) {
-    const textEditor = window.activeTextEditor;
-
-    if (!textEditor || textEditor.document.uri.toString() !== uri) {
-      return;
-    }
-
-    range = new Range(
-      range.start.line,
-      range.start.character,
-      range.end.line,
-      range.end.character
-    );
-
-    const text = textEditor.document.getText(range);
-
-    textEditor.edit(editor => {
-      editor.replace(range, text.replace(/^http/, "https"));
-    });
-  }
-  private fixFetchRemoteModule(uri: string, range: Range) {
-    const textEditor = window.activeTextEditor;
-
-    if (!textEditor || textEditor.document.uri.toString() !== uri) {
-      return;
-    }
-
-    range = new Range(
-      range.start.line,
-      range.start.character,
-      range.end.line,
-      range.end.character
-    );
-
-    const moduleUrl = textEditor.document.getText(range);
-
-    const ps = execa(this.denoInfo.executablePath, ["fetch", moduleUrl]);
-
-    this.output.show();
-
-    ps.stdout.on("data", buf => {
-      this.output.append(buf + "");
-    });
-
-    ps.stderr.on("data", buf => {
-      this.output.append(buf + "");
-    });
-
-    ps.on("exit", (code: number) => {
-      this.output.appendLine(`exit with code: ${code}`);
-      this.updateDiagnostic(textEditor.document.uri);
-    });
-  }
-  private async fixCreateLocalModule(uri: string, range: Range) {
-    const textEditor = window.activeTextEditor;
-
-    if (!textEditor || textEditor.document.uri.toString() !== uri) {
-      return;
-    }
-
-    range = new Range(
-      range.start.line,
-      range.start.character,
-      range.end.line,
-      range.end.character
-    );
-
-    const localModule = textEditor.document.getText(range);
-
-    const extName = path.extname(localModule);
-
-    if (extName === "") {
-      this.output.appendLine(
-        `Cannot create module \`${localModule}\` without specifying extension name`
-      );
-      this.output.show();
-      return;
-    }
-
-    let defaultTextContent = "";
-
-    switch (extName) {
-      case ".json":
-        defaultTextContent = "{}";
-        break;
-    }
-
-    const absModuleFilepath = path.isAbsolute(localModule)
-      ? localModule
-      : path.resolve(path.dirname(textEditor.document.uri.fsPath), localModule);
-
-    this.output.appendLine(`create module \`${absModuleFilepath}\``);
-
-    await fs.writeFile(absModuleFilepath, defaultTextContent);
-
-    this.updateDiagnostic(textEditor.document.uri);
-  }
+  // update diagnostic for a Document
   private updateDiagnostic(uri: Uri) {
     this.client.sendNotification("updateDiagnostic", uri.toString());
   }
+  // activate function for vscode
   public async activate(context: ExtensionContext) {
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
@@ -574,23 +491,68 @@ Executable ${this.denoInfo.executablePath}
       "restart_server",
       this.StartDenoLanguageServer.bind(this)
     );
-    // internal command for Deno Language Server
-    this.registerCommand(
-      "_add_missing_extension",
-      this.fixAddMissingExtension.bind(this)
-    );
-    this.registerCommand(
-      "_use_https_module",
-      this.fixUseHTTPSModule.bind(this)
-    );
-    this.registerCommand(
-      "_fetch_remote_module",
-      this.fixFetchRemoteModule.bind(this)
-    );
-    this.registerCommand(
-      "_create_local_module",
-      this.fixCreateLocalModule.bind(this)
-    );
+
+    this.registerQuickFix({
+      _add_missing_extension: async (editor, text, range) => {
+        await editor.edit(e => e.replace(range, text + ".ts"));
+      },
+      _use_https_module: async (editor, text, range) => {
+        await editor.edit(e => {
+          e.replace(range, text.replace(/^http/, "https"));
+        });
+      },
+      _fetch_remote_module: async (editor, text) => {
+        const ps = execa(this.denoInfo.executablePath, ["fetch", text]);
+
+        this.output.show();
+
+        ps.stdout.on("data", buf => {
+          this.output.append(buf + "");
+        });
+
+        ps.stderr.on("data", buf => {
+          this.output.append(buf + "");
+        });
+
+        await new Promise((resolve, reject) => {
+          ps.on("exit", (code: number) => {
+            this.output.appendLine(`exit with code: ${code}`);
+            this.updateDiagnostic(editor.document.uri);
+            resolve();
+          });
+        });
+      },
+      _create_local_module: async (editor, text) => {
+        const extName = path.extname(text);
+
+        if (extName === "") {
+          this.output.appendLine(
+            `Cannot create module \`${text}\` without specifying extension name`
+          );
+          this.output.show();
+          return;
+        }
+
+        let defaultTextContent = "";
+
+        switch (extName) {
+          case ".json":
+            defaultTextContent = "{}";
+            break;
+        }
+
+        const absModuleFilepath = path.isAbsolute(text)
+          ? text
+          : path.resolve(path.dirname(editor.document.uri.fsPath), text);
+
+        this.output.appendLine(`create module \`${absModuleFilepath}\``);
+
+        await fs.writeFile(absModuleFilepath, defaultTextContent);
+
+        this.updateDiagnostic(editor.document.uri);
+      }
+    });
+
     this.watchConfiguration(() => {
       const uri = window.activeTextEditor?.document.uri;
       if (uri) {
@@ -622,6 +584,7 @@ Executable ${this.denoInfo.executablePath}
 
     console.log(`Congratulations, your extension "vscode-deno" is now active!`);
   }
+  // deactivate function for vscode
   public async deactivate(context: ExtensionContext) {
     this.context = context;
 
