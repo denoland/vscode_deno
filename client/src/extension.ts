@@ -538,6 +538,11 @@ Executable ${this.denoInfo.executablePath}
         switch (extName) {
           case ".json":
             defaultTextContent = "{}";
+          case ".js":
+          case ".jsx":
+          case ".ts":
+          case ".tsx":
+            defaultTextContent = "export function example () {}";
             break;
         }
 
