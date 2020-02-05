@@ -555,6 +555,17 @@ Executable ${this.denoInfo.executablePath}
         await fs.writeFile(absModuleFilepath, defaultTextContent);
 
         this.updateDiagnostic(editor.document.uri);
+      },
+      _lock_std_version: (editor, text, range) => {
+        editor.edit(e =>
+          e.replace(
+            range,
+            text.replace(
+              "https://deno.land/std/",
+              `https://deno.land/std@v${this.denoInfo.version.deno}/`
+            )
+          )
+        );
       }
     });
 

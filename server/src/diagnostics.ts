@@ -27,7 +27,8 @@ enum DiagnosticCode {
   MissingExtension = 1002,
   PreferHTTPS = 1003,
   LocalModuleNotExist = 1004,
-  RemoteModuleNotExist = 1005
+  RemoteModuleNotExist = 1005,
+  LockStdVersion = 1006
 }
 
 const FixItems: { [code: number]: Fix } = {
@@ -46,6 +47,10 @@ const FixItems: { [code: number]: Fix } = {
   [DiagnosticCode.RemoteModuleNotExist]: {
     title: "Fetch module.",
     command: "deno._fetch_remote_module"
+  },
+  [DiagnosticCode.LockStdVersion]: {
+    title: "Lock std version.",
+    command: "deno._lock_std_version"
   }
 };
 
@@ -251,13 +256,26 @@ export class Diagnostics {
       }
 
       if (isRemoteModule) {
-        if (/^https:\/\//.test(moduleNode.text) === false) {
+        if (moduleNode.text.indexOf("https://") !== 0) {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               range,
               `For security, we recommend using the HTTPS module.`,
               DiagnosticSeverity.Warning,
               DiagnosticCode.PreferHTTPS,
+              this.name
+            )
+          );
+        }
+
+        // if import module from deno_std
+        if (moduleNode.text.indexOf("https://deno.land/std/") === 0) {
+          diagnosticsForThisDocument.push(
+            Diagnostic.create(
+              range,
+              `We recommend you use a locked std version.`,
+              DiagnosticSeverity.Warning,
+              DiagnosticCode.LockStdVersion,
               this.name
             )
           );
