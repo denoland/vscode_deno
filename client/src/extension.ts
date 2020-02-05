@@ -1,4 +1,5 @@
 import * as path from "path";
+import { promises as fs } from "fs";
 
 import {
   workspace,
@@ -12,7 +13,11 @@ import {
   QuickPickItem,
   WorkspaceConfiguration,
   Uri,
-  StatusBarItem
+  StatusBarItem,
+  Range,
+  OutputChannel,
+  Diagnostic,
+  CodeActionContext
 } from "vscode";
 import {
   LanguageClient,
@@ -21,6 +26,7 @@ import {
   TransportKind
 } from "vscode-languageclient";
 import getport from "get-port";
+import execa from "execa";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -107,6 +113,8 @@ class Extension {
   private configurationSection = "deno";
   // status bar
   private statusBar: StatusBarItem;
+  // output channel
+  private output: OutputChannel;
   // Deno Information from Deno Language Server
   private denoInfo: DenoInfo = {
     DENO_DIR: "",
@@ -229,7 +237,28 @@ class Extension {
         synchronize: {
           configurationSection: this.configurationSection
         },
-        progressOnInitialization: true
+        progressOnInitialization: true,
+        middleware: {
+          provideCodeActions: (document, range, context, token, next) => {
+            // do not ask server for code action when the diagnostic isn't from deno
+            if (!context.diagnostics || context.diagnostics.length === 0) {
+              return [];
+            }
+            const denoDiagnostics: Diagnostic[] = [];
+            for (const diagnostic of context.diagnostics) {
+              if (diagnostic.source === "Deno Language Server") {
+                denoDiagnostics.push(diagnostic);
+              }
+            }
+            if (denoDiagnostics.length === 0) {
+              return [];
+            }
+            const newContext: CodeActionContext = Object.assign({}, context, {
+              diagnostics: denoDiagnostics
+            } as CodeActionContext);
+            return next(document, range, newContext, token);
+          }
+        }
       };
 
       // Create the language client and start the client.
@@ -402,6 +431,124 @@ Executable ${this.denoInfo.executablePath}
         .update("enable", false);
     });
   }
+  private fixAddMissingExtension(uri: string, range: Range) {
+    const textEditor = window.activeTextEditor;
+
+    if (!textEditor || textEditor.document.uri.toString() !== uri) {
+      return;
+    }
+
+    range = new Range(
+      range.start.line,
+      range.start.character,
+      range.end.line,
+      range.end.character
+    );
+
+    const text = textEditor.document.getText(range);
+
+    textEditor.edit(editor => editor.replace(range, text + ".ts"));
+  }
+  private fixUseHTTPSModule(uri: string, range: Range) {
+    const textEditor = window.activeTextEditor;
+
+    if (!textEditor || textEditor.document.uri.toString() !== uri) {
+      return;
+    }
+
+    range = new Range(
+      range.start.line,
+      range.start.character,
+      range.end.line,
+      range.end.character
+    );
+
+    const text = textEditor.document.getText(range);
+
+    textEditor.edit(editor => {
+      editor.replace(range, text.replace(/^http/, "https"));
+    });
+  }
+  private fixFetchRemoteModule(uri: string, range: Range) {
+    const textEditor = window.activeTextEditor;
+
+    if (!textEditor || textEditor.document.uri.toString() !== uri) {
+      return;
+    }
+
+    range = new Range(
+      range.start.line,
+      range.start.character,
+      range.end.line,
+      range.end.character
+    );
+
+    const moduleUrl = textEditor.document.getText(range);
+
+    const ps = execa(this.denoInfo.executablePath, ["fetch", moduleUrl]);
+
+    this.output.show();
+
+    ps.stdout.on("data", buf => {
+      this.output.append(buf + "");
+    });
+
+    ps.stderr.on("data", buf => {
+      this.output.append(buf + "");
+    });
+
+    ps.on("exit", (code: number) => {
+      this.output.appendLine(`exit with code: ${code}`);
+      this.updateDiagnostic(textEditor.document.uri);
+    });
+  }
+  private async fixCreateLocalModule(uri: string, range: Range) {
+    const textEditor = window.activeTextEditor;
+
+    if (!textEditor || textEditor.document.uri.toString() !== uri) {
+      return;
+    }
+
+    range = new Range(
+      range.start.line,
+      range.start.character,
+      range.end.line,
+      range.end.character
+    );
+
+    const localModule = textEditor.document.getText(range);
+
+    const extName = path.extname(localModule);
+
+    if (extName === "") {
+      this.output.appendLine(
+        `Cannot create module \`${localModule}\` without specifying extension name`
+      );
+      this.output.show();
+      return;
+    }
+
+    let defaultTextContent = "";
+
+    switch (extName) {
+      case ".json":
+        defaultTextContent = "{}";
+        break;
+    }
+
+    const absModuleFilepath = path.isAbsolute(localModule)
+      ? localModule
+      : path.resolve(path.dirname(textEditor.document.uri.fsPath), localModule);
+
+    this.output.appendLine(`create module \`${absModuleFilepath}\``);
+
+    await fs.writeFile(absModuleFilepath, defaultTextContent);
+
+    this.updateDiagnostic(textEditor.document.uri);
+  }
+  private updateDiagnostic(uri: Uri) {
+    this.client.sendNotification("updateDiagnostic", uri.toString());
+  }
   public async activate(context: ExtensionContext) {
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
@@ -410,11 +557,39 @@ Executable ${this.denoInfo.executablePath}
 
     this.context.subscriptions.push(this.statusBar);
 
+    this.output = window.createOutputChannel("Deno");
+    this.context.subscriptions.push(this.output);
+
+    this.context.subscriptions.push(
+      window.onDidChangeActiveTextEditor(editor => {
+        if (editor) {
+          this.updateDiagnostic(editor.document.uri);
+        }
+      })
+    );
+
     this.registerCommand("enable", this.enable.bind(this));
     this.registerCommand("disable", this.disable.bind(this));
     this.registerCommand(
       "restart_server",
       this.StartDenoLanguageServer.bind(this)
+    );
+    // internal command for Deno Language Server
+    this.registerCommand(
+      "_add_missing_extension",
+      this.fixAddMissingExtension.bind(this)
+    );
+    this.registerCommand(
+      "_use_https_module",
+      this.fixUseHTTPSModule.bind(this)
+    );
+    this.registerCommand(
+      "_fetch_remote_module",
+      this.fixFetchRemoteModule.bind(this)
+    );
+    this.registerCommand(
+      "_create_local_module",
+      this.fixCreateLocalModule.bind(this)
     );
     this.watchConfiguration(() => {
       const uri = window.activeTextEditor?.document.uri;

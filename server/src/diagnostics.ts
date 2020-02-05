@@ -4,7 +4,11 @@ import {
   IConnection,
   Range,
   Diagnostic,
-  DiagnosticSeverity
+  DiagnosticSeverity,
+  CodeAction,
+  CodeActionKind,
+  Command,
+  TextDocuments
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
@@ -13,19 +17,97 @@ import { URI } from "vscode-uri";
 import { Bridge } from "./bridge";
 import { deno } from "./deno";
 
-enum ErrorCode {
+interface Fix {
+  title: string;
+  command: string;
+}
+
+enum DiagnosticCode {
   InvalidModule = 1001,
   MissingExtension = 1002,
   PreferHTTPS = 1003,
-  ModuleNotExist = 1004
+  LocalModuleNotExist = 1004,
+  RemoteModuleNotExist = 1005
 }
+
+const FixItems: { [code: number]: Fix } = {
+  [DiagnosticCode.MissingExtension]: {
+    title: "Add `.ts` extension.",
+    command: "deno._add_missing_extension"
+  },
+  [DiagnosticCode.PreferHTTPS]: {
+    title: "Use HTTPS module.",
+    command: "deno._use_https_module"
+  },
+  [DiagnosticCode.LocalModuleNotExist]: {
+    title: "Create module.",
+    command: "deno._create_local_module"
+  },
+  [DiagnosticCode.RemoteModuleNotExist]: {
+    title: "Fetch module.",
+    command: "deno._fetch_remote_module"
+  }
+};
 
 export class Diagnostics {
   constructor(
     private name: string,
     private connection: IConnection,
-    private bridge: Bridge
-  ) {}
+    private bridge: Bridge,
+    private documents: TextDocuments<TextDocument>
+  ) {
+    connection.onCodeAction(async params => {
+      const { context, textDocument } = params;
+      const { diagnostics } = context;
+      const denoDiagnostics = diagnostics.filter(v => v.source === this.name);
+
+      if (!denoDiagnostics.length) {
+        return;
+      }
+
+      const actions: CodeAction[] = denoDiagnostics
+        .map(v => {
+          const code = v.code;
+
+          const fixItem: Fix = FixItems[code];
+
+          if (!fixItem) {
+            return;
+          }
+
+          const action = CodeAction.create(
+            `${fixItem.title} (${this.name})`,
+            Command.create(
+              fixItem.title,
+              fixItem.command,
+              // argument
+              textDocument.uri,
+              {
+                start: {
+                  line: v.range.start.line,
+                  character: v.range.start.character + 1
+                },
+                end: {
+                  line: v.range.end.line,
+                  character: v.range.end.character - 1
+                }
+              }
+            ),
+            CodeActionKind.QuickFix
+          );
+
+          return action;
+        })
+        .filter(v => v);
+
+      return actions;
+    });
+
+    connection.onNotification("updateDiagnostic", (uri: string) => {
+      const document = this.documents.get(uri);
+      document && this.diagnosis(document);
+    });
+  }
   async generate(document: TextDocument): Promise<Diagnostic[]> {
     if (!["typescript", "typescriptreact"].includes(document.languageId)) {
       return [];
@@ -146,7 +228,7 @@ export class Diagnostics {
             range,
             `Deno only supports importting \`relative/HTTP\` module.`,
             DiagnosticSeverity.Error,
-            ErrorCode.InvalidModule,
+            DiagnosticCode.InvalidModule,
             this.name
           )
         );
@@ -161,7 +243,7 @@ export class Diagnostics {
               range,
               `Please specify valid extension name of the imported module.`,
               DiagnosticSeverity.Error,
-              ErrorCode.MissingExtension,
+              DiagnosticCode.MissingExtension,
               this.name
             )
           );
@@ -170,17 +252,12 @@ export class Diagnostics {
 
       if (isRemoteModule) {
         if (/^https:\/\//.test(moduleNode.text) === false) {
-          const range = Range.create(
-            document.positionAt(moduleNode.pos),
-            document.positionAt(moduleNode.end)
-          );
-
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               range,
               `For security, we recommend using the HTTPS module.`,
               DiagnosticSeverity.Warning,
-              ErrorCode.PreferHTTPS,
+              DiagnosticCode.PreferHTTPS,
               this.name
             )
           );
@@ -195,7 +272,9 @@ export class Diagnostics {
             range,
             `Cannot found module \`${module.raw}\`.`,
             DiagnosticSeverity.Error,
-            ErrorCode.ModuleNotExist,
+            module.remote
+              ? DiagnosticCode.RemoteModuleNotExist
+              : DiagnosticCode.LocalModuleNotExist,
             this.name
           )
         );

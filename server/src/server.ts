@@ -12,7 +12,8 @@ import {
   CompletionItem,
   CompletionItemKind,
   Position,
-  TextDocumentSyncKind
+  TextDocumentSyncKind,
+  CodeActionKind
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
@@ -35,7 +36,7 @@ const connection: IConnection = createConnection(
 const documents = new TextDocuments(TextDocument);
 
 const bridge = new Bridge(connection);
-const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge);
+const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge, documents);
 
 connection.onInitialize(
   (params): InitializeResult => {
@@ -48,6 +49,9 @@ connection.onInitialize(
         },
         completionProvider: {
           triggerCharacters: ["http", "https"]
+        },
+        codeActionProvider: {
+          codeActionKinds: [CodeActionKind.QuickFix]
         }
       }
     };
