@@ -1,3 +1,14 @@
+# [1.15.0](https://github.com/axetroy/vscode-deno/compare/v1.14.0...v1.15.0) (2020-02-05)
+
+### Bug Fixes
+
+- **deps:** pin dependency execa to 4.0.0 ([#30](https://github.com/axetroy/vscode-deno/issues/30)) ([47ca6e4](https://github.com/axetroy/vscode-deno/commit/47ca6e4))
+- `typescript-deno-plugin` may not find modules and cause `typescript` to crash ([8bdc5db](https://github.com/axetroy/vscode-deno/commit/8bdc5db))
+
+### Features
+
+- support quickly fix for diagnostics. close [#29](https://github.com/axetroy/vscode-deno/issues/29) ([da85926](https://github.com/axetroy/vscode-deno/commit/da85926))
+
 # [1.14.0](https://github.com/axetroy/vscode-deno/compare/v1.13.1...v1.14.0) (2020-02-04)
 
 ### Bug Fixes
