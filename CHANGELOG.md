@@ -1,3 +1,11 @@
+# [1.16.0](https://github.com/axetroy/vscode-deno/compare/v1.15.0...v1.16.0) (2020-02-05)
+
+### Features
+
+- add default content for creating a file when fix missing local module ([1404f2f](https://github.com/axetroy/vscode-deno/commit/1404f2f))
+- add lock deno_std version diagnostic ([8d9097e](https://github.com/axetroy/vscode-deno/commit/8d9097e))
+- support Import Maps for Deno. close [#3](https://github.com/axetroy/vscode-deno/issues/3) ([eb187af](https://github.com/axetroy/vscode-deno/commit/eb187af))
+
 # [1.15.0](https://github.com/axetroy/vscode-deno/compare/v1.14.0...v1.15.0) (2020-02-05)
 
 ### Bug Fixes
