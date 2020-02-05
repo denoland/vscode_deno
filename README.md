@@ -47,12 +47,15 @@ create a file `.vscode/setting.json` in your project folder
 
 - `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). It can be a relative which path relative to the project directory or an absolute path. Default is `[]`
 
+- `deno.import_map` - The file paths of Import Map. It can be a relative which path relative to the project directory or an absolute path.
+
 We recommend that you do not set global configuration. It should be configured in `.vscode/setting.json` in the project directory
 
 ```json5
 // .vscode/setting.json
 {
-  "deno.enable": true
+  "deno.enable": true,
+  "deno.import_map": "./path/to/import_map.json"
 }
 ```
 
