@@ -11,7 +11,7 @@ Feature:
 
 - [x] Support Deno declaration file
 - [x] Module import intelligent
-- [x] Diagnostics
+- [x] Diagnostics and quick fix
 - [x] Deno formatting tool
 - [x] C/S model with LSP
 - [ ] Support import-map for Deno (TODO)
