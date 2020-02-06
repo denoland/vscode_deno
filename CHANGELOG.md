@@ -1,3 +1,13 @@
+# [1.17.0](https://github.com/axetroy/vscode-deno/compare/v1.16.0...v1.17.0) (2020-02-06)
+
+### Bug Fixes
+
+- create a local module if is not relative or absolute path ([21bacce](https://github.com/axetroy/vscode-deno/commit/21bacce))
+
+### Features
+
+- fully i18n supported. [#31](https://github.com/axetroy/vscode-deno/issues/31) ([04e3938](https://github.com/axetroy/vscode-deno/commit/04e3938))
+
 # [1.16.0](https://github.com/axetroy/vscode-deno/compare/v1.15.0...v1.16.0) (2020-02-05)
 
 ### Features
