@@ -20,180 +20,163 @@ function existsSync(filepath: string) {
   }
 }
 
-interface IImportMap {
-  imports: { [key: string]: string };
-}
+type IImportMap = {
+  imports: { [key: string]: string; };
+};
 
-interface IConfig {
+type IConfig = {
   enable: boolean;
   dtsFilepaths?: string[];
   import_map?: string;
   workspaceDir?: string;
-}
-
-let config: IConfig = {
-  dtsFilepaths: [],
-  enable: true,
-  import_map: "",
-  workspaceDir: ""
 };
 
-module.exports = function init({
-  typescript
-}: {
-  typescript: typeof ts_module;
-}) {
+type IDenoModuleHeaders = {
+  mime_type: string;
+  redirect_to: string;
+};
+
+class DenoPlugin implements ts_module.server.PluginModule {
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
-  const OPTIONS: ts_module.CompilerOptions = {
-    allowJs: true,
-    checkJs: true,
-    esModuleInterop: true,
-    jsx: typescript.JsxEmit.React,
-    module: typescript.ModuleKind.ESNext,
-    moduleResolution: typescript.ModuleResolutionKind.NodeJs,
-    noEmit: true,
-    noEmitHelpers: true,
-    resolveJsonModule: true,
-    sourceMap: true
+  private DEFAULT_OPTIONS: ts_module.CompilerOptions = {};
+  private MUST_OVERWRITE_OPTIONS: ts_module.CompilerOptions = {};
+  private config: IConfig = {
+    dtsFilepaths: [],
+    enable: true,
+    import_map: "",
+    workspaceDir: ""
   };
+  private info?: ts_module.server.PluginCreateInfo;
 
-  // No matter how tsconfig.json is set in the working directory
-  // It will always overwrite the configuration
-  const mustOverwriteOptions: ts_module.CompilerOptions = {
-    jsx: OPTIONS.jsx,
-    module: OPTIONS.module,
-    moduleResolution: OPTIONS.moduleResolution,
-    resolveJsonModule: OPTIONS.resolveJsonModule,
-    strict: OPTIONS.strict,
-    noEmit: OPTIONS.noEmit,
-    noEmitHelpers: OPTIONS.noEmitHelpers
-  };
+  constructor(private typescript: typeof ts_module) {
+    this.DEFAULT_OPTIONS = {
+      allowJs: true,
+      checkJs: false,
+      strict: true,
+      esModuleInterop: true,
+      jsx: typescript.JsxEmit.React,
+      module: typescript.ModuleKind.ESNext,
+      moduleResolution: typescript.ModuleResolutionKind.NodeJs,
+      outDir: "$deno$",
+      resolveJsonModule: true,
+      sourceMap: true,
+      stripComments: true,
+      target: typescript.ScriptTarget.ESNext,
+      noEmit: this.DEFAULT_OPTIONS.noEmit,
+      noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers
+    };
 
-  return {
-    create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
-      logger = Logger.forPlugin(info);
+    // No matter how tsconfig.json is set in the working directory
+    // It will always overwrite the configuration
+    this.MUST_OVERWRITE_OPTIONS = {
+      jsx: this.DEFAULT_OPTIONS.jsx,
+      module: this.DEFAULT_OPTIONS.module,
+      moduleResolution: this.DEFAULT_OPTIONS.moduleResolution,
+      resolveJsonModule: this.DEFAULT_OPTIONS.resolveJsonModule,
+      strict: this.DEFAULT_OPTIONS.strict,
+      noEmit: this.DEFAULT_OPTIONS.noEmit,
+      noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers
+    };
+  }
 
-      logger.info(`Create typescript-deno-plugin`);
-      const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
+  create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
+    this.info = info;
+
+    const directory = info.project.getCurrentDirectory();
+
+    info.languageService.getProgram;
+
+    // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
+    process.chdir(directory);
+
+    logger = Logger.forPlugin(info);
+
+    logger.info(`Create typescript-deno-plugin`);
+    const getCompilationSettings = info.languageServiceHost
+      .getCompilationSettings.bind(
         info.languageServiceHost
       );
-      const getScriptFileNames = info.languageServiceHost.getScriptFileNames.bind(
+    const getScriptFileNames = info.languageServiceHost.getScriptFileNames
+      .bind(
         info.languageServiceHost
       );
-      // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-      const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
+    // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
+    const resolveModuleNames = info.languageServiceHost.resolveModuleNames
+      ?.bind(
         info.languageServiceHost
       );
-      const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
+    const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics
+      .bind(
         info.languageService
       );
 
-      info.languageServiceHost.getCompilationSettings = () => {
-        const projectConfig = getCompilationSettings();
+    info.languageServiceHost.getCompilationSettings = () => {
+      const projectConfig = getCompilationSettings();
 
-        if (!config.enable) {
-          return projectConfig;
-        }
-
-        const compilationSettings = merge(
-          merge(OPTIONS, projectConfig),
-          mustOverwriteOptions
-        );
-
-        logger.info(
-          `compilationSettings:${JSON.stringify(compilationSettings)}`
-        );
-        return compilationSettings;
-      };
-
-      info.languageServiceHost.getScriptFileNames = () => {
-        const scriptFileNames = getScriptFileNames();
-
-        if (!config.enable) {
-          return scriptFileNames;
-        }
-
-        let dtsFilepaths = getDtsPathForVscode(info);
-
-        if (!dtsFilepaths.length) {
-          dtsFilepaths = getGlobalDtsPath();
-        }
-
-        for (const filepath of dtsFilepaths) {
-          scriptFileNames.push(filepath);
-          logger.info(`load dts filepath: ${filepath}`);
-        }
-
-        return scriptFileNames;
-      };
-
-      info.languageService.getSemanticDiagnostics = (filename: string) => {
-        const diagnostics = getSemanticDiagnostics(filename);
-
-        if (!config.enable) {
-          return diagnostics;
-        }
-
-        const ignoreCodeMapInDeno: { [k: number]: boolean } = {
-          2691: true, // can not import module which end with `.ts`
-          1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
-        };
-
-        return diagnostics.filter(v => {
-          return !ignoreCodeMapInDeno[v.code];
-        });
-      };
-
-      if (!resolveModuleNames) {
-        logger.info("resolveModuleNames is undefined.");
-        return info.languageService;
+      if (!this.config.enable) {
+        return projectConfig;
       }
 
-      info.languageServiceHost.resolveModuleNames = (
-        moduleNames: string[],
-        containingFile: string,
-        reusedNames?: string[],
-        redirectedReference?: ts_module.ResolvedProjectReference
-      ) => {
-        if (!config.enable) {
-          return resolveModuleNames(
-            moduleNames,
-            containingFile,
-            reusedNames,
-            redirectedReference,
-            {}
-          );
-        }
+      const compilationSettings = merge(
+        merge(this.DEFAULT_OPTIONS, projectConfig),
+        this.MUST_OVERWRITE_OPTIONS
+      );
 
-        let importMaps: IImportMap;
+      logger
+        .info(`compilationSettings:${JSON.stringify(compilationSettings)}`);
+      return compilationSettings;
+    };
 
-        //  try resolve import maps
-        if (config.import_map) {
-          const importMapsFilepath = path.isAbsolute(config.import_map)
-            ? config.import_map
-            : path.resolve(
-                config.workspaceDir || process.cwd(),
-                config.import_map
-              );
+    info.languageServiceHost.getScriptFileNames = () => {
+      const scriptFileNames = getScriptFileNames();
 
-          if (typescript.sys.fileExists(importMapsFilepath)) {
-            const importMapContent = typescript.sys.readFile(
-              importMapsFilepath
-            );
+      if (!this.config.enable) {
+        return scriptFileNames;
+      }
 
-            try {
-              importMaps = JSON.parse(importMapContent || "{}");
-            } catch {}
-          }
-        }
+      let dtsFilepaths = getDtsPathForPluginConfig(info, this.config);
 
-        moduleNames = moduleNames
-          .map(name => resolveImportMap(importMaps, name))
-          .map(convertRemoteToLocalCache)
-          .map(stripExtNameDotTs);
+      if (!dtsFilepaths.length) {
+        dtsFilepaths = getGlobalDtsPath();
+      }
 
-        logger.info(`resolve module ${JSON.stringify(moduleNames)}`);
+      for (const filepath of dtsFilepaths) {
+        scriptFileNames.push(filepath);
+        logger.info(`load dts filepath: ${filepath}`);
+      }
 
+      return scriptFileNames;
+    };
+
+    info.languageService.getSemanticDiagnostics = (filename: string) => {
+      const diagnostics = getSemanticDiagnostics(filename);
+
+      if (!this.config.enable) {
+        return diagnostics;
+      }
+
+      const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
+        2691: true, // can not import module which end with `.ts`
+        1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
+      };
+
+      return diagnostics.filter(v => {
+        return !ignoreCodeMapInDeno[v.code];
+      });
+    };
+
+    if (!resolveModuleNames) {
+      logger.info("resolveModuleNames is undefined.");
+      return info.languageService;
+    }
+
+    info.languageServiceHost.resolveModuleNames = (
+      moduleNames: string[],
+      containingFile: string,
+      reusedNames?: string[],
+      redirectedReference?: ts_module.ResolvedProjectReference
+    ) => {
+      if (!this.config.enable) {
         return resolveModuleNames(
           moduleNames,
           containingFile,
@@ -201,25 +184,65 @@ module.exports = function init({
           redirectedReference,
           {}
         );
-      };
+      }
 
-      return info.languageService;
-    },
+      let importMaps: IImportMap;
 
-    onConfigurationChanged(c: IConfig) {
-      logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
-      config = merge(config, c);
-      config.dtsFilepaths = c.dtsFilepaths;
+      //  try resolve import maps
+      if (this.config.import_map) {
+        const importMapsFilepath = path.isAbsolute(this.config.import_map)
+          ? this.config.import_map
+          : path.resolve(
+            this.config.workspaceDir || process.cwd(),
+            this.config.import_map
+          );
+
+        if (this.typescript.sys.fileExists(importMapsFilepath)) {
+          const importMapContent = this.typescript.sys.readFile(
+            importMapsFilepath
+          );
+
+          try {
+            importMaps = JSON.parse(importMapContent || "{}");
+          } catch {
+          }
+        }
+      }
+
+      moduleNames = moduleNames
+        .map(name => resolveImportMap(importMaps, name))
+        .map(convertRemoteToLocalCache)
+        .map(stripExtNameDotTs);
+
+      return resolveModuleNames(
+        moduleNames,
+        containingFile,
+        reusedNames,
+        redirectedReference,
+        {}
+      );
+    };
+
+    return info.languageService;
+  }
+
+  onConfigurationChanged(c: IConfig) {
+    logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
+    this.config = merge(this.config, c);
+    this.config.dtsFilepaths = c.dtsFilepaths;
+
+    if (this.info) {
+      this.info.project.refreshDiagnostics();
+      this.info.project.updateGraph();
     }
-  };
-};
+  }
+}
 
 function getModuleWithQueryString(moduleName: string): string | undefined {
   let name = moduleName;
   for (
-    const index = name.indexOf("?");
-    index !== -1;
-    name = name.substring(index + 1)
+    const index = name.indexOf("?"); index !== -1; name = name
+      .substring(index + 1)
   ) {
     if (name.substring(0, index).endsWith(".ts")) {
       const cutLength = moduleName.length - name.length;
@@ -275,7 +298,8 @@ function convertRemoteToLocalCache(moduleName: string): string {
         fs.readFileSync(headersPath, { encoding: "utf-8" })
       );
       if (moduleName !== headers.redirect_to) {
-        const redirectFilepath = convertRemoteToLocalCache(headers.redirect_to);
+        const redirectFilepath =
+          convertRemoteToLocalCache(headers.redirect_to);
         logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
         filepath = redirectFilepath;
       }
@@ -287,12 +311,10 @@ function convertRemoteToLocalCache(moduleName: string): string {
   return filepath;
 }
 
-interface IDenoModuleHeaders {
-  mime_type: string;
-  redirect_to: string;
-}
-
-function getDtsPathForVscode(info: ts.server.PluginCreateInfo): string[] {
+function getDtsPathForPluginConfig(
+  info: ts.server.PluginCreateInfo,
+  config: IConfig
+): string[] {
   const dtsFilepaths = config.dtsFilepaths || [];
 
   const projectDir = info.project.getCurrentDirectory();
@@ -321,3 +343,13 @@ function getGlobalDtsPath(): string[] {
 
   return [];
 }
+
+module.exports = function init({
+  typescript
+}: {
+  typescript: typeof ts_module;
+}) {
+  const plugin = new DenoPlugin(typescript);
+
+  return plugin;
+};
