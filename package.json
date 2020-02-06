@@ -60,8 +60,9 @@
         "deno.enable": {
           "type": "boolean",
           "default": false,
-          "description": "%deno.config.enabled%",
-          "scope": "resource"
+          "markdownDescription": "%deno.config.enabled%",
+          "scope": "resource",
+          "examples": [true, false]
         },
         "deno.dtsFilepaths": {
           "type": "array",
@@ -69,13 +70,15 @@
             "type": "string"
           },
           "default": [],
-          "description": "%deno.config.dtsFilepaths%",
-          "scope": "resource"
+          "markdownDescription": "%deno.config.dtsFilepaths%",
+          "scope": "resource",
+          "examples": ["./deno.d.ts", "/absolute/path/to/deno.d.ts"]
         },
         "deno.import_map": {
           "type": "string",
-          "description": "%deno.config.import_map%",
-          "scope": "resource"
+          "markdownDescription": "%deno.config.import_map%",
+          "scope": "resource",
+          "examples": ["./import_map.json", "/absolute/path/to/import_map.json"]
         }
       }
     }
