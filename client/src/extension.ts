@@ -625,6 +625,15 @@ Executable ${this.denoInfo.executablePath}`;
           return;
         }
 
+        if (text.indexOf(".") !== 0 || text.indexOf("/") !== 0) {
+          this.output.appendLine(
+            `Cannot create module \`${text
+              }\`. Module is not relative or absolute`
+          );
+          this.output.show();
+          return;
+        }
+
         let defaultTextContent = "";
 
         switch (extName) {
