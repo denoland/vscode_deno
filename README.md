@@ -1,7 +1,14 @@
 # VS Code Deno extension
 
-[![Version](https://vsmarketplacebadge.apphb.com/version/axetroy.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
-[![Downloads](https://vsmarketplacebadge.apphb.com/downloads/axetroy.vscode-deno.svg)](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/axetroy/vscode-deno/build)
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/axetroy.vscode-deno)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/axetroy.vscode-deno)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/axetroy.vscode-deno)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/axetroy.vscode-deno)
+![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/axetroy.vscode-deno)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/axetroy/vscode-deno)
+![GitHub repo size](https://img.shields.io/github/repo-size/axetroy/vscode-deno)
+![GitHub](https://img.shields.io/github/license/axetroy/vscode-deno)
 
 Adds Deno support for vs code
 
