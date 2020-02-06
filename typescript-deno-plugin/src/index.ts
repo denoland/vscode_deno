@@ -154,7 +154,7 @@ class DenoPlugin implements ts_module.server.PluginModule {
       }
 
       const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
-        2691: true, // can not import module which end with `.ts`
+        // 2691: true, // can not import module which end with `.ts`
         1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
       };
 
@@ -207,10 +207,11 @@ class DenoPlugin implements ts_module.server.PluginModule {
         }
       }
 
-      moduleNames = moduleNames
+      const originModuleNames = (moduleNames = moduleNames
         .map(name => resolveImportMap(importMaps, name))
-        .map(convertRemoteToLocalCache)
-        .map(stripExtNameDotTs);
+        .map(convertRemoteToLocalCache));
+
+      moduleNames = originModuleNames.map(stripExtNameDotTs);
 
       return resolveModuleNames(
         moduleNames,
@@ -218,7 +219,47 @@ class DenoPlugin implements ts_module.server.PluginModule {
         reusedNames,
         redirectedReference,
         {}
-      );
+      )
+        .map((v /* index */) => {
+          if (!v) {
+            return v;
+          }
+          // const originModuleName = originModuleNames[index];
+          // const originExtName = path.extname(originModuleName);
+          // const resolveExtName = path.extname(v.resolvedFileName);
+
+          // const realModuleAbsoluteFilepath = v.resolvedFileName.replace(
+          //   new RegExp(resolveExtName + "$"),
+          //   originExtName
+          // );
+
+          // // if `import './a.ts'` but resolve to `./a.js`
+          // // so we think this module doesn't exist
+          // if (v.resolvedFileName !== realModuleAbsoluteFilepath) {
+          //   v.resolvedFileName = realModuleAbsoluteFilepath;
+          // }
+
+          // @ts-ignore
+          const extension: string = v["extension"];
+          if (extension) {
+            const ts = this.typescript;
+            // If the extension is the following
+            // replace it with `json` so that no error is reported
+            if (
+              [
+                ts.Extension.Ts,
+                ts.Extension.Tsx,
+                ts.Extension.Js,
+                ts.Extension.Jsx
+              ].includes(extension as ts_module.Extension)
+            ) {
+              // @ts-ignore
+              v["extension"] = this.typescript.Extension.Json;
+            }
+          }
+
+          return v;
+        });
     };
 
     return info.languageService;
