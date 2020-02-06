@@ -5,6 +5,7 @@ import { promises as fs } from "fs";
 import * as ts from "typescript";
 import execa from "execa";
 import which from "which";
+import { localize } from "vscode-nls-i18n";
 
 interface Version {
   deno: string;
@@ -20,11 +21,10 @@ interface DenoModule {
 }
 
 interface ImportMap {
-  imports: { [key: string]: string };
+  imports: { [key: string]: string; };
 }
 
-export type FormatableLanguages =
-  | "typescript"
+export type FormatableLanguages = "typescript"
   | "typescriptreact"
   | "javascript"
   | "javascriptreact"
@@ -55,9 +55,7 @@ class Deno {
     this.executablePath = await this.getExecutablePath();
 
     if (!this.executablePath) {
-      throw new Error(
-        "Can not found deno in $PATH. Please restart the extension after setting."
-      );
+      throw new Error(localize("err.not_install_deno"));
     }
 
     this.version = await this.getDenoVersion();
@@ -193,7 +191,8 @@ class Deno {
 
         try {
           importMaps = JSON.parse(importMapContent || "{}");
-        } catch {}
+        } catch {
+        }
       }
     }
 
@@ -252,12 +251,10 @@ class Deno {
           }
         }
       }
-    }
-    // absolute filepath
+    } // absolute filepath
     else if (moduleName.indexOf("/") === 0) {
       moduleName = moduleName;
-    }
-    // relative filepath
+    } // relative filepath
     else {
       moduleName = this.resolveModuleFromImportMap(importMaps, moduleName);
 
@@ -298,9 +295,8 @@ class Deno {
     return denoDir;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    const denoPath = await which("deno").catch(() =>
-      Promise.resolve(undefined)
-    );
+    const denoPath = await which("deno")
+      .catch(() => Promise.resolve(undefined));
 
     return denoPath;
   }

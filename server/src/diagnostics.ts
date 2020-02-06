@@ -13,6 +13,7 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
 import { URI } from "vscode-uri";
+import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "./bridge";
 import { deno } from "./deno";
@@ -31,25 +32,25 @@ enum DiagnosticCode {
   LockStdVersion = 1006
 }
 
-const FixItems: { [code: number]: Fix } = {
+const FixItems: { [code: number]: Fix; } = {
   [DiagnosticCode.MissingExtension]: {
-    title: "Add `.ts` extension.",
+    title: localize("diagnostic.fix.add_ext_name"),
     command: "deno._add_missing_extension"
   },
   [DiagnosticCode.PreferHTTPS]: {
-    title: "Use HTTPS module.",
+    title: localize("diagnostic.fix.use_HTTPS_module"),
     command: "deno._use_https_module"
   },
   [DiagnosticCode.LocalModuleNotExist]: {
-    title: "Create module.",
+    title: localize("diagnostic.fix.create_module"),
     command: "deno._create_local_module"
   },
   [DiagnosticCode.RemoteModuleNotExist]: {
-    title: "Fetch module.",
+    title: localize("diagnostic.fix.fetch_module"),
     command: "deno._fetch_remote_module"
   },
   [DiagnosticCode.LockStdVersion]: {
-    title: "Lock std version.",
+    title: localize("diagnostic.fix.lock_std_version"),
     command: "deno._lock_std_version"
   }
 };
@@ -240,7 +241,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               range,
-              `Please specify valid extension name of the imported module.`,
+              localize("diagnostic.report.mssing_ext_name"),
               DiagnosticSeverity.Error,
               DiagnosticCode.MissingExtension,
               this.name
@@ -254,7 +255,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               range,
-              `For security, we recommend using the HTTPS module.`,
+              localize("diagnostic.report.use_HTTPS_module"),
               DiagnosticSeverity.Warning,
               DiagnosticCode.PreferHTTPS,
               this.name
@@ -267,7 +268,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               range,
-              `We recommend you use a locked std version.`,
+              localize("diagnostic.report.lock_std_version"),
               DiagnosticSeverity.Warning,
               DiagnosticCode.LockStdVersion,
               this.name
@@ -276,13 +277,17 @@ export class Diagnostics {
         }
       }
 
-      const module = await deno.resolveModule(importMaps, dir, moduleNode.text);
+      const module = await deno.resolveModule(
+        importMaps,
+        dir,
+        moduleNode.text
+      );
 
       if (!ts.sys.fileExists(module.filepath)) {
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             range,
-            `Cannot found module \`${module.raw}\`.`,
+            localize("diagnostic.report.can_not_found_module", module.raw),
             DiagnosticSeverity.Error,
             module.remote
               ? DiagnosticCode.RemoteModuleNotExist

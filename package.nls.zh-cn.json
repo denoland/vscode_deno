@@ -6,5 +6,16 @@
   "deno.command.restart_server": "重启 Deno 语言服务器",
   "deno.config.enabled": "是否启用 Deno。\n\n**不推荐在全局配置中设置**",
   "deno.config.dtsFilepaths": "Typescript 的声明文件(.d.ts)路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
-  "deno.config.import_map": "Import Map 的文件路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**"
+  "deno.config.import_map": "Import Map 的文件路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
+  "deno.initializing": "正在初始化 Deno 语言服务器...",
+  "err.not_install_deno": "在 $PATH 变量中找不到 Deno。请在设置后重新启动扩展。",
+  "diagnostic.fix.add_ext_name": "添加 `.ts` 扩展名。",
+  "diagnostic.fix.use_HTTPS_module": "使用 HTTPS 模块。",
+  "diagnostic.fix.create_module": "创建模块。",
+  "diagnostic.fix.fetch_module": "拉取模块。",
+  "diagnostic.fix.lock_std_version": "锁定 Deno 标准库版本号。",
+  "diagnostic.report.mssing_ext_name": "请指定合法的文件扩展名。",
+  "diagnostic.report.use_HTTPS_module": "出于安全考虑, 我们推荐您使用 HTTPS 模块。",
+  "diagnostic.report.lock_std_version": "我们推荐您锁定 Deno 标准库版本号。",
+  "diagnostic.report.can_not_found_module": "找不到模块 `{0}`。"
 }

@@ -27,6 +27,7 @@ import {
 } from "vscode-languageclient";
 import getport from "get-port";
 import execa from "execa";
+import { init, localize } from "vscode-nls-i18n";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -60,7 +61,7 @@ interface DenoInfo {
 }
 
 interface ImportMap {
-  imports: { [key: string]: string };
+  imports: { [key: string]: string; };
 }
 
 function exists(filepath: string): Promise<boolean> {
@@ -86,7 +87,8 @@ async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
 
       try {
         importMaps = JSON.parse(importMapContent.toString() || "{}");
-      } catch {}
+      } catch {
+      }
     }
   }
 
@@ -197,8 +199,7 @@ class Extension {
         return;
       }
 
-      outConfig[key] =
-        configSetting.workspaceFolderValue ??
+      outConfig[key] = configSetting.workspaceFolderValue ??
         configSetting.workspaceValue ??
         configSetting.globalValue;
     }
@@ -254,8 +255,11 @@ class Extension {
       await this.client.stop();
       this.client = null;
     }
-    const statusbar = window.createStatusBarItem(StatusBarAlignment.Left, -100);
-    statusbar.text = "$(loading) Initializing Deno Language Server";
+    const statusbar = window.createStatusBarItem(
+      StatusBarAlignment.Left,
+      -100
+    );
+    statusbar.text = `$(loading) ${localize("deno.initializing")}`;
     statusbar.show();
 
     try {
@@ -273,14 +277,24 @@ class Extension {
         run: {
           module: serverModule,
           transport: TransportKind.ipc,
-          options: { cwd: process.cwd() }
+          options: {
+            cwd: process.cwd(),
+            env: {
+              VSCODE_DENO_EXTENSION_PATH_PATH: this.context.extensionPath,
+              VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
+            }
+          }
         },
         debug: {
           module: serverModule,
           transport: TransportKind.ipc,
           options: {
             cwd: process.cwd(),
-            execArgv: ["--nolazy", `--inspect=${port}`]
+            execArgv: ["--nolazy", `--inspect=${port}`],
+            env: {
+              VSCODE_DENO_EXTENSION_PATH_PATH: this.context.extensionPath,
+              VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
+            }
           }
         }
       };
@@ -341,8 +355,9 @@ class Extension {
         });
         client.onNotification("error", window.showErrorMessage);
 
-        client.onRequest("getWorkspaceFolder", async (uri: string) =>
-          workspace.getWorkspaceFolder(Uri.parse(uri))
+        client.onRequest(
+          "getWorkspaceFolder",
+          async (uri: string) => workspace.getWorkspaceFolder(Uri.parse(uri))
         );
 
         client.onRequest("getWorkspaceConfig", async (uri: string) => {
@@ -401,8 +416,7 @@ class Extension {
     this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
 TypeScript ${this.denoInfo.version.typescript}
 V8 ${this.denoInfo.version.v8}
-Executable ${this.denoInfo.executablePath}
-    `;
+Executable ${this.denoInfo.executablePath}`;
 
     this.statusBar.show();
   }
@@ -418,10 +432,9 @@ Executable ${this.denoInfo.executablePath}
     }
 
     const disabledFolders = folders.filter(
-      folder =>
-        !workspace
-          .getConfiguration(this.configurationSection, folder.uri)
-          .get("enable", true)
+      folder => !workspace
+        .getConfiguration(this.configurationSection, folder.uri)
+        .get("enable", true)
     );
 
     if (disabledFolders.length === 0) {
@@ -461,11 +474,9 @@ Executable ${this.denoInfo.executablePath}
       return;
     }
 
-    const enabledFolders = folders.filter(folder =>
-      workspace
-        .getConfiguration(this.configurationSection, folder.uri)
-        .get("enable", true)
-    );
+    const enabledFolders = folders.filter(folder => workspace
+      .getConfiguration(this.configurationSection, folder.uri)
+      .get("enable", true));
 
     if (enabledFolders.length === 0) {
       if (folders.length === 1) {
@@ -495,11 +506,8 @@ Executable ${this.denoInfo.executablePath}
   }
   // register quickly fix code action
   private registerQuickFix(map: {
-    [command: string]: (
-      editor: TextEditor,
-      text: string,
-      range: Range
-    ) => void | Promise<void>;
+    [command: string]: (editor: TextEditor, text: string, range: Range) => void
+      | Promise<void>;
   }) {
     for (let command in map) {
       const handler = map[command];
@@ -529,6 +537,7 @@ Executable ${this.denoInfo.executablePath}
   }
   // activate function for vscode
   public async activate(context: ExtensionContext) {
+    init(context.extensionPath);
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
@@ -609,7 +618,8 @@ Executable ${this.denoInfo.executablePath}
 
         if (extName === "") {
           this.output.appendLine(
-            `Cannot create module \`${text}\` without specifying extension name`
+            `Cannot create module \`${text
+              }\` without specifying extension name`
           );
           this.output.show();
           return;
@@ -639,15 +649,13 @@ Executable ${this.denoInfo.executablePath}
         this.updateDiagnostic(editor.document.uri);
       },
       _lock_std_version: (editor, text, range) => {
-        editor.edit(e =>
-          e.replace(
-            range,
-            text.replace(
-              "https://deno.land/std/",
-              `https://deno.land/std@v${this.denoInfo.version.deno}/`
-            )
+        editor.edit(e => e.replace(
+          range,
+          text.replace(
+            "https://deno.land/std/",
+            `https://deno.land/std@v${this.denoInfo.version.deno}/`
           )
-        );
+        ));
       }
     });
 
@@ -680,7 +688,8 @@ Executable ${this.denoInfo.executablePath}
 
     await this.StartDenoLanguageServer();
 
-    console.log(`Congratulations, your extension "vscode-deno" is now active!`);
+    console
+      .log(`Congratulations, your extension "vscode-deno" is now active!`);
   }
   // deactivate function for vscode
   public async deactivate(context: ExtensionContext) {

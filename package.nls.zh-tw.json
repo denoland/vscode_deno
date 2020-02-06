@@ -6,5 +6,16 @@
   "deno.command.restart_server": "重啟 Deno 語言服務器",
   "deno.config.enabled": "是否啟用 Deno。\n\n**不推薦在全局配置中設置**",
   "deno.config.dtsFilepaths": "Typescript 的聲明文件(.d.ts)路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",
-  "deno.config.import_map": "Import Map 的文件路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**"
+  "deno.config.import_map": "Import Map 的文件路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",
+  "deno.initializing": "正在初始化 Deno 語言服務器...",
+  "err.not_install_deno": "在 $PATH 變量中找不到 Deno。請在設置後重新啟動擴展。",
+  "diagnostic.fix.add_ext_name": "添加 `.ts` 擴展名。",
+  "diagnostic.fix.use_HTTPS_module": "使用 HTTPS 模塊。",
+  "diagnostic.fix.create_module": "创建模块。",
+  "diagnostic.fix.fetch_module": "創建模塊。",
+  "diagnostic.fix.lock_std_version": "鎖定 Deno 標準庫版本號。",
+  "diagnostic.report.mssing_ext_name": "請指定合法的文件擴展名。",
+  "diagnostic.report.use_HTTPS_module": "出於安全考慮, 我們推薦您使用 HTTPS 模塊。",
+  "diagnostic.report.lock_std_version": "我們推薦您鎖定 Deno 標準庫版本號。",
+  "diagnostic.report.can_not_found_module": "找不到模塊 `{0}`。"
 }
