@@ -5,17 +5,65 @@
 
 Adds Deno support for vs code
 
-![screenshot](screenshot.gif)
+![screenshot](screenshot/screenshot.gif)
 
 Feature:
 
-- [x] Support Deno declaration file
-- [x] Module import intelligent
-- [x] Diagnostics and quick fix
-- [x] Deno formatting tool
-- [x] C/S model with LSP
-- [x] Support `Import Maps` for Deno
-- [ ] Deno version upgrade detection (TODO)
+<details><summary>Support Deno declaration file</summary>
+
+![Deno Support](screenshot/deno.gif)
+
+</details>
+
+<details><summary>Module import intelligent</summary>
+
+![Import](screenshot/import.gif)
+
+</details>
+
+<details><summary>Diagnostics and quick fix</summary>
+
+![Diagnostics](screenshot/diagnostics.gif)
+
+</details>
+
+<details><summary>Deno formatting tool</summary>
+
+![Format](screenshot/format.gif)
+
+</details>
+
+<details><summary>C/S model with LSP</summary>
+
+The extension separate Client/Server with LSP
+
+This means that complicated problems are handled on the server side
+
+Extension won't block your vscode
+
+![Process](screenshot/process.png)
+
+</details>
+
+<details><summary>Support `Import Maps` for Deno</summary>
+
+![Format](screenshot/import_map.gif)
+
+</details>
+
+<details><summary>Deno version upgrade detection</summary>
+
+TODO
+
+</details>
+
+<details><summary>Deno version manager</summary>
+
+Investigating integration into extension
+
+We recommend you using [dvm](https://github.com/axetroy/dvm) for manager Deno version.
+
+</details>
 
 ## Usage
 
@@ -45,9 +93,9 @@ create a file `.vscode/setting.json` in your project folder
 
 - `deno.enabled` - Enable extension. Default is `false`.
 
-- `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). It can be a relative which path relative to the project directory or an absolute path. Default is `[]`
+- `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). Default is `[]`
 
-- `deno.import_map` - The file paths of Import Map. It can be a relative which path relative to the project directory or an absolute path.
+- `deno.import_map` - The file paths of Import Map. Default is `null`
 
 We recommend that you do not set global configuration. It should be configured in `.vscode/setting.json` in the project directory
 
@@ -55,6 +103,7 @@ We recommend that you do not set global configuration. It should be configured i
 // .vscode/setting.json
 {
   "deno.enable": true,
+  "deno.dtsFilepaths": ["./path/to/deno.d.ts"],
   "deno.import_map": "./path/to/import_map.json"
 }
 ```
