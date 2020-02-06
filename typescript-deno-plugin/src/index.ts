@@ -84,8 +84,6 @@ class DenoPlugin implements ts_module.server.PluginModule {
 
     const directory = info.project.getCurrentDirectory();
 
-    info.languageService.getProgram;
-
     // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
     process.chdir(directory);
 

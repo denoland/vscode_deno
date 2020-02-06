@@ -145,7 +145,7 @@ connection.onDocumentFormatting(async params => {
 // FIXME: all completion will trigger this.
 // It seem it's a bug for vscode
 connection.onCompletion(async params => {
-  const { position, partialResultToken, context, textDocument } = params;
+  const { position, partialResultToken, textDocument } = params;
 
   const doc = documents.get(textDocument.uri);
 

@@ -675,6 +675,7 @@ Executable ${this.denoInfo.executablePath}`;
           TYPESCRIPT_DENO_PLUGIN_ID,
           this.getConfiguration(uri)
         );
+        this.updateDiagnostic(uri);
       }
       this.updateStatusBarVisibility(window.activeTextEditor);
     });
