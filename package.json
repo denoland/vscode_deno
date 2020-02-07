@@ -38,7 +38,7 @@
     "typescriptServerPlugins": [
       {
         "name": "typescript-deno-plugin",
-        "enableForWorkspaceTypeScriptVersions": true
+        "enableForWorkspaceTypeScriptVersions": false
       }
     ],
     "commands": [
