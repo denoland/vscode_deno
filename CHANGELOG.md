@@ -1,3 +1,15 @@
+# [1.18.0](https://github.com/axetroy/vscode-deno/compare/v1.17.0...v1.18.0) (2020-02-07)
+
+### Bug Fixes
+
+- create local module no work ([bcceff2](https://github.com/axetroy/vscode-deno/commit/bcceff2))
+
+### Features
+
+- no more use workspace typescript version ([2a6f9da](https://github.com/axetroy/vscode-deno/commit/2a6f9da))
+- require min vscode version 1.42.0 ([ab2cc6e](https://github.com/axetroy/vscode-deno/commit/ab2cc6e))
+- support top-level await with typescript 3.8 ([cb0e592](https://github.com/axetroy/vscode-deno/commit/cb0e592))
+
 # [1.17.0](https://github.com/axetroy/vscode-deno/compare/v1.16.0...v1.17.0) (2020-02-06)
 
 ### Bug Fixes
