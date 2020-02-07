@@ -25,7 +25,6 @@ interface Fix {
 
 enum DiagnosticCode {
   InvalidModule = 1001,
-  MissingExtension = 1002,
   PreferHTTPS = 1003,
   LocalModuleNotExist = 1004,
   RemoteModuleNotExist = 1005,
@@ -33,10 +32,6 @@ enum DiagnosticCode {
 }
 
 const FixItems: { [code: number]: Fix; } = {
-  [DiagnosticCode.MissingExtension]: {
-    title: localize("diagnostic.fix.add_ext_name"),
-    command: "deno._add_missing_extension"
-  },
   [DiagnosticCode.PreferHTTPS]: {
     title: localize("diagnostic.fix.use_HTTPS_module"),
     command: "deno._use_https_module"
@@ -233,22 +228,6 @@ export class Diagnostics {
       );
 
       const isRemoteModule = /^https?:\/\/.*/.test(moduleNode.text);
-
-      {
-        const [extensionName] = moduleNode.text.match(/\.[a-zA-Z\d]+$/) || [];
-
-        if (!validExtensionNameMap[extensionName]) {
-          diagnosticsForThisDocument.push(
-            Diagnostic.create(
-              range,
-              localize("diagnostic.report.mssing_ext_name"),
-              DiagnosticSeverity.Error,
-              DiagnosticCode.MissingExtension,
-              this.name
-            )
-          );
-        }
-      }
 
       if (isRemoteModule) {
         if (moduleNode.text.indexOf("https://") !== 0) {

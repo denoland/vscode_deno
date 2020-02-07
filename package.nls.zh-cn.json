@@ -14,7 +14,6 @@
   "diagnostic.fix.create_module": "创建模块。",
   "diagnostic.fix.fetch_module": "拉取模块。",
   "diagnostic.fix.lock_std_version": "锁定 Deno 标准库版本号。",
-  "diagnostic.report.mssing_ext_name": "请指定合法的文件扩展名。",
   "diagnostic.report.use_HTTPS_module": "出于安全考虑, 我们推荐您使用 HTTPS 模块。",
   "diagnostic.report.lock_std_version": "我们推荐您锁定 Deno 标准库版本号。",
   "diagnostic.report.can_not_found_module": "找不到模块 `{0}`。"

@@ -569,9 +569,6 @@ Executable ${this.denoInfo.executablePath}`;
     );
 
     this.registerQuickFix({
-      _add_missing_extension: async (editor, text, range) => {
-        await editor.edit(e => e.replace(range, text + ".ts"));
-      },
       _use_https_module: async (editor, text, range) => {
         await editor.edit(e => {
           e.replace(range, text.replace(/^http/, "https"));

@@ -14,7 +14,6 @@
   "diagnostic.fix.create_module": "创建模块。",
   "diagnostic.fix.fetch_module": "創建模塊。",
   "diagnostic.fix.lock_std_version": "鎖定 Deno 標準庫版本號。",
-  "diagnostic.report.mssing_ext_name": "請指定合法的文件擴展名。",
   "diagnostic.report.use_HTTPS_module": "出於安全考慮, 我們推薦您使用 HTTPS 模塊。",
   "diagnostic.report.lock_std_version": "我們推薦您鎖定 Deno 標準庫版本號。",
   "diagnostic.report.can_not_found_module": "找不到模塊 `{0}`。"

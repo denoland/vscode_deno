@@ -14,7 +14,6 @@
   "diagnostic.fix.create_module": "Create module.",
   "diagnostic.fix.fetch_module": "Fetch module.",
   "diagnostic.fix.lock_std_version": "Lock Deno standard library version.",
-  "diagnostic.report.mssing_ext_name": "Please specify valid extension name of the imported module.",
   "diagnostic.report.use_HTTPS_module": "For security, we recommend using the HTTPS module.",
   "diagnostic.report.lock_std_version": "We recommend you use a locked Deno standard library version.",
   "diagnostic.report.can_not_found_module": "Cannot found module `{0}`."
