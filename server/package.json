@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "vscode": "^1.42.0"
+  },
   "dependencies": {
     "execa": "4.0.0",
     "typescript": "3.7.5",
