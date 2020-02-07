@@ -74,7 +74,6 @@ class DenoPlugin implements ts_module.server.PluginModule {
       moduleResolution: this.DEFAULT_OPTIONS.moduleResolution,
       resolveJsonModule: this.DEFAULT_OPTIONS.resolveJsonModule,
       strict: this.DEFAULT_OPTIONS.strict,
-      target: this.DEFAULT_OPTIONS.target,
       noEmit: this.DEFAULT_OPTIONS.noEmit,
       noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers
     };
@@ -155,10 +154,13 @@ class DenoPlugin implements ts_module.server.PluginModule {
       }
 
       const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
-        1103: true // ignore `for-await-of` error
+        // 2691: true, // can not import module which end with `.ts`
+        1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
       };
 
-      return diagnostics.filter(v => !ignoreCodeMapInDeno[v.code]);
+      return diagnostics.filter(v => {
+        return !ignoreCodeMapInDeno[v.code];
+      });
     };
 
     if (!resolveModuleNames) {
