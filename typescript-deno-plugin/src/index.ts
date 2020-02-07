@@ -209,23 +209,22 @@ class DenoPlugin implements ts_module.server.PluginModule {
         }
       }
 
-      const originModuleNames = moduleNames
-        .// resolve module from Import Maps
-        // eg. `import_map.json`
+      const originModuleNames = moduleNames // resolve module from Import Maps
+        .// eg. `import_map.json`
         // {
         //   "imports": {
         //     "http/": "https://deno.land/std/http/"
         //   }
         // }
         // resolve `http/server.ts` -> `https://deno.land/std/http/server.ts`
-        map(name => resolveImportMap(importMaps, name))
-        .// cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
-        map(convertRemoteToLocalCache)
-        .// if module is ESM. Then the module name may contain url query and url hash
-        // We need to remove it
-        map(trimQueryAndHashFromPath)
-        .// for ESM support
-        // Some modules do not specify the domain name, but the root directory of the domain name
+        map(name => resolveImportMap(
+          importMaps,
+          name
+        )) // cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
+        .map(convertRemoteToLocalCache) // if module is ESM. Then the module name may contain url query and url hash
+        .// We need to remove it
+        map(trimQueryAndHashFromPath) // for ESM support
+        .// Some modules do not specify the domain name, but the root directory of the domain name
         // eg. `$DENO_DIR/deps/https/dev.jspm.io/react`
         // import { dew } from "/npm:react@16.12.0/index.dew.js";
         // export default dew();
@@ -414,9 +413,21 @@ function resolveFromDenoDir(
   return (moduleName: string): string => {
     if (isResolveInDenoModule && moduleName.indexOf("/") === 0) {
       const paths = moduleName.split("/");
+
+      const denoDepsFilepath = path.join(getDenoDir(), "deps");
+
       paths.shift(); // remove `/` prefix of url path
 
-      return path.join(path.dirname(currentFileAbsolutePath), ...paths);
+      const urlPaths = currentFileAbsolutePath
+        .replace(denoDepsFilepath, "")
+        .split(path.sep);
+
+      urlPaths.shift(); // remove prefix of filepath `path.sep`
+
+      const protocol = urlPaths[0];
+      const domainName = urlPaths[1];
+
+      return path.join(denoDepsFilepath, protocol, domainName, ...paths);
     }
     return moduleName;
   };
