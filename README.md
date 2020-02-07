@@ -28,6 +28,12 @@ Feature:
 
 </details>
 
+<details><summary>Support import ECMA script module</summary>
+
+![Import](screenshot/ecma.gif)
+
+</details>
+
 <details><summary>Diagnostics and quick fix</summary>
 
 ![Diagnostics](screenshot/diagnostics.gif)
