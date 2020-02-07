@@ -173,7 +173,7 @@ class DenoPlugin implements ts_module.server.PluginModule {
       containingFile: string,
       reusedNames?: string[],
       redirectedReference?: ts_module.ResolvedProjectReference
-    ) => {
+    ): (ts_module.ResolvedModule | undefined)[] => {
       if (!this.config.enable) {
         return resolveModuleNames(
           moduleNames,
@@ -183,6 +183,8 @@ class DenoPlugin implements ts_module.server.PluginModule {
           {}
         );
       }
+
+      const isResolveInDenoModule = containingFile.indexOf(getDenoDir()) === 0;
 
       let importMaps: IImportMap;
 
@@ -207,59 +209,97 @@ class DenoPlugin implements ts_module.server.PluginModule {
         }
       }
 
-      const originModuleNames = (moduleNames = moduleNames
-        .map(name => resolveImportMap(importMaps, name))
-        .map(convertRemoteToLocalCache));
+      const originModuleNames = moduleNames
+        .// resolve module from Import Maps
+        // eg. `import_map.json`
+        // {
+        //   "imports": {
+        //     "http/": "https://deno.land/std/http/"
+        //   }
+        // }
+        // resolve `http/server.ts` -> `https://deno.land/std/http/server.ts`
+        map(name => resolveImportMap(importMaps, name))
+        .// cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
+        map(convertRemoteToLocalCache)
+        .// if module is ESM. Then the module name may contain url query and url hash
+        // We need to remove it
+        map(trimQueryAndHashFromPath)
+        .// for ESM support
+        // Some modules do not specify the domain name, but the root directory of the domain name
+        // eg. `$DENO_DIR/deps/https/dev.jspm.io/react`
+        // import { dew } from "/npm:react@16.12.0/index.dew.js";
+        // export default dew();
+        // import "/npm:react@16.12.0/cjs/react.development.dew.js";
+        // import "/npm:object-assign@4?dew";
+        // import "/npm:prop-types@15/checkPropTypes?dew";
+        map(resolveFromDenoDir(isResolveInDenoModule, containingFile));
 
       moduleNames = originModuleNames.map(stripExtNameDotTs);
 
-      return resolveModuleNames(
+      const result = resolveModuleNames(
         moduleNames,
         containingFile,
         reusedNames,
         redirectedReference,
         {}
-      )
-        .map((v /* index */) => {
-          if (!v) {
-            return v;
-          }
-          // const originModuleName = originModuleNames[index];
-          // const originExtName = path.extname(originModuleName);
-          // const resolveExtName = path.extname(v.resolvedFileName);
+      );
 
-          // const realModuleAbsoluteFilepath = v.resolvedFileName.replace(
-          //   new RegExp(resolveExtName + "$"),
-          //   originExtName
-          // );
+      return result.map((v, index) => {
+        if (!v) {
+          info.languageServiceHost
+            .getResolvedModuleWithFailedLookupLocationsFromCache;
 
-          // // if `import './a.ts'` but resolve to `./a.js`
-          // // so we think this module doesn't exist
-          // if (v.resolvedFileName !== realModuleAbsoluteFilepath) {
-          //   v.resolvedFileName = realModuleAbsoluteFilepath;
-          // }
-
-          // @ts-ignore
-          const extension: string = v["extension"];
-          if (extension) {
-            const ts = this.typescript;
-            // If the extension is the following
-            // replace it with `json` so that no error is reported
-            if (
-              [
-                ts.Extension.Ts,
-                ts.Extension.Tsx,
-                ts.Extension.Js,
-                ts.Extension.Jsx
-              ].includes(extension as ts_module.Extension)
-            ) {
-              // @ts-ignore
-              v["extension"] = this.typescript.Extension.Json;
-            }
+          let originModuleName = originModuleNames[index];
+          // import * as React from 'https://dev.jspm.io/react'
+          if (
+            path.isAbsolute(originModuleName) &&
+            this.typescript.sys.fileExists(originModuleName)
+          ) {
+            return {
+              extension: this.typescript.Extension.Js,
+              isExternalLibraryImport: false,
+              resolvedFileName: originModuleName
+            } as ts_module.ResolvedModuleFull;
           }
 
           return v;
-        });
+        }
+        // const originModuleName = originModuleNames[index];
+        // const originExtName = path.extname(originModuleName);
+        // const resolveExtName = path.extname(v.resolvedFileName);
+
+        // const realModuleAbsoluteFilepath = v.resolvedFileName.replace(
+        //   new RegExp(resolveExtName + "$"),
+        //   originExtName
+        // );
+
+        // // if `import './a.ts'` but resolve to `./a.js`
+        // // so we think this module doesn't exist
+        // if (v.resolvedFileName !== realModuleAbsoluteFilepath) {
+        //   v.resolvedFileName = realModuleAbsoluteFilepath;
+        // }
+
+        // @ts-ignore
+        const extension: string = v["extension"];
+        if (extension) {
+          const ts = this.typescript;
+          // If the extension is the following
+          // replace it with `json` so that no error is reported
+          if (
+            [
+              ts.Extension.Ts,
+              ts.Extension.Tsx,
+              ts.Extension.Js,
+              ts.Extension.Jsx
+            ].includes(extension as ts_module.Extension)
+          ) {
+            // @ts-ignore
+            v["extension"] = this.typescript.Extension.Json;
+          }
+        }
+
+        return v;
+      });
     };
 
     return info.languageService;
@@ -348,6 +388,38 @@ function convertRemoteToLocalCache(moduleName: string): string {
   logger.info(`convert "${moduleName}" to "${filepath}".`);
 
   return filepath;
+}
+
+function trimQueryAndHashFromPath(moduleName: string): string {
+  const queryIndex = moduleName.indexOf("?");
+  const hashIndex = moduleName.indexOf("#");
+
+  if (queryIndex < 0 && hashIndex < 0) {
+    return moduleName;
+  } else if (queryIndex >= 0) {
+    moduleName = moduleName.substr(0, queryIndex);
+    return trimQueryAndHashFromPath(moduleName);
+  } else if (hashIndex >= 0) {
+    moduleName = moduleName.substr(0, hashIndex);
+    return trimQueryAndHashFromPath(moduleName);
+  }
+
+  return moduleName;
+}
+
+function resolveFromDenoDir(
+  isResolveInDenoModule: boolean,
+  currentFileAbsolutePath: string
+) {
+  return (moduleName: string): string => {
+    if (isResolveInDenoModule && moduleName.indexOf("/") === 0) {
+      const paths = moduleName.split("/");
+      paths.shift(); // remove `/` prefix of url path
+
+      return path.join(path.dirname(currentFileAbsolutePath), ...paths);
+    }
+    return moduleName;
+  };
 }
 
 function getDtsPathForPluginConfig(
