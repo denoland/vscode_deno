@@ -1,3 +1,16 @@
+# [1.19.0](https://github.com/axetroy/vscode-deno/compare/v1.18.1...v1.19.0) (2020-02-07)
+
+### Bug Fixes
+
+- esm module resolver ([ffe30fb](https://github.com/axetroy/vscode-deno/commit/ffe30fb))
+
+### Features
+
+- remove extension name diagnostic. close [#12](https://github.com/axetroy/vscode-deno/issues/12) ([892bb3f](https://github.com/axetroy/vscode-deno/commit/892bb3f))
+- support import ECMA script module. close [#37](https://github.com/axetroy/vscode-deno/issues/37) ([1b68068](https://github.com/axetroy/vscode-deno/commit/1b68068))
+
+## [1.18.1](https://github.com/axetroy/vscode-deno/compare/v1.18.0...v1.18.1) (2020-02-07)
+
 # [1.18.0](https://github.com/axetroy/vscode-deno/compare/v1.17.0...v1.18.0) (2020-02-07)
 
 ### Bug Fixes
