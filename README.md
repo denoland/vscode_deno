@@ -84,10 +84,10 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for manager Deno ve
 
 2. Enable Deno for your project
 
-create a file `.vscode/setting.json` in your project folder
+create a file `.vscode/settings.json` in your project folder
 
 ```json5
-// .vscode/setting.json
+// .vscode/settings.json
 {
   "deno.enable": true
 }
@@ -110,10 +110,10 @@ create a file `.vscode/setting.json` in your project folder
 
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 
-We recommend that you do not set global configuration. It should be configured in `.vscode/setting.json` in the project directory
+We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory
 
 ```json5
-// .vscode/setting.json
+// .vscode/settings.json
 {
   "deno.enable": true,
   "deno.dtsFilepaths": ["./path/to/deno.d.ts"],
@@ -121,7 +121,7 @@ We recommend that you do not set global configuration. It should be configured i
 }
 ```
 
-Extensions also provide Deno's formatting tools, setting in `.vscode/setting.json`
+Extensions also provide Deno's formatting tools, setting in `.vscode/settings.json`
 
 ```json
 {
