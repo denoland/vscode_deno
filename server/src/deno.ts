@@ -21,10 +21,11 @@ interface DenoModule {
 }
 
 interface ImportMap {
-  imports: { [key: string]: string; };
+  imports: { [key: string]: string };
 }
 
-export type FormatableLanguages = "typescript"
+export type FormatableLanguages =
+  | "typescript"
   | "typescriptreact"
   | "javascript"
   | "javascriptreact"
@@ -191,8 +192,7 @@ class Deno {
 
         try {
           importMaps = JSON.parse(importMapContent || "{}");
-        } catch {
-        }
+        } catch {}
       }
     }
 
@@ -295,8 +295,9 @@ class Deno {
     return denoDir;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    const denoPath = await which("deno")
-      .catch(() => Promise.resolve(undefined));
+    const denoPath = await which("deno").catch(() =>
+      Promise.resolve(undefined)
+    );
 
     return denoPath;
   }

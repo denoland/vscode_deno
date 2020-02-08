@@ -21,7 +21,7 @@ function existsSync(filepath: string) {
 }
 
 type IImportMap = {
-  imports: { [key: string]: string; };
+  imports: { [key: string]: string };
 };
 
 type IConfig = {
@@ -90,23 +90,19 @@ class DenoPlugin implements ts_module.server.PluginModule {
     logger = Logger.forPlugin(info);
 
     logger.info(`Create typescript-deno-plugin`);
-    const getCompilationSettings = info.languageServiceHost
-      .getCompilationSettings.bind(
-        info.languageServiceHost
-      );
-    const getScriptFileNames = info.languageServiceHost.getScriptFileNames
-      .bind(
-        info.languageServiceHost
-      );
+    const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
+      info.languageServiceHost
+    );
+    const getScriptFileNames = info.languageServiceHost.getScriptFileNames.bind(
+      info.languageServiceHost
+    );
     // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-    const resolveModuleNames = info.languageServiceHost.resolveModuleNames
-      ?.bind(
-        info.languageServiceHost
-      );
-    const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics
-      .bind(
-        info.languageService
-      );
+    const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
+      info.languageServiceHost
+    );
+    const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
+      info.languageService
+    );
 
     info.languageServiceHost.getCompilationSettings = () => {
       const projectConfig = getCompilationSettings();
@@ -120,8 +116,7 @@ class DenoPlugin implements ts_module.server.PluginModule {
         this.MUST_OVERWRITE_OPTIONS
       );
 
-      logger
-        .info(`compilationSettings:${JSON.stringify(compilationSettings)}`);
+      logger.info(`compilationSettings:${JSON.stringify(compilationSettings)}`);
       return compilationSettings;
     };
 
@@ -153,7 +148,7 @@ class DenoPlugin implements ts_module.server.PluginModule {
         return diagnostics;
       }
 
-      const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
+      const ignoreCodeMapInDeno: { [k: number]: boolean } = {
         // 2691: true, // can not import module which end with `.ts`
         1308: true // support top level await 只允许在异步函数中使用 "await" 表达式
       };
@@ -193,9 +188,9 @@ class DenoPlugin implements ts_module.server.PluginModule {
         const importMapsFilepath = path.isAbsolute(this.config.import_map)
           ? this.config.import_map
           : path.resolve(
-            this.config.workspaceDir || process.cwd(),
-            this.config.import_map
-          );
+              this.config.workspaceDir || process.cwd(),
+              this.config.import_map
+            );
 
         if (this.typescript.sys.fileExists(importMapsFilepath)) {
           const importMapContent = this.typescript.sys.readFile(
@@ -204,34 +199,27 @@ class DenoPlugin implements ts_module.server.PluginModule {
 
           try {
             importMaps = JSON.parse(importMapContent || "{}");
-          } catch {
-          }
+          } catch {}
         }
       }
 
-      const originModuleNames = moduleNames // resolve module from Import Maps
-        .// eg. `import_map.json`
+      const originModuleNames = moduleNames // resolve module from Import Maps // eg. `import_map.json`
         // {
         //   "imports": {
         //     "http/": "https://deno.land/std/http/"
         //   }
         // }
         // resolve `http/server.ts` -> `https://deno.land/std/http/server.ts`
-        map(name => resolveImportMap(
-          importMaps,
-          name
-        )) // cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
-        .map(convertRemoteToLocalCache) // if module is ESM. Then the module name may contain url query and url hash
-        .// We need to remove it
-        map(trimQueryAndHashFromPath) // for ESM support
-        .// Some modules do not specify the domain name, but the root directory of the domain name
+        .map(name => resolveImportMap(importMaps, name)) // cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
+        .map(convertRemoteToLocalCache) // if module is ESM. Then the module name may contain url query and url hash // We need to remove it
+        .map(trimQueryAndHashFromPath) // for ESM support // Some modules do not specify the domain name, but the root directory of the domain name
         // eg. `$DENO_DIR/deps/https/dev.jspm.io/react`
         // import { dew } from "/npm:react@16.12.0/index.dew.js";
         // export default dew();
         // import "/npm:react@16.12.0/cjs/react.development.dew.js";
         // import "/npm:object-assign@4?dew";
         // import "/npm:prop-types@15/checkPropTypes?dew";
-        map(resolveFromDenoDir(isResolveInDenoModule, containingFile));
+        .map(resolveFromDenoDir(isResolveInDenoModule, containingFile));
 
       moduleNames = originModuleNames.map(stripExtNameDotTs);
 
@@ -319,8 +307,9 @@ class DenoPlugin implements ts_module.server.PluginModule {
 function getModuleWithQueryString(moduleName: string): string | undefined {
   let name = moduleName;
   for (
-    const index = name.indexOf("?"); index !== -1; name = name
-      .substring(index + 1)
+    const index = name.indexOf("?");
+    index !== -1;
+    name = name.substring(index + 1)
   ) {
     if (name.substring(0, index).endsWith(".ts")) {
       const cutLength = moduleName.length - name.length;
@@ -376,8 +365,7 @@ function convertRemoteToLocalCache(moduleName: string): string {
         fs.readFileSync(headersPath, { encoding: "utf-8" })
       );
       if (moduleName !== headers.redirect_to) {
-        const redirectFilepath =
-          convertRemoteToLocalCache(headers.redirect_to);
+        const redirectFilepath = convertRemoteToLocalCache(headers.redirect_to);
         logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
         filepath = redirectFilepath;
       }

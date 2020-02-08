@@ -41,12 +41,7 @@ const connection: IConnection = createConnection(
 const documents = new TextDocuments(TextDocument);
 
 const bridge = new Bridge(connection);
-const diagnostics = new Diagnostics(
-  SERVER_NAME,
-  connection,
-  bridge,
-  documents
-);
+const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge, documents);
 
 connection.onInitialize(
   (params): InitializeResult => {
@@ -121,9 +116,9 @@ connection.onDocumentFormatting(async params => {
   const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : "./";
 
   connection.console.log(
-    `Formatting '${uri.toString()}' at ${workspaceFolder
-      ? workspaceFolder.uri.fsPath
-      : ""}`
+    `Formatting '${uri.toString()}' at ${
+      workspaceFolder ? workspaceFolder.uri.fsPath : ""
+    }`
   );
 
   const formatted = await deno.format(
@@ -164,15 +159,13 @@ connection.onCompletion(async params => {
   );
 
   const IMPORT_REG = /import\s['"][a-zA-Z]$/;
-  const IMPORT_FROM_REG =
-    /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z]$/;
+  const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z]$/;
   const DYNAMIC_REG = /import\s*\(['"][a-zA-Z]$/;
 
   const isImport =
     IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"
-      IMPORT_FROM_REG
-        .test(currentLine) || // import xxxx from "https://xxxx.xxxx"
-      DYNAMIC_REG.test(currentLine); // import("https://xxxx.xxxx")
+    IMPORT_FROM_REG.test(currentLine) || // import xxxx from "https://xxxx.xxxx"
+    DYNAMIC_REG.test(currentLine); // import("https://xxxx.xxxx")
 
   if (
     currentLine.length > 1000 || // if is a large file
