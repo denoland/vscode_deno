@@ -24,18 +24,11 @@ interface Fix {
 }
 
 enum DiagnosticCode {
-  InvalidModule = 1001,
-  PreferHTTPS = 1003,
   LocalModuleNotExist = 1004,
-  RemoteModuleNotExist = 1005,
-  LockStdVersion = 1006
+  RemoteModuleNotExist = 1005
 }
 
 const FixItems: { [code: number]: Fix; } = {
-  [DiagnosticCode.PreferHTTPS]: {
-    title: localize("diagnostic.fix.use_HTTPS_module"),
-    command: "deno._use_https_module"
-  },
   [DiagnosticCode.LocalModuleNotExist]: {
     title: localize("diagnostic.fix.create_module"),
     command: "deno._create_local_module"
@@ -43,10 +36,6 @@ const FixItems: { [code: number]: Fix; } = {
   [DiagnosticCode.RemoteModuleNotExist]: {
     title: localize("diagnostic.fix.fetch_module"),
     command: "deno._fetch_remote_module"
-  },
-  [DiagnosticCode.LockStdVersion]: {
-    title: localize("diagnostic.fix.lock_std_version"),
-    command: "deno._lock_std_version"
   }
 };
 
@@ -227,35 +216,6 @@ export class Diagnostics {
         document.positionAt(moduleNode.pos + numberOfSpaces),
         document.positionAt(moduleNode.end)
       );
-
-      const isRemoteModule = /^https?:\/\/.*/.test(moduleNode.text);
-
-      if (isRemoteModule) {
-        if (moduleNode.text.indexOf("https://") !== 0) {
-          diagnosticsForThisDocument.push(
-            Diagnostic.create(
-              range,
-              localize("diagnostic.report.use_HTTPS_module"),
-              DiagnosticSeverity.Warning,
-              DiagnosticCode.PreferHTTPS,
-              this.name
-            )
-          );
-        }
-
-        // if import module from deno_std
-        if (moduleNode.text.indexOf("https://deno.land/std/") === 0) {
-          diagnosticsForThisDocument.push(
-            Diagnostic.create(
-              range,
-              localize("diagnostic.report.lock_std_version"),
-              DiagnosticSeverity.Warning,
-              DiagnosticCode.LockStdVersion,
-              this.name
-            )
-          );
-        }
-      }
 
       const module = await deno.resolveModule(
         importMaps,
