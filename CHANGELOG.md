@@ -1,3 +1,13 @@
+# [1.20.0](https://github.com/axetroy/vscode-deno/compare/v1.19.0...v1.20.0) (2020-02-09)
+
+### Bug Fixes
+
+- update ignore diagnostics code. close [#41](https://github.com/axetroy/vscode-deno/issues/41) ([34e6c10](https://github.com/axetroy/vscode-deno/commit/34e6c10))
+
+### Features
+
+- remove `lock std version` and `prefer HTTPS` diagnostics. close [#33](https://github.com/axetroy/vscode-deno/issues/33) ([2480791](https://github.com/axetroy/vscode-deno/commit/2480791))
+
 # [1.19.0](https://github.com/axetroy/vscode-deno/compare/v1.18.1...v1.19.0) (2020-02-07)
 
 ### Bug Fixes
