@@ -29,7 +29,7 @@ export class ModuleResolver {
     private readonly file: string,
     private readonly logger: Logger,
     private readonly workspaceDir: string,
-    readonly importMapsFile?: string
+    importMapsFile?: string
   ) {
     if (importMapsFile) {
       this.importMaps = this.resolveImportMaps(importMapsFile);

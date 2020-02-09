@@ -31,7 +31,7 @@ enum DiagnosticCode {
   LockStdVersion = 1006
 }
 
-const FixItems: { [code: number]: Fix } = {
+const FixItems: { [code: number]: Fix; } = {
   [DiagnosticCode.PreferHTTPS]: {
     title: localize("diagnostic.fix.use_HTTPS_module"),
     command: "deno._use_https_module"
@@ -124,7 +124,7 @@ export class Diagnostics {
       return [];
     }
 
-    let sourceFile;
+    let sourceFile: ts.SourceFile | void;
     try {
       // Parse a file
       sourceFile = ts.createSourceFile(
@@ -134,6 +134,7 @@ export class Diagnostics {
         false,
         ts.ScriptKind.TSX
       );
+      sourceFile.fileName;
     } catch (err) {
       return [];
     }
@@ -256,7 +257,11 @@ export class Diagnostics {
         }
       }
 
-      const module = await deno.resolveModule(importMaps, dir, moduleNode.text);
+      const module = await deno.resolveModule(
+        importMaps,
+        dir,
+        moduleNode.text
+      );
 
       if (!ts.sys.fileExists(module.filepath)) {
         diagnosticsForThisDocument.push(
