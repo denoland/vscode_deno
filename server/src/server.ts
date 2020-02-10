@@ -152,7 +152,7 @@ connection.onCompletion(async params => {
 
   const IMPORT_REG = /import\s['"][a-zA-Z\._-]$/;
   const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z\._-]$/;
-  const DYNAMIC_REG = /import\s*\(['"][a-zA-Z\._-]$/;
+  const DYNAMIC_REG = /import\s*\(['"][a-zA-Z\._-]['"]?$/;
 
   const isImport =
     IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"
@@ -169,7 +169,7 @@ connection.onCompletion(async params => {
   const deps = await deno.getDependencies();
 
   const range = Range.create(
-    Position.create(position.line, position.character - 5),
+    Position.create(position.line, position.character),
     position
   );
 

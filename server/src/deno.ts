@@ -150,8 +150,8 @@ class Deno {
     return denoModuleFilepath
       .replace(deno.DENO_DEPS_DIR, "")
       .replace(/^(\/|\\\\)/, "")
-      .replace(/http(\/|\\\\)/, "http://")
-      .replace(/https(\/|\\\\)/, "https://");
+      .replace(/^http(\/|\\\\)/, "http://")
+      .replace(/^https(\/|\\\\)/, "https://");
   }
   // get deno dependencies files
   public async getDependencies(
@@ -163,14 +163,20 @@ class Deno {
     const promises = files.map(filename => {
       const filepath = path.join(rootDir, filename);
       return fs.stat(filepath).then(stat => {
-        if (stat.isDirectory()) {
+        const isInternalModule =
+          filename.startsWith("_") || filename.startsWith(".");
+        if (stat.isDirectory() && !isInternalModule) {
           return this.getDependencies(filepath, deps);
-        } else if (stat.isFile() && filepath.endsWith(".headers.json")) {
+        } else if (
+          stat.isFile() &&
+          filepath.endsWith(".headers.json") &&
+          !isInternalModule
+        ) {
           const moduleFilepath = filepath.replace(/\.headers\.json$/, "");
 
           deps.push({
             url: this.filepath2url(moduleFilepath),
-            filepath: filepath
+            filepath: moduleFilepath
           });
         }
       });
