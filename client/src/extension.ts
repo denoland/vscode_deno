@@ -61,7 +61,7 @@ interface DenoInfo {
 }
 
 interface ImportMap {
-  imports: { [key: string]: string; };
+  imports: { [key: string]: string };
 }
 
 function exists(filepath: string): Promise<boolean> {
@@ -87,8 +87,7 @@ async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
 
       try {
         importMaps = JSON.parse(importMapContent.toString() || "{}");
-      } catch {
-      }
+      } catch {}
     }
   }
 
@@ -199,7 +198,8 @@ class Extension {
         return;
       }
 
-      outConfig[key] = configSetting.workspaceFolderValue ??
+      outConfig[key] =
+        configSetting.workspaceFolderValue ??
         configSetting.workspaceValue ??
         configSetting.globalValue;
     }
@@ -255,10 +255,7 @@ class Extension {
       await this.client.stop();
       this.client = null;
     }
-    const statusbar = window.createStatusBarItem(
-      StatusBarAlignment.Left,
-      -100
-    );
+    const statusbar = window.createStatusBarItem(StatusBarAlignment.Left, -100);
     statusbar.text = `$(loading) ${localize("deno.initializing")}`;
     statusbar.show();
 
@@ -355,9 +352,8 @@ class Extension {
         });
         client.onNotification("error", window.showErrorMessage);
 
-        client.onRequest(
-          "getWorkspaceFolder",
-          async (uri: string) => workspace.getWorkspaceFolder(Uri.parse(uri))
+        client.onRequest("getWorkspaceFolder", async (uri: string) =>
+          workspace.getWorkspaceFolder(Uri.parse(uri))
         );
 
         client.onRequest("getWorkspaceConfig", async (uri: string) => {
@@ -432,9 +428,10 @@ Executable ${this.denoInfo.executablePath}`;
     }
 
     const disabledFolders = folders.filter(
-      folder => !workspace
-        .getConfiguration(this.configurationSection, folder.uri)
-        .get("enable", true)
+      folder =>
+        !workspace
+          .getConfiguration(this.configurationSection, folder.uri)
+          .get("enable", true)
     );
 
     if (disabledFolders.length === 0) {
@@ -474,9 +471,11 @@ Executable ${this.denoInfo.executablePath}`;
       return;
     }
 
-    const enabledFolders = folders.filter(folder => workspace
-      .getConfiguration(this.configurationSection, folder.uri)
-      .get("enable", true));
+    const enabledFolders = folders.filter(folder =>
+      workspace
+        .getConfiguration(this.configurationSection, folder.uri)
+        .get("enable", true)
+    );
 
     if (enabledFolders.length === 0) {
       if (folders.length === 1) {
@@ -506,8 +505,11 @@ Executable ${this.denoInfo.executablePath}`;
   }
   // register quickly fix code action
   private registerQuickFix(map: {
-    [command: string]: (editor: TextEditor, text: string, range: Range) => void
-      | Promise<void>;
+    [command: string]: (
+      editor: TextEditor,
+      text: string,
+      range: Range
+    ) => void | Promise<void>;
   }) {
     for (let command in map) {
       const handler = map[command];
@@ -610,8 +612,7 @@ Executable ${this.denoInfo.executablePath}`;
 
         if (extName === "") {
           this.output.appendLine(
-            `Cannot create module \`${text
-              }\` without specifying extension name`
+            `Cannot create module \`${text}\` without specifying extension name`
           );
           this.output.show();
           return;
@@ -619,8 +620,7 @@ Executable ${this.denoInfo.executablePath}`;
 
         if (text.indexOf(".") !== 0 && text.indexOf("/") !== 0) {
           this.output.appendLine(
-            `Cannot create module \`${text
-              }\`. Module is not relative or absolute`
+            `Cannot create module \`${text}\`. Module is not relative or absolute`
           );
           this.output.show();
           return;
@@ -681,8 +681,7 @@ Executable ${this.denoInfo.executablePath}`;
 
     await this.StartDenoLanguageServer();
 
-    console
-      .log(`Congratulations, your extension "vscode-deno" is now active!`);
+    console.log(`Congratulations, your extension "vscode-deno" is now active!`);
   }
   // deactivate function for vscode
   public async deactivate(context: ExtensionContext) {

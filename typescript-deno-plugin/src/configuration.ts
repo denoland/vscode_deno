@@ -19,8 +19,8 @@ export class ConfigurationManager {
     return this._configuration;
   }
 
-  private _configuration: DenoPluginConfig = ConfigurationManager
-    .defaultConfiguration;
+  private _configuration: DenoPluginConfig =
+    ConfigurationManager.defaultConfiguration;
 
   public update(c: DenoPluginConfig) {
     this._configuration = merge(this.config, c);

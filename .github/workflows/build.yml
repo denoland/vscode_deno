@@ -7,16 +7,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        deno: ["v0.32.0"]
+        node: ["12"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
     name: test in ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup Deno
-        uses: denolib/setup-deno@master
+      - uses: actions/setup-node@v1
         with:
-          deno-version: ${{ matrix.deno }}
+          node-version: ${{ matrix.node }}
 
       - name: Environment
         run: |

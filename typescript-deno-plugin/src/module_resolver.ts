@@ -12,7 +12,7 @@ type ResolvedModule = {
 };
 
 type ImportMaps = {
-  imports: { [key: string]: string; };
+  imports: { [key: string]: string };
 };
 
 type DenoModuleHeaders = {
@@ -23,8 +23,7 @@ type DenoModuleHeaders = {
 // the resolver defined how to resolve Deno module
 export class ModuleResolver {
   private importMaps: ImportMaps = { imports: {} };
-  private isInDenoDeps: boolean = this.file.indexOf(Deno.DENO_DIR) ===
-    0; // Whether the current module is in the Deno dependency directory
+  private isInDenoDeps: boolean = this.file.indexOf(Deno.DENO_DIR) === 0; // Whether the current module is in the Deno dependency directory
   constructor(
     private readonly file: string,
     private readonly logger: Logger,
@@ -93,8 +92,7 @@ export class ModuleResolver {
 
       try {
         importMaps = JSON.parse(importMapContent || "{}");
-      } catch {
-      }
+      } catch {}
     }
 
     if (typeof importMaps.imports !== "object") {
@@ -123,10 +121,7 @@ export class ModuleResolver {
     }
 
     // "https://deno.land/x/std/log/mod" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod" (no ".ts" because stripped)
-    let filepath = path.resolve(
-      Deno.DENO_DEPS,
-      moduleName.replace("://", "/")
-    );
+    let filepath = path.resolve(Deno.DENO_DEPS, moduleName.replace("://", "/"));
 
     if (!pathExistsSync(filepath)) {
       const headersPath = `${filepath}.headers.json`;

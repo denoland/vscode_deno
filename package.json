@@ -103,24 +103,18 @@
     "installvscode": "node ./node_modules/vscode/bin/install",
     "watch": "tsc -b -w",
     "compile": "tsc -b",
-    "check": "deno fmt --check .",
-    "format": "deno fmt ."
+    "check": "prettier '**/*.md' '**/*.json' '**/*.ts' '**/*.yml' --check",
+    "format": "prettier '**/*.md' '**/*.json' '**/*.ts' '**/*.yml' --write"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint-staged"
+      "pre-commit": "npm run check"
     }
-  },
-  "lint-staged": {
-    "**/*.{js,ts,json,md}": [
-      "yarn format",
-      "git add"
-    ]
   },
   "devDependencies": {
     "@types/node": "12.12.26",
-    "husky": "3.1.0",
-    "lint-staged": "9.5.0",
+    "husky": "^4.2.1",
+    "prettier": "^1.19.1",
     "typescript": "3.7.5",
     "vscode": "1.1.36"
   },

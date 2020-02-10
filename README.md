@@ -50,9 +50,9 @@ Feature:
 
 The extension separate Client/Server with LSP
 
-This means that complicated problems are handled on the server side
+This means that complicated problems are handled on the server-side
 
-Extension won't block your vscode
+The extension won't block your vscode
 
 ![Process](screenshot/process.png)
 
@@ -72,9 +72,9 @@ TODO
 
 <details><summary>Deno version manager</summary>
 
-Investigating integration into extension
+Investigating integration into the extension
 
-We recommend you using [dvm](https://github.com/axetroy/dvm) for manager Deno version.
+We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Deno version.
 
 </details>
 

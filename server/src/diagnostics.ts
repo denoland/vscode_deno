@@ -28,7 +28,7 @@ enum DiagnosticCode {
   RemoteModuleNotExist = 1005
 }
 
-const FixItems: { [code: number]: Fix; } = {
+const FixItems: { [code: number]: Fix } = {
   [DiagnosticCode.LocalModuleNotExist]: {
     title: localize("diagnostic.fix.create_module"),
     command: "deno._create_local_module"
@@ -217,11 +217,7 @@ export class Diagnostics {
         document.positionAt(moduleNode.end)
       );
 
-      const module = await deno.resolveModule(
-        importMaps,
-        dir,
-        moduleNode.text
-      );
+      const module = await deno.resolveModule(importMaps, dir, moduleNode.text);
 
       if (!ts.sys.fileExists(module.filepath)) {
         diagnosticsForThisDocument.push(

@@ -57,28 +57,23 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     this.logger = Logger.forPlugin(DenoPlugin.PLUGIN_NAME, info);
 
     this.logger.info(`Create typescript-deno-plugin`);
-    const getCompilationSettings = info.languageServiceHost
-      .getCompilationSettings.bind(
-        info.languageServiceHost
-      );
-    const getScriptFileNames = info.languageServiceHost.getScriptFileNames
-      .bind(
-        info.languageServiceHost
-      );
+    const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
+      info.languageServiceHost
+    );
+    const getScriptFileNames = info.languageServiceHost.getScriptFileNames.bind(
+      info.languageServiceHost
+    );
     // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-    const resolveModuleNames = info.languageServiceHost.resolveModuleNames
-      ?.bind(
-        info.languageServiceHost
-      );
-    const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics
-      .bind(
-        info.languageService
-      );
+    const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
+      info.languageServiceHost
+    );
+    const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
+      info.languageService
+    );
 
-    const resolveTypeReferenceDirectives = info.languageServiceHost
-      .resolveTypeReferenceDirectives?.bind(
-        info.languageServiceHost
-      );
+    const resolveTypeReferenceDirectives = info.languageServiceHost.resolveTypeReferenceDirectives?.bind(
+      info.languageServiceHost
+    );
 
     info.languageServiceHost.getCompilationSettings = () => {
       const projectConfig = getCompilationSettings();
@@ -163,7 +158,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return diagnostics;
       }
 
-      const ignoreCodeMapInDeno: { [k: number]: boolean; } = {
+      const ignoreCodeMapInDeno: { [k: number]: boolean } = {
         2691: true, // can not import module which end with `.ts`
         1308: true, // support top level await below typescript 3.8.0
         1378: true, // support top level await in typescript^3.8.0
