@@ -7,22 +7,22 @@ import execa from "execa";
 import which from "which";
 import { localize } from "vscode-nls-i18n";
 
-interface Version {
+type Version = {
   deno: string;
   v8: string;
   typescript: string;
   raw: string;
-}
+};
 
-interface DenoModule {
+type DenoModule = {
   filepath: string;
   raw: string;
   remote: boolean;
-}
+};
 
-interface ImportMap {
+type ImportMap = {
   imports: { [key: string]: string };
-}
+};
 
 export type FormatableLanguages =
   | "typescript"
@@ -34,14 +34,19 @@ export type FormatableLanguages =
 
 type PrettierParser = "typescript" | "babel" | "markdown" | "json";
 
-interface FormatOptions {
+type FormatOptions = {
   cwd: string;
-}
+};
 
-interface Deps {
+type Deps = {
   url: string;
   filepath: string;
-}
+};
+
+type DenoModuleHeaders = {
+  mime_type: string;
+  redirect_to: string;
+};
 
 class Deno {
   public version!: Version | void;
@@ -141,6 +146,13 @@ class Deno {
 
     return formattedCode;
   }
+  private filepath2url(denoModuleFilepath: string): string {
+    return denoModuleFilepath
+      .replace(deno.DENO_DEPS_DIR, "")
+      .replace(/^(\/|\\\\)/, "")
+      .replace(/http(\/|\\\\)/, "http://")
+      .replace(/https(\/|\\\\)/, "https://");
+  }
   // get deno dependencies files
   public async getDependencies(
     rootDir = this.DENO_DEPS_DIR,
@@ -153,19 +165,11 @@ class Deno {
       return fs.stat(filepath).then(stat => {
         if (stat.isDirectory()) {
           return this.getDependencies(filepath, deps);
-        } else if (
-          stat.isFile() &&
-          /\.tsx?$/.test(filepath) &&
-          !filepath.endsWith(".d.ts")
-        ) {
-          const url = filepath
-            .replace(deno.DENO_DEPS_DIR, "")
-            .replace(/^(\/|\\\\)/, "")
-            .replace(/http(\/|\\\\)/, "http://")
-            .replace(/https(\/|\\\\)/, "https://");
+        } else if (stat.isFile() && filepath.endsWith(".headers.json")) {
+          const moduleFilepath = filepath.replace(/\.headers\.json$/, "");
 
           deps.push({
-            url: url,
+            url: this.filepath2url(moduleFilepath),
             filepath: filepath
           });
         }

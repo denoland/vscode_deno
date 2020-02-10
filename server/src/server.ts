@@ -1,7 +1,7 @@
-import { init, localize } from "vscode-nls-i18n";
+import { init } from "vscode-nls-i18n";
 
 // init i18n
-init(process.env.VSCODE_DENO_EXTENSION_PATH_PATH);
+init(process.env.VSCODE_DENO_EXTENSION_PATH);
 
 import { promises as fs } from "fs";
 
@@ -158,9 +158,9 @@ connection.onCompletion(async params => {
     Range.create(Position.create(position.line, 0), position)
   );
 
-  const IMPORT_REG = /import\s['"][a-zA-Z]$/;
-  const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z]$/;
-  const DYNAMIC_REG = /import\s*\(['"][a-zA-Z]$/;
+  const IMPORT_REG = /import\s['"][a-zA-Z\._-]$/;
+  const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z\._-]$/;
+  const DYNAMIC_REG = /import\s*\(['"][a-zA-Z\._-]$/;
 
   const isImport =
     IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"

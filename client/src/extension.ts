@@ -277,7 +277,7 @@ class Extension {
           options: {
             cwd: process.cwd(),
             env: {
-              VSCODE_DENO_EXTENSION_PATH_PATH: this.context.extensionPath,
+              VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
               VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
             }
           }
@@ -289,7 +289,7 @@ class Extension {
             cwd: process.cwd(),
             execArgv: ["--nolazy", `--inspect=${port}`],
             env: {
-              VSCODE_DENO_EXTENSION_PATH_PATH: this.context.extensionPath,
+              VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
               VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
             }
           }
