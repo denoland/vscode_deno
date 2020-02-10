@@ -1,4 +1,4 @@
-# VS Code Deno extension
+# Visual Studio Code Deno extension
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/axetroy/vscode-deno/build)
 ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/axetroy.vscode-deno)
@@ -10,67 +10,67 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/axetroy/vscode-deno)
 ![GitHub](https://img.shields.io/github/license/axetroy/vscode-deno)
 
-Adds Deno support for vs code
+Adds Deno support for Visual Studio Code.
 
 ![screenshot](screenshot/screenshot.gif)
 
-Feature:
+Features:
 
-<details><summary>Support Deno declaration file</summary>
+<details><summary>Full intellisense support</summary>
 
 ![Deno Support](screenshot/deno.gif)
 
 </details>
 
-<details><summary>Module import intelligent</summary>
+<details><summary>Intelligent module import</summary>
 
 ![Import](screenshot/import.gif)
 
 </details>
 
-<details><summary>Support import ECMA script module</summary>
+<details><summary>Supports importing ECMAScript modules</summary>
 
 ![Import](screenshot/ecma.gif)
 
 </details>
 
-<details><summary>Diagnostics and quick fix</summary>
+<details><summary>Diagnostics and quick fixes</summary>
 
 ![Diagnostics](screenshot/diagnostics.gif)
 
 </details>
 
-<details><summary>Deno formatting tool</summary>
+<details><summary>Optional use of Deno's built in formatting</summary>
 
 ![Format](screenshot/format.gif)
 
 </details>
 
-<details><summary>C/S model with LSP</summary>
+<details><summary>Client/Server model with LSP</summary>
 
-The extension separate Client/Server with LSP
+The extension separates Client/Server with LSP
 
 This means that complicated problems are handled on the server-side
 
-The extension won't block your vscode
+The extension won't block your Visual Studio Code
 
 ![Process](screenshot/process.png)
 
 </details>
 
-<details><summary>Support `Import Maps` for Deno</summary>
+<details><summary>Supports `Import Maps` for Deno</summary>
 
 ![Format](screenshot/import_map.gif)
 
 </details>
 
-<details><summary>Deno version upgrade detection</summary>
+<details><summary>Deno version upgrade detection (coming soon...)</summary>
 
 TODO
 
 </details>
 
-<details><summary>Deno version manager</summary>
+<details><summary>Deno version manager integration</summary>
 
 Investigating integration into the extension
 
@@ -80,11 +80,11 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 ## Usage
 
-1. Download and enable extension from [vscode market](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
+1. Download and enable extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
 
-2. Enable Deno for your project
+2. Enable Deno for your project:
 
-create a file `.vscode/settings.json` in your project folder
+Create a file `.vscode/settings.json` in your project folder:
 
 ```json5
 // .vscode/settings.json
@@ -98,19 +98,19 @@ create a file `.vscode/settings.json` in your project folder
 ## Difference from [justjavac.vscode-deno](https://github.com/justjavac/vscode-deno)
 
 - Almost completely rewritten
-- Fix its known issues
-- Add some new features
+- Fixes its known issues
+- Adds some new features
 - Integrated [typescript-deno-plugin](typescript-deno-plugin) means easier maintenance
 
 ## Configuration
 
-- `deno.enabled` - Enable extension. Default is `false`.
+- `deno.enabled` - Enable extension. Default is `false`
 
-- `deno.dtsFilepaths` - The file paths of the TypeScript declaration file(.d.ts). Default is `[]`
+- `deno.dtsFilepaths` - The file paths of the TypeScript declaration file (.d.ts). Default is `[]`
 
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 
-We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory
+We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
 ```json5
 // .vscode/settings.json
@@ -121,7 +121,7 @@ We recommend that you do not set global configuration. It should be configured i
 }
 ```
 
-Extensions also provide Deno's formatting tools, setting in `.vscode/settings.json`
+This extension also provides Deno's formatting tools, settings are in `.vscode/settings.json`:
 
 ```json
 {
@@ -146,7 +146,7 @@ Extensions also provide Deno's formatting tools, setting in `.vscode/settings.js
 }
 ```
 
-To configure the format tool, create `.prettierrc.json` in the project directory
+To configure the formatting options, create `.prettierrc.json` in the project directory:
 
 ```json
 {
@@ -155,11 +155,11 @@ To configure the format tool, create `.prettierrc.json` in the project directory
 }
 ```
 
-If you want to ignore the directory/file. create `.prettieringore` in the project directory
+If you want to ignore the directory/file. create `.prettieringore` in the project directory.
 
 ## Commands
 
-This extension contributes the following commands to the Command palette.
+This extension contributes the following commands to the Command palette:
 
 - `deno.enable` - Enable this extension.
 - `deno.disable` - Disable this extension.
@@ -169,7 +169,7 @@ This extension contributes the following commands to the Command palette.
 
 1. Fork project
 
-2. Clone into your computer
+2. Clone onto your computer:
 
 ```bash
 $ git clone https://github.com/your_github_name/vscode-deno.git
@@ -177,25 +177,22 @@ $ cd vscode-deno
 $ yarn # or npm install
 ```
 
-3. Disable extension in vs code if you have extension before
+3. Disable extension in Visual Studio Code if you have extension before
 
 4. Start debug extension
 
-> Open vs code and find the `Debug` item in the sidebar
+> Open Visual Studio Code, find the `Debug` item in the sidebar
+> and then run `Launch Client` debugger.
 >
-> And then run `Launch Client` debugger.
->
-> Wait for vs code debugger to open a new window
+> Wait for Visual Studio Code debugger to open a new window
 
-5. Try update code and restart debug
+5. Try updating Visual Studio Code and restart the debugger
 
 6. Finally, push to your fork and send a PR
 
 ## Thanks
 
-This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno)
-
-Thanks for their contributions
+This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno), thanks for his contribution.
 
 ## License
 
