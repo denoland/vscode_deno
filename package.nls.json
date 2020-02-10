@@ -5,16 +5,11 @@
   "deno.command.disable": "Disable Deno",
   "deno.command.restart_server": "Restart Deno Language Server",
   "deno.config.enabled": "Controls whether Deno is enabled or not.\n\n**Not recommended in global configuration**",
-  "deno.config.dtsFilepaths": "The file paths of the TypeScript declaration file(.d.ts).\n\nIt can be a relative which path relative to the project directory or an absolute path.\n\n**Not recommended in global configuration**",
-  "deno.config.import_map": "The file paths of Import Map.\n\nIt can be a relative which path relative to the project directory or an absolute path.\n\n**Not recommended in global configuration**",
+  "deno.config.dtsFilepaths": "The file path of the Deno TypeScript declaration file (.d.ts).\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration unless you are using an absolute path.**",
+  "deno.config.import_map": "The file path of an import map.\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration**",
   "deno.initializing": "Initializing Deno Language Server...",
-  "err.not_install_deno": "Can not found deno in $PATH. Please restart the extension after setting.",
-  "diagnostic.fix.add_ext_name": "Add `.ts` extension.",
-  "diagnostic.fix.use_HTTPS_module": "Use HTTPS module.",
-  "diagnostic.fix.create_module": "Create module.",
-  "diagnostic.fix.fetch_module": "Fetch module.",
-  "diagnostic.fix.lock_std_version": "Lock Deno standard library version.",
-  "diagnostic.report.use_HTTPS_module": "For security, we recommend using the HTTPS module.",
-  "diagnostic.report.lock_std_version": "We recommend you use a locked Deno standard library version.",
-  "diagnostic.report.can_not_found_module": "Cannot found module `{0}`."
+  "err.not_install_deno": "Could not find `deno` in your $PATH. Please install `deno`, then restart the extension.",
+  "diagnostic.fix.create_module": "Create the module",
+  "diagnostic.fix.fetch_module": "Fetch the module",
+  "diagnostic.report.module_not_found_locally": "Could not find module `{0}` locally."
 }

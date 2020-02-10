@@ -223,7 +223,7 @@ export class Diagnostics {
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             range,
-            localize("diagnostic.report.can_not_found_module", module.raw),
+            localize("diagnostic.report.module_not_found_locally", module.raw),
             DiagnosticSeverity.Error,
             module.remote
               ? DiagnosticCode.RemoteModuleNotExist

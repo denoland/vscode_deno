@@ -1,0 +1,15 @@
+{
+  "deno.displayName": "Deno",
+  "deno.description": "Deno ondersteuning voor VSCode",
+  "deno.command.enable": "Schakel Deno aan",
+  "deno.command.disable": "Schakel Deno uit",
+  "deno.command.restart_server": "Start Deno Language Server opnieuw",
+  "deno.config.enabled": "Bepaalt of Deno is ingeschakeld of niet.\n\n**Niet aanbevolen in globale configuratie**",
+  "deno.config.dtsFilepaths": "Het bestandspad van het Deno TypeScript-declaratiebestand (.d.ts).\n\nHet kan een pad zijn dat relatief is aan het projectpad, of een absoluut pad.\n\n**Niet aanbevolen in globale configuratie tenzij u een absoluut pad gebruikt.**",
+  "deno.config.import_map": "Het bestandspad van een 'import map'.\n\nHet kan een pad zijn dat relatief is aan het projectpad, of een absoluut pad\n\n**Niet aanbevolen in globale configuratie**",
+  "deno.initializing": "Deno Language Server initialiseren ...",
+  "err.not_install_deno": "Kon `deno` niet vinden in uw $PATH. Installeer `deno` en start de extensie opnieuw.",
+  "diagnostic.fix.create_module": "Maak de module",
+  "diagnostic.fix.fetch_module": "Download de module",
+  "diagnostic.report.module_not_found_locally": "Kan module `{0}` niet lokaal vinden."
+}
