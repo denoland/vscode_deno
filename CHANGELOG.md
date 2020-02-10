@@ -1,3 +1,9 @@
+# [1.21.0](https://github.com/axetroy/vscode-deno/compare/v1.20.0...v1.21.0) (2020-02-10)
+
+### Features
+
+- support external type definitions with '/// <reference types=https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts />'. ref: [#35](https://github.com/axetroy/vscode-deno/issues/35) ([f7affb2](https://github.com/axetroy/vscode-deno/commit/f7affb2))
+
 # [1.20.0](https://github.com/axetroy/vscode-deno/compare/v1.19.0...v1.20.0) (2020-02-09)
 
 ### Bug Fixes
