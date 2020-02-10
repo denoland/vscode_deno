@@ -75,6 +75,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         info.languageService
       );
 
+    const resolveTypeReferenceDirectives = info.languageServiceHost
+      .resolveTypeReferenceDirectives?.bind(
+        info.languageServiceHost
+      );
+
     info.languageServiceHost.getCompilationSettings = () => {
       const projectConfig = getCompilationSettings();
 
@@ -117,6 +122,39 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
       return scriptFileNames;
     };
+
+    if (resolveTypeReferenceDirectives) {
+      info.languageServiceHost.resolveTypeReferenceDirectives = (
+        typeDirectiveNames: string[],
+        containingFile: string,
+        redirectedReference: ts_module.ResolvedProjectReference | undefined,
+        options: ts_module.CompilerOptions
+      ) => {
+        if (!this.configurationManager.config.enable) {
+          return resolveTypeReferenceDirectives(
+            typeDirectiveNames,
+            containingFile,
+            redirectedReference,
+            options
+          );
+        }
+
+        const resolver = new ModuleResolver(
+          containingFile,
+          this.logger,
+          info.project.getCurrentDirectory()
+        );
+
+        const modules = resolver.resolveModuleNames(typeDirectiveNames);
+
+        return resolveTypeReferenceDirectives(
+          modules.map(v => v.module),
+          containingFile,
+          redirectedReference,
+          options
+        );
+      };
+    }
 
     info.languageService.getSemanticDiagnostics = (filename: string) => {
       const diagnostics = getSemanticDiagnostics(filename);

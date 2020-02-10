@@ -187,9 +187,9 @@ function trimQueryAndHashFromPath(moduleName: string): string {
 }
 
 function trimExtensionName(moduleName: string): string {
-  if (/\.(t|j)sx?$/.test(moduleName) === false) {
+  if (/(\.d)?\.(t|j)sx?$/.test(moduleName) === false) {
     return moduleName;
   }
-  const name = moduleName.replace(/\.(t|j)sx?$/, "");
+  const name = moduleName.replace(/(\.d)?\.(t|j)sx?$/, "");
   return name;
 }
