@@ -29,11 +29,11 @@ jobs:
 
       - name: Check code format
         run: |
-          yarn run check
+          npm run check
 
       - name: Compile
         run: |
-          yarn compile
+          npm run compile
 
       - name: Package
         run: |
