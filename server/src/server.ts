@@ -137,20 +137,12 @@ connection.onDocumentFormatting(async params => {
   return [TextEdit.replace(range, formatted)];
 });
 
-// FIXME: all completion will trigger this.
-// It seem it's a bug for vscode
 connection.onCompletion(async params => {
   const { position, partialResultToken, textDocument } = params;
 
   const doc = documents.get(textDocument.uri);
 
   if (!doc) {
-    return [];
-  }
-
-  const config = await bridge.getWorkspaceConfig(doc.uri);
-
-  if (!config.enable) {
     return [];
   }
 

@@ -40,12 +40,13 @@ interface SynchronizedConfiguration {
   enable?: boolean;
   dtsFilepaths?: string[];
   import_map?: string;
-  // external
-  workspaceDir?: string;
 }
 
 interface TypescriptAPI {
-  configurePlugin(pluginId: string, configuration: {}): void;
+  configurePlugin(
+    pluginId: string,
+    configuration: SynchronizedConfiguration
+  ): void;
 }
 
 interface DenoInfo {
@@ -219,12 +220,6 @@ class Extension {
       config.enable = false;
     }
 
-    const workspaceFolder = workspace.getWorkspaceFolder(uri);
-
-    if (workspaceFolder) {
-      config.workspaceDir = workspaceFolder.uri.fsPath;
-    }
-
     return config;
   }
   // register command for deno extension
@@ -313,6 +308,9 @@ class Extension {
         progressOnInitialization: true,
         middleware: {
           provideCodeActions: (document, range, context, token, next) => {
+            if (!this.getConfiguration(document.uri).enable) {
+              return [];
+            }
             // do not ask server for code action when the diagnostic isn't from deno
             if (!context.diagnostics || context.diagnostics.length === 0) {
               return [];
@@ -330,6 +328,13 @@ class Extension {
               diagnostics: denoDiagnostics
             } as CodeActionContext);
             return next(document, range, newContext, token);
+          },
+          provideCompletionItem: (document, position, context, token, next) => {
+            if (!this.getConfiguration(document.uri).enable) {
+              return [];
+            }
+
+            return next(document, position, context, token);
           }
         }
       };
