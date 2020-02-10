@@ -28,6 +28,7 @@ jobs:
           yarn
 
       - name: Check code format
+        if: runner.os != 'windows'
         run: |
           npm run check
 
