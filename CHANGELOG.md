@@ -1,3 +1,14 @@
+# [1.22.0](https://github.com/axetroy/vscode-deno/compare/v1.21.0...v1.22.0) (2020-02-11)
+
+### Bug Fixes
+
+- module import intelligent no work correctly when import from 'http/server.ts' ([055d062](https://github.com/axetroy/vscode-deno/commit/055d062))
+- Module index is incorrect. close [#47](https://github.com/axetroy/vscode-deno/issues/47) ([dff32c4](https://github.com/axetroy/vscode-deno/commit/dff32c4))
+
+### Features
+
+- improve module import intelligent ([faf76c9](https://github.com/axetroy/vscode-deno/commit/faf76c9))
+
 # [1.21.0](https://github.com/axetroy/vscode-deno/compare/v1.20.0...v1.21.0) (2020-02-10)
 
 ### Features
