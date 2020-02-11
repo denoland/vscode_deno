@@ -191,8 +191,6 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         );
       }
 
-      this.logger.info(`workspace dir ${info.project.getCurrentDirectory()}`);
-
       const resolver = new ModuleResolver(
         containingFile,
         this.logger,

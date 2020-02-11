@@ -52,9 +52,6 @@ export class ModuleResolver {
       // resolve `http/server.ts` -> `https://deno.land/std/http/server.ts`
       moduleName = this.resolveModuleNameFromImportMaps(moduleName);
 
-      // cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
-      moduleName = this.convertRemoteToLocalCache(moduleName);
-
       // if module is ESM. Then the module name may contain url query and url hash
       // We need to remove it
       moduleName = trimQueryAndHashFromPath(moduleName);
@@ -66,7 +63,10 @@ export class ModuleResolver {
       // import "/npm:react@16.12.0/cjs/react.development.dew.js";
       // import "/npm:object-assign@4?dew";
       // import "/npm:prop-types@15/checkPropTypes?dew";
-      moduleName = resolvedModule.filepath = this.resolveFromDenoDir(
+      moduleName = this.resolveFromDenoDir(moduleName);
+
+      // cover `https://example.com/mod.ts` -> `$DENO_DIR/deps/https/example.com/mod.ts`
+      moduleName = resolvedModule.filepath = this.convertRemoteToLocalCache(
         moduleName
       );
 
