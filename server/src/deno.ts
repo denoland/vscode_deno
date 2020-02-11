@@ -282,7 +282,7 @@ class Deno {
     };
   }
   private getDenoDir(): string {
-    let denoDir = process.env["DENO_DIR"];
+    let denoDir = process.env.DENO_DIR;
 
     if (denoDir) {
       return denoDir;
@@ -296,7 +296,9 @@ class Deno {
         denoDir = `${process.env.HOME}/Library/Caches/deno`;
         break;
       case "linux":
-        denoDir = `${process.env.HOME}/.cache/deno`;
+        denoDir = process.env.XDG_CACHE_HOME
+          ? `${process.env.XDG_CACHE_HOME}/deno`
+          : `${process.env.HOME}/.cache/deno`;
         break;
       default:
         denoDir = `${process.env.HOME}/.deno`;
