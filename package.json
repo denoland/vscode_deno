@@ -112,7 +112,7 @@
     }
   },
   "devDependencies": {
-    "@types/node": "12.12.26",
+    "@types/node": "12.12.27",
     "husky": "4.2.1",
     "prettier": "1.19.1",
     "typescript": "3.7.5",
