@@ -27,6 +27,8 @@
     "deno"
   ],
   "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onCommand:deno.enable",
