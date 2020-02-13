@@ -9,6 +9,7 @@
   "deno.config.import_map": "The file path of an import map.\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration**",
   "deno.initializing": "Initializing Deno Language Server...",
   "err.not_install_deno": "Could not find `deno` in your $PATH. Please install `deno`, then restart the extension.",
+  "err.below_deno_minimum_requirements": "Deno's version is below minimum requirements. Please upgrade to v{0} or above.",
   "diagnostic.fix.create_module": "Create the module",
   "diagnostic.fix.fetch_module": "Fetch the module",
   "diagnostic.report.module_not_found_locally": "Could not find module `{0}` locally."

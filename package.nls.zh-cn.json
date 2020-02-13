@@ -9,6 +9,7 @@
   "deno.config.import_map": "Import Map 的文件路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
   "deno.initializing": "正在初始化 Deno 语言服务器...",
   "err.not_install_deno": "在 $PATH 变量中找不到 Deno。请在设置后重新启动扩展。",
+  "err.below_deno_minimum_requirements": "Deno 的版本低于最小要求。 请升级至 v{0} 或以上。",
   "diagnostic.fix.create_module": "创建模块。",
   "diagnostic.fix.fetch_module": "拉取模块。",
   "diagnostic.report.module_not_found_locally": "找不到模块 `{0}`。"
