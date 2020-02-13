@@ -43,10 +43,11 @@ type Deps = {
   filepath: string;
 };
 
-type DenoModuleHeaders = {
+interface IDenoModuleHeaders {
   mime_type: string;
-  redirect_to: string;
-};
+  redirect_to?: string;
+  x_typescript_types?: string;
+}
 
 class Deno {
   public version!: Version | void;
@@ -243,14 +244,16 @@ class Deno {
       if (!ts.sys.fileExists(moduleName)) {
         const headersPath = `${moduleName}.headers.json`;
         if (ts.sys.fileExists(headersPath)) {
-          interface IDenoModuleHeaders {
-            mime_type: string;
-            redirect_to: string;
-          }
-          const headers: IDenoModuleHeaders = JSON.parse(
-            await fs.readFile(headersPath, { encoding: "utf8" })
-          );
-          if (headers.redirect_to !== raw) {
+          let headers: IDenoModuleHeaders = {
+            mime_type: "application/typescript"
+          };
+          try {
+            headers = JSON.parse(
+              await fs.readFile(headersPath, { encoding: "utf8" })
+            );
+          } catch {}
+
+          if (headers.redirect_to && headers.redirect_to !== raw) {
             moduleName = (
               await this.resolveModule(
                 importMaps,

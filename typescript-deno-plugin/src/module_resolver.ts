@@ -17,7 +17,8 @@ type ImportMaps = {
 
 type DenoModuleHeaders = {
   mime_type: string;
-  redirect_to: string;
+  redirect_to?: string;
+  x_typescript_types?: string;
 };
 
 // the resolver defined how to resolve Deno module
@@ -28,10 +29,10 @@ export class ModuleResolver {
     private readonly file: string,
     private readonly logger: Logger,
     private readonly workspaceDir: string,
-    importMapsFile?: string
+    private importMapsFile?: string
   ) {
-    if (importMapsFile) {
-      this.importMaps = this.resolveImportMaps(importMapsFile);
+    if (this.importMapsFile) {
+      this.importMaps = this.resolveImportMaps(this.importMapsFile);
     }
   }
   // resolve modules
@@ -116,26 +117,44 @@ export class ModuleResolver {
     return moduleName;
   }
   private convertRemoteToLocalCache(moduleName: string): string {
-    if (!/^https?:\/\//.test(moduleName)) {
-      return moduleName;
+    let filepath: string = moduleName;
+
+    if (/^https?:\/\//.test(moduleName)) {
+      // "https://deno.land/x/std/log/mod" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod" (no ".ts" because stripped)
+      filepath = path.resolve(Deno.DENO_DEPS, moduleName.replace("://", "/"));
     }
 
-    // "https://deno.land/x/std/log/mod" to "$DENO_DIR/deps/https/deno.land/x/std/log/mod" (no ".ts" because stripped)
-    let filepath = path.resolve(Deno.DENO_DEPS, moduleName.replace("://", "/"));
+    const headersPath = `${filepath}.headers.json`;
 
-    if (!pathExistsSync(filepath)) {
-      const headersPath = `${filepath}.headers.json`;
-      if (pathExistsSync(headersPath)) {
-        const headers: DenoModuleHeaders = JSON.parse(
+    // if header.json file exist
+    if (pathExistsSync(headersPath)) {
+      let headers: DenoModuleHeaders = { mime_type: "application/typescript" };
+
+      try {
+        headers = JSON.parse(
           fs.readFileSync(headersPath, { encoding: "utf-8" })
         );
-        if (moduleName !== headers.redirect_to) {
-          const redirectFilepath = this.convertRemoteToLocalCache(
-            headers.redirect_to
-          );
-          this.logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
-          filepath = redirectFilepath;
-        }
+      } catch {}
+
+      // If the declaration file exists, then load the declaration file
+      if (headers.x_typescript_types) {
+        let [moduleName] = this.resolveModuleNames([
+          headers.x_typescript_types
+        ]);
+
+        this.logger.info(
+          `redirect '${filepath}' to declaration file "${moduleName.filepath}"`
+        );
+
+        filepath = moduleName.filepath;
+      }
+      // If a redirect exists, redirect to a new file
+      else if (headers.redirect_to && moduleName !== headers.redirect_to) {
+        const redirectFilepath = this.convertRemoteToLocalCache(
+          headers.redirect_to
+        );
+        this.logger.info(`redirect "${filepath}" to "${redirectFilepath}".`);
+        filepath = redirectFilepath;
       }
     }
 
