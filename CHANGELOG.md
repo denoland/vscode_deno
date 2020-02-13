@@ -1,3 +1,11 @@
+# [1.23.0](https://github.com/axetroy/vscode-deno/compare/v1.22.0...v1.23.0) (2020-02-13)
+
+### Features
+
+- add the tips for Deno's minimum version for this extension. ([8b5c54b](https://github.com/axetroy/vscode-deno/commit/8b5c54b))
+- Now opening the js file will also launch the extension. the same with tsserver. ([d4a9beb](https://github.com/axetroy/vscode-deno/commit/d4a9beb))
+- support external type definitions with `X-TypeScript-Types` headers. close [#35](https://github.com/axetroy/vscode-deno/issues/35) ([98253dd](https://github.com/axetroy/vscode-deno/commit/98253dd))
+
 # [1.22.0](https://github.com/axetroy/vscode-deno/compare/v1.21.0...v1.22.0) (2020-02-11)
 
 ### Bug Fixes
