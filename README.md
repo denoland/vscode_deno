@@ -64,9 +64,39 @@ The extension won't block your Visual Studio Code
 
 </details>
 
-<details><summary>Deno version upgrade detection (coming soon...)</summary>
+<details><summary>External type definitions</summary>
 
-TODO
+The extension supports the following ways to load external declaration files
+
+> These are all supported by Deno
+
+1. ~Compiler hint~
+
+```ts
+// @deno-types="./foo.d.ts"
+import * as foo from "./foo.js";
+```
+
+> This will not be implemented in then extensions.
+
+2. `Triple-slash` reference directive
+
+```ts
+/// <reference types="https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts" />
+
+import { format } from "https://deno.land/x/date_fns/index.js";
+
+format(new Date(), "yyyy/MM/DD");
+```
+
+3. `X-TypeScript-Types` custom header
+
+```ts
+import { array } from "https://cdn.pika.dev/fp-ts";
+
+const M = array.getMonoid<number>();
+console.log("concat Array", M.concat([1, 2], [2, 3]));
+```
 
 </details>
 
