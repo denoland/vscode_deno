@@ -15,7 +15,8 @@ import {
   Range,
   OutputChannel,
   Diagnostic,
-  CodeActionContext
+  CodeActionContext,
+  ProgressLocation
 } from "vscode";
 import {
   LanguageClient,
@@ -70,7 +71,7 @@ async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
   if (importMapFilepath) {
     const importMapsFilepath = path.isAbsolute(importMapFilepath)
       ? importMapFilepath
-      : path.resolve(workspaceDir || process.cwd(), importMapFilepath);
+      : path.resolve(workspaceDir, importMapFilepath);
 
     if (await pathExists(importMapsFilepath)) {
       const importMapContent = await fs.readFile(importMapsFilepath);
@@ -215,131 +216,121 @@ class Extension {
       await this.client.stop();
       this.client = null;
     }
-    const statusbar = window.createStatusBarItem(StatusBarAlignment.Left, -100);
-    statusbar.text = `$(loading) ${localize("deno.initializing")}`;
-    statusbar.show();
 
-    try {
-      // create server connection
-      const port = await getport({ port: 9523 });
+    // create server connection
+    const port = await getport({ port: 9523 });
 
-      // The server is implemented in node
-      const serverModule = this.context.asAbsolutePath(
-        path.join("server", "out", "server.js")
+    // The server is implemented in node
+    const serverModule = this.context.asAbsolutePath(
+      path.join("server", "out", "server.js")
+    );
+
+    // If the extension is launched in debug mode then the debug server options are used
+    // Otherwise the run options are used
+    const serverOptions: ServerOptions = {
+      run: {
+        module: serverModule,
+        transport: TransportKind.ipc,
+        options: {
+          cwd: this.context.extensionPath,
+          env: {
+            VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
+            VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
+          }
+        }
+      },
+      debug: {
+        module: serverModule,
+        transport: TransportKind.ipc,
+        options: {
+          cwd: this.context.extensionPath,
+          execArgv: ["--nolazy", `--inspect=${port}`],
+          env: {
+            VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
+            VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
+          }
+        }
+      }
+    };
+
+    // Options to control the language client
+    const clientOptions: LanguageClientOptions = {
+      documentSelector: [
+        { scheme: "file", language: "javascript" },
+        { scheme: "file", language: "javascriptreact" },
+        { scheme: "file", language: "typescript" },
+        { scheme: "file", language: "typescriptreact" }
+      ],
+      diagnosticCollectionName: this.configurationSection,
+      synchronize: {
+        configurationSection: this.configurationSection
+      },
+      progressOnInitialization: true,
+      middleware: {
+        provideCodeActions: (document, range, context, token, next) => {
+          if (!this.getConfiguration(document.uri).enable) {
+            return [];
+          }
+          // do not ask server for code action when the diagnostic isn't from deno
+          if (!context.diagnostics || context.diagnostics.length === 0) {
+            return [];
+          }
+          const denoDiagnostics: Diagnostic[] = [];
+          for (const diagnostic of context.diagnostics) {
+            if (diagnostic.source === "Deno Language Server") {
+              denoDiagnostics.push(diagnostic);
+            }
+          }
+          if (denoDiagnostics.length === 0) {
+            return [];
+          }
+          const newContext: CodeActionContext = Object.assign({}, context, {
+            diagnostics: denoDiagnostics
+          } as CodeActionContext);
+          return next(document, range, newContext, token);
+        },
+        provideCompletionItem: (document, position, context, token, next) => {
+          if (!this.getConfiguration(document.uri).enable) {
+            return [];
+          }
+
+          return next(document, position, context, token);
+        }
+      }
+    };
+
+    // Create the language client and start the client.
+    const client = (this.client = new LanguageClient(
+      "Deno Language Server",
+      "Deno Language Server",
+      serverOptions,
+      clientOptions
+    ));
+
+    this.context.subscriptions.push(client.start());
+
+    await client.onReady().then(() => {
+      console.log("Deno Language Server is ready!");
+      client.onNotification("init", (info: DenoInfo) => {
+        this.denoInfo = { ...this.denoInfo, ...info };
+        this.updateStatusBarVisibility(window.activeTextEditor);
+      });
+      client.onNotification("error", window.showErrorMessage.bind(window));
+
+      client.onRequest("getWorkspaceFolder", async (uri: string) =>
+        workspace.getWorkspaceFolder(Uri.parse(uri))
       );
 
-      // If the extension is launched in debug mode then the debug server options are used
-      // Otherwise the run options are used
-      const serverOptions: ServerOptions = {
-        run: {
-          module: serverModule,
-          transport: TransportKind.ipc,
-          options: {
-            cwd: process.cwd(),
-            env: {
-              VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
-              VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
-            }
-          }
-        },
-        debug: {
-          module: serverModule,
-          transport: TransportKind.ipc,
-          options: {
-            cwd: process.cwd(),
-            execArgv: ["--nolazy", `--inspect=${port}`],
-            env: {
-              VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
-              VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
-            }
-          }
-        }
-      };
+      client.onRequest("getWorkspaceConfig", async (uri: string) => {
+        const workspaceFolder = workspace.getWorkspaceFolder(Uri.parse(uri));
 
-      // Options to control the language client
-      const clientOptions: LanguageClientOptions = {
-        documentSelector: [
-          { scheme: "file", language: "javascript" },
-          { scheme: "file", language: "javascriptreact" },
-          { scheme: "file", language: "typescript" },
-          { scheme: "file", language: "typescriptreact" }
-        ],
-        diagnosticCollectionName: this.configurationSection,
-        synchronize: {
-          configurationSection: this.configurationSection
-        },
-        progressOnInitialization: true,
-        middleware: {
-          provideCodeActions: (document, range, context, token, next) => {
-            if (!this.getConfiguration(document.uri).enable) {
-              return [];
-            }
-            // do not ask server for code action when the diagnostic isn't from deno
-            if (!context.diagnostics || context.diagnostics.length === 0) {
-              return [];
-            }
-            const denoDiagnostics: Diagnostic[] = [];
-            for (const diagnostic of context.diagnostics) {
-              if (diagnostic.source === "Deno Language Server") {
-                denoDiagnostics.push(diagnostic);
-              }
-            }
-            if (denoDiagnostics.length === 0) {
-              return [];
-            }
-            const newContext: CodeActionContext = Object.assign({}, context, {
-              diagnostics: denoDiagnostics
-            } as CodeActionContext);
-            return next(document, range, newContext, token);
-          },
-          provideCompletionItem: (document, position, context, token, next) => {
-            if (!this.getConfiguration(document.uri).enable) {
-              return [];
-            }
-
-            return next(document, position, context, token);
-          }
-        }
-      };
-
-      // Create the language client and start the client.
-      const client = (this.client = new LanguageClient(
-        "Deno Language Server",
-        "Deno Language Server",
-        serverOptions,
-        clientOptions
-      ));
-
-      this.context.subscriptions.push(client.start());
-
-      await client.onReady().then(() => {
-        console.log("Deno Language Server is ready!");
-        client.onNotification("init", (info: DenoInfo) => {
-          this.denoInfo = { ...this.denoInfo, ...info };
-          this.updateStatusBarVisibility(window.activeTextEditor);
-        });
-        client.onNotification("error", window.showErrorMessage.bind(window));
-
-        client.onRequest("getWorkspaceFolder", async (uri: string) =>
-          workspace.getWorkspaceFolder(Uri.parse(uri))
+        const config = this.getConfiguration(
+          workspaceFolder?.uri || Uri.parse(uri)
         );
 
-        client.onRequest("getWorkspaceConfig", async (uri: string) => {
-          const workspaceFolder = workspace.getWorkspaceFolder(Uri.parse(uri));
-
-          const config = this.getConfiguration(
-            workspaceFolder?.uri || Uri.parse(uri)
-          );
-
-          return config;
-        });
+        return config;
       });
-    } catch (err) {
-      throw err;
-    } finally {
-      statusbar.hide();
-      statusbar.dispose();
-    }
+    });
   }
   // update status bar visibility
   private updateStatusBarVisibility(
@@ -442,10 +433,15 @@ Executable ${this.denoInfo.executablePath}`;
       })
     );
 
-    this.registerCommand(
-      "restart_server",
-      this.StartDenoLanguageServer.bind(this)
-    );
+    this.registerCommand("restart_server", async () => {
+      await window.withProgress(
+        {
+          location: ProgressLocation.Window,
+          title: localize("deno.initializing")
+        },
+        this.StartDenoLanguageServer.bind(this)
+      );
+    });
 
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
@@ -453,11 +449,13 @@ Executable ${this.denoInfo.executablePath}`;
         const workspaceFolder = workspace.getWorkspaceFolder(
           editor.document.uri
         );
+
+        if (!workspaceFolder) {
+          return;
+        }
+
         const remoteModuleUrl = resolveModuleFromImportMap(
-          await getImportMaps(
-            config.import_map,
-            workspaceFolder?.uri.fsPath || process.cwd()
-          ),
+          await getImportMaps(config.import_map, workspaceFolder.uri.fsPath),
           text
         );
 
@@ -555,7 +553,13 @@ Executable ${this.denoInfo.executablePath}`;
       )
     );
 
-    await this.StartDenoLanguageServer();
+    await window.withProgress(
+      {
+        location: ProgressLocation.Window,
+        title: localize("deno.initializing")
+      },
+      this.StartDenoLanguageServer.bind(this)
+    );
 
     console.log(`Congratulations, your extension "vscode-deno" is now active!`);
   }

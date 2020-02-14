@@ -109,7 +109,7 @@ export class Diagnostics {
       this.bridge.getWorkspace(document.uri)
     ]);
 
-    if (!config.enable) {
+    if (!config.enable || !workspaceDir) {
       return [];
     }
 
@@ -192,7 +192,7 @@ export class Diagnostics {
     const dir = path.dirname(URI.parse(document.uri).path);
     const importMaps = deno.getImportMaps(
       config.import_map,
-      workspaceDir ? workspaceDir.uri.fsPath : process.cwd()
+      workspaceDir.uri.fsPath
     );
     const diagnosticsForThisDocument = [];
 

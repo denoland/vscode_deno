@@ -156,7 +156,7 @@ class Deno {
     if (importMapFilepath) {
       const importMapsFilepath = path.isAbsolute(importMapFilepath)
         ? importMapFilepath
-        : path.resolve(workspaceDir || process.cwd(), importMapFilepath);
+        : path.resolve(workspaceDir, importMapFilepath);
 
       if (ts.sys.fileExists(importMapsFilepath)) {
         const importMapContent = ts.sys.readFile(importMapsFilepath);
