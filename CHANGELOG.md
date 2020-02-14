@@ -1,3 +1,12 @@
+# [2.0.0](https://github.com/axetroy/vscode-deno/compare/v1.23.0...v2.0.0) (2020-02-14)
+
+### Features
+
+- Deno minimum required v0.33.0 ([014192a](https://github.com/axetroy/vscode-deno/commit/014192a))
+- remove `deno.enable` & `deno.disable` command ([#48](https://github.com/axetroy/vscode-deno/issues/48)) ([8ecae2c](https://github.com/axetroy/vscode-deno/commit/8ecae2c))
+- rename configuration `deno.dtsFilepaths` to `deno.dts_file` ([#49](https://github.com/axetroy/vscode-deno/issues/49)) ([555a230](https://github.com/axetroy/vscode-deno/commit/555a230))
+- upgrade Deno formatter ([#50](https://github.com/axetroy/vscode-deno/issues/50)) ([e872d1c](https://github.com/axetroy/vscode-deno/commit/e872d1c))
+
 # [1.23.0](https://github.com/axetroy/vscode-deno/compare/v1.22.0...v1.23.0) (2020-02-13)
 
 ### Features
