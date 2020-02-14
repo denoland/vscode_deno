@@ -110,7 +110,7 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 ## Usage
 
-1. Download and enable extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
+1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
 
 2. Enable Deno for your project:
 
@@ -123,7 +123,7 @@ Create a file `.vscode/settings.json` in your project folder:
 }
 ```
 
-1. Enjoy!
+3. Enjoy!
 
 ## Configuration
 
