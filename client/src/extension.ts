@@ -318,7 +318,7 @@ class Extension {
           this.denoInfo = { ...this.denoInfo, ...info };
           this.updateStatusBarVisibility(window.activeTextEditor);
         });
-        client.onNotification("error", window.showErrorMessage);
+        client.onNotification("error", window.showErrorMessage.bind(window));
 
         client.onRequest("getWorkspaceFolder", async (uri: string) =>
           workspace.getWorkspaceFolder(Uri.parse(uri))
@@ -468,13 +468,12 @@ Executable ${this.denoInfo.executablePath}`;
 
         this.output.show();
 
-        ps.stdout.on("data", buf => {
-          this.output.append(buf + "");
-        });
-
-        ps.stderr.on("data", buf => {
-          this.output.append(buf + "");
-        });
+        ps.stdout.on("data", (buf: Buffer) =>
+          this.output.append(buf.toString())
+        );
+        ps.stderr.on("data", (buf: Buffer) =>
+          this.output.append(buf.toString())
+        );
 
         await new Promise((resolve, reject) => {
           ps.on("exit", (code: number) => {
