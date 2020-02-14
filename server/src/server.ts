@@ -23,7 +23,7 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
 
-import { deno, FormatableLanguages } from "./deno";
+import { deno } from "./deno";
 import { Diagnostics } from "./diagnostics";
 import { Bridge } from "./bridge";
 
@@ -121,13 +121,9 @@ connection.onDocumentFormatting(async params => {
     }`
   );
 
-  const formatted = await deno.format(
-    text,
-    doc.languageId as FormatableLanguages,
-    {
-      cwd
-    }
-  );
+  const formatted = await deno.format(text, {
+    cwd
+  });
 
   const start = doc.positionAt(0);
   const end = doc.positionAt(text.length);

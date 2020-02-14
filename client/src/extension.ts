@@ -297,9 +297,7 @@ class Extension {
           { scheme: "file", language: "javascript" },
           { scheme: "file", language: "javascriptreact" },
           { scheme: "file", language: "typescript" },
-          { scheme: "file", language: "typescriptreact" },
-          { scheme: "file", language: "markdown" },
-          { scheme: "file", language: "json" }
+          { scheme: "file", language: "typescriptreact" }
         ],
         diagnosticCollectionName: this.configurationSection,
         synchronize: {
@@ -393,9 +391,7 @@ class Extension {
         "typescript",
         "typescriptreact",
         "javascript",
-        "javascriptreact",
-        "markdown",
-        "json"
+        "javascriptreact"
       ].includes(editor.document.languageId)
     ) {
       this.statusBar.hide();

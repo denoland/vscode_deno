@@ -25,16 +25,6 @@ type ImportMap = {
   imports: { [key: string]: string };
 };
 
-export type FormatableLanguages =
-  | "typescript"
-  | "typescriptreact"
-  | "javascript"
-  | "javascriptreact"
-  | "markdown"
-  | "json";
-
-type PrettierParser = "typescript" | "babel" | "markdown" | "json";
-
 type FormatOptions = {
   cwd: string;
 };
@@ -83,53 +73,13 @@ class Deno {
     return Buffer.from(stdout, "utf8");
   }
   // format code
-  // echo "console.log(123)" | deno run https://deno.land/std/prettier/main.ts --stdin --stdin-parser=babel
-  public async format(
-    code: string,
-    language: FormatableLanguages,
-    options: FormatOptions
-  ): Promise<string> {
-    let parser: PrettierParser;
-
-    switch (language.toLowerCase()) {
-      case "typescript":
-      case "typescriptreact":
-        parser = "typescript";
-        break;
-      case "javascript":
-      case "javascriptreact":
-        parser = "babel";
-        break;
-      case "markdown":
-        parser = "markdown";
-        break;
-      case "json":
-        parser = "json";
-        break;
-      default:
-        return Promise.reject(`Can not format '${language}' code.`);
-    }
-
+  // echo "console.log(123)" | deno fmt --stdin
+  public async format(code: string, options: FormatOptions): Promise<string> {
     const reader = Readable.from([code]);
 
-    const subprocess = execa(
-      this.executablePath as string,
-      [
-        "run",
-        "--allow-read",
-        `https://deno.land/std@v0.31.0/prettier/main.ts`,
-        "--stdin",
-        "--stdin-parser",
-        parser,
-        "--config",
-        "auto",
-        "--ignore-path",
-        "auto"
-      ],
-      {
-        cwd: options.cwd
-      }
-    );
+    const subprocess = execa(this.executablePath as string, ["fmt", "-"], {
+      cwd: options.cwd
+    });
 
     const formattedCode = (await new Promise((resolve, reject) => {
       let stdout = "";

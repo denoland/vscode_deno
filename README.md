@@ -160,32 +160,9 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "axetroy.vscode-deno"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
   }
 }
 ```
-
-To configure the formatting options, create `.prettierrc.json` in the project directory:
-
-```json
-{
-  "semi": true,
-  "singleQuote": false
-}
-```
-
-If you want to ignore the directory/file. create `.prettieringore` in the project directory.
 
 ## Commands
 
