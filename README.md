@@ -129,7 +129,7 @@ Create a file `.vscode/settings.json` in your project folder:
 
 - `deno.enabled` - Enable extension. Default is `false`
 
-- `deno.dtsFilepaths` - The file paths of the TypeScript declaration file (.d.ts). Default is `[]`
+- `deno.dts_file` - The file paths of the TypeScript declaration file (.d.ts). Default is `[]`
 
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 
@@ -139,7 +139,7 @@ We recommend that you do not set global configuration. It should be configured i
 // .vscode/settings.json
 {
   "deno.enable": true,
-  "deno.dtsFilepaths": ["./path/to/deno.d.ts"],
+  "deno.dts_file": ["./path/to/deno.d.ts"],
   "deno.import_map": "./path/to/import_map.json"
 }
 ```
@@ -157,12 +157,6 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
   }
 }
 ```
-
-## Commands
-
-This extension contributes the following commands to the Command palette:
-
-- `deno.restart_server` - Restart Deno Language Server.
 
 ## Contribute
 
