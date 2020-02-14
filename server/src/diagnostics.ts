@@ -18,10 +18,10 @@ import { localize } from "vscode-nls-i18n";
 import { Bridge } from "./bridge";
 import { deno } from "./deno";
 
-interface Fix {
+type Fix = {
   title: string;
   command: string;
-}
+};
 
 enum DiagnosticCode {
   LocalModuleNotExist = 1004,
@@ -188,15 +188,6 @@ export class Diagnostics {
 
     // delint it
     delint(sourceFile);
-
-    const validExtensionNameMap = {
-      ".ts": true,
-      ".tsx": true,
-      ".js": true,
-      ".jsx": true,
-      ".json": true,
-      ".wasm": true
-    };
 
     const dir = path.dirname(URI.parse(document.uri).path);
     const importMaps = deno.getImportMaps(

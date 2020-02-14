@@ -34,11 +34,11 @@ type Deps = {
   filepath: string;
 };
 
-interface IDenoModuleHeaders {
+type ModuleHeaders = {
   mime_type: string;
   redirect_to?: string;
   x_typescript_types?: string;
-}
+};
 
 class Deno {
   public version!: Version | void;
@@ -204,7 +204,7 @@ class Deno {
       if (!ts.sys.fileExists(moduleName)) {
         const headersPath = `${moduleName}.headers.json`;
         if (ts.sys.fileExists(headersPath)) {
-          let headers: IDenoModuleHeaders = {
+          let headers: ModuleHeaders = {
             mime_type: "application/typescript"
           };
           try {
