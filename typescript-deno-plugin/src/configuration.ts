@@ -2,14 +2,14 @@ import merge from "deepmerge";
 
 export type DenoPluginConfig = {
   enable: boolean;
-  dtsFilepaths?: string[];
+  dts_file?: string[];
   import_map: string;
 };
 
 export class ConfigurationManager {
   private static readonly defaultConfiguration: DenoPluginConfig = {
     enable: true,
-    dtsFilepaths: [],
+    dts_file: [],
     import_map: ""
   };
 

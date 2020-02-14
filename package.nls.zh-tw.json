@@ -3,7 +3,7 @@
   "deno.description": "Deno support for VSCode",
   "deno.command.restart_server": "重啟 Deno 語言服務器",
   "deno.config.enabled": "是否啟用 Deno。\n\n**不推薦在全局配置中設置**",
-  "deno.config.dtsFilepaths": "Typescript 的聲明文件(.d.ts)路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",
+  "deno.config.dts_file": "Typescript 的聲明文件(.d.ts)路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",
   "deno.config.import_map": "Import Map 的文件路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",
   "deno.initializing": "正在初始化 Deno 語言服務器...",
   "err.not_install_deno": "在 $PATH 變量中找不到 Deno。請在設置後重新啟動擴展。",

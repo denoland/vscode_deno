@@ -34,7 +34,7 @@ const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
 type SynchronizedConfiguration = {
   enable?: boolean;
-  dtsFilepaths?: string[];
+  dts_file?: string[];
   import_map?: string;
 };
 
@@ -171,13 +171,13 @@ class Extension {
     }
 
     withConfigValue(_config, config, "enable");
-    withConfigValue(_config, config, "dtsFilepaths");
+    withConfigValue(_config, config, "dts_file");
     withConfigValue(_config, config, "import_map");
 
-    if (!config.dtsFilepaths) {
+    if (!config.dts_file) {
       const dtsFilepath = this.denoInfo.dtsFilepath;
       if (dtsFilepath) {
-        config.dtsFilepaths = [dtsFilepath];
+        config.dts_file = [dtsFilepath];
       }
     }
 

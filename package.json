@@ -64,13 +64,13 @@
             false
           ]
         },
-        "deno.dtsFilepaths": {
+        "deno.dts_file": {
           "type": "array",
           "items": {
             "type": "string"
           },
           "default": [],
-          "markdownDescription": "%deno.config.dtsFilepaths%",
+          "markdownDescription": "%deno.config.dts_file%",
           "scope": "resource",
           "examples": [
             "./deno.d.ts",

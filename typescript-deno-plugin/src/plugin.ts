@@ -102,7 +102,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
       // Get typescript declaration File
       const dtsFilepaths = Deno.declarationFile
-        .concat(this.configurationManager.config.dtsFilepaths || [])
+        .concat(this.configurationManager.config.dts_file || [])
         .map(filepath => {
           const absoluteFilepath = path.isAbsolute(filepath)
             ? filepath
