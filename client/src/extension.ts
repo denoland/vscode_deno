@@ -9,8 +9,6 @@ import {
   ExtensionContext,
   StatusBarAlignment,
   TextEditor,
-  WorkspaceFolder,
-  QuickPickItem,
   WorkspaceConfiguration,
   Uri,
   StatusBarItem,
@@ -29,27 +27,25 @@ import getport from "get-port";
 import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
 
+import { pathExists } from "./util";
+
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
-interface WorkspaceFolderItem extends QuickPickItem {
-  folder: WorkspaceFolder;
-}
-
-interface SynchronizedConfiguration {
+type SynchronizedConfiguration = {
   enable?: boolean;
   dtsFilepaths?: string[];
   import_map?: string;
-}
+};
 
-interface TypescriptAPI {
+type TypescriptAPI = {
   configurePlugin(
     pluginId: string,
     configuration: SynchronizedConfiguration
   ): void;
-}
+};
 
-interface DenoInfo {
+type DenoInfo = {
   DENO_DIR: string;
   version: {
     deno: string;
@@ -59,18 +55,11 @@ interface DenoInfo {
   };
   executablePath: string;
   dtsFilepath: string;
-}
+};
 
-interface ImportMap {
+type ImportMap = {
   imports: { [key: string]: string };
-}
-
-function exists(filepath: string): Promise<boolean> {
-  return fs
-    .stat(filepath)
-    .then(() => Promise.resolve(true))
-    .catch(() => Promise.resolve(false));
-}
+};
 
 async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
   let importMaps: ImportMap = {
@@ -83,7 +72,7 @@ async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
       ? importMapFilepath
       : path.resolve(workspaceDir || process.cwd(), importMapFilepath);
 
-    if (await exists(importMapsFilepath)) {
+    if (await pathExists(importMapsFilepath)) {
       const importMapContent = await fs.readFile(importMapsFilepath);
 
       try {
@@ -111,30 +100,6 @@ function resolveModuleFromImportMap(
   }
 
   return moduleName;
-}
-
-async function pickFolder(
-  folders: WorkspaceFolder[],
-  placeHolder: string,
-  multipleWorkspaces: boolean
-): Promise<WorkspaceFolder> {
-  if (!multipleWorkspaces && folders.length === 1) {
-    return folders[0];
-  }
-  const selected = await window.showQuickPick(
-    folders.map<WorkspaceFolderItem>(folder => {
-      return {
-        label: folder.name,
-        description: folder.uri.fsPath,
-        folder: folder
-      };
-    }),
-    { placeHolder: placeHolder }
-  );
-  if (!selected) {
-    return undefined;
-  }
-  return selected.folder;
 }
 
 // get typescript api from build-in extension
@@ -417,93 +382,6 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.statusBar.show();
   }
-  // enable Deno Extension
-  private enable() {
-    const folders = workspace.workspaceFolders;
-
-    if (!folders) {
-      window.showWarningMessage(
-        "Deno can only be enabled if VS Code is opened on a workspace folder."
-      );
-      return;
-    }
-
-    const disabledFolders = folders.filter(
-      folder =>
-        !workspace
-          .getConfiguration(this.configurationSection, folder.uri)
-          .get("enable", true)
-    );
-
-    if (disabledFolders.length === 0) {
-      if (folders.length === 1) {
-        window.showInformationMessage(
-          "Deno is already enabled in the workspace."
-        );
-      } else {
-        window.showInformationMessage(
-          "Deno is already enabled on all workspace folders."
-        );
-      }
-      return;
-    }
-
-    pickFolder(
-      disabledFolders,
-      "Select a workspace folder to enable Deno for",
-      folders.length > 1
-    ).then(folder => {
-      if (!folder) {
-        return;
-      }
-      workspace
-        .getConfiguration(this.configurationSection, folder.uri)
-        .update("enable", true);
-    });
-  }
-  // disable Deno Extension
-  private disable() {
-    const folders = workspace.workspaceFolders;
-
-    if (!folders) {
-      window.showErrorMessage(
-        "Deno can only be disabled if VS Code is opened on a workspace folder."
-      );
-      return;
-    }
-
-    const enabledFolders = folders.filter(folder =>
-      workspace
-        .getConfiguration(this.configurationSection, folder.uri)
-        .get("enable", true)
-    );
-
-    if (enabledFolders.length === 0) {
-      if (folders.length === 1) {
-        window.showInformationMessage(
-          "Deno is already disabled in the workspace."
-        );
-      } else {
-        window.showInformationMessage(
-          "Deno is already disabled on all workspace folders."
-        );
-      }
-      return;
-    }
-
-    pickFolder(
-      enabledFolders,
-      "Select a workspace folder to disable Deno for",
-      folders.length > 1
-    ).then(folder => {
-      if (!folder) {
-        return;
-      }
-      workspace
-        .getConfiguration(this.configurationSection, folder.uri)
-        .update("enable", false);
-    });
-  }
   // register quickly fix code action
   private registerQuickFix(map: {
     [command: string]: (
@@ -564,8 +442,6 @@ Executable ${this.denoInfo.executablePath}`;
       })
     );
 
-    this.registerCommand("enable", this.enable.bind(this));
-    this.registerCommand("disable", this.disable.bind(this));
     this.registerCommand(
       "restart_server",
       this.StartDenoLanguageServer.bind(this)

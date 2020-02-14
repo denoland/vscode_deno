@@ -45,16 +45,6 @@
     ],
     "commands": [
       {
-        "command": "deno.enable",
-        "title": "%deno.command.enable%",
-        "category": "deno"
-      },
-      {
-        "command": "deno.disable",
-        "title": "%deno.command.disable%",
-        "category": "deno"
-      },
-      {
         "command": "deno.restart_server",
         "title": "%deno.command.restart_server%",
         "category": "deno"

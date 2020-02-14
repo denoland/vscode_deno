@@ -1,8 +1,6 @@
 {
   "deno.displayName": "Deno",
   "deno.description": "Deno unterstützung für VSCode",
-  "deno.command.enable": "Aktiviere Deno",
-  "deno.command.disable": "Deaktiviere Deno",
   "deno.command.restart_server": "Starte den Deno Language Server neu",
   "deno.config.enabled": "Steuert, ob Deno aktiviert ist oder nicht.\n\n**In der globalen Konfiguration nicht empfohlen**",
   "deno.config.dtsFilepaths": "Der Dateipfad der Deno TypeScript-Deklarationsdatei (.d.ts).\n\nDies kann ein Pfad sein, der relativ zum Projektpfad ist, oder ein absoluter Pfad.\n\n**Wird in der globalen Konfiguration nicht empfohlen, ausser wenn Sie einen absoluten Pfad verwenden.**",

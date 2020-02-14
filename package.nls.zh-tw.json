@@ -1,8 +1,6 @@
 {
   "deno.displayName": "Deno",
   "deno.description": "Deno support for VSCode",
-  "deno.command.enable": "啟用 Deno",
-  "deno.command.disable": "禁用 Deno",
   "deno.command.restart_server": "重啟 Deno 語言服務器",
   "deno.config.enabled": "是否啟用 Deno。\n\n**不推薦在全局配置中設置**",
   "deno.config.dtsFilepaths": "Typescript 的聲明文件(.d.ts)路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",

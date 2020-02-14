@@ -168,8 +168,6 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 
 This extension contributes the following commands to the Command palette:
 
-- `deno.enable` - Enable this extension.
-- `deno.disable` - Disable this extension.
 - `deno.restart_server` - Restart Deno Language Server.
 
 ## Contribute
