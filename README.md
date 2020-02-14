@@ -123,14 +123,7 @@ Create a file `.vscode/settings.json` in your project folder:
 }
 ```
 
-3. Enjoy!
-
-## Difference from [justjavac.vscode-deno](https://github.com/justjavac/vscode-deno)
-
-- Almost completely rewritten
-- Fixes its known issues
-- Adds some new features
-- Integrated [typescript-deno-plugin](typescript-deno-plugin) means easier maintenance
+1. Enjoy!
 
 ## Configuration
 
@@ -153,7 +146,8 @@ We recommend that you do not set global configuration. It should be configured i
 
 This extension also provides Deno's formatting tools, settings are in `.vscode/settings.json`:
 
-```json
+```json5
+// .vscode/settings.json
 {
   "[typescript]": {
     "editor.defaultFormatter": "axetroy.vscode-deno"
