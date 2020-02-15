@@ -176,10 +176,10 @@ Follow these steps to contribute, the community needs your strength.
 
 4. Start debug extension
 
-   > Open Visual Studio Code, find the `Debug` item in the sidebar
-   > and then run `Launch Client` debugger.
-   >
-   > Wait for Visual Studio Code debugger to open a new window
+   Open Visual Studio Code, find the `Debug` item in the sidebar
+   and then run `Launch Client` debugger.
+
+   Wait for Visual Studio Code debugger to open a new window
 
 5. Try updating Visual Studio Code and restart the debugger
 
