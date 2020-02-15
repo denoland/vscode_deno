@@ -31,8 +31,6 @@
     "onLanguage:javascriptreact",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
-    "onCommand:deno.enable",
-    "onCommand:deno.disable",
     "onCommand:deno.restart_server"
   ],
   "main": "./client/out/extension.js",
