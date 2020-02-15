@@ -193,6 +193,7 @@ class Deno {
   ): Promise<DenoModule> {
     let remote = false;
     const raw = moduleName;
+    moduleName = moduleName.replace(/^file:\/\//, "");
     if (/^https?:\/\/.+/.test(moduleName)) {
       remote = true;
       moduleName = path.resolve(
