@@ -114,14 +114,14 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 2. Enable Deno for your project:
 
-Create a file `.vscode/settings.json` in your project folder:
+   Create a file `.vscode/settings.json` in your project folder:
 
-```json5
-// .vscode/settings.json
-{
-  "deno.enable": true
-}
-```
+   ```json5
+   // .vscode/settings.json
+   {
+     "deno.enable": true
+   }
+   ```
 
 3. Enjoy!
 
@@ -160,24 +160,26 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 
 ## Contribute
 
+Follow these steps to contribute, the community needs your strength.
+
 1. Fork project
 
 2. Clone onto your computer:
 
-```bash
-$ git clone https://github.com/your_github_name/vscode-deno.git
-$ cd vscode-deno
-$ yarn # or npm install
-```
+   ```bash
+   $ git clone https://github.com/your_github_name/vscode-deno.git
+   $ cd vscode-deno
+   $ yarn # or npm install
+   ```
 
 3. Disable extension in Visual Studio Code if you have extension before
 
 4. Start debug extension
 
-> Open Visual Studio Code, find the `Debug` item in the sidebar
-> and then run `Launch Client` debugger.
->
-> Wait for Visual Studio Code debugger to open a new window
+   > Open Visual Studio Code, find the `Debug` item in the sidebar
+   > and then run `Launch Client` debugger.
+   >
+   > Wait for Visual Studio Code debugger to open a new window
 
 5. Try updating Visual Studio Code and restart the debugger
 
