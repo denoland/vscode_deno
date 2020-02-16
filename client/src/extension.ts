@@ -459,27 +459,52 @@ Executable ${this.denoInfo.executablePath}`;
           text
         );
 
-        const ps = execa(this.denoInfo.executablePath, [
-          "fetch",
-          remoteModuleUrl
-        ]);
+        await window.withProgress(
+          {
+            title: `Fetching`,
+            location: ProgressLocation.Notification,
+            cancellable: true
+          },
+          (process, cancelToken) => {
+            const ps = execa(
+              this.denoInfo.executablePath,
+              ["fetch", remoteModuleUrl],
+              {
+                // timeout of 2 minute
+                timeout: 1000 * 60 * 2
+              }
+            );
 
-        this.output.show();
+            const updateProgress = (buf: Buffer) => {
+              const raw = buf.toString();
 
-        ps.stdout.on("data", (buf: Buffer) =>
-          this.output.append(buf.toString())
+              const messages = raw.split("\n");
+
+              for (const message of messages) {
+                if (message) {
+                  process.report({ message });
+                  this.output.appendLine(message);
+                }
+              }
+            };
+
+            cancelToken.onCancellationRequested(ps.kill.bind(ps));
+
+            ps.stdout.on("data", updateProgress);
+            ps.stderr.on("data", updateProgress);
+
+            return new Promise((resolve, reject) => {
+              ps.on("exit", (code: number) => {
+                if (code !== 0 && !cancelToken.isCancellationRequested) {
+                  this.output.show();
+                }
+                this.output.appendLine(`exit with code: ${code}`);
+                this.updateDiagnostic(editor.document.uri);
+                resolve();
+              });
+            });
+          }
         );
-        ps.stderr.on("data", (buf: Buffer) =>
-          this.output.append(buf.toString())
-        );
-
-        await new Promise((resolve, reject) => {
-          ps.on("exit", (code: number) => {
-            this.output.appendLine(`exit with code: ${code}`);
-            this.updateDiagnostic(editor.document.uri);
-            resolve();
-          });
-        });
       },
       _create_local_module: async (editor, text) => {
         const extName = path.extname(text);
