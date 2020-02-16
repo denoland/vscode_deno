@@ -2,7 +2,7 @@ import merge from "deepmerge";
 
 export type DenoPluginConfig = {
   enable: boolean;
-  dts_file?: string[];
+  dts_file: string[];
   import_map: string;
 };
 

@@ -122,15 +122,13 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       info.languageServiceHost.resolveTypeReferenceDirectives = (
         typeDirectiveNames: string[],
         containingFile: string,
-        redirectedReference: ts_module.ResolvedProjectReference | undefined,
-        options: ts_module.CompilerOptions
+        ...rest
       ) => {
         if (!this.configurationManager.config.enable) {
           return resolveTypeReferenceDirectives(
             typeDirectiveNames,
             containingFile,
-            redirectedReference,
-            options
+            ...rest
           );
         }
 
@@ -145,8 +143,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return resolveTypeReferenceDirectives(
           modules.map(v => v.module),
           containingFile,
-          redirectedReference,
-          options
+          ...rest
         );
       };
     }
@@ -178,17 +175,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     info.languageServiceHost.resolveModuleNames = (
       moduleNames: string[],
       containingFile: string,
-      reusedNames?: string[],
-      redirectedReference?: ts_module.ResolvedProjectReference
+      ...rest
     ): (ts_module.ResolvedModule | undefined)[] => {
       if (!this.configurationManager.config.enable) {
-        return resolveModuleNames(
-          moduleNames,
-          containingFile,
-          reusedNames,
-          redirectedReference,
-          {}
-        );
+        return resolveModuleNames(moduleNames, containingFile, ...rest);
       }
 
       const resolver = new ModuleResolver(
@@ -203,14 +193,9 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       return resolveModuleNames(
         resolvedModules.map(v => v.module),
         containingFile,
-        reusedNames,
-        redirectedReference,
-        {}
+        ...rest
       ).map((v, index) => {
         if (!v) {
-          info.languageServiceHost
-            .getResolvedModuleWithFailedLookupLocationsFromCache;
-
           const moduleFilepath = resolvedModules[index].filepath;
           // import * as React from 'https://dev.jspm.io/react'
           if (
