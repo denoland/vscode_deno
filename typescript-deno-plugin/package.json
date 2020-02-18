@@ -12,7 +12,7 @@
     "deepmerge": "^4.2.2"
   },
   "devDependencies": {
-    "@types/deep-equal": "^1.0.1",
+    "@types/deep-equal": "1.0.1",
     "typescript": "3.7.5"
   }
 }
