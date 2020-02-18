@@ -58,6 +58,10 @@ class Deno {
 
     this.version = await this.getDenoVersion();
 
+    if (!this.version) {
+      return;
+    }
+
     // If the currently used Deno is less than 0.33.0
     // We will give an warning to upgrade.
     const minimumDenoVersion = "0.33.0";
@@ -78,7 +82,10 @@ class Deno {
     const reader = Readable.from([code]);
 
     const subprocess = execa(this.executablePath as string, ["fmt", "-"], {
-      cwd: options.cwd
+      cwd: options.cwd,
+      stdout: "pipe",
+      stderr: "pipe",
+      stdin: "pipe"
     });
 
     const formattedCode = (await new Promise((resolve, reject) => {
@@ -94,15 +101,15 @@ class Deno {
       subprocess.on("error", (err: Error) => {
         reject(err);
       });
-      subprocess.stdout.on("data", (data: Buffer) => {
+      subprocess.stdout?.on("data", (data: Buffer) => {
         stdout += data;
       });
 
-      subprocess.stderr.on("data", (data: Buffer) => {
+      subprocess.stderr?.on("data", (data: Buffer) => {
         stderr += data;
       });
 
-      reader.pipe(subprocess.stdin);
+      subprocess.stdin && reader.pipe(subprocess.stdin);
     })) as string;
 
     return formattedCode;
@@ -147,7 +154,10 @@ class Deno {
 
     return deps;
   }
-  public getImportMaps(importMapFilepath: string, workspaceDir: string) {
+  public getImportMaps(
+    importMapFilepath: string | undefined,
+    workspaceDir: string
+  ) {
     let importMaps: ImportMap = {
       imports: {}
     };

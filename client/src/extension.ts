@@ -63,7 +63,10 @@ type ImportMap = {
   imports: { [key: string]: string };
 };
 
-async function getImportMaps(importMapFilepath: string, workspaceDir: string) {
+async function getImportMaps(
+  importMapFilepath: string | undefined,
+  workspaceDir: string
+) {
   let importMaps: ImportMap = {
     imports: {}
   };
@@ -108,20 +111,24 @@ function resolveModuleFromImportMap(
 // https://github.com/microsoft/vscode/blob/master/extensions/typescript-language-features/src/api.ts
 async function getTypescriptAPI(): Promise<TypescriptAPI> {
   const extension = extensions.getExtension(TYPESCRIPT_EXTENSION_NAME);
+  const err = new Error(
+    "Cannot get typescript APIs. try restart Visual Studio Code."
+  );
+
   if (!extension) {
-    return;
+    throw err;
   }
 
   await extension.activate();
 
   if (!extension.exports || !extension.exports.getAPI) {
-    return;
+    throw err;
   }
 
   const api = extension.exports.getAPI(0);
 
   if (!api) {
-    return;
+    throw err;
   }
 
   return api;
@@ -129,16 +136,16 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
 
 class Extension {
   // extension context
-  private context: ExtensionContext;
+  private context!: ExtensionContext;
   // typescript API
-  private tsAPI: TypescriptAPI;
+  private tsAPI!: TypescriptAPI;
   // LSP client
-  private client: LanguageClient;
+  private client: LanguageClient | undefined;
   private configurationSection = "deno";
   // status bar
-  private statusBar: StatusBarItem;
+  private statusBar!: StatusBarItem;
   // output channel
-  private output: OutputChannel;
+  private output!: OutputChannel;
   // Deno Information from Deno Language Server
   private denoInfo: DenoInfo = {
     DENO_DIR: "",
@@ -152,7 +159,7 @@ class Extension {
     dtsFilepath: ""
   };
   // get configuration of Deno
-  private getConfiguration(uri: Uri): SynchronizedConfiguration {
+  private getConfiguration(uri?: Uri): SynchronizedConfiguration {
     const config: SynchronizedConfiguration = {};
     const _config = workspace.getConfiguration(this.configurationSection, uri);
 
@@ -166,10 +173,9 @@ class Extension {
         return;
       }
 
-      outConfig[key] =
-        configSetting.workspaceFolderValue ??
+      outConfig[key] = (configSetting.workspaceFolderValue ??
         configSetting.workspaceValue ??
-        configSetting.globalValue;
+        configSetting.globalValue) as C[K];
     }
 
     withConfigValue(_config, config, "enable");
@@ -181,7 +187,7 @@ class Extension {
     }
 
     if (!config.import_map) {
-      config.import_map = null;
+      config.import_map = undefined;
     }
 
     if (!config.dts_file) {
@@ -216,7 +222,7 @@ class Extension {
   private async StartDenoLanguageServer() {
     if (this.client) {
       await this.client.stop();
-      this.client = null;
+      this.client = undefined;
     }
 
     // create server connection
@@ -336,7 +342,7 @@ class Extension {
   }
   // update status bar visibility
   private updateStatusBarVisibility(
-    document: TextDocument = window.activeTextEditor?.document
+    document: TextDocument | undefined = window.activeTextEditor?.document
   ): void {
     // if no editor
     if (!document) {
@@ -367,13 +373,16 @@ class Extension {
       return;
     }
 
-    this.statusBar.text = `Deno ${this.denoInfo.version.deno}`;
-    this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
+    if (this.statusBar) {
+      this.statusBar.text = `Deno ${this.denoInfo.version.deno}`;
+      this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
+    }
 TypeScript ${this.denoInfo.version.typescript}
 V8 ${this.denoInfo.version.v8}
 Executable ${this.denoInfo.executablePath}`;
 
-    this.statusBar.show();
+      this.statusBar.show();
+    }
   }
   // register quickly fix code action
   private registerQuickFix(map: {
@@ -407,9 +416,9 @@ Executable ${this.denoInfo.executablePath}`;
   }
   // update diagnostic for a Document
   private updateDiagnostic(uri: Uri) {
-    this.client.sendNotification("updateDiagnostic", uri.toString());
+    this.client?.sendNotification("updateDiagnostic", uri.toString());
   }
-  private sync(document: TextDocument) {
+  private sync(document?: TextDocument) {
     if (document) {
       if (
         [
@@ -447,7 +456,7 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.context.subscriptions.push(
       window.onDidChangeActiveTextEditor(editor => {
-        this.sync(editor.document);
+        this.sync(editor?.document);
       })
     );
 
@@ -508,8 +517,8 @@ Executable ${this.denoInfo.executablePath}`;
 
             cancelToken.onCancellationRequested(ps.kill.bind(ps));
 
-            ps.stdout.on("data", updateProgress);
-            ps.stderr.on("data", updateProgress);
+            ps.stdout?.on("data", updateProgress);
+            ps.stderr?.on("data", updateProgress);
 
             return new Promise((resolve, reject) => {
               ps.on("exit", (code: number) => {

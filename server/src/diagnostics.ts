@@ -59,7 +59,11 @@ export class Diagnostics {
         .map(v => {
           const code = v.code;
 
-          const fixItem: Fix = FixItems[code];
+          if (!code) {
+            return;
+          }
+
+          const fixItem: Fix = FixItems[+code];
 
           if (!fixItem) {
             return;
@@ -88,7 +92,7 @@ export class Diagnostics {
 
           return action;
         })
-        .filter(v => v);
+        .filter(v => v) as CodeAction[];
 
       return actions;
     });
