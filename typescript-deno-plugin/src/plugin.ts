@@ -41,18 +41,20 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     noEmit: this.DEFAULT_OPTIONS.noEmit,
     noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers
   };
-  private info?: ts_module.server.PluginCreateInfo;
   private logger!: Logger;
 
   constructor(private readonly typescript: typeof ts_module) {}
 
   create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
-    this.info = info;
-
     const directory = info.project.getCurrentDirectory();
 
     // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
     process.chdir(directory);
+
+    this.configurationManager.onUpdatedConfig(() => {
+      info.project.refreshDiagnostics();
+      info.project.updateGraph();
+    });
 
     this.logger = Logger.forPlugin(DenoPlugin.PLUGIN_NAME, info);
 
@@ -111,7 +113,9 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         })
         .filter(v => v.endsWith(".d.ts"));
 
-      for (const filepath of dtsFilepaths) {
+      const iterator = new Set(dtsFilepaths).entries();
+
+      for (const [, filepath] of iterator) {
         scriptFileNames.push(filepath);
       }
 
@@ -212,25 +216,6 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           return v;
         }
 
-        // @ts-ignore
-        const extension: string = v["extension"];
-        if (extension) {
-          const ts = this.typescript;
-          // If the extension is the following
-          // replace it with `json` so that no error is reported
-          if (
-            [
-              ts.Extension.Ts,
-              ts.Extension.Tsx,
-              ts.Extension.Js,
-              ts.Extension.Jsx
-            ].includes(extension as ts_module.Extension)
-          ) {
-            // @ts-ignore
-            v["extension"] = this.typescript.Extension.Json;
-          }
-        }
-
         return v;
       });
     };
@@ -241,10 +226,5 @@ export class DenoPlugin implements ts_module.server.PluginModule {
   onConfigurationChanged(c: DenoPluginConfig) {
     this.logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     this.configurationManager.update(c);
-
-    if (this.info) {
-      this.info.project.refreshDiagnostics();
-      this.info.project.updateGraph();
-    }
   }
 }

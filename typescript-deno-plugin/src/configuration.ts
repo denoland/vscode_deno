@@ -1,4 +1,5 @@
 import merge from "deepmerge";
+import equal from "deep-equal";
 
 export type DenoPluginConfig = {
   enable: boolean;
@@ -23,10 +24,13 @@ export class ConfigurationManager {
     ConfigurationManager.defaultConfiguration;
 
   public update(c: DenoPluginConfig) {
+    const oldConfig = JSON.parse(JSON.stringify(this.config));
     this._configuration = merge(this.config, c);
 
-    for (const listener of this._configUpdatedListeners) {
-      listener();
+    if (!equal(oldConfig, this.config)) {
+      for (const listener of this._configUpdatedListeners) {
+        listener();
+      }
     }
   }
 

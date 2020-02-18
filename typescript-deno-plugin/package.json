@@ -8,9 +8,11 @@
     "watch": "tsc -w -p ./"
   },
   "dependencies": {
+    "deep-equal": "^2.0.1",
     "deepmerge": "^4.2.2"
   },
   "devDependencies": {
+    "@types/deep-equal": "^1.0.1",
     "typescript": "3.7.5"
   }
 }

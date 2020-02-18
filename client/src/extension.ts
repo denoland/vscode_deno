@@ -16,7 +16,8 @@ import {
   OutputChannel,
   Diagnostic,
   CodeActionContext,
-  ProgressLocation
+  ProgressLocation,
+  TextDocument
 } from "vscode";
 import {
   LanguageClient,
@@ -175,15 +176,16 @@ class Extension {
     withConfigValue(_config, config, "dts_file");
     withConfigValue(_config, config, "import_map");
 
-    if (!config.dts_file) {
-      const dtsFilepath = this.denoInfo.dtsFilepath;
-      if (dtsFilepath) {
-        config.dts_file = [dtsFilepath];
-      }
+    if (!config.enable) {
+      config.enable = false;
     }
 
-    if ("enable" in config === false) {
-      config.enable = false;
+    if (!config.import_map) {
+      config.import_map = null;
+    }
+
+    if (!config.dts_file) {
+      config.dts_file = [];
     }
 
     return config;
@@ -313,7 +315,7 @@ class Extension {
       console.log("Deno Language Server is ready!");
       client.onNotification("init", (info: DenoInfo) => {
         this.denoInfo = { ...this.denoInfo, ...info };
-        this.updateStatusBarVisibility(window.activeTextEditor);
+        this.updateStatusBarVisibility(window.activeTextEditor?.document);
       });
       client.onNotification("error", window.showErrorMessage.bind(window));
 
@@ -334,10 +336,10 @@ class Extension {
   }
   // update status bar visibility
   private updateStatusBarVisibility(
-    editor: TextEditor | undefined = window.activeTextEditor
+    document: TextDocument = window.activeTextEditor?.document
   ): void {
     // if no editor
-    if (!editor) {
+    if (!document) {
       this.statusBar.hide();
       return;
     }
@@ -348,13 +350,13 @@ class Extension {
         "typescriptreact",
         "javascript",
         "javascriptreact"
-      ].includes(editor.document.languageId)
+      ].includes(document.languageId)
     ) {
       this.statusBar.hide();
       return;
     }
 
-    const uri = editor ? editor.document.uri : undefined;
+    const uri = document.uri;
     const enabled = workspace
       .getConfiguration(this.configurationSection, uri)
       .get("enable");
@@ -407,6 +409,24 @@ Executable ${this.denoInfo.executablePath}`;
   private updateDiagnostic(uri: Uri) {
     this.client.sendNotification("updateDiagnostic", uri.toString());
   }
+  private sync(document: TextDocument) {
+    if (document) {
+      if (
+        [
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact"
+        ].includes(document.languageId)
+      ) {
+        const config = this.getConfiguration(document.uri);
+
+        this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
+        this.updateDiagnostic(document.uri);
+      }
+    }
+    this.updateStatusBarVisibility(window.activeTextEditor?.document);
+  }
   // activate function for vscode
   public async activate(context: ExtensionContext) {
     init(context.extensionPath);
@@ -427,9 +447,7 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.context.subscriptions.push(
       window.onDidChangeActiveTextEditor(editor => {
-        if (editor) {
-          this.updateDiagnostic(editor.document.uri);
-        }
+        this.sync(editor.document);
       })
     );
 
@@ -551,31 +569,13 @@ Executable ${this.denoInfo.executablePath}`;
     });
 
     this.watchConfiguration(() => {
-      const uri = window.activeTextEditor?.document.uri;
-      if (uri) {
-        this.tsAPI.configurePlugin(
-          TYPESCRIPT_DENO_PLUGIN_ID,
-          this.getConfiguration(uri)
-        );
-        this.updateDiagnostic(uri);
-      }
-      this.updateStatusBarVisibility(window.activeTextEditor);
+      this.sync(window.activeTextEditor?.document);
     });
 
     this.context.subscriptions.push(
-      workspace.onDidOpenTextDocument(() => {
-        const uri = window.activeTextEditor?.document.uri;
-        this.tsAPI.configurePlugin(
-          TYPESCRIPT_DENO_PLUGIN_ID,
-          this.getConfiguration(uri)
-        );
+      workspace.onDidOpenTextDocument(document => {
+        this.sync(document);
       })
-    );
-
-    this.context.subscriptions.push(
-      window.onDidChangeActiveTextEditor(
-        this.updateStatusBarVisibility.bind(this)
-      )
     );
 
     await window.withProgress(
