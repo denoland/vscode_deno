@@ -420,13 +420,18 @@ Executable ${this.denoInfo.executablePath}`;
   }
   private sync(document?: TextDocument) {
     if (document) {
+      const relativeFilepath = workspace.asRelativePath(
+        document.uri.fsPath,
+        false
+      );
       if (
         [
           "javascript",
           "javascriptreact",
           "typescript",
           "typescriptreact"
-        ].includes(document.languageId)
+        ].includes(document.languageId) &&
+        !path.isAbsolute(relativeFilepath)
       ) {
         const config = this.getConfiguration(document.uri);
 
