@@ -205,6 +205,7 @@ class Deno {
     const raw = moduleName;
     let filepath: string;
 
+    // import from local
     if (/^file:\/\//.test(moduleName)) {
       filepath = moduleName.replace(/^file:\/\//, "");
     }
@@ -213,10 +214,10 @@ class Deno {
       remote = true;
       moduleName = path.resolve(
         this.DENO_DEPS_DIR,
-        moduleName.replace("://", "/").replace("/", path.sep)
+        moduleName.replace("://", "/").replace(/\//g, path.sep)
       );
 
-      filepath = moduleName.replace("/", path.sep);
+      filepath = moduleName.replace(/\//g, path.sep);
 
       // if file not exist, fallback to headers.json
       if (!ts.sys.fileExists(filepath)) {
@@ -259,7 +260,7 @@ class Deno {
 
       // if module is a absolute path
       if (moduleName.indexOf("/") === 0 || path.isAbsolute(moduleName)) {
-        filepath = moduleName.replace("/", path.sep);
+        filepath = moduleName.replace(/\//g, path.sep);
       } else if (/^https?:\/\/.+/.test(moduleName)) {
         filepath = (
           await this.resolveModule(importMaps, importerFolder, moduleName)
@@ -267,8 +268,9 @@ class Deno {
       } else {
         filepath = path.resolve(
           importerFolder,
-          moduleName.replace("/", path.sep)
+          moduleName.replace(/\//g, path.sep)
         );
+        console.log("resolve local file", filepath);
       }
     }
 
