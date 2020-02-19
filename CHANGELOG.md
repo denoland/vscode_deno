@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/axetroy/vscode-deno/compare/v2.0.1...v2.0.2) (2020-02-19)
+
+### Bug Fixes
+
+- Auto-Import for Deno module incorrectly. now use http protocol modules instead of relative paths. close [#44](https://github.com/axetroy/vscode-deno/issues/44) ([df71fd1](https://github.com/axetroy/vscode-deno/commit/df71fd1d4fa5f47423f1c00b9b181e81f0435dd4))
+- typescript-deno-plugin will be disable when open the file out of workspace. ([b0f3aa6](https://github.com/axetroy/vscode-deno/commit/b0f3aa6d6646adf81a9ac091c2d89e82eda35e94))
+
 ## [2.0.1](https://github.com/axetroy/vscode-deno/compare/v2.0.0...v2.0.1) (2020-02-18)
 
 ### Bug Fixes
