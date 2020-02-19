@@ -103,7 +103,7 @@
   },
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
-    "@types/node": "12.12.27",
+    "@types/node": "12.12.28",
     "husky": "4.2.3",
     "prettier": "1.19.1",
     "typescript": "3.7.5",
