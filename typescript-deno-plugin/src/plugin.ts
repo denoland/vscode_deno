@@ -77,6 +77,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       info.languageServiceHost
     );
 
+    const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails.bind(
+      info.languageService
+    );
+
     info.languageServiceHost.getCompilationSettings = () => {
       const projectConfig = getCompilationSettings();
 
@@ -175,6 +179,80 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       this.logger.info("resolveModuleNames is undefined.");
       return info.languageService;
     }
+
+    info.languageService.getCompletionEntryDetails = (
+      fileName: string,
+      position: number,
+      name: string,
+      formatOptions?:
+        | ts_module.FormatCodeOptions
+        | ts_module.FormatCodeSettings,
+      source?: string,
+      preferences?: ts_module.UserPreferences
+    ) => {
+      const details = getCompletionEntryDetails(
+        fileName,
+        position,
+        name,
+        formatOptions,
+        source,
+        preferences
+      );
+
+      if (!this.configurationManager.config.enable) {
+        return details;
+      }
+
+      if (details) {
+        if (details.codeActions && details.codeActions.length) {
+          for (const ca of details.codeActions) {
+            for (const change of ca.changes) {
+              if (!change.isNewFile) {
+                for (const tc of change.textChanges) {
+                  const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"];*$/gim;
+
+                  const matcher = regexp.exec(tc.newText);
+
+                  if (matcher) {
+                    let moduleFilepath = path.resolve(
+                      matcher[2].replace("/", path.sep)
+                    );
+
+                    if (moduleFilepath.indexOf(Deno.DENO_DEPS) >= 0) {
+                      const denoHTTPModule = moduleFilepath
+                        .replace(Deno.DENO_DEPS, "")
+                        .replace(new RegExp("^" + path.sep), "")
+                        .replace(path.sep, "/")
+                        .replace(new RegExp("^(https?)/"), "$1://");
+
+                      const extensionNames = [
+                        "",
+                        this.typescript.Extension.Ts,
+                        this.typescript.Extension.Tsx,
+                        this.typescript.Extension.Js,
+                        this.typescript.Extension.Jsx
+                      ];
+
+                      for (const extName of extensionNames) {
+                        if (pathExistsSync(moduleFilepath + extName)) {
+                          moduleFilepath = moduleFilepath + extName;
+                          tc.newText = `import ${
+                            matcher[1]
+                          } from "${denoHTTPModule + extName}";`;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      return details;
+    };
 
     info.languageServiceHost.resolveModuleNames = (
       moduleNames: string[],
