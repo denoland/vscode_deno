@@ -1,3 +1,9 @@
+## [2.0.4](https://github.com/axetroy/vscode-deno/compare/v2.0.3...v2.0.4) (2020-02-19)
+
+### Bug Fixes
+
+- Try to fix the path processing under windows. ref: [#61](https://github.com/axetroy/vscode-deno/issues/61) ([e3d5bf2](https://github.com/axetroy/vscode-deno/commit/e3d5bf27fc0b678b0928caeb19a3735774179a36))
+
 ## [2.0.3](https://github.com/axetroy/vscode-deno/compare/v2.0.2...v2.0.3) (2020-02-19)
 
 ### Bug Fixes
