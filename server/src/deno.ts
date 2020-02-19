@@ -203,17 +203,24 @@ class Deno {
   ): Promise<DenoModule> {
     let remote = false;
     const raw = moduleName;
-    moduleName = moduleName.replace(/^file:\/\//, "");
-    if (/^https?:\/\/.+/.test(moduleName)) {
+    let filepath: string;
+
+    if (/^file:\/\//.test(moduleName)) {
+      filepath = moduleName.replace(/^file:\/\//, "");
+    }
+    // import from remote
+    else if (/^https?:\/\/.+/.test(moduleName)) {
       remote = true;
       moduleName = path.resolve(
         this.DENO_DEPS_DIR,
-        moduleName.replace("://", "/")
+        moduleName.replace("://", "/").replace("/", path.sep)
       );
 
+      filepath = moduleName.replace("/", path.sep);
+
       // if file not exist, fallback to headers.json
-      if (!ts.sys.fileExists(moduleName)) {
-        const headersPath = `${moduleName}.headers.json`;
+      if (!ts.sys.fileExists(filepath)) {
+        const headersPath = `${filepath}.headers.json`;
         if (ts.sys.fileExists(headersPath)) {
           let headers: ModuleHeaders = {
             mime_type: "application/typescript"
@@ -225,7 +232,7 @@ class Deno {
           } catch {}
 
           if (headers.redirect_to && headers.redirect_to !== raw) {
-            moduleName = (
+            filepath = (
               await this.resolveModule(
                 importMaps,
                 importerFolder,
@@ -235,22 +242,38 @@ class Deno {
           }
         }
       }
-    } // absolute filepath
-    else if (moduleName.indexOf("/") === 0) {
-      moduleName = moduleName;
-    } // relative filepath
+    }
+    // ordinary file path
     else {
+      // resolve module from Import Maps
+      // eg.
+      // import "http/server.ts"
+
+      // {
+      //   "imports": {
+      //      "http": "https://deno.land/std/http"
+      //   }
+      // }
+      //
       moduleName = this.resolveModuleFromImportMap(importMaps, moduleName);
 
-      if (/^https?:\/\/.+/.test(moduleName)) {
-        return this.resolveModule(importMaps, importerFolder, moduleName);
+      // if module is a absolute path
+      if (moduleName.indexOf("/") === 0 || path.isAbsolute(moduleName)) {
+        filepath = moduleName.replace("/", path.sep);
+      } else if (/^https?:\/\/.+/.test(moduleName)) {
+        filepath = (
+          await this.resolveModule(importMaps, importerFolder, moduleName)
+        ).filepath;
       } else {
-        moduleName = path.resolve(importerFolder, moduleName);
+        filepath = path.resolve(
+          importerFolder,
+          moduleName.replace("/", path.sep)
+        );
       }
     }
 
     return {
-      filepath: moduleName,
+      filepath,
       raw,
       remote
     };
