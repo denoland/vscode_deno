@@ -215,14 +215,14 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
                   if (matcher) {
                     let moduleFilepath = path.resolve(
-                      matcher[2].replace("/", path.sep)
+                      matcher[2].replace(/\//gm, path.sep)
                     );
 
                     if (moduleFilepath.indexOf(Deno.DENO_DEPS) >= 0) {
                       const denoHTTPModule = moduleFilepath
                         .replace(Deno.DENO_DEPS, "")
                         .replace(new RegExp("^" + path.sep), "")
-                        .replace(path.sep, "/")
+                        .replace(new RegExp(path.sep, "gm"), "/")
                         .replace(new RegExp("^(https?)/"), "$1://");
 
                       const extensionNames = [
