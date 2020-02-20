@@ -116,10 +116,9 @@ class Deno {
   }
   private filepath2url(denoModuleFilepath: string): string {
     return denoModuleFilepath
-      .replace(deno.DENO_DEPS_DIR, "")
-      .replace(/^(\/|\\\\)/, "")
-      .replace(/^http(\/|\\\\)/, "http://")
-      .replace(/^https(\/|\\\\)/, "https://");
+      .replace(new RegExp("^" + deno.DENO_DEPS_DIR + path.sep), "")
+      .replace(new RegExp("^(https?)" + path.sep), "$1://")
+      .replace(new RegExp(path.sep, "gm"), "/");
   }
   // get deno dependencies files
   public async getDependencies(
