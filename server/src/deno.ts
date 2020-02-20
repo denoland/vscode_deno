@@ -269,7 +269,6 @@ class Deno {
           importerFolder,
           moduleName.replace(/\//g, path.sep)
         );
-        console.log("resolve local file", filepath);
       }
     }
 
