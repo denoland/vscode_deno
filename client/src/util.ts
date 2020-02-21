@@ -1,16 +1,18 @@
 import { promises as fs, statSync } from "fs";
 
-export function pathExistsSync(filepath: string) {
+export function pathExistsSync(filepath: string): boolean {
   try {
-    return statSync(filepath);
+    statSync(filepath);
+    return true;
   } catch (err) {
     return false;
   }
 }
 
-export function pathExists(filepath: string) {
+export async function pathExists(filepath: string): Promise<boolean> {
   try {
-    return fs.stat(filepath);
+    await fs.stat(filepath);
+    return true;
   } catch (err) {
     return false;
   }
