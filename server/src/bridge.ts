@@ -6,10 +6,15 @@ type Configuration = {
   import_map?: string;
 };
 
-// the bridge between client and server
+/**
+ * The bridge between client and server
+ */
 export class Bridge {
   constructor(private connection: IConnection) {}
-  // get workspace folder from client
+  /**
+   * Get workspace folder from client
+   * @param uri
+   */
   async getWorkspace(uri: string): Promise<WorkspaceFolder | void> {
     const workspaceFolder:
       | WorkspaceFolder
@@ -20,7 +25,10 @@ export class Bridge {
 
     return workspaceFolder;
   }
-  // get workspace folder config from client
+  /**
+   * Get workspace folder config from client
+   * @param uri
+   */
   async getWorkspaceConfig(uri: string): Promise<Configuration> {
     const config: Configuration = await this.connection.sendRequest(
       "getWorkspaceConfig",

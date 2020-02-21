@@ -18,14 +18,21 @@ import {
   CompletionItemKind,
   Position,
   TextDocumentSyncKind,
-  CodeActionKind
+  CodeActionKind,
+  DocumentHighlight,
+  DocumentHighlightKind,
+  Hover,
+  MarkedString,
+  Location
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
+import { URI } from "vscode-uri";
 
 import { deno } from "./deno";
 import { Diagnostics } from "./diagnostics";
 import { Bridge } from "./bridge";
+import { getDenoTypesHintsFromDocument } from "./deno_types";
 
 const SERVER_NAME = "Deno Language Server";
 process.title = SERVER_NAME;
@@ -57,7 +64,11 @@ connection.onInitialize(
         },
         codeActionProvider: {
           codeActionKinds: [CodeActionKind.QuickFix]
-        }
+        },
+        documentHighlightProvider: true,
+        hoverProvider: true,
+        referencesProvider: true,
+        definitionProvider: true
       }
     };
   }
@@ -183,6 +194,144 @@ connection.onCompletion(async params => {
   });
 
   return completes;
+});
+
+connection.onDefinition(async params => {
+  const { textDocument, position } = params;
+  const document = documents.get(textDocument.uri);
+
+  if (!document) {
+    return;
+  }
+
+  const locations: Location[] = [];
+
+  const denoTypesComments = getDenoTypesHintsFromDocument(document);
+
+  for (const typeComment of denoTypesComments) {
+    const start = typeComment.contentRange.start;
+    const end = typeComment.contentRange.end;
+    if (
+      position.line >= start.line &&
+      position.line <= end.line &&
+      position.character >= start.character &&
+      position.character <= end.character
+    ) {
+      if (ts.sys.fileExists(typeComment.filepath)) {
+        locations.push(
+          Location.create(
+            URI.file(typeComment.filepath).toString(),
+            Range.create(0, 0, 0, 0)
+          )
+        );
+      }
+    }
+  }
+
+  return locations;
+});
+
+connection.onReferences(async params => {
+  const { textDocument, position } = params;
+  const document = documents.get(textDocument.uri);
+
+  if (!document) {
+    return;
+  }
+
+  const locations: Location[] = [];
+
+  const denoTypesComments = getDenoTypesHintsFromDocument(document);
+
+  for (const typeComment of denoTypesComments) {
+    const start = typeComment.contentRange.start;
+    const end = typeComment.contentRange.end;
+    if (
+      position.line >= start.line &&
+      position.line <= end.line &&
+      position.character >= start.character &&
+      position.character <= end.character
+    ) {
+      if (ts.sys.fileExists(typeComment.filepath)) {
+        locations.push(
+          Location.create(
+            URI.file(typeComment.filepath).toString(),
+            Range.create(0, 0, 0, 0)
+          )
+        );
+      }
+    }
+  }
+
+  return locations;
+});
+
+connection.onHover(async params => {
+  const { textDocument, position } = params;
+  const document = documents.get(textDocument.uri);
+
+  if (!document) {
+    return;
+  }
+
+  const denoTypesComments = getDenoTypesHintsFromDocument(document);
+
+  for (const typeComment of denoTypesComments) {
+    const start = typeComment.range.start;
+    const end = typeComment.range.end;
+    if (
+      position.line >= start.line &&
+      position.line <= end.line &&
+      position.character >= start.character &&
+      position.character <= end.character
+    ) {
+      const hover: Hover = {
+        range: typeComment.contentRange,
+        contents: [
+          MarkedString.fromPlainText(
+            "Deno's external declaration library. For more detail: https://deno.land/std/manual.md"
+          )
+        ]
+      };
+
+      return hover;
+    }
+  }
+
+  return;
+});
+
+connection.onDocumentHighlight(async params => {
+  const { textDocument, position } = params;
+  const document = documents.get(textDocument.uri);
+
+  if (!document) {
+    return [];
+  }
+
+  const denoTypesComments = getDenoTypesHintsFromDocument(document);
+
+  const highlights: DocumentHighlight[] = [];
+
+  for (const typeComment of denoTypesComments) {
+    const start = typeComment.range.start;
+    const end = typeComment.range.end;
+    if (
+      position.line >= start.line &&
+      position.line <= end.line &&
+      position.character >= start.character &&
+      position.character <= end.character
+    ) {
+      highlights.push(
+        DocumentHighlight.create(
+          typeComment.contentRange,
+          DocumentHighlightKind.Write
+        )
+      );
+    }
+  }
+
+  return highlights;
 });
 
 documents.onDidOpen(params => diagnostics.diagnosis(params.document));
