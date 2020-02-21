@@ -33,7 +33,7 @@
     "onLanguage:typescriptreact",
     "onCommand:deno.restart_server"
   ],
-  "main": "./client/out/extension.js",
+  "main": "./client/out/client/src/extension.js",
   "contributes": {
     "typescriptServerPlugins": [
       {

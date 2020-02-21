@@ -13,5 +13,5 @@
     "strict": true,
     "baseUrl": "./src"
   },
-  "include": ["./src/**/*.ts", "types/**/*.d.ts"]
+  "include": ["./src/**/*.ts"]
 }

@@ -29,7 +29,7 @@ import getport from "get-port";
 import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
 
-import { pathExists } from "./util";
+import { pathExists } from "../../common/util";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
