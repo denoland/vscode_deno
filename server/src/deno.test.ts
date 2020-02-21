@@ -26,12 +26,12 @@ test("server / deno / getTypes()", async () => {
   await expect(deno.getTypes.bind(deno)).not.toThrowError();
 });
 
-test("server / deno / format()", async () => {
-  const code = `console.log( 123 )`;
-  await expect(deno.format(code, { cwd: __dirname })).resolves.toEqual(
-    `console.log(123);\n`
-  );
-});
+// test("server / deno / format()", async () => {
+//   const code = `console.log( 123 )`;
+//   await expect(deno.format(code, { cwd: __dirname })).resolves.toEqual(
+//     `console.log(123);\n`
+//   );
+// });
 
 test("server / deno / _filepath2url()", async () => {
   const mockDenoModuleFilepath = path.join(
