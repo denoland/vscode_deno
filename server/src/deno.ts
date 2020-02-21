@@ -8,6 +8,8 @@ import which from "which";
 import { localize } from "vscode-nls-i18n";
 import * as semver from "semver";
 
+import { filepath2regexpStr } from "./util";
+
 type Version = {
   deno: string;
   v8: string;
@@ -116,10 +118,14 @@ class Deno {
     denoModuleFilepath: string,
     denoDepsDir = deno.DENO_DEPS_DIR
   ): string {
+    const prefixRegExp = new RegExp(
+      "^" + filepath2regexpStr(denoDepsDir + path.sep)
+    );
+
     return denoModuleFilepath
-      .replace(new RegExp("^" + denoDepsDir + path.sep), "")
-      .replace(new RegExp("^(https?)" + path.sep), "$1://")
-      .replace(new RegExp(path.sep, "gm"), "/");
+      .replace(prefixRegExp, "")
+      .replace(new RegExp("^(https?)" + filepath2regexpStr(path.sep)), "$1://")
+      .replace(new RegExp(filepath2regexpStr(path.sep), "gm"), "/");
   }
   // get deno dependencies files
   public async getDependencies(
