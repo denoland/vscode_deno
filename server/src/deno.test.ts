@@ -1,6 +1,7 @@
 import * as path from "path";
 
-import { deno, Deps, ImportMap, DenoModule } from "./deno";
+import { deno, Deps, DenoModule } from "./deno";
+import { ImportMap } from "./import_map";
 
 const TEST_DIR = path.join(__dirname, "__test__");
 
@@ -68,40 +69,14 @@ test("server / deno / getDependencies()", async () => {
   ] as Deps[]);
 });
 
-test("server / deno / getImportMaps()", async () => {
-  const mockWorkspaceDir = path.join(TEST_DIR, "import_maps");
-
-  const validImportMapFilepath = path.join(mockWorkspaceDir, "import_map.json");
-
-  expect(deno.getImportMaps(validImportMapFilepath, mockWorkspaceDir)).toEqual({
-    imports: {
-      "demo/": "https://example.com/demo/"
-    }
-  } as ImportMap);
-
-  expect(deno.getImportMaps("./import_map.json", mockWorkspaceDir)).toEqual({
-    imports: {
-      "demo/": "https://example.com/demo/"
-    }
-  } as ImportMap);
-
-  expect(deno.getImportMaps("./not_exist.json", mockWorkspaceDir)).toEqual({
-    imports: {}
-  } as ImportMap);
-
-  expect(deno.getImportMaps("./invalid.json", mockWorkspaceDir)).toEqual({
-    imports: {}
-  } as ImportMap);
-});
-
 test("server / deno / _resolveModuleFromImportMap()", async () => {
   const mockWorkspaceDir = path.join(TEST_DIR, "import_maps");
 
   const validImportMapFilepath = path.join(mockWorkspaceDir, "import_map.json");
 
-  const importMaps = deno.getImportMaps(
-    validImportMapFilepath,
-    mockWorkspaceDir
+  const importMaps = await ImportMap.create(
+    mockWorkspaceDir,
+    validImportMapFilepath
   );
 
   expect(deno._resolveModuleFromImportMap(importMaps, "./example")).toEqual(
@@ -135,9 +110,9 @@ test("server / deno / resolveModule()", async () => {
 
   const validImportMapFilepath = path.join(mockWorkspaceDir, "import_map.json");
 
-  const importMaps = deno.getImportMaps(
-    validImportMapFilepath,
-    mockWorkspaceDir
+  const importMaps = await ImportMap.create(
+    mockWorkspaceDir,
+    validImportMapFilepath
   );
 
   await expect(

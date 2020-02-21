@@ -8,6 +8,7 @@ import which from "which";
 import { localize } from "vscode-nls-i18n";
 import * as semver from "semver";
 
+import { IImportMaps } from "./import_map";
 import { str2regexpStr } from "./util";
 
 type Version = {
@@ -21,10 +22,6 @@ export type DenoModule = {
   filepath: string;
   raw: string;
   remote: boolean;
-};
-
-export type ImportMap = {
-  imports: { [key: string]: string };
 };
 
 type FormatOptions = {
@@ -157,35 +154,8 @@ class Deno {
 
     return deps;
   }
-  public getImportMaps(
-    importMapFilepath: string | undefined,
-    workspaceDir: string
-  ) {
-    let importMaps: ImportMap = {
-      imports: {}
-    };
-
-    //  try resolve import maps
-    if (importMapFilepath) {
-      const importMapsFilepath = path.isAbsolute(importMapFilepath)
-        ? importMapFilepath
-        : path.resolve(workspaceDir, importMapFilepath);
-
-      if (ts.sys.fileExists(importMapsFilepath)) {
-        const importMapContent = ts.sys.readFile(importMapsFilepath);
-
-        try {
-          importMaps = JSON.parse(importMapContent || "");
-        } catch {
-          importMaps.imports = {};
-        }
-      }
-    }
-
-    return importMaps;
-  }
   public _resolveModuleFromImportMap(
-    importMaps: ImportMap,
+    importMaps: IImportMaps,
     moduleName: string
   ): string {
     const maps = importMaps.imports || {};
@@ -202,7 +172,7 @@ class Deno {
     return moduleName;
   }
   public async resolveModule(
-    importMaps: ImportMap,
+    importMaps: IImportMaps,
     importerFolder: string,
     moduleName: string,
     denoDepsDir = this.DENO_DEPS_DIR

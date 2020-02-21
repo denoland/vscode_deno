@@ -17,6 +17,7 @@ import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "../bridge";
 import { deno } from "../deno";
+import { ImportMap } from "../import_map";
 
 type Fix = {
   title: string;
@@ -195,9 +196,9 @@ export class Diagnostics {
     delint(sourceFile);
 
     const dir = path.dirname(URI.parse(document.uri).path);
-    const importMaps = deno.getImportMaps(
-      config.import_map,
-      workspaceDir.uri.fsPath
+    const importMaps = await ImportMap.create(
+      workspaceDir.uri.fsPath,
+      config.import_map
     );
     const diagnosticsForThisDocument = [];
 
