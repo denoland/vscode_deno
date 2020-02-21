@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "demo/": "https://example.com/demo/"
+  }
+}

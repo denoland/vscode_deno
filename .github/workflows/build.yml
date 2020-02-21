@@ -32,6 +32,9 @@ jobs:
         run: |
           npm run check
 
+      - name: Test
+        run: npm run test
+
       - name: Compile
         run: |
           npm run compile

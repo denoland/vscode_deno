@@ -5,7 +5,8 @@
     "outDir": "out",
     "rootDir": "src",
     "sourceMap": true,
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true
   },
   "include": ["src"],
   "exclude": ["node_modules", ".vscode-test"],

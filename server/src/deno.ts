@@ -15,13 +15,13 @@ type Version = {
   raw: string;
 };
 
-type DenoModule = {
+export type DenoModule = {
   filepath: string;
   raw: string;
   remote: boolean;
 };
 
-type ImportMap = {
+export type ImportMap = {
   imports: { [key: string]: string };
 };
 
@@ -29,7 +29,7 @@ type FormatOptions = {
   cwd: string;
 };
 
-type Deps = {
+export type Deps = {
   url: string;
   filepath: string;
 };
@@ -45,10 +45,7 @@ class Deno {
   public executablePath!: string | void;
   public readonly DENO_DIR = this.getDenoDir();
   public readonly DENO_DEPS_DIR = path.join(this.DENO_DIR, "deps");
-  public readonly dtsFilepath = path.join(
-    this.DENO_DIR,
-    "lib.deno_runtime.d.ts"
-  );
+  public readonly DTS_FILE = path.join(this.DENO_DIR, "lib.deno_runtime.d.ts");
   public async init() {
     this.executablePath = await this.getExecutablePath();
 
@@ -114,16 +111,21 @@ class Deno {
 
     return formattedCode;
   }
-  private filepath2url(denoModuleFilepath: string): string {
+  // public for test
+  public _filepath2url(
+    denoModuleFilepath: string,
+    denoDepsDir = deno.DENO_DEPS_DIR
+  ): string {
     return denoModuleFilepath
-      .replace(new RegExp("^" + deno.DENO_DEPS_DIR + path.sep), "")
+      .replace(new RegExp("^" + denoDepsDir + path.sep), "")
       .replace(new RegExp("^(https?)" + path.sep), "$1://")
       .replace(new RegExp(path.sep, "gm"), "/");
   }
   // get deno dependencies files
   public async getDependencies(
     rootDir = this.DENO_DEPS_DIR,
-    deps: Deps[] = []
+    deps: Deps[] = [],
+    denoDepsDir: string = this.DENO_DEPS_DIR
   ) {
     const files = await fs.readdir(rootDir);
 
@@ -133,7 +135,7 @@ class Deno {
         const isInternalModule =
           filename.startsWith("_") || filename.startsWith(".");
         if (stat.isDirectory() && !isInternalModule) {
-          return this.getDependencies(filepath, deps);
+          return this.getDependencies(filepath, deps, denoDepsDir);
         } else if (
           stat.isFile() &&
           filepath.endsWith(".headers.json") &&
@@ -142,7 +144,7 @@ class Deno {
           const moduleFilepath = filepath.replace(/\.headers\.json$/, "");
 
           deps.push({
-            url: this.filepath2url(moduleFilepath),
+            url: this._filepath2url(moduleFilepath, denoDepsDir),
             filepath: moduleFilepath
           });
         }
@@ -171,14 +173,16 @@ class Deno {
         const importMapContent = ts.sys.readFile(importMapsFilepath);
 
         try {
-          importMaps = JSON.parse(importMapContent || "{}");
-        } catch {}
+          importMaps = JSON.parse(importMapContent || "");
+        } catch {
+          importMaps.imports = {};
+        }
       }
     }
 
     return importMaps;
   }
-  private resolveModuleFromImportMap(
+  public _resolveModuleFromImportMap(
     importMaps: ImportMap,
     moduleName: string
   ): string {
@@ -198,7 +202,8 @@ class Deno {
   public async resolveModule(
     importMaps: ImportMap,
     importerFolder: string,
-    moduleName: string
+    moduleName: string,
+    denoDepsDir = this.DENO_DEPS_DIR
   ): Promise<DenoModule> {
     let remote = false;
     const raw = moduleName;
@@ -212,7 +217,7 @@ class Deno {
     else if (/^https?:\/\/.+/.test(moduleName)) {
       remote = true;
       moduleName = path.resolve(
-        this.DENO_DEPS_DIR,
+        denoDepsDir,
         moduleName.replace("://", "/").replace(/\//g, path.sep)
       );
 
@@ -231,12 +236,14 @@ class Deno {
             );
           } catch {}
 
+          // follow redirect
           if (headers.redirect_to && headers.redirect_to !== raw) {
             filepath = (
               await this.resolveModule(
                 importMaps,
                 importerFolder,
-                headers.redirect_to
+                headers.redirect_to,
+                denoDepsDir
               )
             ).filepath;
           }
@@ -255,15 +262,21 @@ class Deno {
       //   }
       // }
       //
-      moduleName = this.resolveModuleFromImportMap(importMaps, moduleName);
+      moduleName = this._resolveModuleFromImportMap(importMaps, moduleName);
 
       // if module is a absolute path
       if (moduleName.indexOf("/") === 0 || path.isAbsolute(moduleName)) {
         filepath = moduleName.replace(/\//g, path.sep);
       } else if (/^https?:\/\/.+/.test(moduleName)) {
-        filepath = (
-          await this.resolveModule(importMaps, importerFolder, moduleName)
-        ).filepath;
+        const resolvedModule = await this.resolveModule(
+          importMaps,
+          importerFolder,
+          moduleName,
+          denoDepsDir
+        );
+
+        filepath = resolvedModule.filepath;
+        remote = resolvedModule.remote;
       } else {
         filepath = path.resolve(
           importerFolder,

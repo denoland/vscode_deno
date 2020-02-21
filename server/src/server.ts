@@ -78,25 +78,17 @@ connection.onInitialized(async params => {
   try {
     await deno.init();
     const currentDenoTypesContent = await deno.getTypes();
-    const isExistDtsFile = ts.sys.fileExists(deno.dtsFilepath);
+    const isExistDtsFile = ts.sys.fileExists(deno.DTS_FILE);
     const fileOptions = { encoding: "utf8" };
 
     // if dst file not exist. then create a new one
     if (!isExistDtsFile) {
-      await fs.writeFile(
-        deno.dtsFilepath,
-        currentDenoTypesContent,
-        fileOptions
-      );
+      await fs.writeFile(deno.DTS_FILE, currentDenoTypesContent, fileOptions);
     } else {
-      const typesContent = await fs.readFile(deno.dtsFilepath, fileOptions);
+      const typesContent = await fs.readFile(deno.DTS_FILE, fileOptions);
 
       if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await fs.writeFile(
-          deno.dtsFilepath,
-          currentDenoTypesContent,
-          fileOptions
-        );
+        await fs.writeFile(deno.DTS_FILE, currentDenoTypesContent, fileOptions);
       }
     }
   } catch (err) {
@@ -107,7 +99,7 @@ connection.onInitialized(async params => {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
     DENO_DIR: deno.DENO_DIR,
-    dtsFilepath: deno.dtsFilepath
+    dtsFilepath: deno.DTS_FILE
   });
   connection.console.log("server initialized.");
 });
