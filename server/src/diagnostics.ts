@@ -117,20 +117,16 @@ export class Diagnostics {
       return [];
     }
 
-    let sourceFile: ts.SourceFile | void;
-    try {
-      // Parse a file
-      sourceFile = ts.createSourceFile(
-        document.uri.toString(),
-        document.getText(),
-        ts.ScriptTarget.ESNext,
-        false,
-        ts.ScriptKind.TSX
-      );
-      sourceFile.fileName;
-    } catch (err) {
-      return [];
-    }
+    const uri = URI.parse(document.uri);
+
+    // Parse a file
+    const sourceFile = ts.createSourceFile(
+      uri.fsPath,
+      document.getText(),
+      ts.ScriptTarget.ESNext,
+      false,
+      ts.ScriptKind.TSX
+    );
 
     const moduleNodes: ts.LiteralLikeNode[] = [];
 
@@ -139,47 +135,49 @@ export class Diagnostics {
 
       function delintNode(node: ts.Node) {
         let moduleNode: ts.LiteralLikeNode | null = null;
-        switch (node.kind) {
-          // import('xxx')
-          case ts.SyntaxKind.CallExpression:
-            const expression = (node as ts.CallExpression).expression;
-            const args = (node as ts.CallExpression).arguments;
-            const isDynamicImport =
-              expression?.kind === ts.SyntaxKind.ImportKeyword;
-            if (isDynamicImport) {
-              const argv = args[0] as ts.StringLiteral;
 
-              if (argv && ts.isStringLiteral(argv)) {
-                moduleNode = argv;
-              }
-            }
-            break;
-          // import ts = require('typescript')
-          case ts.SyntaxKind.ImportEqualsDeclaration:
-            const ref = (node as ts.ImportEqualsDeclaration)
-              .moduleReference as ts.ExternalModuleReference;
+        // import('xxx')
+        if (ts.isCallExpression(node)) {
+          const expression = node.expression;
+          const args = node.arguments;
+          const isDynamicImport =
+            expression.kind === ts.SyntaxKind.ImportKeyword;
+          if (isDynamicImport) {
+            const argv = args[0] as ts.StringLiteral;
 
-            if (ref.expression && ts.isStringLiteral(ref.expression)) {
-              moduleNode = ref.expression;
+            if (argv && ts.isStringLiteral(argv)) {
+              moduleNode = argv;
             }
-            break;
-          // import * as from 'xx'
-          // import 'xx'
-          // import xx from 'xx'
-          case ts.SyntaxKind.ImportDeclaration:
-            const spec = (node as ts.ImportDeclaration).moduleSpecifier;
-            if (spec && ts.isStringLiteral(spec)) {
-              moduleNode = spec;
-            }
-            break;
-          // export { window } from "xxx";
-          // export * from "xxx";
-          case ts.SyntaxKind.ExportDeclaration:
-            const exportSpec = (node as ts.ExportDeclaration).moduleSpecifier;
-            if (exportSpec && ts.isStringLiteral(exportSpec)) {
-              moduleNode = exportSpec;
-            }
-            break;
+          }
+        }
+        // import ts = require('typescript')
+        else if (ts.isImportEqualsDeclaration(node)) {
+          const ref = node.moduleReference;
+
+          if (
+            ts.isExternalModuleReference(ref) &&
+            ref.expression &&
+            ts.isStringLiteral(ref.expression)
+          ) {
+            moduleNode = ref.expression;
+          }
+        }
+        // import * as from 'xx'
+        // import 'xx'
+        // import xx from 'xx'
+        else if (ts.isImportDeclaration(node)) {
+          const spec = node.moduleSpecifier;
+          if (spec && ts.isStringLiteral(spec)) {
+            moduleNode = spec;
+          }
+        }
+        // export { window } from "xxx";
+        // export * from "xxx";
+        else if (ts.isExportDeclaration(node)) {
+          const exportSpec = node.moduleSpecifier;
+          if (exportSpec && ts.isStringLiteral(exportSpec)) {
+            moduleNode = exportSpec;
+          }
         }
 
         if (moduleNode) {
@@ -231,6 +229,10 @@ export class Diagnostics {
 
     return diagnosticsForThisDocument;
   }
+  /**
+   * @deprecated since version 2.0
+   * @param document
+   */
   async diagnosis(document: TextDocument): Promise<void> {
     this.connection.sendDiagnostics({
       uri: document.uri,
