@@ -106,7 +106,7 @@
     "@types/node": "12.12.28",
     "husky": "4.2.3",
     "prettier": "1.19.1",
-    "typescript": "3.7.5",
+    "typescript": "3.8.2",
     "vscode": "1.1.36"
   },
   "dependencies": {
