@@ -12,9 +12,11 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     name: test in ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - name: Setup node.js
+        uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
 
@@ -28,6 +30,7 @@ jobs:
           node -v
           npm -v
           yarn --version
+          deno --version
 
       - name: Install
         run: |

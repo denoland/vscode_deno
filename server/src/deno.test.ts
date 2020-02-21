@@ -28,7 +28,7 @@ test("server / deno / getTypes()", async () => {
 
 test("server / deno / format()", async () => {
   const code = `console.log( 123 )`;
-  await expect(deno.format(code, { cwd: process.cwd() })).resolves.toEqual(
+  await expect(deno.format(code, { cwd: __dirname })).resolves.toEqual(
     `console.log(123);\n`
   );
 });
