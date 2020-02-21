@@ -12,27 +12,21 @@ import {
   IConnection,
   TextDocuments,
   InitializeResult,
-  Range,
-  TextEdit,
-  CompletionItem,
-  CompletionItemKind,
-  Position,
   TextDocumentSyncKind,
-  CodeActionKind,
-  DocumentHighlight,
-  DocumentHighlightKind,
-  Hover,
-  MarkedString,
-  Location
+  CodeActionKind
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
-import { URI } from "vscode-uri";
 
 import { deno } from "./deno";
-import { Diagnostics } from "./diagnostics";
 import { Bridge } from "./bridge";
-import { getDenoTypesHintsFromDocument } from "./deno_types";
+import { Diagnostics } from "./language/diagnostics";
+import { Definition } from "./language/definition";
+import { References } from "./language/references";
+import { DocumentHighlight } from "./language/document_highlight";
+import { DocumentFormatting } from "./language/document_formatting";
+import { Hover } from "./language/hover";
+import { Completion } from "./language/completion";
 
 const SERVER_NAME = "Deno Language Server";
 process.title = SERVER_NAME;
@@ -48,7 +42,13 @@ const connection: IConnection = createConnection(
 const documents = new TextDocuments(TextDocument);
 
 const bridge = new Bridge(connection);
-const diagnostics = new Diagnostics(SERVER_NAME, connection, bridge, documents);
+new Diagnostics(SERVER_NAME, connection, bridge, documents);
+new Definition(connection, documents);
+new References(connection, documents);
+new DocumentHighlight(connection, documents);
+new DocumentFormatting(connection, documents, bridge);
+new Hover(connection, documents);
+new Completion(connection, documents);
 
 connection.onInitialize(
   (params): InitializeResult => {
@@ -78,7 +78,7 @@ connection.onInitialized(async params => {
   try {
     await deno.init();
     const currentDenoTypesContent = await deno.getTypes();
-    const isExistDtsFile = await ts.sys.fileExists(deno.dtsFilepath);
+    const isExistDtsFile = ts.sys.fileExists(deno.dtsFilepath);
     const fileOptions = { encoding: "utf8" };
 
     // if dst file not exist. then create a new one
@@ -111,231 +111,6 @@ connection.onInitialized(async params => {
   });
   connection.console.log("server initialized.");
 });
-
-connection.onDocumentFormatting(async params => {
-  const uri = params.textDocument.uri;
-  const doc = documents.get(uri);
-
-  if (!doc) {
-    return;
-  }
-
-  const text = doc.getText();
-
-  const workspaceFolder = await bridge.getWorkspace(uri);
-
-  const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : "./";
-
-  connection.console.log(
-    `Formatting '${uri.toString()}' at ${
-      workspaceFolder ? workspaceFolder.uri.fsPath : ""
-    }`
-  );
-
-  const formatted = await deno.format(text, {
-    cwd
-  });
-
-  const start = doc.positionAt(0);
-  const end = doc.positionAt(text.length);
-
-  const range = Range.create(start, end);
-
-  return [TextEdit.replace(range, formatted)];
-});
-
-connection.onCompletion(async params => {
-  const { position, partialResultToken, textDocument } = params;
-
-  const doc = documents.get(textDocument.uri);
-
-  if (!doc) {
-    return [];
-  }
-
-  const currentLine = doc.getText(
-    Range.create(Position.create(position.line, 0), position)
-  );
-
-  const IMPORT_REG = /import\s['"][a-zA-Z\._-]$/;
-  const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z\._-]$/;
-  const DYNAMIC_REG = /import\s*\(['"][a-zA-Z\._-]['"]?$/;
-
-  const isImport =
-    IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"
-    IMPORT_FROM_REG.test(currentLine) || // import xxxx from "https://xxxx.xxxx"
-    DYNAMIC_REG.test(currentLine); // import("https://xxxx.xxxx")
-
-  if (
-    currentLine.length > 1000 || // if is a large file
-    !isImport
-  ) {
-    return [];
-  }
-
-  const deps = await deno.getDependencies();
-
-  const range = Range.create(
-    Position.create(position.line, position.character),
-    position
-  );
-
-  const completes: CompletionItem[] = deps.map(dep => {
-    return {
-      label: dep.url,
-      detail: dep.url,
-      sortText: dep.url,
-      documentation: dep.filepath.replace(deno.DENO_DIR, "$DENO_DIR"),
-      kind: CompletionItemKind.File,
-      insertText: dep.url,
-      cancel: partialResultToken,
-      range: range
-    } as CompletionItem;
-  });
-
-  return completes;
-});
-
-connection.onDefinition(async params => {
-  const { textDocument, position } = params;
-  const document = documents.get(textDocument.uri);
-
-  if (!document) {
-    return;
-  }
-
-  const locations: Location[] = [];
-
-  const denoTypesComments = getDenoTypesHintsFromDocument(document);
-
-  for (const typeComment of denoTypesComments) {
-    const start = typeComment.contentRange.start;
-    const end = typeComment.contentRange.end;
-    if (
-      position.line >= start.line &&
-      position.line <= end.line &&
-      position.character >= start.character &&
-      position.character <= end.character
-    ) {
-      if (ts.sys.fileExists(typeComment.filepath)) {
-        locations.push(
-          Location.create(
-            URI.file(typeComment.filepath).toString(),
-            Range.create(0, 0, 0, 0)
-          )
-        );
-      }
-    }
-  }
-
-  return locations;
-});
-
-connection.onReferences(async params => {
-  const { textDocument, position } = params;
-  const document = documents.get(textDocument.uri);
-
-  if (!document) {
-    return;
-  }
-
-  const locations: Location[] = [];
-
-  const denoTypesComments = getDenoTypesHintsFromDocument(document);
-
-  for (const typeComment of denoTypesComments) {
-    const start = typeComment.contentRange.start;
-    const end = typeComment.contentRange.end;
-    if (
-      position.line >= start.line &&
-      position.line <= end.line &&
-      position.character >= start.character &&
-      position.character <= end.character
-    ) {
-      if (ts.sys.fileExists(typeComment.filepath)) {
-        locations.push(
-          Location.create(
-            URI.file(typeComment.filepath).toString(),
-            Range.create(0, 0, 0, 0)
-          )
-        );
-      }
-    }
-  }
-
-  return locations;
-});
-
-connection.onHover(async params => {
-  const { textDocument, position } = params;
-  const document = documents.get(textDocument.uri);
-
-  if (!document) {
-    return;
-  }
-
-  const denoTypesComments = getDenoTypesHintsFromDocument(document);
-
-  for (const typeComment of denoTypesComments) {
-    const start = typeComment.range.start;
-    const end = typeComment.range.end;
-    if (
-      position.line >= start.line &&
-      position.line <= end.line &&
-      position.character >= start.character &&
-      position.character <= end.character
-    ) {
-      const hover: Hover = {
-        range: typeComment.contentRange,
-        contents: [
-          MarkedString.fromPlainText(
-            "Deno's external declaration library. For more detail: https://deno.land/std/manual.md"
-          )
-        ]
-      };
-
-      return hover;
-    }
-  }
-
-  return;
-});
-
-connection.onDocumentHighlight(async params => {
-  const { textDocument, position } = params;
-  const document = documents.get(textDocument.uri);
-
-  if (!document) {
-    return [];
-  }
-
-  const denoTypesComments = getDenoTypesHintsFromDocument(document);
-
-  const highlights: DocumentHighlight[] = [];
-
-  for (const typeComment of denoTypesComments) {
-    const start = typeComment.range.start;
-    const end = typeComment.range.end;
-    if (
-      position.line >= start.line &&
-      position.line <= end.line &&
-      position.character >= start.character &&
-      position.character <= end.character
-    ) {
-      highlights.push(
-        DocumentHighlight.create(
-          typeComment.contentRange,
-          DocumentHighlightKind.Write
-        )
-      );
-    }
-  }
-
-  return highlights;
-});
-
-documents.onDidOpen(params => diagnostics.diagnosis(params.document));
-documents.onDidChangeContent(params => diagnostics.diagnosis(params.document));
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events

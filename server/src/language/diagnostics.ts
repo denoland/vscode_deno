@@ -15,8 +15,8 @@ import * as ts from "typescript";
 import { URI } from "vscode-uri";
 import { localize } from "vscode-nls-i18n";
 
-import { Bridge } from "./bridge";
-import { deno } from "./deno";
+import { Bridge } from "../bridge";
+import { deno } from "../deno";
 
 type Fix = {
   title: string;
@@ -101,6 +101,9 @@ export class Diagnostics {
       const document = this.documents.get(uri);
       document && this.diagnosis(document);
     });
+
+    documents.onDidOpen(params => this.diagnosis(params.document));
+    documents.onDidChangeContent(params => this.diagnosis(params.document));
   }
   async generate(document: TextDocument): Promise<Diagnostic[]> {
     if (!["typescript", "typescriptreact"].includes(document.languageId)) {
