@@ -63,7 +63,7 @@ export class ModuleResolver {
       return;
     }
 
-    const hash = manifest.getHashFromUrlPath(url.pathname);
+    const hash = manifest.getHashFromUrlPath(url.pathname + url.search);
 
     if (!hash) {
       return;
