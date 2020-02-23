@@ -96,7 +96,7 @@
     "check": "prettier '**/*.md' '**/*.json' '**/*.ts' '**/*.yml' --check",
     "format": "prettier '**/*.md' '**/*.json' '**/*.ts' '**/*.yml' --write",
     "test": "jest --coverage",
-    "test-report": "jest --coverage --coverageReporters=text-lcov | coveralls"
+    "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
   },
   "husky": {
     "hooks": {
