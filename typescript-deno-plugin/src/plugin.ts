@@ -4,10 +4,10 @@ import merge from "deepmerge";
 import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
-import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
-import { Deno } from "./deno";
 import { ConfigurationManager, DenoPluginConfig } from "./configuration";
-import { pathExistsSync, str2regexpStr } from "./util";
+import { getDenoDepsDir, getDenoDts } from "../../core/deno";
+import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
+import { pathExistsSync, str2regexpStr } from "../../core/util";
 
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
@@ -107,7 +107,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       }
 
       // Get typescript declaration File
-      const dtsFilepaths = Deno.declarationFile
+      const dtsFilepaths = [getDenoDts()]
         .concat(this.configurationManager.config.dts_file || [])
         .map(filepath => {
           const absoluteFilepath = path.isAbsolute(filepath)
@@ -228,9 +228,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
                       matcher[2].replace(/\//gm, path.sep)
                     );
 
-                    if (moduleFilepath.indexOf(Deno.DENO_DEPS) >= 0) {
+                    const denoDepsDir = getDenoDepsDir();
+
+                    if (moduleFilepath.indexOf(denoDepsDir) >= 0) {
                       const denoHTTPModule = moduleFilepath
-                        .replace(Deno.DENO_DEPS, "")
+                        .replace(denoDepsDir, "")
                         .replace(new RegExp("^" + str2regexpStr(path.sep)), "")
                         .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/")
                         .replace(new RegExp("^(https?)/"), "$1://");
