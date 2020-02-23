@@ -2,10 +2,7 @@ import * as path from "path";
 
 import { str2regexpStr } from "./util";
 
-const DENO_DIR = getDenoDir();
-const DENO_DEP_DIR = path.join(DENO_DIR, "deps");
-
-function getDenoDir(): string {
+export function getDenoDir(): string {
   // ref https://deno.land/manual.html
   // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
   // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
@@ -33,13 +30,17 @@ function getDenoDir(): string {
   return denoDir;
 }
 
+export function getDenoDepsDir(): string {
+  return path.join(getDenoDir(), "deps");
+}
+
 // cover filepath to url
 // eg.
 // C:\Users\runneradmin\AppData\Local\deno\deps\https\deno.land\std\http\server.ts
 // https://deno.land/std/http/server.ts
 export function demoModuleFilepathToUrl(denoModuleFilepath: string): string {
   return denoModuleFilepath
-    .replace(new RegExp("^" + str2regexpStr(DENO_DEP_DIR + path.sep)), "")
+    .replace(new RegExp("^" + str2regexpStr(getDenoDepsDir() + path.sep)), "")
     .replace(new RegExp("^(https?)" + str2regexpStr(path.sep)), "$1://")
     .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/");
 }
