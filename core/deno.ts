@@ -1,7 +1,5 @@
 import * as path from "path";
 
-import { str2regexpStr } from "./util";
-
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
   // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
@@ -32,15 +30,4 @@ export function getDenoDir(): string {
 
 export function getDenoDepsDir(): string {
   return path.join(getDenoDir(), "deps");
-}
-
-// cover filepath to url
-// eg.
-// C:\Users\runneradmin\AppData\Local\deno\deps\https\deno.land\std\http\server.ts
-// https://deno.land/std/http/server.ts
-export function demoModuleFilepathToUrl(denoModuleFilepath: string): string {
-  return denoModuleFilepath
-    .replace(new RegExp("^" + str2regexpStr(getDenoDepsDir() + path.sep)), "")
-    .replace(new RegExp("^(https?)" + str2regexpStr(path.sep)), "$1://")
-    .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/");
 }

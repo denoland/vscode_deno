@@ -195,7 +195,7 @@ export class Diagnostics {
     // delint it
     delint(sourceFile);
 
-    const dir = path.dirname(URI.parse(document.uri).path);
+    const dir = path.dirname(uri.fsPath);
     const importMaps = await ImportMap.create(
       workspaceDir.uri.fsPath,
       config.import_map
