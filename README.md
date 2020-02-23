@@ -1,6 +1,7 @@
 # Visual Studio Code Deno extension
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/axetroy/vscode-deno/build)
+[![Coverage Status](https://coveralls.io/repos/github/axetroy/vscode-deno/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/axetroy/vscode-deno?branch=refs/heads/master)
 ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/axetroy.vscode-deno)
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/axetroy.vscode-deno)
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/axetroy.vscode-deno)
