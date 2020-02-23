@@ -17,7 +17,7 @@ export async function getDenoDeps(): Promise<Deps[]> {
   const deps: Deps[] = [];
   const protocols = await fs.readdir(depsRootDir);
 
-  await Promise.all([
+  await Promise.all(
     protocols.map(async protocol => {
       const protocolFolderpath = path.join(depsRootDir, protocol);
       const protocolStat = await fs.stat(protocolFolderpath);
@@ -25,7 +25,7 @@ export async function getDenoDeps(): Promise<Deps[]> {
       if (protocolStat.isDirectory()) {
         const origins = await fs.readdir(protocolFolderpath);
 
-        await Promise.all([
+        await Promise.all(
           origins.map(async origin => {
             const originFolderpath = path.join(protocolFolderpath, origin);
             const manifestFilepath = path.join(
@@ -50,10 +50,10 @@ export async function getDenoDeps(): Promise<Deps[]> {
               }
             }
           })
-        ]);
+        );
       }
     })
-  ]);
+  );
 
   return deps;
 }
