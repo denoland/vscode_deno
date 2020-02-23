@@ -52,8 +52,7 @@ jobs:
           npm run compile
 
       - name: Package
-        run: |
-          npx vsce package -o ./vscode-deno.vsix --yarn
+        run: npm run build
 
       - uses: actions/upload-artifact@v1
         if: runner.os == 'linux'
