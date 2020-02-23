@@ -95,7 +95,7 @@
     "compile": "tsc -b",
     "check": "prettier '**/*.md' '**/*.json' '**/*.ts' '**/*.yml' --check",
     "format": "prettier '**/*.md' '**/*.json' '**/*.ts' '**/*.yml' --write",
-    "test": "jest --passWithNoTests"
+    "test": "jest --coverage"
   },
   "husky": {
     "hooks": {

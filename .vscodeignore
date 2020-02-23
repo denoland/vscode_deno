@@ -1,10 +1,11 @@
 .vscode/**
 .github/**
-out/test/**
-test/**
+__test__
+**/*.test.*
 src/**
 **/*.map
 *.vsix
+coverage
 
 .gitignore
 .gitmodules
