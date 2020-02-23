@@ -140,7 +140,7 @@ export class Cache {
     // $DENO_DIR/deps/https/deno.land -> https://deno.land
     const origin = originDir
       .replace(new RegExp("^" + str2regexpStr(DENO_DEPS_DIR + path.sep)), "")
-      .replace(new RegExp(path.sep, "gm"), "/")
+      .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/")
       .replace(/^(https?)\//, "$1://");
 
     const manifest = Manifest.create(manifestFilepath);
