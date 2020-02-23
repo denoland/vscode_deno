@@ -1,9 +1,11 @@
 import { URL } from "url";
 import * as path from "path";
+import assert from "assert";
 
 import { getDenoDepsDir } from "./deno";
 import { Cache, DenoCacheModule } from "./deno_cache";
 import { Manifest } from "./manifest";
+import { ImportMap } from "./import_map";
 
 export type ResolvedModule = {
   origin: string; // the origin resolve module
@@ -16,14 +18,91 @@ export class ModuleResolver {
   private isDenoCacheFile: boolean =
     this.containingFile.indexOf(getDenoDepsDir()) === 0; // Whether the current module is in the Deno dependency directory
 
-  constructor(private containingFile: string) {}
+  private importMaps = ImportMap.createSync(this.importMapsFile);
+
+  /**
+   * Module resolver constructor
+   * @param containingFile Absolute file path
+   * @param importMapsFile Absolute file path
+   */
+  constructor(private containingFile: string, private importMapsFile?: string) {
+    assert(path.isAbsolute(containingFile));
+  }
 
   /**
    * Create a module resolver.
    * @param containingFile Absolute file path
+   * @param importMapsFile Absolute file path
    */
-  static create(containingFile: string): ModuleResolver {
-    return new ModuleResolver(containingFile);
+  static create(
+    containingFile: string,
+    importMapsFile?: string
+  ): ModuleResolver {
+    return new ModuleResolver(containingFile, importMapsFile);
+  }
+
+  private resolveFromRemote(httpModuleURL: string): ResolvedModule | undefined {
+    let url: URL;
+
+    try {
+      url = new URL(httpModuleURL);
+    } catch {
+      // If the URL is invalid, we consider this module to not exist
+      return;
+    }
+
+    const originDir = path.join(
+      getDenoDepsDir(),
+      url.protocol.replace(/:$/, ""), // https: -> https
+      url.hostname
+    );
+
+    const manifest = Manifest.create(path.join(originDir, "manifest.json"));
+
+    if (!manifest) {
+      return;
+    }
+
+    const hash = manifest.getHashFromUrlPath(url.pathname);
+
+    if (!hash) {
+      return;
+    }
+
+    const moduleFilepath = path.join(originDir, hash);
+
+    return {
+      origin: httpModuleURL,
+      filepath: moduleFilepath,
+      module: moduleFilepath
+    };
+  }
+
+  private resolveFromLocal(moduleName: string): ResolvedModule | undefined {
+    const originModuleName = moduleName;
+    for (const prefix in this.importMaps.imports) {
+      const mapModule = this.importMaps.imports[prefix];
+
+      const reg = new RegExp("^" + prefix);
+      if (reg.test(moduleName)) {
+        moduleName = moduleName.replace(reg, mapModule);
+
+        if (/^https?:\/\//.test(moduleName)) {
+          return this.resolveFromRemote(moduleName);
+        }
+      }
+    }
+
+    const moduleFilepath = path.resolve(
+      path.dirname(this.containingFile),
+      moduleName
+    );
+
+    return {
+      origin: originModuleName,
+      filepath: moduleFilepath,
+      module: moduleFilepath.replace(/(\.d)?\.(t|j)sx?$/, "") // "./foo.ts" -> "./foo"
+    };
   }
 
   /**
@@ -48,7 +127,8 @@ export class ModuleResolver {
       }
     }
 
-    for (const moduleName of moduleNames) {
+    for (let moduleName of moduleNames) {
+      const originModuleName = moduleName;
       // If the file is in Deno's cache layout
       // Then we should look up from the cache
       if (this.isDenoCacheFile) {
@@ -56,7 +136,7 @@ export class ModuleResolver {
 
         if (moduleCacheFile) {
           resolvedModules.push({
-            origin: moduleName,
+            origin: originModuleName,
             filepath: moduleCacheFile.filepath,
             module: moduleCacheFile.filepath
           });
@@ -69,45 +149,7 @@ export class ModuleResolver {
 
       // If import from remote
       if (/^https?:\/\//.test(moduleName)) {
-        let url: URL;
-
-        try {
-          url = new URL(moduleName);
-        } catch {
-          // If the URL is invalid, we consider this module to not exist
-          resolvedModules.push(undefined);
-
-          continue;
-        }
-
-        const originDir = path.join(
-          getDenoDepsDir(),
-          url.protocol.replace(/:$/, ""), // https: -> https
-          url.hostname
-        );
-
-        const manifest = Manifest.create(path.join(originDir, "manifest.json"));
-
-        if (!manifest) {
-          resolvedModules.push(undefined);
-          continue;
-        }
-
-        const hash = manifest.getHashFromUrlPath(url.pathname);
-
-        if (!hash) {
-          resolvedModules.push(undefined);
-          continue;
-        }
-
-        const moduleFilepath = path.join(originDir, hash);
-
-        resolvedModules.push({
-          origin: moduleName,
-          filepath: moduleFilepath,
-          module: moduleFilepath
-        });
-
+        resolvedModules.push(this.resolveFromRemote(moduleName));
         continue;
       }
 
@@ -115,17 +157,7 @@ export class ModuleResolver {
       // eg.
       // `./foo.ts`
       // `../foo/bar.ts`
-      // TODO: handle for Import Maps
-      const moduleFilepath = path.resolve(
-        path.dirname(this.containingFile),
-        moduleName
-      );
-
-      resolvedModules.push({
-        origin: moduleName,
-        filepath: moduleFilepath,
-        module: moduleFilepath.replace(/(\.d)?\.(t|j)sx?$/, "") // "./foo.ts" -> "./foo"
-      });
+      resolvedModules.push(this.resolveFromLocal(moduleName));
     }
 
     return resolvedModules;

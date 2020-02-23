@@ -1,5 +1,6 @@
 import * as path from "path";
 import { promises as fs, readFileSync } from "fs";
+import assert from "assert";
 
 import { pathExists, pathExistsSync } from "./util";
 
@@ -8,22 +9,20 @@ export interface IImportMaps {
 }
 
 export class ImportMap {
-  static async create(
-    cwd: string,
-    importMapFilepath?: string
-  ): Promise<IImportMaps> {
+  static async create(importMapFilepath?: string): Promise<IImportMaps> {
+    importMapFilepath &&
+      assert(
+        path.isAbsolute(importMapFilepath),
+        `Import-Map filepath require absolute but got ${importMapFilepath}`
+      );
     let importMaps: IImportMaps = {
       imports: {}
     };
 
     //  try resolve import maps
     if (importMapFilepath) {
-      const importMapsFilepath = path.isAbsolute(importMapFilepath)
-        ? importMapFilepath
-        : path.resolve(cwd, importMapFilepath);
-
-      if ((await pathExists(importMapsFilepath)) === true) {
-        const importMapContent = await fs.readFile(importMapsFilepath, {
+      if ((await pathExists(importMapFilepath)) === true) {
+        const importMapContent = await fs.readFile(importMapFilepath, {
           encoding: "utf8"
         });
 
@@ -37,19 +36,20 @@ export class ImportMap {
 
     return importMaps;
   }
-  static createSync(cwd: string, importMapFilepath?: string): IImportMaps {
+  static createSync(importMapFilepath?: string): IImportMaps {
+    importMapFilepath &&
+      assert(
+        path.isAbsolute(importMapFilepath),
+        `Import-Map filepath require absolute but got ${importMapFilepath}`
+      );
     let importMaps: IImportMaps = {
       imports: {}
     };
 
     //  try resolve import maps
     if (importMapFilepath) {
-      const importMapsFilepath = path.isAbsolute(importMapFilepath)
-        ? importMapFilepath
-        : path.resolve(cwd, importMapFilepath);
-
-      if (pathExistsSync(importMapsFilepath) === true) {
-        const importMapContent = readFileSync(importMapsFilepath, {
+      if (pathExistsSync(importMapFilepath) === true) {
+        const importMapContent = readFileSync(importMapFilepath, {
           encoding: "utf8"
         });
 

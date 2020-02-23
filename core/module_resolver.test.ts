@@ -20,7 +20,7 @@ afterAll(() => {
   process.env["DENO_DIR"] = undefined;
 });
 
-test("common / module_resolver: resolve module from Deno cache", () => {
+test("core / module_resolver: resolve module from Deno cache", () => {
   const resolver = ModuleResolver.create(cacheFilepath);
 
   expect(
@@ -66,14 +66,17 @@ test("common / module_resolver: resolve module from Deno cache", () => {
   ] as ResolvedModule[]);
 });
 
-test("common / module_resolver: resolve module from local", () => {
-  const resolver = ModuleResolver.create(__filename);
+test("core / module_resolver: resolve module from local", () => {
+  const importMapFile = path.join(TEST_DIR, "import_maps", "import_map.json");
+
+  const resolver = ModuleResolver.create(__filename, importMapFile);
 
   expect(
     resolver.resolveModules([
       "./deno.ts",
       "../package.json",
-      "https://example.com/esm/mod.ts"
+      "https://example.com/esm/mod.ts",
+      "demo/mod.ts"
     ])
   ).toEqual([
     {
@@ -95,6 +98,17 @@ test("common / module_resolver: resolve module from local", () => {
       module: path.join(
         path.dirname(cacheFilepath),
         "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
+      )
+    },
+    {
+      origin: "https://example.com/demo/mod.ts",
+      filepath: path.join(
+        path.dirname(cacheFilepath),
+        "933405cb905c548e870daee56d0589b7dd8e146c0cdbd5f16a959f8227c1fe06"
+      ),
+      module: path.join(
+        path.dirname(cacheFilepath),
+        "933405cb905c548e870daee56d0589b7dd8e146c0cdbd5f16a959f8227c1fe06"
       )
     }
   ] as ResolvedModule[]);
