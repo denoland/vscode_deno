@@ -4,7 +4,7 @@ import merge from "deepmerge";
 import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
-import { ModuleResolver } from "./module_resolver";
+import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
 import { Deno } from "./deno";
 import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { pathExistsSync, str2regexpStr } from "./util";
@@ -140,16 +140,26 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           );
         }
 
-        const resolver = new ModuleResolver(
+        const importMapsFilepath = this.configurationManager.config.import_map
+          ? path.isAbsolute(this.configurationManager.config.import_map)
+            ? this.configurationManager.config.import_map
+            : path.resolve(
+                info.project.getCurrentDirectory(),
+                this.configurationManager.config.import_map
+              )
+          : undefined;
+
+        const resolver = ModuleResolver.create(
           containingFile,
-          this.logger,
-          info.project.getCurrentDirectory()
+          importMapsFilepath
         );
 
-        const modules = resolver.resolveModuleNames(typeDirectiveNames);
+        const resolvedModules = resolver
+          .resolveModules(typeDirectiveNames)
+          .filter(v => v) as ResolvedModule[];
 
         return resolveTypeReferenceDirectives(
-          modules.map(v => v.module),
+          resolvedModules.map(v => v.module),
           containingFile,
           ...rest
         );
@@ -263,17 +273,26 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return resolveModuleNames(moduleNames, containingFile, ...rest);
       }
 
-      const resolver = new ModuleResolver(
+      const importMapsFilepath = this.configurationManager.config.import_map
+        ? path.isAbsolute(this.configurationManager.config.import_map)
+          ? this.configurationManager.config.import_map
+          : path.resolve(
+              info.project.getCurrentDirectory(),
+              this.configurationManager.config.import_map
+            )
+        : undefined;
+
+      const resolver = ModuleResolver.create(
         containingFile,
-        this.logger,
-        info.project.getCurrentDirectory(),
-        this.configurationManager.config.import_map
+        importMapsFilepath
       );
 
-      const resolvedModules = resolver.resolveModuleNames(moduleNames);
+      const resolvedModules = resolver
+        .resolveModules(moduleNames)
+        .filter(v => v) as ResolvedModule[];
 
       return resolveModuleNames(
-        resolvedModules.map(v => v.module),
+        resolvedModules.map(v => v.module as string),
         containingFile,
         ...rest
       ).map((v, index) => {

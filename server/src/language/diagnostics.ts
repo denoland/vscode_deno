@@ -16,8 +16,8 @@ import { URI } from "vscode-uri";
 import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "../bridge";
-import { deno } from "../deno";
-import { ImportMap } from "../../../core/import_map";
+import { ModuleResolver } from "../../../core/module_resolver";
+import { pathExists } from "../../../core/util";
 
 type Fix = {
   title: string;
@@ -195,11 +195,12 @@ export class Diagnostics {
     // delint it
     delint(sourceFile);
 
-    const dir = path.dirname(uri.fsPath);
-    const importMaps = await ImportMap.create(
-      workspaceDir.uri.fsPath,
-      config.import_map
-    );
+    const importMapFilepath = config.import_map
+      ? path.isAbsolute(config.import_map)
+        ? config.import_map
+        : path.resolve(workspaceDir.uri.fsPath, config.import_map)
+      : undefined;
+
     const diagnosticsForThisDocument = [];
 
     for (const moduleNode of moduleNodes) {
@@ -214,15 +215,24 @@ export class Diagnostics {
         document.positionAt(moduleNode.end)
       );
 
-      const module = await deno.resolveModule(importMaps, dir, moduleNode.text);
+      const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
 
-      if (!ts.sys.fileExists(module.filepath)) {
+      const [resolvedModule] = resolver.resolveModules([moduleNode.text]);
+
+      if (
+        !resolvedModule ||
+        (await pathExists(resolvedModule.filepath)) === false
+      ) {
+        const moduleName = resolvedModule
+          ? resolvedModule.origin
+          : moduleNode.text;
+        const isRemote = /^https:\/\//.test(moduleName);
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             range,
-            localize("diagnostic.report.module_not_found_locally", module.raw),
+            localize("diagnostic.report.module_not_found_locally", moduleName),
             DiagnosticSeverity.Error,
-            module.remote
+            isRemote
               ? DiagnosticCode.RemoteModuleNotExist
               : DiagnosticCode.LocalModuleNotExist,
             this.name

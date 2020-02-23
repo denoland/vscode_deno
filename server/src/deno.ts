@@ -1,14 +1,9 @@
 import { Readable } from "stream";
-import * as path from "path";
-import { promises as fs } from "fs";
 
 import execa from "execa";
 import which from "which";
 import { localize } from "vscode-nls-i18n";
 import * as semver from "semver";
-
-import { IImportMaps } from "../../core/import_map";
-import { str2regexpStr, pathExists } from "../../core/util";
 
 type Version = {
   deno: string;
@@ -17,33 +12,13 @@ type Version = {
   raw: string;
 };
 
-export type DenoModule = {
-  filepath: string;
-  raw: string;
-  remote: boolean;
-};
-
 type FormatOptions = {
   cwd: string;
-};
-
-export type Deps = {
-  url: string;
-  filepath: string;
-};
-
-type ModuleHeaders = {
-  mime_type: string;
-  redirect_to?: string;
-  x_typescript_types?: string;
 };
 
 class Deno {
   public version!: Version | void;
   public executablePath!: string | void;
-  public readonly DENO_DIR = this.getDenoDir();
-  public readonly DENO_DEPS_DIR = path.join(this.DENO_DIR, "deps");
-  public readonly DTS_FILE = path.join(this.DENO_DIR, "lib.deno_runtime.d.ts");
   public async init() {
     this.executablePath = await this.getExecutablePath();
 
@@ -108,184 +83,6 @@ class Deno {
     })) as string;
 
     return formattedCode;
-  }
-  // public for test
-  public _filepath2url(
-    denoModuleFilepath: string,
-    denoDepsDir = deno.DENO_DEPS_DIR
-  ): string {
-    return denoModuleFilepath
-      .replace(new RegExp("^" + str2regexpStr(denoDepsDir + path.sep)), "")
-      .replace(new RegExp("^(https?)" + str2regexpStr(path.sep)), "$1://")
-      .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/");
-  }
-  // get deno dependencies files
-  public async getDependencies(
-    rootDir = this.DENO_DEPS_DIR,
-    deps: Deps[] = [],
-    denoDepsDir: string = this.DENO_DEPS_DIR
-  ) {
-    const files = await fs.readdir(rootDir);
-
-    const promises = files.map(filename => {
-      const filepath = path.join(rootDir, filename);
-      return fs.stat(filepath).then(stat => {
-        const isInternalModule =
-          filename.startsWith("_") || filename.startsWith(".");
-        if (stat.isDirectory() && !isInternalModule) {
-          return this.getDependencies(filepath, deps, denoDepsDir);
-        } else if (
-          stat.isFile() &&
-          filepath.endsWith(".headers.json") &&
-          !isInternalModule
-        ) {
-          const moduleFilepath = filepath.replace(/\.headers\.json$/, "");
-
-          deps.push({
-            url: this._filepath2url(moduleFilepath, denoDepsDir),
-            filepath: moduleFilepath
-          });
-        }
-      });
-    });
-
-    await Promise.all(promises);
-
-    return deps;
-  }
-  public _resolveModuleFromImportMap(
-    importMaps: IImportMaps,
-    moduleName: string
-  ): string {
-    const maps = importMaps.imports || {};
-
-    for (const prefix in maps) {
-      const mapModule = maps[prefix];
-
-      const reg = new RegExp("^" + prefix);
-      if (reg.test(moduleName)) {
-        moduleName = moduleName.replace(reg, mapModule);
-      }
-    }
-
-    return moduleName;
-  }
-  public async resolveModule(
-    importMaps: IImportMaps,
-    importerFolder: string,
-    moduleName: string,
-    denoDepsDir = this.DENO_DEPS_DIR
-  ): Promise<DenoModule> {
-    let remote = false;
-    const raw = moduleName;
-    let filepath: string;
-
-    // import from local
-    if (/^file:\/\//.test(moduleName)) {
-      filepath = moduleName.replace(/^file:\/\//, "");
-    }
-    // import from remote
-    else if (/^https?:\/\/.+/.test(moduleName)) {
-      remote = true;
-      moduleName = path.resolve(
-        denoDepsDir,
-        moduleName.replace("://", "/").replace(/\//g, path.sep)
-      );
-
-      filepath = moduleName.replace(/\//g, path.sep);
-
-      // if file not exist, fallback to headers.json
-      if ((await pathExists(filepath)) === false) {
-        const headersPath = `${filepath}.headers.json`;
-        if ((await pathExists(headersPath)) === true) {
-          let headers: ModuleHeaders = {
-            mime_type: "application/typescript"
-          };
-          try {
-            headers = JSON.parse(
-              await fs.readFile(headersPath, { encoding: "utf8" })
-            );
-          } catch {}
-
-          // follow redirect
-          if (headers.redirect_to && headers.redirect_to !== raw) {
-            filepath = (
-              await this.resolveModule(
-                importMaps,
-                importerFolder,
-                headers.redirect_to,
-                denoDepsDir
-              )
-            ).filepath;
-          }
-        }
-      }
-    }
-    // ordinary file path
-    else {
-      // resolve module from Import Maps
-      // eg.
-      // import "http/server.ts"
-
-      // {
-      //   "imports": {
-      //      "http": "https://deno.land/std/http"
-      //   }
-      // }
-      //
-      moduleName = this._resolveModuleFromImportMap(importMaps, moduleName);
-
-      // if module is a absolute path
-      if (moduleName.indexOf("/") === 0 || path.isAbsolute(moduleName)) {
-        filepath = moduleName.replace(/\//g, path.sep);
-      } else if (/^https?:\/\/.+/.test(moduleName)) {
-        const resolvedModule = await this.resolveModule(
-          importMaps,
-          importerFolder,
-          moduleName,
-          denoDepsDir
-        );
-
-        filepath = resolvedModule.filepath;
-        remote = resolvedModule.remote;
-      } else {
-        filepath = path.resolve(
-          importerFolder,
-          moduleName.replace(/\//g, path.sep)
-        );
-      }
-    }
-
-    return {
-      filepath,
-      raw,
-      remote
-    };
-  }
-  private getDenoDir(): string {
-    let denoDir = process.env.DENO_DIR;
-
-    if (denoDir) {
-      return denoDir;
-    }
-
-    switch (process.platform) {
-      case "win32":
-        denoDir = `${process.env.LOCALAPPDATA}\\deno`;
-        break;
-      case "darwin":
-        denoDir = `${process.env.HOME}/Library/Caches/deno`;
-        break;
-      case "linux":
-        denoDir = process.env.XDG_CACHE_HOME
-          ? `${process.env.XDG_CACHE_HOME}/deno`
-          : `${process.env.HOME}/.cache/deno`;
-        break;
-      default:
-        denoDir = `${process.env.HOME}/.deno`;
-    }
-
-    return denoDir;
   }
   private async getExecutablePath(): Promise<string | undefined> {
     const denoPath = await which("deno").catch(() =>

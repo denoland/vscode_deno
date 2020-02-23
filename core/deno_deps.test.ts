@@ -15,7 +15,7 @@ afterAll(() => {
 });
 
 test("core / deno_deps", async () => {
-  await expect(getDenoDeps(denoDepsDir)).resolves.toEqual([
+  await expect(getDenoDeps()).resolves.toEqual([
     {
       url: "https://another.example.com/path/mod.ts",
       filepath: path.join(

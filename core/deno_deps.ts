@@ -11,37 +11,51 @@ export type Deps = {
 
 /**
  * Get cached dependency files
- * @param depsRootDir
- * @param deps
  */
-export async function getDenoDeps(
-  depsRootDir = getDenoDepsDir(),
-  deps: Deps[] = []
-): Promise<Deps[]> {
+export async function getDenoDeps(): Promise<Deps[]> {
+  const depsRootDir = getDenoDepsDir();
+  const deps: Deps[] = [];
   const protocols = await fs.readdir(depsRootDir);
 
-  for (const protocol of protocols) {
-    const protocolFolderpath = path.join(depsRootDir, protocol);
-    const origins = await fs.readdir(protocolFolderpath);
+  await Promise.all([
+    protocols.map(async protocol => {
+      const protocolFolderpath = path.join(depsRootDir, protocol);
+      const protocolStat = await fs.stat(protocolFolderpath);
 
-    for (const origin of origins) {
-      const originFolderpath = path.join(protocolFolderpath, origin);
-      const manifestFilepath = path.join(originFolderpath, "manifest.json");
+      if (protocolStat.isDirectory()) {
+        const origins = await fs.readdir(protocolFolderpath);
 
-      const manifest = Manifest.create(manifestFilepath);
+        await Promise.all([
+          origins.map(async origin => {
+            const originFolderpath = path.join(protocolFolderpath, origin);
+            const manifestFilepath = path.join(
+              originFolderpath,
+              "manifest.json"
+            );
 
-      if (manifest) {
-        for (const [urlPath, hash] of manifest) {
-          const url = manifest.origin + urlPath;
-          const filepath = path.join(originFolderpath, hash);
-          deps.push({
-            url,
-            filepath
-          });
-        }
+            const originStat = await fs.stat(originFolderpath);
+
+            if (originStat.isDirectory()) {
+              const manifest = Manifest.create(manifestFilepath);
+
+              console.log("main", manifestFilepath);
+
+              if (manifest) {
+                for (const [urlPath, hash] of manifest) {
+                  const url = manifest.origin + urlPath;
+                  const filepath = path.join(originFolderpath, hash);
+                  deps.push({
+                    url,
+                    filepath
+                  });
+                }
+              }
+            }
+          })
+        ]);
       }
-    }
-  }
+    })
+  ]);
 
   return deps;
 }

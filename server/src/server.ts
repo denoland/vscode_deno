@@ -16,7 +16,6 @@ import {
   CodeActionKind
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import * as ts from "typescript";
 
 import { deno } from "./deno";
 import { Bridge } from "./bridge";
@@ -27,6 +26,9 @@ import { DocumentHighlight } from "./language/document_highlight";
 import { DocumentFormatting } from "./language/document_formatting";
 import { Hover } from "./language/hover";
 import { Completion } from "./language/completion";
+
+import { getDenoDir, getDenoDts } from "../../core/deno";
+import { pathExists } from "../../core/util";
 
 const SERVER_NAME = "Deno Language Server";
 process.title = SERVER_NAME;
@@ -78,17 +80,18 @@ connection.onInitialized(async params => {
   try {
     await deno.init();
     const currentDenoTypesContent = await deno.getTypes();
-    const isExistDtsFile = ts.sys.fileExists(deno.DTS_FILE);
+    const denoDtsFile = getDenoDts();
+    const isExistDtsFile = await pathExists(denoDtsFile);
     const fileOptions = { encoding: "utf8" };
 
     // if dst file not exist. then create a new one
     if (!isExistDtsFile) {
-      await fs.writeFile(deno.DTS_FILE, currentDenoTypesContent, fileOptions);
+      await fs.writeFile(denoDtsFile, currentDenoTypesContent, fileOptions);
     } else {
-      const typesContent = await fs.readFile(deno.DTS_FILE, fileOptions);
+      const typesContent = await fs.readFile(denoDtsFile, fileOptions);
 
       if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await fs.writeFile(deno.DTS_FILE, currentDenoTypesContent, fileOptions);
+        await fs.writeFile(denoDtsFile, currentDenoTypesContent, fileOptions);
       }
     }
   } catch (err) {
@@ -98,8 +101,8 @@ connection.onInitialized(async params => {
   connection.sendNotification("init", {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
-    DENO_DIR: deno.DENO_DIR,
-    dtsFilepath: deno.DTS_FILE
+    DENO_DIR: getDenoDir(),
+    dtsFilepath: getDenoDts()
   });
   connection.console.log("server initialized.");
 });

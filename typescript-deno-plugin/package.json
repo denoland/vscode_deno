@@ -2,7 +2,7 @@
   "name": "typescript-deno-plugin",
   "version": "0.1.0",
   "description": "Deno language service plugin for TypeScript",
-  "main": "out/index.js",
+  "main": "./out/typescript-deno-plugin/src/index.js",
   "scripts": {
     "compile": "tsc",
     "watch": "tsc -w -p ./"

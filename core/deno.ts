@@ -31,3 +31,7 @@ export function getDenoDir(): string {
 export function getDenoDepsDir(): string {
   return path.join(getDenoDir(), "deps");
 }
+
+export function getDenoDts(): string {
+  return path.join(getDenoDir(), "lib.deno_runtime.d.ts");
+}

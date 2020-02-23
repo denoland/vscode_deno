@@ -8,7 +8,8 @@ import {
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import { deno } from "../deno";
+import { getDenoDir } from "../../../core/deno";
+import { getDenoDeps } from "../../../core/deno_deps";
 
 export class Completion {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
@@ -41,7 +42,7 @@ export class Completion {
         return [];
       }
 
-      const deps = await deno.getDependencies();
+      const deps = await getDenoDeps();
 
       const range = Range.create(
         Position.create(position.line, position.character),
@@ -53,7 +54,7 @@ export class Completion {
           label: dep.url,
           detail: dep.url,
           sortText: dep.url,
-          documentation: dep.filepath.replace(deno.DENO_DIR, "$DENO_DIR"),
+          documentation: dep.filepath.replace(getDenoDir(), "$DENO_DIR"),
           kind: CompletionItemKind.File,
           insertText: dep.url,
           cancel: partialResultToken,
