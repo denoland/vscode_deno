@@ -30,7 +30,7 @@ class Manifest implements IManifest {
     const origin = path
       .dirname(manifestFilepath)
       .replace(new RegExp("^" + str2regexpStr(getDenoDepsDir() + path.sep)), "")
-      .replace(new RegExp(path.sep, "gm"), "/")
+      .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/")
       .replace(/^(https?)\//, "$1://");
 
     return new Manifest(origin, manifestMap);
