@@ -42,11 +42,6 @@ jobs:
           npm run check
 
       - name: Test
-        if: runner.os == 'linux' && github.repository != 'axetroy/vscode-deno'
-        run: npm run test
-
-      - name: Test and report to coveralls
-        if: runner.os == 'linux' && github.repository == 'axetroy/vscode-deno'
         env:
           COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
           COVERALLS_GIT_BRANCH: "${{ github.ref }}"
