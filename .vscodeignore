@@ -6,7 +6,11 @@ src/**
 **/*.map
 *.vsix
 coverage
+core/*.ts
 
+.prettierignore
+.prettierrc.json
+jest.config.js
 .gitignore
 .gitmodules
 
