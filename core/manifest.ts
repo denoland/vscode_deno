@@ -4,13 +4,14 @@ import * as fs from "fs";
 import { getDenoDepsDir } from "./deno";
 import { pathExistsSync, str2regexpStr } from "./util";
 
-type urlPathAndQuerySHA256 = string;
+type hash = string;
 
 export interface IManifest {
   origin: string;
   filepath: string;
-  getHashFromUrlPath(urlPathAndQuery: string): urlPathAndQuerySHA256 | void;
-  getUrlPathFromHash(hash: urlPathAndQuerySHA256): string | void;
+  getHashFromUrlPath(urlPath: string): hash | void;
+  getUrlPathFromHash(hash: hash): string | void;
+  [Symbol.iterator](): Iterator<string[]>;
 }
 
 export class Manifest implements IManifest {
@@ -32,18 +33,44 @@ export class Manifest implements IManifest {
   constructor(
     public origin: string,
     public filepath: string,
-    private map: { [urlPathAndQuery: string]: urlPathAndQuerySHA256 }
+    private map: { [urlPath: string]: hash }
   ) {}
-  getHashFromUrlPath(urlPathAndQuery: string): urlPathAndQuerySHA256 | void {
-    return this.map[urlPathAndQuery];
+  getHashFromUrlPath(urlPath: string): hash | void {
+    return this.map[urlPath];
   }
-  getUrlPathFromHash(hash: urlPathAndQuerySHA256): string | void {
-    for (const urlPathAndQuery in this.map) {
-      const _hash = this.map[urlPathAndQuery];
+  getUrlPathFromHash(hash: hash): string | void {
+    for (const urlPath in this.map) {
+      const _hash = this.map[urlPath];
       if (_hash === hash) {
-        return urlPathAndQuery;
+        return urlPath;
       }
     }
     return;
+  }
+  [Symbol.iterator](): Iterator<string[]> {
+    const keys = Object.keys(this.map);
+
+    let currentIndex = 0;
+
+    return {
+      next: () => {
+        if (currentIndex === keys.length) {
+          return {
+            value: [],
+            done: true
+          };
+        }
+
+        const key = keys[currentIndex];
+        const value = this.map[key];
+
+        currentIndex++;
+
+        return {
+          value: [key, value],
+          done: false
+        };
+      }
+    };
   }
 }

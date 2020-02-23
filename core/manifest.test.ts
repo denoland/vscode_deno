@@ -24,6 +24,13 @@ test("core / manifest", () => {
     path.join(denoDir, "deps", "https", "example.com", "manifest.json")
   ) as IManifest;
 
+  for (const [key, value] of exampleOriginManifest) {
+    expect(typeof key).toBe("string");
+    expect(typeof value).toBe("string");
+
+    expect(exampleOriginManifest.getHashFromUrlPath(key)).toBe(value);
+  }
+
   expect(exampleOriginManifest).not.toBe(undefined);
   expect(exampleOriginManifest.origin).toEqual("https://example.com");
   expect(exampleOriginManifest.filepath).toEqual(
