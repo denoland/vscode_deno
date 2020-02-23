@@ -21,7 +21,7 @@ class CacheModule implements DenoCacheModule {
    * Resolve module in this cache file
    * @param moduleName The module name is for unix style
    */
-  resolveModule(moduleName: string) {
+  resolveModule(moduleName: string): DenoCacheModule | void {
     // eg. import "/npm:tough-cookie@3?dew"
     if (moduleName.indexOf("/") === 0) {
       const fileHash = this.manifest.getHashFromUrlPath(moduleName);
@@ -57,7 +57,12 @@ class CacheModule implements DenoCacheModule {
     }
     // eg import "https://example.com/demo/mod.ts"
     else if (/http?s:\/\//.test(moduleName)) {
-      const url = new URL(moduleName);
+      let url: URL;
+      try {
+        url = new URL(moduleName);
+      } catch {
+        return;
+      }
       const targetOriginDir = path.join(
         getDenoDepsDir(),
         url.protocol.replace(/:$/, ""), // https: -> https
