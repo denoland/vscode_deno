@@ -76,7 +76,8 @@ test("core / module_resolver: resolve module from local", () => {
       "./deno.ts",
       "../package.json",
       "https://example.com/esm/mod.ts",
-      "demo/mod.ts"
+      "demo/mod.ts",
+      "https://another.example.com/path/mod.ts?foo=bar"
     ])
   ).toEqual([
     {
@@ -109,6 +110,23 @@ test("core / module_resolver: resolve module from local", () => {
       module: path.join(
         path.dirname(cacheFilepath),
         "933405cb905c548e870daee56d0589b7dd8e146c0cdbd5f16a959f8227c1fe06"
+      )
+    },
+    {
+      origin: "https://another.example.com/path/mod.ts?foo=bar",
+      filepath: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "another.example.com",
+        "eac382fbc5e96dcb72874cba87121a37b029ea76f42f0bbd2a56c995759e775e"
+      ),
+      module: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "another.example.com",
+        "eac382fbc5e96dcb72874cba87121a37b029ea76f42f0bbd2a56c995759e775e"
       )
     }
   ] as ResolvedModule[]);

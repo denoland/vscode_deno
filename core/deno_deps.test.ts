@@ -26,6 +26,15 @@ test("core / deno_deps", async () => {
       )
     },
     {
+      url: "https://another.example.com/path/mod.ts?foo=bar",
+      filepath: path.join(
+        denoDepsDir,
+        "https",
+        "another.example.com",
+        "eac382fbc5e96dcb72874cba87121a37b029ea76f42f0bbd2a56c995759e775e"
+      )
+    },
+    {
       url: "https://example.com/demo/mod.ts",
       filepath: path.join(
         denoDepsDir,
