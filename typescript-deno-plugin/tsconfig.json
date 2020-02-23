@@ -1,17 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es6",
     "module": "commonjs",
-    "sourceMap": true,
+    "target": "es6",
     "outDir": "../node_modules/typescript-deno-plugin/out",
-    "noImplicitAny": true,
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
+    "sourceMap": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "lib": ["es6"],
     "strict": true,
     "baseUrl": "./src"
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src", "../core"],
+  "exclude": ["**/*.test.ts"]
 }

@@ -38,8 +38,6 @@ export async function getDenoDeps(): Promise<Deps[]> {
             if (originStat.isDirectory()) {
               const manifest = Manifest.create(manifestFilepath);
 
-              console.log("main", manifestFilepath);
-
               if (manifest) {
                 for (const [urlPath, hash] of manifest) {
                   const url = manifest.origin + urlPath;

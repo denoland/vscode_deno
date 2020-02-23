@@ -6,9 +6,9 @@
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
-    "baseUrl": "./common"
+    "baseUrl": "./src"
   },
-  "include": ["src"],
+  "include": ["./src"],
   "exclude": ["node_modules", "__test__"],
   "references": [
     { "path": "./client" },

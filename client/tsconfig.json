@@ -8,5 +8,6 @@
     "strict": true,
     "baseUrl": "./src"
   },
-  "include": ["src"]
+  "include": ["./src", "../core"],
+  "exclude": ["**/*.test.ts"]
 }
