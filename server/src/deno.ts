@@ -2,14 +2,13 @@ import { Readable } from "stream";
 import * as path from "path";
 import { promises as fs } from "fs";
 
-import * as ts from "typescript";
 import execa from "execa";
 import which from "which";
 import { localize } from "vscode-nls-i18n";
 import * as semver from "semver";
 
-import { IImportMaps } from "./import_map";
-import { str2regexpStr } from "./util";
+import { IImportMaps } from "../../core/import_map";
+import { str2regexpStr, pathExists } from "../../core/util";
 
 type Version = {
   deno: string;
@@ -196,9 +195,9 @@ class Deno {
       filepath = moduleName.replace(/\//g, path.sep);
 
       // if file not exist, fallback to headers.json
-      if (!ts.sys.fileExists(filepath)) {
+      if ((await pathExists(filepath)) === false) {
         const headersPath = `${filepath}.headers.json`;
-        if (ts.sys.fileExists(headersPath)) {
+        if ((await pathExists(headersPath)) === true) {
           let headers: ModuleHeaders = {
             mime_type: "application/typescript"
           };

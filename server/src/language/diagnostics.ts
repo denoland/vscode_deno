@@ -17,7 +17,7 @@ import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "../bridge";
 import { deno } from "../deno";
-import { ImportMap } from "../import_map";
+import { ImportMap } from "../../../core/import_map";
 
 type Fix = {
   title: string;

@@ -9,7 +9,7 @@
     "baseUrl": "./common"
   },
   "include": ["src"],
-  "exclude": ["node_modules", ".vscode-test"],
+  "exclude": ["node_modules", "__test__"],
   "references": [
     { "path": "./client" },
     { "path": "./server" },

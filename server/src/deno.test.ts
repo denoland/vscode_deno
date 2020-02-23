@@ -1,9 +1,9 @@
 import * as path from "path";
 
 import { deno, Deps, DenoModule } from "./deno";
-import { ImportMap } from "./import_map";
+import { ImportMap } from "../../core/import_map";
 
-const TEST_DIR = path.join(__dirname, "__test__");
+const TEST_DIR = path.join(__dirname, "..", "..", "__test__");
 
 beforeAll(async () => {
   await deno.init();

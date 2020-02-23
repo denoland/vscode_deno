@@ -29,7 +29,7 @@ import getport from "get-port";
 import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
 
-import { pathExists } from "../../common/util";
+import { pathExists } from "../../core/util";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -230,7 +230,7 @@ class Extension {
 
     // The server is implemented in node
     const serverModule = this.context.asAbsolutePath(
-      path.join("server", "out", "server.js")
+      path.join("server", "out", "server", "src", "server.js")
     );
 
     // If the extension is launched in debug mode then the debug server options are used
