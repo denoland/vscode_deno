@@ -31,7 +31,7 @@ export class Manifest implements IManifest {
     return new Manifest(origin, manifestFilepath, manifestMap);
   }
   constructor(
-    public origin: string,
+    public origin: string, // eg. deno.land
     public filepath: string,
     private map: { [urlPath: string]: hash }
   ) {}
