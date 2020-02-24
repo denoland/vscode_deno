@@ -9,7 +9,7 @@ export type DenoPluginConfig = {
 
 export class ConfigurationManager {
   private static readonly defaultConfiguration: DenoPluginConfig = {
-    enable: true,
+    enable: false,
     dts_file: [],
     import_map: ""
   };

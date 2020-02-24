@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 
 import merge from "deepmerge";
 import ts_module from "typescript/lib/tsserverlibrary";
@@ -54,9 +55,33 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     this.configurationManager.onUpdatedConfig(() => {
       info.project.refreshDiagnostics();
       info.project.updateGraph();
+      info.languageService.getProgram()?.emit();
     });
 
     this.logger = Logger.forPlugin(DenoPlugin.PLUGIN_NAME, info);
+
+    const vscodeSettingsFile = path.join(directory, ".vscode", "settings.json");
+
+    // Try to read configuration from vscode
+    if (pathExistsSync(vscodeSettingsFile) === true) {
+      const content = fs.readFileSync(vscodeSettingsFile, { encoding: "utf8" });
+
+      try {
+        const settings = JSON.parse(content);
+
+        const isEnable = !!settings["deno.enable"];
+        const dts_file = settings["deno.dts_file"] || [];
+        const import_map = settings["deno.import_map"] || undefined;
+
+        const configurationInProjectFolder = {
+          enable: isEnable,
+          dts_file,
+          import_map
+        };
+
+        this.configurationManager.update(configurationInProjectFolder);
+      } catch {}
+    }
 
     this.logger.info(`Create typescript-deno-plugin`);
     const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
@@ -115,7 +140,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             : path.resolve(info.project.getCurrentDirectory(), filepath);
           return absoluteFilepath;
         })
-        .filter(v => v.endsWith(".d.ts"));
+        .filter(v => v.endsWith(this.typescript.Extension.Dts));
 
       const iterator = new Set(dtsFilepaths).entries();
 
