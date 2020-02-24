@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 
-import { getDenoCompileHint, IRange, IPosition } from "./deno_type_hint";
+import { getDenoCompileHint, IRange } from "./deno_type_hint";
 
 test("core / deno_type_hint: without compile hint", async () => {
   const sourceFile = ts.createSourceFile(

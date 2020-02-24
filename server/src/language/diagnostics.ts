@@ -201,7 +201,7 @@ export class Diagnostics {
         : path.resolve(workspaceDir.uri.fsPath, config.import_map)
       : undefined;
 
-    const diagnosticsForThisDocument = [];
+    const diagnosticsForThisDocument: Diagnostic[] = [];
 
     for (const moduleNode of moduleNodes) {
       const numberOfSpaces = Math.abs(

@@ -53,7 +53,7 @@ new Hover(connection, documents);
 new Completion(connection, documents);
 
 connection.onInitialize(
-  (params): InitializeResult => {
+  (): InitializeResult => {
     return {
       capabilities: {
         documentFormattingProvider: true,
@@ -76,7 +76,7 @@ connection.onInitialize(
   }
 );
 
-connection.onInitialized(async params => {
+connection.onInitialized(async () => {
   try {
     await deno.init();
     const currentDenoTypesContent = await deno.getTypes();

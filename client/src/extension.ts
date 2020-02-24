@@ -482,7 +482,7 @@ Executable ${this.denoInfo.executablePath}`;
             ps.stdout?.on("data", updateProgress);
             ps.stderr?.on("data", updateProgress);
 
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
               ps.on("exit", (code: number) => {
                 if (code !== 0 && !cancelToken.isCancellationRequested) {
                   this.output.show();

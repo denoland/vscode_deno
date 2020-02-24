@@ -1,13 +1,8 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "outDir": "./out",
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "strict": true,
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "outDir": "./out"
   },
-  "include": ["./src", "../core"],
-  "exclude": ["**/*.test.ts"]
+  "include": ["./src", "../core"]
 }
