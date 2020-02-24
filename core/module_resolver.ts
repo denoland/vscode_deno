@@ -3,7 +3,7 @@ import * as path from "path";
 import assert from "assert";
 
 import { getDenoDepsDir } from "./deno";
-import { Cache, DenoCacheModule } from "./deno_cache";
+import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { Manifest } from "./manifest";
 import { ImportMap } from "./import_map";
 
@@ -112,7 +112,9 @@ export class ModuleResolver {
     let denoCacheFile: DenoCacheModule;
 
     if (this.isDenoCacheFile) {
-      denoCacheFile = Cache.create(this.containingFile) as DenoCacheModule;
+      denoCacheFile = CacheModule.create(
+        this.containingFile
+      ) as DenoCacheModule;
 
       // if cache file not found
       if (!denoCacheFile) {

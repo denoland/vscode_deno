@@ -1,6 +1,6 @@
 import * as path from "path";
 
-import { Cache, DenoCacheModule } from "./deno_cache";
+import { CacheModule, DenoCacheModule } from "./deno_cache";
 
 const TEST_DIR = path.join(__dirname, "..", "__test__");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
@@ -22,7 +22,7 @@ afterAll(() => {
 });
 
 test("core / deno_cache", () => {
-  const cacheModule = Cache.create(cacheFilepath) as DenoCacheModule;
+  const cacheModule = CacheModule.create(cacheFilepath) as DenoCacheModule;
 
   expect(cacheModule).not.toBe(undefined);
 

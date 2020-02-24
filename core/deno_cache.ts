@@ -11,84 +11,7 @@ export interface DenoCacheModule {
   resolveModule(moduleName: string): DenoCacheModule | void;
 }
 
-class CacheModule implements DenoCacheModule {
-  constructor(
-    public filepath: string,
-    public url: string,
-    private manifest: IManifest
-  ) {}
-  /**
-   * Resolve module in this cache file
-   * @param moduleName The module name is for unix style
-   */
-  resolveModule(moduleName: string): DenoCacheModule | void {
-    // eg. import "/npm:tough-cookie@3?dew"
-    if (moduleName.indexOf("/") === 0) {
-      const fileHash = this.manifest.getHashFromUrlPath(moduleName);
-
-      if (!fileHash) {
-        return;
-      }
-
-      const originDir = path.dirname(this.filepath);
-      const targetFilepath = path.join(originDir, fileHash);
-
-      return Cache.create(targetFilepath);
-    }
-    // eg. import "./sub/mod.ts"
-    else if (moduleName.indexOf(".") === 0) {
-      const originDir = path.dirname(this.filepath);
-      const currentUrlPath = new URL(this.url);
-
-      const targetUrlPath = path.posix.resolve(
-        path.posix.dirname(currentUrlPath.pathname),
-        moduleName
-      );
-      const fileHash = this.manifest.getHashFromUrlPath(targetUrlPath);
-
-      // if file hash not exist. then module not found.
-      if (!fileHash) {
-        return;
-      }
-
-      const targetFilepath = path.join(originDir, fileHash);
-
-      return Cache.create(targetFilepath);
-    }
-    // eg import "https://example.com/demo/mod.ts"
-    else if (/http?s:\/\//.test(moduleName)) {
-      let url: URL;
-      try {
-        url = new URL(moduleName);
-      } catch {
-        return;
-      }
-      const targetOriginDir = path.join(
-        getDenoDepsDir(),
-        url.protocol.replace(/:$/, ""), // https: -> https
-        url.hostname
-      );
-
-      const manifest = Manifest.create(
-        path.join(targetOriginDir, "manifest.json")
-      );
-
-      if (!manifest) {
-        return;
-      }
-
-      const hash = manifest.getHashFromUrlPath(url.pathname + url.search);
-
-      if (!hash) {
-        return;
-      }
-
-      return Cache.create(path.join(targetOriginDir, hash));
-    }
-  }
-}
-
-export class Cache {
+export class CacheModule implements DenoCacheModule {
   static create(filepath: string): DenoCacheModule | void {
     const DENO_DEPS_DIR = getDenoDepsDir();
     // if not a Deno deps module
@@ -119,5 +42,80 @@ export class Cache {
 
     const url = origin + urlPathAndQuery;
     return new CacheModule(filepath, url, manifest);
+  }
+
+  constructor(
+    public filepath: string,
+    public url: string,
+    private manifest: IManifest
+  ) {}
+  /**
+   * Resolve module in this cache file
+   * @param moduleName The module name is for unix style
+   */
+  resolveModule(moduleName: string): DenoCacheModule | void {
+    // eg. import "/npm:tough-cookie@3?dew"
+    if (moduleName.indexOf("/") === 0) {
+      const fileHash = this.manifest.getHashFromUrlPath(moduleName);
+
+      if (!fileHash) {
+        return;
+      }
+
+      const originDir = path.dirname(this.filepath);
+      const targetFilepath = path.join(originDir, fileHash);
+
+      return CacheModule.create(targetFilepath);
+    }
+    // eg. import "./sub/mod.ts"
+    else if (moduleName.indexOf(".") === 0) {
+      const originDir = path.dirname(this.filepath);
+      const currentUrlPath = new URL(this.url);
+
+      const targetUrlPath = path.posix.resolve(
+        path.posix.dirname(currentUrlPath.pathname),
+        moduleName
+      );
+      const fileHash = this.manifest.getHashFromUrlPath(targetUrlPath);
+
+      // if file hash not exist. then module not found.
+      if (!fileHash) {
+        return;
+      }
+
+      const targetFilepath = path.join(originDir, fileHash);
+
+      return CacheModule.create(targetFilepath);
+    }
+    // eg import "https://example.com/demo/mod.ts"
+    else if (/http?s:\/\//.test(moduleName)) {
+      let url: URL;
+      try {
+        url = new URL(moduleName);
+      } catch {
+        return;
+      }
+      const targetOriginDir = path.join(
+        getDenoDepsDir(),
+        url.protocol.replace(/:$/, ""), // https: -> https
+        url.hostname
+      );
+
+      const manifest = Manifest.create(
+        path.join(targetOriginDir, "manifest.json")
+      );
+
+      if (!manifest) {
+        return;
+      }
+
+      const hash = manifest.getHashFromUrlPath(url.pathname + url.search);
+
+      if (!hash) {
+        return;
+      }
+
+      return CacheModule.create(path.join(targetOriginDir, hash));
+    }
   }
 }

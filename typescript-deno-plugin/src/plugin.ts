@@ -8,7 +8,8 @@ import { Logger } from "./logger";
 import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { getDenoDepsDir, getDenoDts } from "../../core/deno";
 import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
-import { pathExistsSync, str2regexpStr } from "../../core/util";
+import { CacheModule } from "../../core/deno_cache";
+import { pathExistsSync } from "../../core/util";
 
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
@@ -238,46 +239,33 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return details;
       }
 
+      const denoDepsDir = getDenoDepsDir();
+
       if (details) {
         if (details.codeActions && details.codeActions.length) {
           for (const ca of details.codeActions) {
             for (const change of ca.changes) {
               if (!change.isNewFile) {
                 for (const tc of change.textChanges) {
-                  const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"];*$/gim;
+                  const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"](.*)$/gim;
 
                   const matcher = regexp.exec(tc.newText);
 
                   if (matcher) {
-                    let moduleFilepath = path.resolve(
-                      matcher[2].replace(/\//gm, path.sep)
+                    const importModuleNames = matcher[1].trim();
+                    const moduleRelativeFilepath = matcher[2];
+                    const moduleAbsoluteFilepath = path.resolve(
+                      // relative path is always unix path
+                      moduleRelativeFilepath.replace(/\//gm, path.sep)
                     );
+                    const rest = matcher[3];
 
-                    const denoDepsDir = getDenoDepsDir();
-
-                    if (moduleFilepath.indexOf(denoDepsDir) >= 0) {
-                      const denoHTTPModule = moduleFilepath
-                        .replace(denoDepsDir, "")
-                        .replace(new RegExp("^" + str2regexpStr(path.sep)), "")
-                        .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/")
-                        .replace(new RegExp("^(https?)/"), "$1://");
-
-                      const extensionNames = [
-                        "",
-                        this.typescript.Extension.Ts,
-                        this.typescript.Extension.Tsx,
-                        this.typescript.Extension.Js,
-                        this.typescript.Extension.Jsx
-                      ];
-
-                      for (const extName of extensionNames) {
-                        if (pathExistsSync(moduleFilepath + extName)) {
-                          moduleFilepath = moduleFilepath + extName;
-                          tc.newText = `import ${
-                            matcher[1]
-                          } from "${denoHTTPModule + extName}";`;
-                          break;
-                        }
+                    if (moduleAbsoluteFilepath.indexOf(denoDepsDir) >= 0) {
+                      const cache = CacheModule.create(moduleAbsoluteFilepath);
+                      if (cache) {
+                        tc.newText = `import ${importModuleNames} from "${
+                          cache.url
+                        }"${rest ? rest : ""}`;
                       }
                     }
                   }
