@@ -9,7 +9,17 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { getDenoDir } from "../../../core/deno";
-import { getDenoDeps } from "../../../core/deno_deps";
+import { getDenoDeps, Deps } from "../../../core/deno_deps";
+import { Cache } from "../../../core/cache";
+
+// Cache for 30 second or 30 references
+const cache = Cache.create<Deps[]>(1000 * 30, 30);
+
+getDenoDeps()
+  .then(deps => {
+    cache.set(deps);
+  })
+  .catch(() => {});
 
 export class Completion {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
@@ -42,7 +52,12 @@ export class Completion {
         return [];
       }
 
-      const deps = await getDenoDeps();
+      let deps = cache.get();
+
+      if (!deps) {
+        deps = await getDenoDeps();
+        cache.set(deps);
+      }
 
       const range = Range.create(
         Position.create(position.line, position.character),
