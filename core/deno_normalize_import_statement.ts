@@ -1,5 +1,4 @@
 import * as path from "path";
-import assert from "assert";
 
 import { getDenoDepsDir } from "./deno";
 import { CacheModule } from "./deno_cache";
@@ -9,15 +8,7 @@ import { CacheModule } from "./deno_cache";
  * @param importStatement eg. `import { path } from "../../../../Library/Caches/deno/deps/https/example.com/da88efaa8b70cda7903ddc29b8d4c6ea3015de65329ea393289f4104ae2da941"`
  * @returns string eg. `https://example.com/demo/sub/mod.ts`
  */
-export function normalizeImportStatement(
-  filepath: string,
-  importStatement: string
-): string {
-  assert(
-    path.isAbsolute(filepath),
-    "normalizeImportStatement require absolute file path"
-  );
-
+export function normalizeImportStatement(importStatement: string): string {
   const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"](.*)$/gim;
 
   const matcher = regexp.exec(importStatement);
@@ -25,10 +16,11 @@ export function normalizeImportStatement(
   if (matcher) {
     const importModuleNames = matcher[1].trim();
     // relative path is always unix path
-    const moduleName = matcher[2].replace(/\//gm, path.sep);
-    const moduleAbsoluteFilepath = path.isAbsolute(moduleName)
-      ? moduleName
-      : path.resolve(filepath, moduleName);
+    const moduleName = matcher[2];
+    const moduleFilepath = moduleName.replace(/\//gm, path.sep);
+    const moduleAbsoluteFilepath = path.isAbsolute(moduleFilepath)
+      ? moduleFilepath
+      : path.resolve(moduleFilepath);
     const rest = matcher[3];
 
     if (moduleAbsoluteFilepath.indexOf(getDenoDepsDir()) >= 0) {

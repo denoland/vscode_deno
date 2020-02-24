@@ -245,7 +245,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             for (const change of ca.changes) {
               if (!change.isNewFile) {
                 for (const tc of change.textChanges) {
-                  tc.newText = normalizeImportStatement(fileName, tc.newText);
+                  tc.newText = normalizeImportStatement(tc.newText);
                 }
               }
             }
