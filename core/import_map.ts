@@ -5,7 +5,7 @@ import assert from "assert";
 import { pathExists, pathExistsSync, str2regexpStr } from "./util";
 
 export interface IImportMaps {
-  [Symbol.iterator](): Iterator<string[]>;
+  [Symbol.iterator](): Iterator<[string, string]>;
   toJSON(): ImportContent;
   resolveModule(moduleName: string): string;
 }
@@ -89,7 +89,7 @@ export class ImportMap implements IImportMaps {
 
     return moduleName;
   }
-  [Symbol.iterator](): Iterator<string[]> {
+  [Symbol.iterator](): Iterator<[string, string]> {
     const keys = Object.keys(this.map.imports);
 
     let currentIndex = 0;

@@ -29,4 +29,12 @@ test("core / import_map", async () => {
   expect((await ImportMap.create(invalidImportMapFilepath)).toJSON()).toEqual(
     {} as ImportContent
   );
+
+  const importMap = await ImportMap.create(validImportMapFilepath);
+
+  for (const [prefix, moduleName] of importMap) {
+    expect(typeof prefix).toBe("string");
+    expect(typeof moduleName).toBe("string");
+    expect(prefix).not.toEqual(moduleName);
+  }
 });

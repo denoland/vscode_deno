@@ -5,13 +5,14 @@ import { getDenoDepsDir } from "./deno";
 import { pathExistsSync, str2regexpStr } from "./util";
 
 type hash = string;
+type iteratorArr = [string, hash];
 
 export interface IManifest {
   origin: string;
   filepath: string;
   getHashFromUrlPath(urlPath: string): hash | void;
   getUrlPathFromHash(hash: hash): string | void;
-  [Symbol.iterator](): Iterator<string[]>;
+  [Symbol.iterator](): Iterator<iteratorArr>;
 }
 
 export class Manifest implements IManifest {
@@ -39,15 +40,14 @@ export class Manifest implements IManifest {
     return this.map[urlPath];
   }
   getUrlPathFromHash(hash: hash): string | void {
-    for (const urlPath in this.map) {
-      const _hash = this.map[urlPath];
+    for (const [urlPath, _hash] of this) {
       if (_hash === hash) {
         return urlPath;
       }
     }
     return;
   }
-  [Symbol.iterator](): Iterator<string[]> {
+  [Symbol.iterator](): Iterator<iteratorArr> {
     const keys = Object.keys(this.map);
 
     let currentIndex = 0;
