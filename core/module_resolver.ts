@@ -80,17 +80,10 @@ export class ModuleResolver {
 
   private resolveFromLocal(moduleName: string): ResolvedModule | undefined {
     const originModuleName = moduleName;
-    for (const prefix in this.importMaps.imports) {
-      const mapModule = this.importMaps.imports[prefix];
+    moduleName = this.importMaps.resolveModule(moduleName);
 
-      const reg = new RegExp("^" + prefix);
-      if (reg.test(moduleName)) {
-        moduleName = moduleName.replace(reg, mapModule);
-
-        if (/^https?:\/\//.test(moduleName)) {
-          return this.resolveFromRemote(moduleName);
-        }
-      }
+    if (/^https?:\/\//.test(moduleName)) {
+      return this.resolveFromRemote(moduleName);
     }
 
     const moduleFilepath = path.resolve(
@@ -106,7 +99,7 @@ export class ModuleResolver {
   }
 
   /**
-   * Find modules in the file.
+   * Find cached modules in the file.
    * If cannot found module, returns undefined
    * @param moduleNames Module name is always unix style.
    *                    eg `./foo.ts`

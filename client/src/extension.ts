@@ -29,7 +29,7 @@ import getport from "get-port";
 import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
 
-import { pathExists } from "../../core/util";
+import { ImportMap } from "../../core/import_map";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -58,54 +58,6 @@ type DenoInfo = {
   executablePath: string;
   dtsFilepath: string;
 };
-
-type ImportMap = {
-  imports: { [key: string]: string };
-};
-
-async function getImportMaps(
-  importMapFilepath: string | undefined,
-  workspaceDir: string
-) {
-  let importMaps: ImportMap = {
-    imports: {}
-  };
-
-  //  try resolve import maps
-  if (importMapFilepath) {
-    const importMapsFilepath = path.isAbsolute(importMapFilepath)
-      ? importMapFilepath
-      : path.resolve(workspaceDir, importMapFilepath);
-
-    if (await pathExists(importMapsFilepath)) {
-      const importMapContent = await fs.readFile(importMapsFilepath);
-
-      try {
-        importMaps = JSON.parse(importMapContent.toString() || "{}");
-      } catch {}
-    }
-  }
-
-  return importMaps;
-}
-
-function resolveModuleFromImportMap(
-  importMaps: ImportMap,
-  moduleName: string
-): string {
-  const maps = importMaps.imports || {};
-
-  for (const prefix in maps) {
-    const mapModule = maps[prefix];
-
-    const reg = new RegExp("^" + prefix);
-    if (reg.test(moduleName)) {
-      moduleName = moduleName.replace(reg, mapModule);
-    }
-  }
-
-  return moduleName;
-}
 
 // get typescript api from build-in extension
 // https://github.com/microsoft/vscode/blob/master/extensions/typescript-language-features/src/api.ts
@@ -486,10 +438,15 @@ Executable ${this.denoInfo.executablePath}`;
           return;
         }
 
-        const remoteModuleUrl = resolveModuleFromImportMap(
-          await getImportMaps(config.import_map, workspaceFolder.uri.fsPath),
-          text
-        );
+        const importMapFilepath = config.import_map
+          ? path.isAbsolute(config.import_map)
+            ? config.import_map
+            : path.resolve(workspaceFolder.uri.fsPath, config.import_map)
+          : undefined;
+
+        const importMap = await ImportMap.create(importMapFilepath);
+
+        const moduleName = importMap.resolveModule(text);
 
         await window.withProgress(
           {
@@ -500,7 +457,7 @@ Executable ${this.denoInfo.executablePath}`;
           (process, cancelToken) => {
             const ps = execa(
               this.denoInfo.executablePath,
-              ["fetch", remoteModuleUrl],
+              ["fetch", moduleName],
               {
                 // timeout of 2 minute
                 timeout: 1000 * 60 * 2

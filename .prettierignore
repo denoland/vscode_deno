@@ -1,3 +1,4 @@
 **/node_modules/**/*
 out
 package.json
+coverage
