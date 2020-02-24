@@ -25,3 +25,11 @@ export async function pathExists(filepath: string): Promise<boolean> {
 export function str2regexpStr(filepath: string): string {
   return filepath.replace(/\\/gm, "\\\\");
 }
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+}
