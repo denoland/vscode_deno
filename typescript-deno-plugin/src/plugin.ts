@@ -6,10 +6,10 @@ import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
 import { ConfigurationManager, DenoPluginConfig } from "./configuration";
-import { getDenoDepsDir, getDenoDts } from "../../core/deno";
+import { getDenoDts } from "../../core/deno";
 import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
-import { CacheModule } from "../../core/deno_cache";
 import { pathExistsSync } from "../../core/util";
+import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
@@ -239,36 +239,13 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return details;
       }
 
-      const denoDepsDir = getDenoDepsDir();
-
       if (details) {
         if (details.codeActions && details.codeActions.length) {
           for (const ca of details.codeActions) {
             for (const change of ca.changes) {
               if (!change.isNewFile) {
                 for (const tc of change.textChanges) {
-                  const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"](.*)$/gim;
-
-                  const matcher = regexp.exec(tc.newText);
-
-                  if (matcher) {
-                    const importModuleNames = matcher[1].trim();
-                    const moduleRelativeFilepath = matcher[2];
-                    const moduleAbsoluteFilepath = path.resolve(
-                      // relative path is always unix path
-                      moduleRelativeFilepath.replace(/\//gm, path.sep)
-                    );
-                    const rest = matcher[3];
-
-                    if (moduleAbsoluteFilepath.indexOf(denoDepsDir) >= 0) {
-                      const cache = CacheModule.create(moduleAbsoluteFilepath);
-                      if (cache) {
-                        tc.newText = `import ${importModuleNames} from "${
-                          cache.url
-                        }"${rest ? rest : ""}`;
-                      }
-                    }
-                  }
+                  tc.newText = normalizeImportStatement(fileName, tc.newText);
                 }
               }
             }
