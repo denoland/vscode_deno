@@ -293,9 +293,7 @@ class Extension {
     });
   }
   // update status bar visibility
-  private updateStatusBarVisibility(
-    document: TextDocument | undefined = window.activeTextEditor?.document
-  ): void {
+  private updateStatusBarVisibility(document: TextDocument | undefined): void {
     // if no editor
     if (!document) {
       this.statusBar.hide();
