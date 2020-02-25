@@ -135,8 +135,6 @@ export class Diagnostics {
     const moduleNodes: ts.LiteralLikeNode[] = [];
 
     function delint(SourceFile: ts.SourceFile) {
-      delintNode(SourceFile);
-
       function delintNode(node: ts.Node) {
         let moduleNode: ts.LiteralLikeNode | null = null;
 
@@ -190,6 +188,8 @@ export class Diagnostics {
 
         ts.forEachChild(node, delintNode);
       }
+
+      delintNode(SourceFile);
     }
 
     // delint it

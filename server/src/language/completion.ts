@@ -19,7 +19,9 @@ getDenoDeps()
   .then(deps => {
     cache.set(deps);
   })
-  .catch(() => {});
+  .catch(() => {
+    // do nothing
+  });
 
 export class Completion {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
@@ -36,9 +38,9 @@ export class Completion {
         Range.create(Position.create(position.line, 0), position)
       );
 
-      const IMPORT_REG = /import\s['"][a-zA-Z\._-]$/;
-      const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z\._-]$/;
-      const DYNAMIC_REG = /import\s*\(['"][a-zA-Z\._-]['"]?$/;
+      const IMPORT_REG = /import\s['"][a-zA-Z._-]$/;
+      const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z._-]$/;
+      const DYNAMIC_REG = /import\s*\(['"][a-zA-Z._-]['"]?$/;
 
       const isImport =
         IMPORT_REG.test(currentLine) || // import "https://xxxx.xxxx"

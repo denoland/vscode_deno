@@ -81,7 +81,9 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         };
 
         this.configurationManager.update(configurationInProjectFolder);
-      } catch {}
+      } catch {
+        // ignore error
+      }
     }
 
     this.logger.info(`Create typescript-deno-plugin`);

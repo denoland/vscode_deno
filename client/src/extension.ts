@@ -151,7 +151,7 @@ class Extension {
   // register command for deno extension
   private registerCommand(
     command: string,
-    handler: (...argv: any[]) => void | Promise<void>
+    handler: (...argv: never[]) => void | Promise<void>
   ) {
     this.context.subscriptions.push(
       commands.registerCommand(
@@ -344,7 +344,7 @@ Executable ${this.denoInfo.executablePath}`;
       range: Range
     ) => void | Promise<void>;
   }) {
-    for (let command in map) {
+    for (const command in map) {
       const handler = map[command];
       this.registerCommand(command, async (uri: string, range: Range) => {
         const textEditor = window.activeTextEditor;
@@ -519,6 +519,7 @@ Executable ${this.denoInfo.executablePath}`;
         switch (extName) {
           case ".json":
             defaultTextContent = "{}";
+            break;
           case ".js":
           case ".jsx":
           case ".ts":

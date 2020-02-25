@@ -13,6 +13,8 @@ core/*.ts
 jest.config.js
 .gitignore
 .gitmodules
+.eslintignore
+.eslintrc.json
 
 **/tsconfig*.json
 typescript-deno-plugin

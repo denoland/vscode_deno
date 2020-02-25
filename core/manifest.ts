@@ -7,15 +7,7 @@ import { pathExistsSync, str2regexpStr } from "./util";
 type hash = string;
 type iteratorArr = [string, hash];
 
-export interface IManifest {
-  origin: string;
-  filepath: string;
-  getHashFromUrlPath(urlPath: string): hash | void;
-  getUrlPathFromHash(hash: hash): string | void;
-  [Symbol.iterator](): Iterator<iteratorArr>;
-}
-
-export class Manifest implements IManifest {
+export class Manifest implements Manifest {
   static create(manifestFilepath: string): Manifest | void {
     if (!pathExistsSync(manifestFilepath)) {
       return;

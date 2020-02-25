@@ -4,7 +4,8 @@ import assert from "assert";
 
 import { pathExists, pathExistsSync, str2regexpStr } from "./util";
 
-export interface IImportMaps {
+// eslint-disable-next-line @typescript-eslint/interface-name-prefix
+export interface ImportMaps {
   [Symbol.iterator](): Iterator<[string, string]>;
   toJSON(): ImportContent;
   resolveModule(moduleName: string): string;
@@ -16,12 +17,12 @@ type ImportFileMapContent = {
 
 export type ImportContent = { [prefix: string]: string };
 
-export class ImportMap implements IImportMaps {
+export class ImportMap implements ImportMaps {
   private map: ImportFileMapContent = { imports: {} };
   constructor(map: ImportFileMapContent) {
     this.map = map;
   }
-  static async create(importMapFilepath?: string): Promise<IImportMaps> {
+  static async create(importMapFilepath?: string): Promise<ImportMaps> {
     importMapFilepath &&
       assert(
         path.isAbsolute(importMapFilepath),
@@ -48,7 +49,7 @@ export class ImportMap implements IImportMaps {
 
     return new ImportMap(importMaps);
   }
-  static createSync(importMapFilepath?: string): IImportMaps {
+  static createSync(importMapFilepath?: string): ImportMaps {
     importMapFilepath &&
       assert(
         path.isAbsolute(importMapFilepath),

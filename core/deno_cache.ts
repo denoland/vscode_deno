@@ -2,7 +2,7 @@ import * as path from "path";
 import { URL } from "url";
 
 import { getDenoDepsDir } from "./deno";
-import { IManifest, Manifest } from "./manifest";
+import { Manifest } from "./manifest";
 import { str2regexpStr } from "./util";
 
 export interface DenoCacheModule {
@@ -47,7 +47,7 @@ export class CacheModule implements DenoCacheModule {
   constructor(
     public filepath: string,
     public url: string,
-    private manifest: IManifest
+    private manifest: Manifest
   ) {}
   /**
    * Resolve module in this cache file

@@ -109,7 +109,7 @@ export class ModuleResolver {
   resolveModules(moduleNames: string[]): (ResolvedModule | void)[] {
     const resolvedModules: (ResolvedModule | void)[] = [];
 
-    let denoCacheFile: DenoCacheModule;
+    let denoCacheFile: DenoCacheModule | void = undefined;
 
     if (this.isDenoCacheFile) {
       denoCacheFile = CacheModule.create(
@@ -122,12 +122,12 @@ export class ModuleResolver {
       }
     }
 
-    for (let moduleName of moduleNames) {
+    for (const moduleName of moduleNames) {
       const originModuleName = moduleName;
       // If the file is in Deno's cache layout
       // Then we should look up from the cache
-      if (this.isDenoCacheFile) {
-        const moduleCacheFile = denoCacheFile!.resolveModule(moduleName);
+      if (this.isDenoCacheFile && denoCacheFile) {
+        const moduleCacheFile = denoCacheFile.resolveModule(moduleName);
 
         if (moduleCacheFile) {
           resolvedModules.push({

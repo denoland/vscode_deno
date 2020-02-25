@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 
-import { getDenoCompileHint, IRange } from "./deno_type_hint";
+import { getDenoCompileHint, Range } from "./deno_type_hint";
 
 test("core / deno_type_hint: without compile hint", async () => {
   const sourceFile = ts.createSourceFile(
@@ -29,11 +29,11 @@ import "./foo.ts"
   expect(comment.range).toEqual({
     start: { line: 0, character: 0 },
     end: { line: 0, character: 27 }
-  } as IRange);
+  } as Range);
   expect(comment.contentRange).toEqual({
     start: { line: 0, character: 16 },
     end: { line: 0, character: 26 }
-  } as IRange);
+  } as Range);
 });
 
 test("core / deno_type_hint: with compile hint 1", async () => {
@@ -57,11 +57,11 @@ import "./foo.ts"
   expect(comment.range).toEqual({
     start: { line: 3, character: 0 },
     end: { line: 3, character: 27 }
-  } as IRange);
+  } as Range);
   expect(comment.contentRange).toEqual({
     start: { line: 3, character: 16 },
     end: { line: 3, character: 26 }
-  } as IRange);
+  } as Range);
 });
 
 test("core / deno_type_hint: with compile hint 2", async () => {
@@ -85,9 +85,9 @@ import "./foo.ts"
   expect(comment.range).toEqual({
     start: { line: 3, character: 0 },
     end: { line: 3, character: 27 }
-  } as IRange);
+  } as Range);
   expect(comment.contentRange).toEqual({
     start: { line: 3, character: 16 },
     end: { line: 3, character: 26 }
-  } as IRange);
+  } as Range);
 });

@@ -41,6 +41,9 @@ jobs:
         run: |
           npm run check
 
+      - name: Lint
+        run: npm run lint
+
       - name: Test
         env:
           COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"

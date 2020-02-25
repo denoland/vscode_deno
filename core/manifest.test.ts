@@ -1,6 +1,6 @@
 import * as path from "path";
 
-import { Manifest, IManifest } from "./manifest";
+import { Manifest } from "./manifest";
 
 const TEST_DIR = path.join(__dirname, "..", "__test__");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
@@ -22,7 +22,7 @@ test("core / manifest", () => {
 
   const exampleOriginManifest = Manifest.create(
     path.join(denoDir, "deps", "https", "example.com", "manifest.json")
-  ) as IManifest;
+  ) as Manifest;
 
   for (const [key, value] of exampleOriginManifest) {
     expect(typeof key).toBe("string");

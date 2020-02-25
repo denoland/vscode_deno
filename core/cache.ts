@@ -15,7 +15,7 @@ export class Cache<T> {
 
   private data: T | void = undefined;
   private updatedAt: Date = new Date();
-  private referenceTimes: number = 0; // Reference count
+  private referenceTimes = 0; // Reference count
   constructor(private timeout: number, private allowReferenceTimes?: number) {
     assert(timeout > 0, "Timeout of cache must be a positive integer");
     if (allowReferenceTimes !== undefined) {

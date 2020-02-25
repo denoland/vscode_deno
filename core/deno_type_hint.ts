@@ -5,18 +5,18 @@ interface CommentRange extends typescript.CommentRange {
   text: string;
   module: string;
   filepath: string;
-  range: IRange;
-  contentRange: IRange;
+  range: Range;
+  contentRange: Range;
 }
 
-export interface IPosition {
+export interface Position {
   line: number;
   character: number;
 }
 
-export interface IRange {
-  start: IPosition;
-  end: IPosition;
+export interface Range {
+  start: Position;
+  end: Position;
 }
 
 export const Position = {
@@ -25,13 +25,13 @@ export const Position = {
    * @param line The position's line.
    * @param character The position's character.
    */
-  create(line: number, character: number): IPosition {
+  create(line: number, character: number): Position {
     return { line, character };
   }
 };
 
 export const Range = {
-  create(start: IPosition, end: IPosition): IRange {
+  create(start: Position, end: Position): Range {
     return { start, end };
   }
 };
