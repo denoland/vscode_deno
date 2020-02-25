@@ -7,6 +7,12 @@ export type DenoPluginConfig = {
   import_map: string;
 };
 
+type UpdateDenoPluginConfig = {
+  enable?: boolean;
+  dts_file?: string[];
+  import_map?: string;
+};
+
 export class ConfigurationManager {
   private static readonly defaultConfiguration: DenoPluginConfig = {
     enable: false,
@@ -23,7 +29,7 @@ export class ConfigurationManager {
   private _configuration: DenoPluginConfig =
     ConfigurationManager.defaultConfiguration;
 
-  public update(c: DenoPluginConfig) {
+  public update(c: UpdateDenoPluginConfig) {
     const oldConfig = JSON.parse(JSON.stringify(this.config));
     this._configuration = merge(this.config, c);
 

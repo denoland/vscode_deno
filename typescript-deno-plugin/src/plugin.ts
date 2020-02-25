@@ -1,5 +1,4 @@
 import * as path from "path";
-import * as fs from "fs";
 
 import merge from "deepmerge";
 import ts_module from "typescript/lib/tsserverlibrary";
@@ -10,6 +9,7 @@ import { getDenoDts } from "../../core/deno";
 import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
 import { pathExistsSync } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
+import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
 
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
@@ -48,10 +48,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
   constructor(private readonly typescript: typeof ts_module) {}
 
   create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
-    const directory = info.project.getCurrentDirectory();
+    const projectDirectory = info.project.getCurrentDirectory();
 
     // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
-    process.chdir(directory);
+    process.chdir(projectDirectory);
 
     this.configurationManager.onUpdatedConfig(() => {
       info.project.refreshDiagnostics();
@@ -61,29 +61,12 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
     this.logger = Logger.forPlugin(DenoPlugin.PLUGIN_NAME, info);
 
-    const vscodeSettingsFile = path.join(directory, ".vscode", "settings.json");
+    const vscodeSettings = readConfigurationFromVscodeSettings(
+      projectDirectory
+    );
 
-    // Try to read configuration from vscode
-    if (pathExistsSync(vscodeSettingsFile) === true) {
-      const content = fs.readFileSync(vscodeSettingsFile, { encoding: "utf8" });
-
-      try {
-        const settings = JSON.parse(content);
-
-        const isEnable = !!settings["deno.enable"];
-        const dts_file = settings["deno.dts_file"] || [];
-        const import_map = settings["deno.import_map"] || undefined;
-
-        const configurationInProjectFolder = {
-          enable: isEnable,
-          dts_file,
-          import_map
-        };
-
-        this.configurationManager.update(configurationInProjectFolder);
-      } catch {
-        // ignore error
-      }
+    if (vscodeSettings) {
+      this.configurationManager.update(vscodeSettings);
     }
 
     this.logger.info(`Create typescript-deno-plugin`);

@@ -1,0 +1,4 @@
+{
+  "deno.enable": true,
+  "deno.dts_file": ["./demo.d.ts"]
+}
