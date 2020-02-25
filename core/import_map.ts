@@ -1,61 +1,31 @@
 import * as path from "path";
-import { promises as fs, readFileSync } from "fs";
+import { readFileSync } from "fs";
 import assert from "assert";
 
-import { pathExists, pathExistsSync, str2regexpStr } from "./util";
+import { pathExistsSync, str2regexpStr } from "./util";
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
-export interface ImportMaps {
-  [Symbol.iterator](): Iterator<[string, string]>;
-  toJSON(): ImportContent;
+export interface ImportMapInterface {
+  filepath?: string;
   resolveModule(moduleName: string): string;
+  toJSON(): ImportContent;
+  [Symbol.iterator](): Iterator<[string, string]>;
 }
 
 type ImportFileMapContent = {
   imports: ImportContent;
 };
 
-export type ImportContent = { [prefix: string]: string };
+type ImportContent = { [prefix: string]: string };
 
-export class ImportMap implements ImportMaps {
-  private map: ImportFileMapContent = { imports: {} };
-  constructor(map: ImportFileMapContent) {
-    this.map = map;
-  }
-  static async create(importMapFilepath?: string): Promise<ImportMaps> {
+export class ImportMap implements ImportMapInterface {
+  constructor(public map: ImportFileMapContent, public filepath?: string) {}
+  static create(importMapFilepath?: string): ImportMapInterface {
     importMapFilepath &&
       assert(
         path.isAbsolute(importMapFilepath),
         `Import-Map filepath require absolute but got ${importMapFilepath}`
       );
-    let importMaps: ImportFileMapContent = {
-      imports: {}
-    };
-
-    //  try resolve import maps
-    if (importMapFilepath) {
-      if ((await pathExists(importMapFilepath)) === true) {
-        const importMapContent = await fs.readFile(importMapFilepath, {
-          encoding: "utf8"
-        });
-
-        try {
-          importMaps = JSON.parse(importMapContent || "");
-        } catch {
-          importMaps.imports = {};
-        }
-      }
-    }
-
-    return new ImportMap(importMaps);
-  }
-  static createSync(importMapFilepath?: string): ImportMaps {
-    importMapFilepath &&
-      assert(
-        path.isAbsolute(importMapFilepath),
-        `Import-Map filepath require absolute but got ${importMapFilepath}`
-      );
-    let importMaps: ImportFileMapContent = {
+    let importMap: ImportFileMapContent = {
       imports: {}
     };
 
@@ -67,14 +37,14 @@ export class ImportMap implements ImportMaps {
         });
 
         try {
-          importMaps = JSON.parse(importMapContent || "");
+          importMap = JSON.parse(importMapContent || "");
         } catch {
-          importMaps.imports = {};
+          importMap.imports = {};
         }
       }
     }
 
-    return new ImportMap(importMaps);
+    return new ImportMap(importMap, importMapFilepath);
   }
   toJSON() {
     return this.map.imports;

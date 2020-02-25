@@ -18,7 +18,7 @@ export class ModuleResolver {
   private isDenoCacheFile: boolean =
     this.containingFile.indexOf(getDenoDepsDir()) === 0; // Whether the current module is in the Deno dependency directory
 
-  private importMaps = ImportMap.createSync(this.importMapsFile);
+  private importMaps = ImportMap.create(this.importMapsFile);
 
   /**
    * Module resolver constructor
