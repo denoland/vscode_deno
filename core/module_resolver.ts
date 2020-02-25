@@ -13,7 +13,11 @@ export type ResolvedModule = {
   module: string; // final resolve module. It may not have an extension
 };
 
-export class ModuleResolver {
+export interface ModuleResolverInterface {
+  resolveModules(moduleNames: string[]): (ResolvedModule | void)[];
+}
+
+export class ModuleResolver implements ModuleResolverInterface {
   // Whether the file is a cache file for Deno
   private isDenoCacheFile: boolean =
     this.containingFile.indexOf(getDenoDepsDir()) === 0; // Whether the current module is in the Deno dependency directory
