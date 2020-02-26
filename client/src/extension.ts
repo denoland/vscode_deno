@@ -87,6 +87,8 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
 }
 
 class Extension {
+  // the name of this extension
+  private id = "axetroy.vscode-deno";
   // extension context
   private context!: ExtensionContext;
   // typescript API
@@ -556,7 +558,11 @@ Executable ${this.denoInfo.executablePath}`;
       this.StartDenoLanguageServer.bind(this)
     );
 
-    console.log(`Congratulations, your extension "vscode-deno" is now active!`);
+    const extension = extensions.getExtension(this.id);
+
+    console.log(
+      `Congratulations, your extension "${this.id} ${extension?.packageJSON["version"]}" is now active!`
+    );
   }
   // deactivate function for vscode
   public async deactivate(context: ExtensionContext) {
