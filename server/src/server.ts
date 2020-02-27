@@ -57,6 +57,7 @@ connection.onInitialize(
     return {
       capabilities: {
         documentFormattingProvider: true,
+        documentRangeFormattingProvider: true,
         textDocumentSync: {
           openClose: true,
           change: TextDocumentSyncKind.Full
