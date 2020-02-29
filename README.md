@@ -140,7 +140,7 @@ We recommend that you do not set global configuration. It should be configured i
 // .vscode/settings.json
 {
   "deno.enable": true,
-  "deno.dts_file": ["./path/to/deno.d.ts"],
+  "deno.dts_file": ["./path/to/your/customize/lib.d.ts"],
   "deno.import_map": "./path/to/import_map.json"
 }
 ```
