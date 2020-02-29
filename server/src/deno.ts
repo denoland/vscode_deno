@@ -34,7 +34,7 @@ class Deno {
 
     // If the currently used Deno is less than 0.33.0
     // We will give an warning to upgrade.
-    const minimumDenoVersion = "0.33.0";
+    const minimumDenoVersion = "0.35.0";
     if (!semver.gte(this.version.deno, minimumDenoVersion)) {
       throw new Error(
         localize("err.below_deno_minimum_requirements", minimumDenoVersion)
