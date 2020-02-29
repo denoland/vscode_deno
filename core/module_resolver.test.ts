@@ -139,3 +139,29 @@ test("core / module_resolver: resolve module from local", () => {
     undefined
   ] as ResolvedModule[]);
 });
+
+test("core / module_resolver: resolve module if redirect", () => {
+  const importMapFile = path.join(TEST_DIR, "import_maps", "import_map.json");
+
+  const resolver = ModuleResolver.create(__filename, importMapFile);
+
+  expect(resolver.resolveModules(["https://example.com/redirect"])).toEqual([
+    {
+      origin: "https://another.example.com/path/mod.ts",
+      filepath: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "another.example.com",
+        "32cd9336a09393d88fc22cf6f95ae006e3f2742a6c461967b2ba7954c5283fbf"
+      ),
+      module: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "another.example.com",
+        "32cd9336a09393d88fc22cf6f95ae006e3f2742a6c461967b2ba7954c5283fbf"
+      )
+    }
+  ] as ResolvedModule[]);
+});
