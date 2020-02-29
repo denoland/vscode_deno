@@ -13,12 +13,6 @@
 
 Adds Deno support for the Visual Studio Code.
 
-Platform supported:
-
-![macOS](https://img.shields.io/badge/macOS-pass-brightgreen)
-![Linux](https://img.shields.io/badge/Linux-pass-brightgreen)
-![Window](https://img.shields.io/badge/Window-not_tested-red)
-
 ![screenshot](screenshot/screenshot.gif)
 
 Features:
