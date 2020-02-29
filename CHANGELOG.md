@@ -1,3 +1,32 @@
+# [3.0.0](https://github.com/axetroy/vscode-deno/compare/v2.0.4...v3.0.0) (2020-02-29)
+
+### Bug Fixes
+
+- auto-import in new cache layout ([7726fde](https://github.com/axetroy/vscode-deno/commit/7726fde3ee0e9b1caf7a04bd167fac725600febe))
+- fix invalid regexp for Windows ([d37c846](https://github.com/axetroy/vscode-deno/commit/d37c846121d3e3a3decfdcf821205c2f5e40683b))
+- fix invalid regexp for Windows ([a96e93a](https://github.com/axetroy/vscode-deno/commit/a96e93abeedc30d018c5c06d60c9e26909fd78f5))
+- fix windows url path handle ([b50548e](https://github.com/axetroy/vscode-deno/commit/b50548e4bb87baa62c83fda420d7994ca0e9dba8))
+- get file hash without query ([d81850f](https://github.com/axetroy/vscode-deno/commit/d81850fde5197f39bc04adf28de84429b2d0d5a8))
+- module not follow redirect ([dc97014](https://github.com/axetroy/vscode-deno/commit/dc97014e31db7bba9859c5d2ba4ef77ddb67c9f3))
+- path resolution of Windows ([a9e3336](https://github.com/axetroy/vscode-deno/commit/a9e33363da91ae45f4178db001a9deaedc858429))
+- Possible errors caused by optional parameters ([f91085c](https://github.com/axetroy/vscode-deno/commit/f91085ce5b27dde09e22b0e52975f893c111cb6b))
+- **deps:** update dependency vscode-languageserver-textdocument to v1.0.1 ([#66](https://github.com/axetroy/vscode-deno/issues/66)) ([c49b0fa](https://github.com/axetroy/vscode-deno/commit/c49b0fac07f1a4d4cdc9a425ef666d9741e22a97))
+
+### Features
+
+- adapt Deno new cache layout ([1cba5df](https://github.com/axetroy/vscode-deno/commit/1cba5df49c10d7d35316949a0e635262d7ee1b30))
+- add import map file jso validator ([2ccfa02](https://github.com/axetroy/vscode-deno/commit/2ccfa026f28c2285cd94d8e066a96c37f57eef9a))
+- Add memory cache module ([c6cd7e8](https://github.com/axetroy/vscode-deno/commit/c6cd7e8b766398d413c406258d286b7380f5087e))
+- add new Deno's cache layout parser and test ([7308978](https://github.com/axetroy/vscode-deno/commit/730897813b2066533c39945bb7eae4af1b261033))
+- auto detect ./vscode/settings.json in typescript plugin [#60](https://github.com/axetroy/vscode-deno/issues/60) ([95d73c6](https://github.com/axetroy/vscode-deno/commit/95d73c6b5efa7ba5951cc3c0dd150ce925a429b7))
+- make manifest be a iterator. ([8c7b7ce](https://github.com/axetroy/vscode-deno/commit/8c7b7ce81d9eb2110a59b14d7e41d6c08b00c8d3))
+- Requires minimum version of Deno 0.35.0 ([35b810c](https://github.com/axetroy/vscode-deno/commit/35b810ca4f5bbb50796d0df4d3efe27908e604a1))
+- Resurrected in Deno v0.35.0 🚀 ([3aff7ed](https://github.com/axetroy/vscode-deno/commit/3aff7edf1481a0a234a1b994b9f6cf692e444beb))
+- set the language of the document automatically ([8839799](https://github.com/axetroy/vscode-deno/commit/88397994925c42647c77df6e3626922ea3b9d953))
+- support [@deno-types](https://github.com/deno-types) hint definition. [#68](https://github.com/axetroy/vscode-deno/issues/68) ([758c5be](https://github.com/axetroy/vscode-deno/commit/758c5be8256efa263a53c8df1bf68ce6beeaed78))
+- support format range code ([498d37f](https://github.com/axetroy/vscode-deno/commit/498d37ffa7b4e85efd53c8c34d96b48b313effa1))
+- support Import-Maps in new cache layout. ([0c4cccd](https://github.com/axetroy/vscode-deno/commit/0c4cccda2c109963c28064b1f19c58508a16bae9))
+
 ## [2.0.4](https://github.com/axetroy/vscode-deno/compare/v2.0.3...v2.0.4) (2020-02-19)
 
 ### Bug Fixes
