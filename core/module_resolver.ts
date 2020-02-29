@@ -75,7 +75,24 @@ export class ModuleResolver implements ModuleResolverInterface {
       return;
     }
 
+    const redirect = meta.headers["location"];
+
+    if (redirect && redirect !== httpModuleURL) {
+      return this.resolveFromRemote(redirect);
+    }
+
     const moduleFilepath = path.join(originDir, hash);
+
+    const typescriptTypes = meta.headers["x-typescript-types"];
+    if (typescriptTypes) {
+      const resolver = ModuleResolver.create(
+        moduleFilepath,
+        this.importMapsFile
+      );
+      const [typeModule] = resolver.resolveModules([typescriptTypes]);
+
+      return typeModule;
+    }
 
     return {
       origin: httpModuleURL,
@@ -112,10 +129,10 @@ export class ModuleResolver implements ModuleResolverInterface {
    *                       `/std/path/mod.ts`
    *                       `https://deno.land/std/path/mod.ts`
    */
-  resolveModules(moduleNames: string[]): (ResolvedModule | void)[] {
-    const resolvedModules: (ResolvedModule | void)[] = [];
+  resolveModules(moduleNames: string[]): (ResolvedModule | undefined)[] {
+    const resolvedModules: (ResolvedModule | undefined)[] = [];
 
-    let denoCacheFile: DenoCacheModule | void = undefined;
+    let denoCacheFile: DenoCacheModule | undefined = undefined;
 
     if (this.isDenoCacheFile) {
       denoCacheFile = CacheModule.create(

@@ -264,30 +264,29 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         importMapsFilepath
       );
 
-      const resolvedModules = resolver
-        .resolveModules(moduleNames)
-        .filter(v => v) as ResolvedModule[];
+      const resolvedModules = resolver.resolveModules(moduleNames);
 
       return resolveModuleNames(
-        resolvedModules.map(v => v.module as string),
+        resolvedModules.map((v, index) => (v ? v.module : moduleNames[index])),
         containingFile,
         ...rest
       ).map((v, index) => {
         if (!v) {
-          const moduleFilepath = resolvedModules[index].filepath;
-          // import * as React from 'https://dev.jspm.io/react'
-          if (
-            path.isAbsolute(moduleFilepath) &&
-            pathExistsSync(moduleFilepath)
-          ) {
-            return {
-              extension: this.typescript.Extension.Js,
-              isExternalLibraryImport: false,
-              resolvedFileName: moduleFilepath
-            } as ts_module.ResolvedModuleFull;
+          const cacheModule = resolvedModules[index];
+          if (cacheModule) {
+            const moduleFilepath = cacheModule.filepath;
+            // import * as React from 'https://dev.jspm.io/react'
+            if (
+              path.isAbsolute(moduleFilepath) &&
+              pathExistsSync(moduleFilepath)
+            ) {
+              return {
+                extension: this.typescript.Extension.Js,
+                isExternalLibraryImport: false,
+                resolvedFileName: moduleFilepath
+              } as ts_module.ResolvedModuleFull;
+            }
           }
-
-          return v;
         }
 
         return v;
