@@ -42,26 +42,30 @@ export class HashMeta implements HashMetaInterface {
     public headers: HTTPHeaders
   ) {}
   get type(): Type {
-    if (/\.tsx?/.test(this.url.pathname)) {
+    if (/\.tsx?$/.test(this.url.pathname)) {
       return Type.TypeScript;
     }
-    if (/\.jsx?/.test(this.url.pathname)) {
+    if (/\.jsx?$/.test(this.url.pathname)) {
       return Type.JavaScript;
     }
-    if (/\.json?/.test(this.url.pathname)) {
+    if (/\.json$/.test(this.url.pathname)) {
       return Type.JSON;
     }
-    if (/\.wasm?/.test(this.url.pathname)) {
+    if (/\.wasm$/.test(this.url.pathname)) {
       return Type.WebAssembly;
     }
 
     const contentType = this.headers["content-type"];
 
+    // ref: https://mathiasbynens.be/demo/javascript-mime-type
     if (contentType) {
       if (contentType.indexOf("typescript") >= 0) {
         return Type.TypeScript;
       }
-      if (contentType.indexOf("javascript") >= 0) {
+      if (
+        contentType.indexOf("javascript") >= 0 ||
+        contentType.indexOf("ecmascript") >= 0
+      ) {
         return Type.JavaScript;
       }
       if (contentType.indexOf("json") >= 0) {

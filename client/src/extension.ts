@@ -551,7 +551,10 @@ Executable ${this.denoInfo.executablePath}`;
       workspace.onDidOpenTextDocument(document => {
         this.sync(document);
 
-        if (document.languageId.toLowerCase() !== "plaintext") {
+        if (
+          document.isUntitled ||
+          document.languageId.toLowerCase() !== "plaintext"
+        ) {
           return;
         }
 
