@@ -2,7 +2,7 @@ import * as path from "path";
 import { promises as fs } from "fs";
 
 import { getDenoDepsDir } from "./deno";
-import { Manifest } from "./manifest";
+import { HashMeta } from "./hash_meta";
 
 export type Deps = {
   url: string;
@@ -23,30 +23,29 @@ export async function getDenoDeps(): Promise<Deps[]> {
       const protocolStat = await fs.stat(protocolFolderpath);
 
       if (protocolStat.isDirectory()) {
-        const origins = await fs.readdir(protocolFolderpath);
+        const origins = (await fs.readdir(protocolFolderpath)).map(v =>
+          path.join(protocolFolderpath, v)
+        );
 
         await Promise.all(
           origins.map(async origin => {
-            const originFolderpath = path.join(protocolFolderpath, origin);
-            const manifestFilepath = path.join(
-              originFolderpath,
-              "manifest.json"
-            );
+            const stat = await fs.stat(origin);
 
-            const originStat = await fs.stat(originFolderpath);
+            if (!stat.isDirectory()) {
+              return;
+            }
 
-            if (originStat.isDirectory()) {
-              const manifest = Manifest.create(manifestFilepath);
+            const metaFiles = (await fs.readdir(origin))
+              .filter(v => v.endsWith(".metadata.json"))
+              .map(v => path.join(origin, v));
 
-              if (manifest) {
-                for (const [urlPath, hash] of manifest) {
-                  const url = manifest.origin + urlPath;
-                  const filepath = path.join(originFolderpath, hash);
-                  deps.push({
-                    url,
-                    filepath
-                  });
-                }
+            for (const metaFile of metaFiles) {
+              const meta = HashMeta.create(metaFile);
+              if (meta) {
+                deps.push({
+                  url: meta.url.href,
+                  filepath: meta.destinationFilepath
+                });
               }
             }
           })

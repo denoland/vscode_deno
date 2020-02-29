@@ -26,7 +26,7 @@ test("core / deno_cache", () => {
 
   expect(cacheModule).not.toBe(undefined);
 
-  expect(cacheModule.url).toEqual("https://example.com/demo/mod.ts");
+  expect(cacheModule.url.href).toEqual("https://example.com/demo/mod.ts");
   expect(cacheModule.filepath).toEqual(cacheFilepath);
 
   // resolve sub module
@@ -35,7 +35,9 @@ test("core / deno_cache", () => {
   ) as DenoCacheModule;
 
   expect(subCacheModule).not.toBe(undefined);
-  expect(subCacheModule.url).toEqual("https://example.com/demo/sub/mod.ts");
+  expect(subCacheModule.url.href).toEqual(
+    "https://example.com/demo/sub/mod.ts"
+  );
   expect(subCacheModule.filepath).toEqual(
     path.join(
       path.dirname(cacheFilepath),
@@ -49,7 +51,7 @@ test("core / deno_cache", () => {
   ) as DenoCacheModule;
 
   expect(esmCacheModule).not.toBe(undefined);
-  expect(esmCacheModule.url).toEqual("https://example.com/esm/mod.ts");
+  expect(esmCacheModule.url.href).toEqual("https://example.com/esm/mod.ts");
   expect(esmCacheModule.filepath).toEqual(
     path.join(
       path.dirname(cacheFilepath),
@@ -63,7 +65,7 @@ test("core / deno_cache", () => {
   ) as DenoCacheModule;
 
   expect(remoteCacheModule).not.toBe(undefined);
-  expect(remoteCacheModule.url).toEqual(
+  expect(remoteCacheModule.url.href).toEqual(
     "https://another.example.com/path/mod.ts"
   );
   expect(remoteCacheModule.filepath).toEqual(

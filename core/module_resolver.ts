@@ -1,11 +1,12 @@
 import { URL } from "url";
 import * as path from "path";
 import assert from "assert";
+import crypto from "crypto";
 
 import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
-import { Manifest } from "./manifest";
 import { ImportMap } from "./import_map";
+import { HashMeta } from "./hash_meta";
 
 export type ResolvedModule = {
   origin: string; // the origin resolve module
@@ -61,15 +62,16 @@ export class ModuleResolver implements ModuleResolverInterface {
       url.hostname
     );
 
-    const manifest = Manifest.create(path.join(originDir, "manifest.json"));
+    const hash = crypto
+      .createHash("sha256")
+      .update(url.pathname + url.search)
+      .digest("hex");
 
-    if (!manifest) {
-      return;
-    }
+    const metaFilepath = path.join(originDir, `${hash}.metadata.json`);
 
-    const hash = manifest.getHashFromUrlPath(url.pathname + url.search);
+    const meta = HashMeta.create(metaFilepath);
 
-    if (!hash) {
+    if (!meta) {
       return;
     }
 

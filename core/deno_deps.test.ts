@@ -15,7 +15,9 @@ afterAll(() => {
 });
 
 test("core / deno_deps", async () => {
-  await expect(getDenoDeps()).resolves.toEqual([
+  await expect(
+    (await getDenoDeps()).sort((a, b) => (a.url > b.url ? 1 : 0))
+  ).toEqual([
     {
       url: "https://another.example.com/path/mod.ts",
       filepath: path.join(
@@ -35,6 +37,15 @@ test("core / deno_deps", async () => {
       )
     },
     {
+      url: "https://example.com/esm/mod.ts",
+      filepath: path.join(
+        denoDepsDir,
+        "https",
+        "example.com",
+        "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
+      )
+    },
+    {
       url: "https://example.com/demo/mod.ts",
       filepath: path.join(
         denoDepsDir,
@@ -50,15 +61,6 @@ test("core / deno_deps", async () => {
         "https",
         "example.com",
         "da88efaa8b70cda7903ddc29b8d4c6ea3015de65329ea393289f4104ae2da941"
-      )
-    },
-    {
-      url: "https://example.com/esm/mod.ts",
-      filepath: path.join(
-        denoDepsDir,
-        "https",
-        "example.com",
-        "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
       )
     }
   ] as Deps[]);

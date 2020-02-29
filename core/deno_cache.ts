@@ -1,13 +1,14 @@
 import * as path from "path";
 import { URL } from "url";
+import crypto from "crypto";
 
 import { getDenoDepsDir } from "./deno";
-import { Manifest } from "./manifest";
-import { str2regexpStr } from "./util";
+import { HashMeta } from "./hash_meta";
+import { pathExistsSync } from "./util";
 
 export interface DenoCacheModule {
   filepath: string;
-  url: string;
+  url: URL;
   resolveModule(moduleName: string): DenoCacheModule | void;
 }
 
@@ -21,34 +22,18 @@ export class CacheModule implements DenoCacheModule {
 
     const hash = path.basename(filepath);
     const originDir = path.dirname(filepath);
-    const manifestFilepath = path.join(originDir, "manifest.json");
-    // $DENO_DIR/deps/https/deno.land -> https://deno.land
-    const origin = originDir
-      .replace(new RegExp("^" + str2regexpStr(DENO_DEPS_DIR + path.sep)), "")
-      .replace(new RegExp(str2regexpStr(path.sep), "gm"), "/")
-      .replace(/^(https?)\//, "$1://");
+    const metaFilepath = path.join(originDir, `${hash}.metadata.json`);
 
-    const manifest = Manifest.create(manifestFilepath);
+    const meta = HashMeta.create(metaFilepath);
 
-    if (!manifest) {
+    if (!meta) {
       return;
     }
 
-    const urlPathAndQuery = manifest.getUrlPathFromHash(hash);
-
-    if (!urlPathAndQuery) {
-      return;
-    }
-
-    const url = origin + urlPathAndQuery;
-    return new CacheModule(filepath, url, manifest);
+    return new CacheModule(filepath, meta.url);
   }
 
-  constructor(
-    public filepath: string,
-    public url: string,
-    private manifest: Manifest
-  ) {}
+  constructor(public filepath: string, public url: URL) {}
   /**
    * Resolve module in this cache file
    * @param moduleName The module name is for unix style
@@ -56,34 +41,42 @@ export class CacheModule implements DenoCacheModule {
   resolveModule(moduleName: string): DenoCacheModule | void {
     // eg. import "/npm:tough-cookie@3?dew"
     if (moduleName.indexOf("/") === 0) {
-      const fileHash = this.manifest.getHashFromUrlPath(moduleName);
+      const hash = crypto
+        .createHash("sha256")
+        .update(moduleName)
+        .digest("hex");
 
-      if (!fileHash) {
+      const moduleCacheFilepath = path.join(path.dirname(this.filepath), hash);
+
+      if (!pathExistsSync(moduleCacheFilepath)) {
         return;
       }
 
-      const originDir = path.dirname(this.filepath);
-      const targetFilepath = path.join(originDir, fileHash);
+      const moduleMetaFilepath = path.join(
+        moduleCacheFilepath + ".metadata.json"
+      );
 
-      return CacheModule.create(targetFilepath);
+      const meta = HashMeta.create(moduleMetaFilepath);
+
+      if (!meta) {
+        return;
+      }
+
+      return CacheModule.create(moduleCacheFilepath);
     }
     // eg. import "./sub/mod.ts"
     else if (moduleName.indexOf(".") === 0) {
-      const originDir = path.dirname(this.filepath);
-      const currentUrlPath = new URL(this.url);
-
       const targetUrlPath = path.posix.resolve(
-        path.posix.dirname(currentUrlPath.pathname),
+        path.posix.dirname(this.url.pathname),
         moduleName
       );
-      const fileHash = this.manifest.getHashFromUrlPath(targetUrlPath);
 
-      // if file hash not exist. then module not found.
-      if (!fileHash) {
-        return;
-      }
+      const hash = crypto
+        .createHash("sha256")
+        .update(targetUrlPath)
+        .digest("hex");
 
-      const targetFilepath = path.join(originDir, fileHash);
+      const targetFilepath = path.join(path.dirname(this.filepath), hash);
 
       return CacheModule.create(targetFilepath);
     }
@@ -101,17 +94,17 @@ export class CacheModule implements DenoCacheModule {
         url.hostname
       );
 
-      const manifest = Manifest.create(
-        path.join(targetOriginDir, "manifest.json")
+      // TODO: remove calculate hash. use `deno info` instead
+      const hash = crypto
+        .createHash("sha256")
+        .update(url.pathname + url.search)
+        .digest("hex");
+
+      const hashMeta = HashMeta.create(
+        path.join(targetOriginDir, `${hash}.metadata.json`)
       );
 
-      if (!manifest) {
-        return;
-      }
-
-      const hash = manifest.getHashFromUrlPath(url.pathname + url.search);
-
-      if (!hash) {
+      if (!hashMeta) {
         return;
       }
 
