@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/axetroy/vscode-deno/compare/v3.0.0...v3.0.1) (2020-02-29)
+
+### Features
+
+- re-enable typescript-deno-plugin with workspace's typescript version. close [#78](https://github.com/axetroy/vscode-deno/issues/78) ([7a53e70](https://github.com/axetroy/vscode-deno/commit/7a53e7019a9aeba64e0494fe7d9f666540f8a6ce))
+
 # [3.0.0](https://github.com/axetroy/vscode-deno/compare/v2.0.4...v3.0.0) (2020-02-29)
 
 ### Bug Fixes
