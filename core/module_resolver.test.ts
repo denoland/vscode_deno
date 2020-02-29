@@ -27,7 +27,9 @@ test("core / module_resolver: resolve module from Deno cache", () => {
     resolver.resolveModules([
       "./sub/mod.ts",
       "/esm/mod.ts",
-      "https://example.com/esm/mod.ts"
+      "https://example.com/esm/mod.ts",
+      "./module_not_exist.ts",
+      "https://module.not.exist.com/mod.ts"
     ])
   ).toEqual([
     {
@@ -62,7 +64,9 @@ test("core / module_resolver: resolve module from Deno cache", () => {
         path.dirname(cacheFilepath),
         "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
       )
-    }
+    },
+    undefined,
+    undefined
   ] as ResolvedModule[]);
 });
 
@@ -77,7 +81,9 @@ test("core / module_resolver: resolve module from local", () => {
       "../package.json",
       "https://example.com/esm/mod.ts",
       "demo/mod.ts",
-      "https://another.example.com/path/mod.ts?foo=bar"
+      "https://another.example.com/path/mod.ts?foo=bar",
+      "./module_not_exist.ts",
+      "https://module.not.exist.com/mod.ts"
     ])
   ).toEqual([
     {
@@ -128,6 +134,8 @@ test("core / module_resolver: resolve module from local", () => {
         "another.example.com",
         "eac382fbc5e96dcb72874cba87121a37b029ea76f42f0bbd2a56c995759e775e"
       )
-    }
+    },
+    undefined,
+    undefined
   ] as ResolvedModule[]);
 });

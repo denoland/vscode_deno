@@ -7,6 +7,7 @@ import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
+import { pathExistsSync } from "./util";
 
 export type ResolvedModule = {
   origin: string; // the origin resolve module
@@ -113,6 +114,10 @@ export class ModuleResolver implements ModuleResolverInterface {
       path.dirname(this.containingFile),
       moduleName
     );
+
+    if (!pathExistsSync(moduleFilepath)) {
+      return;
+    }
 
     return {
       origin: originModuleName,
