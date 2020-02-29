@@ -17,7 +17,8 @@ import {
   Diagnostic,
   CodeActionContext,
   ProgressLocation,
-  TextDocument
+  TextDocument,
+  languages
 } from "vscode";
 import {
   LanguageClient,
@@ -30,6 +31,8 @@ import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
 
 import { ImportMap } from "../../core/import_map";
+import { HashMeta } from "../../core/hash_meta";
+import { getDenoDepsDir } from "../../core/deno";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -547,6 +550,23 @@ Executable ${this.denoInfo.executablePath}`;
     this.context.subscriptions.push(
       workspace.onDidOpenTextDocument(document => {
         this.sync(document);
+
+        if (document.languageId.toLowerCase() !== "plaintext") {
+          return;
+        }
+
+        const filepath = document.uri.fsPath;
+        const isInDeno = filepath.startsWith(getDenoDepsDir());
+
+        if (isInDeno) {
+          const meta = HashMeta.create(filepath + ".metadata.json");
+          if (meta) {
+            languages.setTextDocumentLanguage(
+              document,
+              meta.type.toLocaleLowerCase()
+            );
+          }
+        }
       })
     );
 
