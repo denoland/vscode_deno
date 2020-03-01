@@ -3,10 +3,6 @@
   "version": "0.1.0",
   "description": "Deno language service plugin for TypeScript",
   "main": "./out/typescript-deno-plugin/src/index.js",
-  "scripts": {
-    "compile": "tsc",
-    "watch": "tsc -w -p ./"
-  },
   "dependencies": {
     "deep-equal": "^2.0.1",
     "deepmerge": "^4.2.2",
