@@ -44,11 +44,19 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
+      - name: Test and Coveralls
+        if: github.repository == 'axetroy/vscode-deno'
         env:
           COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
           COVERALLS_GIT_BRANCH: "${{ github.ref }}"
         run: npm run test-coveralls
+
+      - name: Test
+        if: github.repository != 'axetroy/vscode-deno'
+        env:
+          COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
+          COVERALLS_GIT_BRANCH: "${{ github.ref }}"
+        run: npm run test
 
       - name: Compile
         run: |
