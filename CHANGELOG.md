@@ -1,3 +1,13 @@
+## [3.0.2](https://github.com/axetroy/vscode-deno/compare/v3.0.1...v3.0.2) (2020-03-01)
+
+### Bug Fixes
+
+- parse .vscode/settings.json with json5 ([b3de3d3](https://github.com/axetroy/vscode-deno/commit/b3de3d352784c6dcbcbaf4cfb1aa4550b249b618))
+
+### Reverts
+
+- Revert "docs: add readme for typescript-deno-plugin" ([1be0c24](https://github.com/axetroy/vscode-deno/commit/1be0c24d49d811fb7a5499671d01fe5bcafae6f5))
+
 ## [3.0.1](https://github.com/axetroy/vscode-deno/compare/v3.0.0...v3.0.1) (2020-02-29)
 
 ### Features
