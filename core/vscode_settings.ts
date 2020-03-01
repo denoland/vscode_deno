@@ -1,6 +1,8 @@
 import * as path from "path";
 import * as fs from "fs";
 
+import json5 from "json5";
+
 import { pathExistsSync } from "./util";
 
 export type DenoPluginConfig = {
@@ -23,7 +25,7 @@ export function readConfigurationFromVscodeSettings(
     const content = fs.readFileSync(vscodeSettingsFile, { encoding: "utf8" });
 
     try {
-      const settings = JSON.parse(content);
+      const settings = json5.parse(content);
 
       const isEnable = !!settings["deno.enable"];
       const dts_file = settings["deno.dts_file"] || [];
