@@ -98,6 +98,7 @@ class Extension {
   private tsAPI!: TypescriptAPI;
   // LSP client
   private client: LanguageClient | undefined;
+  private clientReady = false;
   private configurationSection = "deno";
   // status bar
   private statusBar!: StatusBarItem;
@@ -180,6 +181,7 @@ class Extension {
     if (this.client) {
       await this.client.stop();
       this.client = undefined;
+      this.clientReady = false;
     }
 
     // create server connection
@@ -275,6 +277,7 @@ class Extension {
     this.context.subscriptions.push(client.start());
 
     await client.onReady().then(() => {
+      this.clientReady = true;
       console.log("Deno Language Server is ready!");
       client.onNotification("init", (info: DenoInfo) => {
         this.denoInfo = { ...this.denoInfo, ...info };
@@ -371,7 +374,9 @@ Executable ${this.denoInfo.executablePath}`;
   }
   // update diagnostic for a Document
   private updateDiagnostic(uri: Uri) {
-    this.client?.sendNotification("updateDiagnostic", uri.toString());
+    if (this.client && this.clientReady) {
+      this.client.sendNotification("updateDiagnostic", uri.toString());
+    }
   }
   private sync(document?: TextDocument) {
     if (document) {
@@ -591,11 +596,11 @@ Executable ${this.denoInfo.executablePath}`;
   public async deactivate(context: ExtensionContext) {
     this.context = context;
 
-    if (!this.client) {
-      return;
+    if (this.client) {
+      await this.client.stop();
+      this.client = undefined;
+      this.clientReady = false;
     }
-
-    await this.client.stop();
   }
 }
 
