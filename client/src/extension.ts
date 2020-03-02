@@ -437,7 +437,7 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
-        const config = await this.getConfiguration(editor.document.uri);
+        const config = this.getConfiguration(editor.document.uri);
         const workspaceFolder = workspace.getWorkspaceFolder(
           editor.document.uri
         );
