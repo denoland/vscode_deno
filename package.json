@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "publisher": "axetroy",
   "icon": "deno.png",
   "galleryBanner": {
