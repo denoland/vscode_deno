@@ -15,6 +15,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
   static readonly PLUGIN_NAME = "typescript-deno-plugin";
   private readonly configurationManager = new ConfigurationManager();
+  private ready = false;
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
   private readonly DEFAULT_OPTIONS: ts_module.CompilerOptions = {
     allowJs: true,
@@ -54,9 +55,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     process.chdir(projectDirectory);
 
     this.configurationManager.onUpdatedConfig(() => {
-      info.project.refreshDiagnostics();
-      info.project.updateGraph();
-      info.languageService.getProgram()?.emit();
+      if (this.ready) {
+        info.project.refreshDiagnostics();
+        info.project.updateGraph();
+        info.languageService.getProgram()?.emit();
+      }
     });
 
     this.logger = Logger.forPlugin(DenoPlugin.PLUGIN_NAME, info);
@@ -313,6 +316,8 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         });
       };
     }
+
+    this.ready = true;
 
     return info.languageService;
   }
