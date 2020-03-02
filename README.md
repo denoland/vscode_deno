@@ -1,20 +1,26 @@
+<div align="center">
+
 # Visual Studio Code Deno extension
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/axetroy/vscode-deno/build)
 [![Coverage Status](https://coveralls.io/repos/github/axetroy/vscode-deno/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/axetroy/vscode-deno?branch=refs/heads/master)
+[![DeepScan grade](https://deepscan.io/api/teams/6484/projects/9924/branches/132500/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=6484&pid=9924&bid=132500)
+
 ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/axetroy.vscode-deno)
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/axetroy.vscode-deno)
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/axetroy.vscode-deno)
 ![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/axetroy.vscode-deno)
 ![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/axetroy.vscode-deno)
+
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/axetroy/vscode-deno)
 ![GitHub repo size](https://img.shields.io/github/repo-size/axetroy/vscode-deno)
 ![GitHub](https://img.shields.io/github/license/axetroy/vscode-deno)
-[![DeepScan grade](https://deepscan.io/api/teams/6484/projects/9924/branches/132500/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=6484&pid=9924&bid=132500)
 
 Adds Deno support for the Visual Studio Code.
 
 ![screenshot](screenshot/screenshot.gif)
+
+</div>
 
 Features:
 
@@ -191,7 +197,7 @@ Follow these steps to contribute, the community needs your strength.
 
 ## Thanks
 
-This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno), thanks for his contribution.
+This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno), Thanks for their contributions.
 
 ## License
 
