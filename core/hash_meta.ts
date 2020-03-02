@@ -25,6 +25,33 @@ interface HashMetaInterface {
   type: Type;
 }
 
+const regMap: [RegExp, Type][] = [
+  [/.tsx?$/, Type.TypeScript],
+  [/.jsx?$/, Type.JavaScript],
+  [/.json$/, Type.JSON],
+  [/.wasm$/, Type.WebAssembly]
+];
+
+const contentTypeMap: [string[], Type][] = [
+  [
+    ["text/typescript", "application/typescript", "application/x-typescript"],
+    Type.TypeScript
+  ],
+  [
+    [
+      "text/javascript",
+      "application/javascript",
+      "application/x-javascript",
+      "text/ecmascript",
+      "application/ecmascript",
+      "text/jscript"
+    ],
+    Type.JavaScript
+  ],
+  [["application/json"], Type.JSON],
+  [["application/wasm"], Type.WebAssembly]
+];
+
 export class HashMeta implements HashMetaInterface {
   static create(metaFilepath: string): HashMeta | void {
     if (!pathExistsSync(metaFilepath)) {
@@ -42,37 +69,24 @@ export class HashMeta implements HashMetaInterface {
     public headers: HTTPHeaders
   ) {}
   get type(): Type {
-    if (/\.tsx?$/.test(this.url.pathname)) {
-      return Type.TypeScript;
-    }
-    if (/\.jsx?$/.test(this.url.pathname)) {
-      return Type.JavaScript;
-    }
-    if (/\.json$/.test(this.url.pathname)) {
-      return Type.JSON;
-    }
-    if (/\.wasm$/.test(this.url.pathname)) {
-      return Type.WebAssembly;
+    for (const [regexp, type] of regMap) {
+      if (regexp.test(this.url.pathname)) {
+        return type;
+      }
     }
 
-    const contentType = this.headers["content-type"];
+    const contentType = (this.headers["content-type"] || "").toLowerCase();
 
     // ref: https://mathiasbynens.be/demo/javascript-mime-type
     if (contentType) {
-      if (contentType.indexOf("typescript") >= 0) {
-        return Type.TypeScript;
-      }
-      if (
-        contentType.indexOf("javascript") >= 0 ||
-        contentType.indexOf("ecmascript") >= 0
-      ) {
-        return Type.JavaScript;
-      }
-      if (contentType.indexOf("json") >= 0) {
-        return Type.JSON;
-      }
-      if (contentType.indexOf("wasm") >= 0) {
-        return Type.WebAssembly;
+      for (const [contentTypes, type] of contentTypeMap) {
+        // text/javascript;charset=UTF-8
+        const arr = contentType.split(";");
+        for (const _contentType of arr) {
+          if (contentTypes.includes(_contentType)) {
+            return type;
+          }
+        }
       }
     }
 
