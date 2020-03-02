@@ -86,7 +86,7 @@ export class CacheModule implements DenoCacheModule {
       return CacheModule.create(targetFilepath);
     }
     // eg import "https://example.com/demo/mod.ts"
-    else if (/http?s:\/\//.test(moduleName)) {
+    else if (/^https?:\/\//.test(moduleName)) {
       let url: URL;
       try {
         url = new URL(moduleName);
