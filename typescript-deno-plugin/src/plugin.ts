@@ -151,6 +151,17 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           );
         }
 
+        const realpath = info.project.realpath;
+
+        // in Windows.
+        // containingFile may be a unix-like style
+        // eg. c:/Users/admin/path/to/file.ts
+        // This is not a legal file path in Windows
+        // It will cause a series of bugs, so here we get the real file path
+        const realContainingFile = realpath
+          ? realpath(containingFile)
+          : containingFile;
+
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
             ? this.configurationManager.config.import_map
@@ -161,7 +172,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           : undefined;
 
         const resolver = ModuleResolver.create(
-          containingFile,
+          realContainingFile,
           importMapsFilepath
         );
 
@@ -246,6 +257,17 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           return resolveModuleNames(moduleNames, containingFile, ...rest);
         }
 
+        const realpath = info.project.realpath;
+
+        // in Windows.
+        // containingFile may be a unix-like style
+        // eg. c:/Users/admin/path/to/file.ts
+        // This is not a legal file path in Windows
+        // It will cause a series of bugs, so here we get the real file path
+        const realContainingFile = realpath
+          ? realpath(containingFile)
+          : containingFile;
+
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
             ? this.configurationManager.config.import_map
@@ -256,7 +278,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           : undefined;
 
         const resolver = ModuleResolver.create(
-          containingFile,
+          realContainingFile,
           importMapsFilepath
         );
 
