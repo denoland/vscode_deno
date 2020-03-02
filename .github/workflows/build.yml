@@ -33,13 +33,10 @@ jobs:
           deno --version
 
       - name: Install
-        run: |
-          yarn
+        run: yarn
 
       - name: Check code format
-        if: runner.os != 'windows'
-        run: |
-          npm run check
+        run: npm run check
 
       - name: Lint
         run: npm run lint
