@@ -452,7 +452,7 @@ Executable ${this.denoInfo.executablePath}`;
             : path.resolve(workspaceFolder.uri.fsPath, config.import_map)
           : undefined;
 
-        const importMap = await ImportMap.create(importMapFilepath);
+        const importMap = ImportMap.create(importMapFilepath);
 
         const moduleName = importMap.resolveModule(text);
 
