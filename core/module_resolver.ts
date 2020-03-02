@@ -1,13 +1,12 @@
 import { URL } from "url";
 import * as path from "path";
 import assert from "assert";
-import crypto from "crypto";
 
 import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync, str2regexpStr, isHttpURL } from "./util";
+import { pathExistsSync, str2regexpStr, isHttpURL, hashURL } from "./util";
 import { Logger } from "./logger";
 
 export type ResolvedModule = {
@@ -69,10 +68,7 @@ export class ModuleResolver implements ModuleResolverInterface {
       url.hostname
     );
 
-    const hash = crypto
-      .createHash("sha256")
-      .update(url.pathname + url.search)
-      .digest("hex");
+    const hash = hashURL(url);
 
     const metaFilepath = path.join(originDir, `${hash}.metadata.json`);
 

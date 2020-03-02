@@ -1,4 +1,5 @@
 import { promises as fs, statSync } from "fs";
+import crypto from "crypto";
 
 export function pathExistsSync(filepath: string): boolean {
   try {
@@ -41,4 +42,12 @@ export function isHttpURL(str: string): boolean {
   } catch {
     return false;
   }
+}
+
+// hash a URL with it's pathname and search
+export function hashURL(url: URL): string {
+  return crypto
+    .createHash("sha256")
+    .update(url.pathname + url.search)
+    .digest("hex");
 }

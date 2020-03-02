@@ -1,10 +1,9 @@
 import * as path from "path";
 import { URL } from "url";
-import crypto from "crypto";
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync, isHttpURL } from "./util";
+import { pathExistsSync, isHttpURL, hashURL } from "./util";
 import { Logger } from "./logger";
 
 export interface DenoCacheModule {
@@ -46,10 +45,10 @@ export class CacheModule implements DenoCacheModule {
   resolveModule(moduleName: string): DenoCacheModule | void {
     // eg. import "/npm:tough-cookie@3?dew"
     if (moduleName.indexOf("/") === 0) {
-      const hash = crypto
-        .createHash("sha256")
-        .update(moduleName)
-        .digest("hex");
+      const url = new URL(this.url.href);
+      url.pathname = moduleName;
+
+      const hash = hashURL(url);
 
       const moduleCacheFilepath = path.join(path.dirname(this.filepath), hash);
 
@@ -76,10 +75,10 @@ export class CacheModule implements DenoCacheModule {
         moduleName
       );
 
-      const hash = crypto
-        .createHash("sha256")
-        .update(targetUrlPath)
-        .digest("hex");
+      const url = new URL(this.url.href);
+      url.pathname = targetUrlPath;
+
+      const hash = hashURL(url);
 
       const targetFilepath = path.join(path.dirname(this.filepath), hash);
 
@@ -93,17 +92,14 @@ export class CacheModule implements DenoCacheModule {
       } catch {
         return;
       }
+
+      const hash = hashURL(url);
+
       const targetOriginDir = path.join(
         getDenoDepsDir(),
         url.protocol.replace(/:$/, ""), // https: -> https
         url.hostname
       );
-
-      // TODO: remove calculate hash. use `deno info` instead
-      const hash = crypto
-        .createHash("sha256")
-        .update(url.pathname + url.search)
-        .digest("hex");
 
       const hashMeta = HashMeta.create(
         path.join(targetOriginDir, `${hash}.metadata.json`)
