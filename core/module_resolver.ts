@@ -180,7 +180,7 @@ export class ModuleResolver implements ModuleResolverInterface {
       }
 
       // If import from remote
-      if (/^https?:\/\//.test(moduleName)) {
+      if (isHttpURL(moduleName)) {
         resolvedModules.push(this.resolveFromRemote(moduleName));
         continue;
       }

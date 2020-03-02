@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync } from "./util";
+import { pathExistsSync, isHttpURL } from "./util";
 import { Logger } from "./logger";
 
 export interface DenoCacheModule {
@@ -86,7 +86,7 @@ export class CacheModule implements DenoCacheModule {
       return CacheModule.create(targetFilepath);
     }
     // eg import "https://example.com/demo/mod.ts"
-    else if (/^https?:\/\//.test(moduleName)) {
+    else if (isHttpURL(moduleName)) {
       let url: URL;
       try {
         url = new URL(moduleName);
