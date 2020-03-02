@@ -18,6 +18,7 @@ import { localize } from "vscode-nls-i18n";
 import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
 import { pathExists } from "../../../core/util";
+import { ImportMap } from "../../../core/import_map";
 
 type Fix = {
   title: string;
@@ -225,8 +226,8 @@ export class Diagnostics {
       ) {
         const moduleName = resolvedModule
           ? resolvedModule.origin
-          : moduleNode.text;
-        const isRemote = /^https:\/\//.test(moduleName);
+          : ImportMap.create(importMapFilepath).resolveModule(moduleNode.text);
+        const isRemote = /^https?:\/\//.test(moduleName) === true;
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             range,
