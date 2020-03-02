@@ -1,3 +1,9 @@
+## [3.0.5](https://github.com/axetroy/vscode-deno/compare/v3.0.4...v3.0.5) (2020-03-02)
+
+### Bug Fixes
+
+- extension not work when project has tsconfig.json at root dir ([9ce2874](https://github.com/axetroy/vscode-deno/commit/9ce2874230d4c66ea657f5d2de19c38eb8719df6))
+
 ## [3.0.4](https://github.com/axetroy/vscode-deno/compare/v3.0.3...v3.0.4) (2020-03-02)
 
 ### Bug Fixes
