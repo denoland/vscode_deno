@@ -118,7 +118,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       }
 
       // Get typescript declaration File
-      const dtsFilepaths = [getDenoDts()]
+      const dtsFiles = [getDenoDts()]
         .concat(this.configurationManager.config.dts_file || [])
         .map(filepath => {
           const absoluteFilepath = path.isAbsolute(filepath)
@@ -128,7 +128,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         })
         .filter(v => v.endsWith(this.typescript.Extension.Dts));
 
-      const iterator = new Set(dtsFilepaths).entries();
+      const iterator = new Set(dtsFiles).entries();
 
       for (const [, filepath] of iterator) {
         scriptFileNames.push(filepath);
