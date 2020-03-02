@@ -7,7 +7,7 @@ import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync, str2regexpStr } from "./util";
+import { pathExistsSync, str2regexpStr, isHttpURL } from "./util";
 import { Logger } from "./logger";
 
 export type ResolvedModule = {
@@ -112,7 +112,7 @@ export class ModuleResolver implements ModuleResolverInterface {
     const originModuleName = moduleName;
     moduleName = this.importMaps.resolveModule(moduleName);
 
-    if (/^https?:\/\//.test(moduleName)) {
+    if (isHttpURL(moduleName)) {
       return this.resolveFromRemote(moduleName);
     }
 

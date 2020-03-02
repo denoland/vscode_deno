@@ -1,4 +1,4 @@
-import { pathExists, pathExistsSync, str2regexpStr } from "./util";
+import { pathExists, pathExistsSync, str2regexpStr, isHttpURL } from "./util";
 
 test("core / util / pathExists", async () => {
   await expect(pathExists("./path_not_exist")).resolves.toBe(false);
@@ -20,4 +20,12 @@ test("core / util / str2regexpStr", () => {
   ).toEqual(
     "C:\\\\Users\\\\runneradmin\\\\AppData\\\\Local\\\\deno\\\\deps\\\\"
   );
+});
+
+test("core / util / isHttpURL", () => {
+  expect(isHttpURL("/User/demo/file/path")).toBeFalsy();
+  expect(isHttpURL("https")).toBeFalsy();
+  expect(isHttpURL("https://")).toBeFalsy();
+  expect(isHttpURL("https://example")).toBeTruthy();
+  expect(isHttpURL("https://example.com")).toBeTruthy();
 });

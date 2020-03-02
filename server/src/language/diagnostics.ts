@@ -17,7 +17,7 @@ import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
-import { pathExists } from "../../../core/util";
+import { pathExists, isHttpURL } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
 
 type Fix = {
@@ -227,13 +227,12 @@ export class Diagnostics {
         const moduleName = resolvedModule
           ? resolvedModule.origin
           : ImportMap.create(importMapFilepath).resolveModule(moduleNode.text);
-        const isRemote = /^https?:\/\//.test(moduleName) === true;
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             range,
             localize("diagnostic.report.module_not_found_locally", moduleName),
             DiagnosticSeverity.Error,
-            isRemote
+            isHttpURL(moduleName)
               ? DiagnosticCode.RemoteModuleNotExist
               : DiagnosticCode.LocalModuleNotExist,
             this.name
