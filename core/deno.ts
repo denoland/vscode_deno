@@ -35,3 +35,12 @@ export function getDenoDepsDir(): string {
 export function getDenoDts(): string {
   return path.join(getDenoDir(), "lib.deno_runtime.d.ts");
 }
+
+export function isInDeno(filepath: string): boolean {
+  const denoDir = getDenoDir();
+  // in Windows, filepath maybe `c:\xxx\xxx`
+  // but deno dir prefix with `C:\xxx\xxx`
+  return filepath
+    .replace(/^([a-z]):\\/, ($0, $1) => $1.toUpperCase() + ":\\")
+    .startsWith(denoDir);
+}

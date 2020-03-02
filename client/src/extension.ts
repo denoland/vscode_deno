@@ -32,7 +32,7 @@ import { init, localize } from "vscode-nls-i18n";
 
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
-import { getDenoDepsDir } from "../../core/deno";
+import { getDenoDepsDir, isInDeno } from "../../core/deno";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -564,9 +564,8 @@ Executable ${this.denoInfo.executablePath}`;
         }
 
         const filepath = document.uri.fsPath;
-        const isInDeno = filepath.startsWith(getDenoDepsDir());
 
-        if (isInDeno) {
+        if (isInDeno(filepath)) {
           const meta = HashMeta.create(filepath + ".metadata.json");
           if (meta) {
             languages.setTextDocumentLanguage(

@@ -1,7 +1,9 @@
+import * as path from "path";
+
 import execa from "execa";
 import which from "which";
 
-import { getDenoDir, getDenoDepsDir } from "./deno";
+import { getDenoDir, getDenoDepsDir, isInDeno } from "./deno";
 
 test("core / deno", () => {
   expect(getDenoDir()).not.toBe(undefined);
@@ -19,4 +21,6 @@ test("core / deno", () => {
   const [, denoDir] = /"([^"]+)"/.exec(firstLine) as string[];
 
   expect(getDenoDir()).toEqual(denoDir);
+
+  isInDeno(path.join(getDenoDir(), "https", "example.com", "/mod.ts"));
 });
