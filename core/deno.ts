@@ -41,6 +41,6 @@ export function isInDeno(filepath: string): boolean {
   // in Windows, filepath maybe `c:\xxx\xxx`
   // but deno dir prefix with `C:\xxx\xxx`
   return filepath
-    .replace(/^([a-z]):\\/, ($0, $1) => $1.toUpperCase() + ":\\")
+    .replace(/^([a-z]):\\/, (_, $1) => $1.toUpperCase() + ":\\")
     .startsWith(denoDir);
 }

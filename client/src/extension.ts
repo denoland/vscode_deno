@@ -32,7 +32,7 @@ import { init, localize } from "vscode-nls-i18n";
 
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
-import { getDenoDepsDir, isInDeno } from "../../core/deno";
+import { isInDeno } from "../../core/deno";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
