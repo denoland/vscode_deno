@@ -7,7 +7,8 @@ import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync } from "./util";
+import { pathExistsSync, str2regexpStr } from "./util";
+import { Logger } from "./logger";
 
 export type ResolvedModule = {
   origin: string; // the origin resolve module
@@ -31,7 +32,11 @@ export class ModuleResolver implements ModuleResolverInterface {
    * @param containingFile Absolute file path
    * @param importMapsFile Absolute file path
    */
-  constructor(private containingFile: string, private importMapsFile?: string) {
+  constructor(
+    private containingFile: string,
+    private importMapsFile?: string,
+    private logger?: Logger
+  ) {
     assert(path.isAbsolute(containingFile));
   }
 
@@ -42,9 +47,10 @@ export class ModuleResolver implements ModuleResolverInterface {
    */
   static create(
     containingFile: string,
-    importMapsFile?: string
+    importMapsFile?: string,
+    logger?: Logger
   ): ModuleResolver {
-    return new ModuleResolver(containingFile, importMapsFile);
+    return new ModuleResolver(containingFile, importMapsFile, logger);
   }
 
   private resolveFromRemote(httpModuleURL: string): ResolvedModule | undefined {
@@ -112,7 +118,10 @@ export class ModuleResolver implements ModuleResolverInterface {
 
     const moduleFilepath = path.resolve(
       path.dirname(this.containingFile),
-      moduleName
+      moduleName.replace(
+        new RegExp(str2regexpStr(path.posix.sep), "gm"),
+        path.sep
+      )
     );
 
     if (!pathExistsSync(moduleFilepath)) {

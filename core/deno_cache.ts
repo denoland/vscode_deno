@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
 import { pathExistsSync } from "./util";
+import { Logger } from "./logger";
 
 export interface DenoCacheModule {
   filepath: string;
@@ -13,7 +14,7 @@ export interface DenoCacheModule {
 }
 
 export class CacheModule implements DenoCacheModule {
-  static create(filepath: string): DenoCacheModule | void {
+  static create(filepath: string, logger?: Logger): DenoCacheModule | void {
     const DENO_DEPS_DIR = getDenoDepsDir();
     // if not a Deno deps module
     if (filepath.indexOf(DENO_DEPS_DIR) !== 0) {
@@ -30,10 +31,14 @@ export class CacheModule implements DenoCacheModule {
       return;
     }
 
-    return new CacheModule(filepath, meta.url);
+    return new CacheModule(filepath, meta.url, logger);
   }
 
-  constructor(public filepath: string, public url: URL) {}
+  constructor(
+    public filepath: string,
+    public url: URL,
+    private logger?: Logger
+  ) {}
   /**
    * Resolve module in this cache file
    * @param moduleName The module name is for unix style

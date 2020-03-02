@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "target": "ES2017",
-    "noUnusedLocals": true,
+    // "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
