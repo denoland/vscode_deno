@@ -50,9 +50,8 @@ export class DenoPlugin implements ts_module.server.PluginModule {
   create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
     const projectDirectory = info.project.getCurrentDirectory();
 
-    this.logger.info(
-      `Create typescript-deno-plugin for project ${projectDirectory}`
-    );
+    // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
+    process.chdir(projectDirectory);
 
     this.configurationManager.onUpdatedConfig(() => {
       info.project.refreshDiagnostics();
@@ -70,6 +69,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       this.configurationManager.update(vscodeSettings);
     }
 
+    this.logger.info(`Create typescript-deno-plugin`);
     const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
       info.languageServiceHost
     );
@@ -196,6 +196,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       });
     };
 
+    if (!resolveModuleNames) {
+      this.logger.info("resolveModuleNames is undefined.");
+      return info.languageService;
+    }
+
     info.languageService.getCompletionEntryDetails = (
       fileName: string,
       position: number,
@@ -236,61 +241,57 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       return details;
     };
 
-    if (resolveModuleNames) {
-      info.languageServiceHost.resolveModuleNames = (
-        moduleNames: string[],
-        containingFile: string,
+    info.languageServiceHost.resolveModuleNames = (
+      moduleNames: string[],
+      containingFile: string,
+      ...rest
+    ): (ts_module.ResolvedModule | undefined)[] => {
+      if (!this.configurationManager.config.enable) {
+        return resolveModuleNames(moduleNames, containingFile, ...rest);
+      }
+
+      const importMapsFilepath = this.configurationManager.config.import_map
+        ? path.isAbsolute(this.configurationManager.config.import_map)
+          ? this.configurationManager.config.import_map
+          : path.resolve(
+              info.project.getCurrentDirectory(),
+              this.configurationManager.config.import_map
+            )
+        : undefined;
+
+      const resolver = ModuleResolver.create(
+        containingFile,
+        importMapsFilepath
+      );
+
+      const resolvedModules = resolver.resolveModules(moduleNames);
+
+      return resolveModuleNames(
+        resolvedModules.map((v, index) => (v ? v.module : moduleNames[index])),
+        containingFile,
         ...rest
-      ): (ts_module.ResolvedModule | undefined)[] => {
-        if (!this.configurationManager.config.enable) {
-          return resolveModuleNames(moduleNames, containingFile, ...rest);
-        }
-
-        const importMapsFilepath = this.configurationManager.config.import_map
-          ? path.isAbsolute(this.configurationManager.config.import_map)
-            ? this.configurationManager.config.import_map
-            : path.resolve(
-                info.project.getCurrentDirectory(),
-                this.configurationManager.config.import_map
-              )
-          : undefined;
-
-        const resolver = ModuleResolver.create(
-          containingFile,
-          importMapsFilepath
-        );
-
-        const resolvedModules = resolver.resolveModules(moduleNames);
-
-        return resolveModuleNames(
-          resolvedModules.map((v, index) =>
-            v ? v.module : moduleNames[index]
-          ),
-          containingFile,
-          ...rest
-        ).map((v, index) => {
-          if (!v) {
-            const cacheModule = resolvedModules[index];
-            if (cacheModule) {
-              const moduleFilepath = cacheModule.filepath;
-              // import * as React from 'https://dev.jspm.io/react'
-              if (
-                path.isAbsolute(moduleFilepath) &&
-                pathExistsSync(moduleFilepath)
-              ) {
-                return {
-                  extension: this.typescript.Extension.Js,
-                  isExternalLibraryImport: false,
-                  resolvedFileName: moduleFilepath
-                } as ts_module.ResolvedModuleFull;
-              }
+      ).map((v, index) => {
+        if (!v) {
+          const cacheModule = resolvedModules[index];
+          if (cacheModule) {
+            const moduleFilepath = cacheModule.filepath;
+            // import * as React from 'https://dev.jspm.io/react'
+            if (
+              path.isAbsolute(moduleFilepath) &&
+              pathExistsSync(moduleFilepath)
+            ) {
+              return {
+                extension: this.typescript.Extension.Js,
+                isExternalLibraryImport: false,
+                resolvedFileName: moduleFilepath
+              } as ts_module.ResolvedModuleFull;
             }
           }
+        }
 
-          return v;
-        });
-      };
-    }
+        return v;
+      });
+    };
 
     return info.languageService;
   }
