@@ -10,6 +10,7 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/axetroy/vscode-deno)
 ![GitHub repo size](https://img.shields.io/github/repo-size/axetroy/vscode-deno)
 ![GitHub](https://img.shields.io/github/license/axetroy/vscode-deno)
+[![DeepScan grade](https://deepscan.io/api/teams/6484/projects/9924/branches/132500/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=6484&pid=9924&bid=132500)
 
 Adds Deno support for the Visual Studio Code.
 
@@ -124,7 +125,7 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
    }
    ```
 
-   **NOTE:** Do not place `tsconfig.json` on your project root. Currently it disables extension for some reason (should be fixed).
+   **NOTE:** Do not place `tsconfig.json` on your project root. Currently, it disables extension for some reason (should be fixed).
 
 3. Enjoy!
 
