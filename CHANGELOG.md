@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/axetroy/vscode-deno/compare/v3.0.3...v3.0.4) (2020-03-02)
+
+### Bug Fixes
+
+- 'fetch module' on work correctly for importmap module ([087d834](https://github.com/axetroy/vscode-deno/commit/087d8345ca3a717d55822dce6ab64c6d9385e790))
+- invalid http tester regular expression ([3d51ab0](https://github.com/axetroy/vscode-deno/commit/3d51ab04359ad8bd83b5564c144759d08f9d0237))
+
 ## [3.0.3](https://github.com/axetroy/vscode-deno/compare/v3.0.2...v3.0.3) (2020-03-02)
 
 ### Bug Fixes
