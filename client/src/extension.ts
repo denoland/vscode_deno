@@ -401,6 +401,29 @@ Executable ${this.denoInfo.executablePath}`;
     }
     this.updateStatusBarVisibility(window.activeTextEditor?.document);
   }
+  private async setDocumentLanguage(document?: TextDocument) {
+    if (!document) {
+      return;
+    }
+    if (
+      document.isUntitled ||
+      document.languageId.toLowerCase() !== "plaintext"
+    ) {
+      return;
+    }
+
+    const filepath = document.uri.fsPath;
+
+    if (isInDeno(filepath)) {
+      const meta = HashMeta.create(filepath + ".metadata.json");
+      if (meta) {
+        await languages.setTextDocumentLanguage(
+          document,
+          meta.type.toLocaleLowerCase()
+        );
+      }
+    }
+  }
   // activate function for vscode
   public async activate(context: ExtensionContext) {
     init(context.extensionPath);
@@ -420,8 +443,15 @@ Executable ${this.denoInfo.executablePath}`;
     this.context.subscriptions.push(this.output);
 
     this.context.subscriptions.push(
-      window.onDidChangeActiveTextEditor(editor => {
+      window.onDidChangeActiveTextEditor(async editor => {
         this.sync(editor?.document);
+        await this.setDocumentLanguage(editor?.document);
+      })
+    );
+
+    this.context.subscriptions.push(
+      workspace.onDidOpenTextDocument(async document => {
+        this.sync(document);
       })
     );
 
@@ -551,31 +581,6 @@ Executable ${this.denoInfo.executablePath}`;
     this.watchConfiguration(() => {
       this.sync(window.activeTextEditor?.document);
     });
-
-    this.context.subscriptions.push(
-      workspace.onDidOpenTextDocument(document => {
-        this.sync(document);
-
-        if (
-          document.isUntitled ||
-          document.languageId.toLowerCase() !== "plaintext"
-        ) {
-          return;
-        }
-
-        const filepath = document.uri.fsPath;
-
-        if (isInDeno(filepath)) {
-          const meta = HashMeta.create(filepath + ".metadata.json");
-          if (meta) {
-            languages.setTextDocumentLanguage(
-              document,
-              meta.type.toLocaleLowerCase()
-            );
-          }
-        }
-      })
-    );
 
     await window.withProgress(
       {
