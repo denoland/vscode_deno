@@ -1,3 +1,15 @@
+## [3.0.3](https://github.com/axetroy/vscode-deno/compare/v3.0.2...v3.0.3) (2020-03-02)
+
+### Bug Fixes
+
+- can not set TextDocument's language mode correctly in Windows ([83d6e34](https://github.com/axetroy/vscode-deno/commit/83d6e342d1795c15e1fdba9218bbcddae910e02e))
+- Path to module not resolved correctly in Windows ([926896d](https://github.com/axetroy/vscode-deno/commit/926896d33b88971d66f910cf12f881ae5f38405d))
+- somethine server does not ready and send notify ([271c9cd](https://github.com/axetroy/vscode-deno/commit/271c9cdda40556f8b8efe8280a7a323074d62544))
+
+### Reverts
+
+- Revert "refactor: typescript-deno-plugin" ([453a9b0](https://github.com/axetroy/vscode-deno/commit/453a9b0240bda3d2521defa5f4dbf74faeeca7a4))
+
 ## [3.0.2](https://github.com/axetroy/vscode-deno/compare/v3.0.1...v3.0.2) (2020-03-01)
 
 ### Bug Fixes
