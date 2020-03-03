@@ -19,9 +19,11 @@ export function normalizeImportStatement(importStatement: string): string {
     // relative path is always unix path
     const moduleName = matcher[2];
     const moduleFilepath = normalizeFilepath(moduleName);
-    const moduleAbsoluteFilepath = path.isAbsolute(moduleFilepath)
-      ? moduleFilepath
-      : path.resolve(moduleFilepath);
+    const moduleAbsoluteFilepath = normalizeFilepath(
+      path.isAbsolute(moduleFilepath)
+        ? moduleFilepath
+        : path.resolve(moduleFilepath)
+    );
     const rest = matcher[3];
 
     if (moduleAbsoluteFilepath.indexOf(getDenoDepsDir()) >= 0) {

@@ -8,7 +8,7 @@ import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
-import { pathExistsSync } from "../../core/util";
+import { pathExistsSync, normalizeFilepath } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
 
@@ -259,7 +259,9 @@ export class DenoPlugin implements ts_module.server.PluginModule {
               // text is always unix style
               const text = source.text;
 
-              const absoluteFilepath = path.posix.resolve(text);
+              const absoluteFilepath = path.posix.resolve(
+                normalizeFilepath(text)
+              );
 
               if (path.isAbsolute(absoluteFilepath)) {
                 const denoCache = CacheModule.create(
