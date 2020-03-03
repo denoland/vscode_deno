@@ -1,3 +1,14 @@
+# [3.1.0](https://github.com/axetroy/vscode-deno/compare/v3.0.6...v3.1.0) (2020-03-03)
+
+### Bug Fixes
+
+- normalize filepath ([f5ecd71](https://github.com/axetroy/vscode-deno/commit/f5ecd71867f5ed6bf055d7606610c0079dc80065))
+
+### Features
+
+- add CodeLens for deno cached module which will show current URL ([44bc4a1](https://github.com/axetroy/vscode-deno/commit/44bc4a13638822e0ee482a2fba0f23c463e16820))
+- improve auto-import completion detail ([78fa0e8](https://github.com/axetroy/vscode-deno/commit/78fa0e86ef017c30349f96794ff3b6eb53cd5879))
+
 ## [3.0.6](https://github.com/axetroy/vscode-deno/compare/v3.0.5...v3.0.6) (2020-03-03)
 
 ### Bug Fixes
