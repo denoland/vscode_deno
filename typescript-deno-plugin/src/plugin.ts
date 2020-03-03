@@ -146,6 +146,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         containingFile: string,
         ...rest
       ) => {
+        // containingFile may not be a file path, it may be `untitled:^Untitled-1`
         if (!this.configurationManager.config.enable) {
           return resolveTypeReferenceDirectives(
             typeDirectiveNames,
@@ -161,9 +162,15 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         // eg. c:/Users/admin/path/to/file.ts
         // This is not a legal file path in Windows
         // It will cause a series of bugs, so here we get the real file path
-        const realContainingFile = realpath
+        let realContainingFile = realpath
           ? realpath(containingFile)
           : containingFile;
+
+        // containingFile may be `untitled: ^ Untitled-1`
+        // This is not a valid file path and may cause the typescript server to crash
+        if (/^untitled:/.test(realContainingFile)) {
+          realContainingFile = info.project.getCurrentDirectory();
+        }
 
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
@@ -267,9 +274,15 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         // eg. c:/Users/admin/path/to/file.ts
         // This is not a legal file path in Windows
         // It will cause a series of bugs, so here we get the real file path
-        const realContainingFile = realpath
+        let realContainingFile = realpath
           ? realpath(containingFile)
           : containingFile;
+
+        // containingFile may be `untitled: ^ Untitled-1`
+        // This is not a valid file path and may cause the typescript server to crash
+        if (/^untitled:/.test(realContainingFile)) {
+          realContainingFile = info.project.getCurrentDirectory();
+        }
 
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)

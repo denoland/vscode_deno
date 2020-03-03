@@ -83,7 +83,7 @@ export class HashMeta implements HashMetaInterface {
         // text/javascript;charset=UTF-8
         const arr = contentType.split(";");
         for (const _contentType of arr) {
-          if (contentTypes.includes(_contentType)) {
+          if (contentTypes.includes(_contentType.toLowerCase())) {
             return type;
           }
         }
