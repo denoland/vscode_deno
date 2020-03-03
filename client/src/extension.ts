@@ -262,6 +262,12 @@ class Extension {
           }
 
           return next(document, position, context, token);
+        },
+        provideCodeLenses: (document, token, next) => {
+          if (!isInDeno(document.uri.fsPath)) {
+            return;
+          }
+          return next(document, token);
         }
       }
     };

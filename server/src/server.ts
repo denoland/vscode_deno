@@ -26,6 +26,7 @@ import { DocumentHighlight } from "./language/document_highlight";
 import { DocumentFormatting } from "./language/document_formatting";
 import { Hover } from "./language/hover";
 import { Completion } from "./language/completion";
+import { CodeLens } from "./language/code_lens";
 
 import { getDenoDir, getDenoDts } from "../../core/deno";
 import { pathExists } from "../../core/util";
@@ -51,6 +52,7 @@ new DocumentHighlight(connection, documents);
 new DocumentFormatting(connection, documents, bridge);
 new Hover(connection, documents);
 new Completion(connection, documents);
+new CodeLens(connection, documents);
 
 connection.onInitialize(
   (): InitializeResult => {
@@ -71,7 +73,8 @@ connection.onInitialize(
         documentHighlightProvider: true,
         hoverProvider: true,
         referencesProvider: true,
-        definitionProvider: true
+        definitionProvider: true,
+        codeLensProvider: {}
       }
     };
   }
