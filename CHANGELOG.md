@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/axetroy/vscode-deno/compare/v3.1.0...v3.1.1) (2020-03-03)
+
+### Bug Fixes
+
+- auto-import rewrite not work on Windows ([3602979](https://github.com/axetroy/vscode-deno/commit/3602979225fac8a5ffb53e362ab473ea741a3bbf))
+
 # [3.1.0](https://github.com/axetroy/vscode-deno/compare/v3.0.6...v3.1.0) (2020-03-03)
 
 ### Bug Fixes
