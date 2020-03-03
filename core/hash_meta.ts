@@ -1,6 +1,6 @@
 import * as fs from "fs";
 
-import { pathExistsSync } from "./util";
+import { pathExistsSync, normalizeFilepath } from "./util";
 
 type HTTPHeaders = { [key: string]: string };
 
@@ -54,6 +54,7 @@ const contentTypeMap: [string[], Type][] = [
 
 export class HashMeta implements HashMetaInterface {
   static create(metaFilepath: string): HashMeta | void {
+    metaFilepath = normalizeFilepath(metaFilepath);
     if (!pathExistsSync(metaFilepath)) {
       return;
     }

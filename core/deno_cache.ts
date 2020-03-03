@@ -4,7 +4,7 @@ import assert from "assert";
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync, isHttpURL, hashURL } from "./util";
+import { pathExistsSync, isHttpURL, hashURL, normalizeFilepath } from "./util";
 import { Logger } from "./logger";
 
 export interface DenoCacheModule {
@@ -15,6 +15,7 @@ export interface DenoCacheModule {
 
 export class CacheModule implements DenoCacheModule {
   static create(filepath: string, logger?: Logger): DenoCacheModule | void {
+    filepath = normalizeFilepath(filepath);
     const DENO_DEPS_DIR = getDenoDepsDir();
     // if not a Deno deps module
     if (filepath.indexOf(DENO_DEPS_DIR) !== 0) {
@@ -39,6 +40,7 @@ export class CacheModule implements DenoCacheModule {
     public url: URL,
     private logger?: Logger
   ) {
+    filepath = normalizeFilepath(filepath);
     assert(
       path.isAbsolute(filepath),
       `Deno Module filepath require absolute but got ${filepath}`

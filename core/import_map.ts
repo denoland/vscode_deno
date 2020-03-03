@@ -2,7 +2,7 @@ import * as path from "path";
 import { readFileSync } from "fs";
 import assert from "assert";
 
-import { pathExistsSync, str2regexpStr } from "./util";
+import { pathExistsSync, str2regexpStr, normalizeFilepath } from "./util";
 
 export interface ImportMapInterface {
   filepath?: string;
@@ -20,17 +20,18 @@ type ImportContent = { [prefix: string]: string };
 export class ImportMap implements ImportMapInterface {
   constructor(public map: ImportFileMapContent, public filepath?: string) {}
   static create(importMapFilepath?: string): ImportMapInterface {
-    importMapFilepath &&
-      assert(
-        path.isAbsolute(importMapFilepath),
-        `Import-Map filepath require absolute but got ${importMapFilepath}`
-      );
     let importMap: ImportFileMapContent = {
       imports: {}
     };
 
     //  try resolve import maps
     if (importMapFilepath) {
+      importMapFilepath = normalizeFilepath(importMapFilepath);
+      assert(
+        path.isAbsolute(importMapFilepath),
+        `Import-Map filepath require absolute but got ${importMapFilepath}`
+      );
+
       if (pathExistsSync(importMapFilepath) === true) {
         const importMapContent = readFileSync(importMapFilepath, {
           encoding: "utf8"
