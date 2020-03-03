@@ -334,7 +334,6 @@ class Extension {
     if (this.statusBar) {
       this.statusBar.text = `Deno ${this.denoInfo.version.deno}`;
       this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
-    }
 TypeScript ${this.denoInfo.version.typescript}
 V8 ${this.denoInfo.version.v8}
 Executable ${this.denoInfo.executablePath}`;
