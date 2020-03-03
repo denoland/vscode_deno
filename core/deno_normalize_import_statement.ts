@@ -2,6 +2,7 @@ import * as path from "path";
 
 import { getDenoDepsDir } from "./deno";
 import { CacheModule } from "./deno_cache";
+import { normalizeFilepath } from "./util";
 
 /**
  * Normalize import statement
@@ -17,7 +18,7 @@ export function normalizeImportStatement(importStatement: string): string {
     const importModuleNames = matcher[1].trim();
     // relative path is always unix path
     const moduleName = matcher[2];
-    const moduleFilepath = moduleName.replace(/\//gm, path.sep);
+    const moduleFilepath = normalizeFilepath(moduleName);
     const moduleAbsoluteFilepath = path.isAbsolute(moduleFilepath)
       ? moduleFilepath
       : path.resolve(moduleFilepath);

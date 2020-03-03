@@ -1,6 +1,8 @@
 import * as path from "path";
 import typescript = require("typescript");
 
+import { normalizeFilepath } from "./util";
+
 interface CommentRange extends typescript.CommentRange {
   text: string;
   module: string;
@@ -71,7 +73,7 @@ export function getDenoCompileHint(ts: typeof typescript) {
 
           const moduleName = matchers[1];
 
-          const moduleFilepath = moduleName.replace(/\//gm, path.sep);
+          const moduleFilepath = normalizeFilepath(moduleName);
 
           const targetFilepath = path.isAbsolute(moduleFilepath)
             ? moduleFilepath

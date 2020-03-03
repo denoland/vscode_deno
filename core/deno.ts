@@ -1,4 +1,5 @@
 import * as path from "path";
+import { normalizeFilepath } from "./util";
 
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
@@ -37,10 +38,7 @@ export function getDenoDts(): string {
 }
 
 export function isInDeno(filepath: string): boolean {
+  filepath = normalizeFilepath(filepath);
   const denoDir = getDenoDir();
-  // in Windows, filepath maybe `c:\xxx\xxx`
-  // but deno dir prefix with `C:\xxx\xxx`
-  return filepath
-    .replace(/^([a-z]):\\/, (_, $1) => $1.toUpperCase() + ":\\")
-    .startsWith(denoDir);
+  return filepath.startsWith(denoDir);
 }

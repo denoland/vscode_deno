@@ -6,7 +6,13 @@ import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
-import { pathExistsSync, str2regexpStr, isHttpURL, hashURL } from "./util";
+import {
+  pathExistsSync,
+  str2regexpStr,
+  isHttpURL,
+  hashURL,
+  normalizeFilepath
+} from "./util";
 import { Logger } from "./logger";
 
 export type ResolvedModule = {
@@ -117,10 +123,7 @@ export class ModuleResolver implements ModuleResolverInterface {
 
     const moduleFilepath = path.resolve(
       path.dirname(this.containingFile),
-      moduleName.replace(
-        new RegExp(str2regexpStr(path.posix.sep), "gm"),
-        path.sep
-      )
+      normalizeFilepath(moduleName)
     );
 
     if (!pathExistsSync(moduleFilepath)) {
