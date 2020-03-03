@@ -1,3 +1,9 @@
+## [3.0.6](https://github.com/axetroy/vscode-deno/compare/v3.0.5...v3.0.6) (2020-03-03)
+
+### Bug Fixes
+
+- typescript server crash if create a new untitled typescript TextDocument ref: [#86](https://github.com/axetroy/vscode-deno/issues/86) ([e5643e1](https://github.com/axetroy/vscode-deno/commit/e5643e159042a72ce1871061ff5038be7b6cebb5))
+
 ## [3.0.5](https://github.com/axetroy/vscode-deno/compare/v3.0.4...v3.0.5) (2020-03-02)
 
 ### Bug Fixes
