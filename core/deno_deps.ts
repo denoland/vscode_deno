@@ -36,8 +36,8 @@ export async function getDenoDeps(): Promise<Deps[]> {
             }
 
             const metaFiles = (await fs.readdir(origin))
-              .filter(v => v.endsWith(".metadata.json"))
-              .map(v => path.join(origin, v));
+              .filter(file => file.endsWith(".metadata.json"))
+              .map(file => path.join(origin, file));
 
             for (const metaFile of metaFiles) {
               const meta = HashMeta.create(metaFile);

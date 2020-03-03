@@ -56,9 +56,7 @@ export class CacheModule implements DenoCacheModule {
         return;
       }
 
-      const moduleMetaFilepath = path.join(
-        moduleCacheFilepath + ".metadata.json"
-      );
+      const moduleMetaFilepath = moduleCacheFilepath + ".metadata.json";
 
       const meta = HashMeta.create(moduleMetaFilepath);
 
