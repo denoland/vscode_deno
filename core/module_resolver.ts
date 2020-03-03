@@ -36,7 +36,10 @@ export class ModuleResolver implements ModuleResolverInterface {
     private importMapsFile?: string,
     private logger?: Logger
   ) {
-    assert(path.isAbsolute(containingFile));
+    assert(
+      path.isAbsolute(containingFile),
+      `ModuleResolver filepath require absolute but got ${containingFile}`
+    );
   }
 
   /**
