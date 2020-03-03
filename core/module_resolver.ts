@@ -6,13 +6,7 @@ import { getDenoDepsDir } from "./deno";
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
-import {
-  pathExistsSync,
-  str2regexpStr,
-  isHttpURL,
-  hashURL,
-  normalizeFilepath
-} from "./util";
+import { pathExistsSync, isHttpURL, hashURL, normalizeFilepath } from "./util";
 import { Logger } from "./logger";
 
 export type ResolvedModule = {
