@@ -1,5 +1,6 @@
 import * as path from "path";
 import { URL } from "url";
+import assert from "assert";
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
@@ -37,7 +38,12 @@ export class CacheModule implements DenoCacheModule {
     public filepath: string,
     public url: URL,
     private logger?: Logger
-  ) {}
+  ) {
+    assert(
+      path.isAbsolute(filepath),
+      `Deno Module filepath require absolute but got ${filepath}`
+    );
+  }
   /**
    * Resolve module in this cache file
    * @param moduleName The module name is for unix style

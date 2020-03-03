@@ -7,6 +7,7 @@ import { Logger } from "./logger";
 import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
+import { CacheModule } from "../../core/deno_cache";
 import { pathExistsSync } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
@@ -146,7 +147,6 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         containingFile: string,
         ...rest
       ) => {
-        // containingFile may not be a file path, it may be `untitled:^Untitled-1`
         if (!this.configurationManager.config.enable) {
           return resolveTypeReferenceDirectives(
             typeDirectiveNames,
@@ -240,13 +240,35 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return details;
       }
 
-      if (details) {
+      if (details && details.kindModifiers === "export") {
         if (details.codeActions && details.codeActions.length) {
           for (const ca of details.codeActions) {
             for (const change of ca.changes) {
               if (!change.isNewFile) {
                 for (const tc of change.textChanges) {
                   tc.newText = normalizeImportStatement(tc.newText);
+                }
+              }
+            }
+          }
+        }
+
+        if (details.source && details.source.length) {
+          for (const source of details.source) {
+            if (source.kind === "text") {
+              // text is always unix style
+              const text = source.text;
+
+              const absoluteFilepath = path.posix.resolve(text);
+
+              if (path.isAbsolute(absoluteFilepath)) {
+                const denoCache = CacheModule.create(
+                  absoluteFilepath,
+                  this.logger
+                );
+
+                if (denoCache) {
+                  source.text = denoCache.url.href;
                 }
               }
             }
