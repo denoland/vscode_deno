@@ -1,3 +1,14 @@
+# [3.2.0](https://github.com/axetroy/vscode-deno/compare/v3.1.1...v3.2.0) (2020-03-04)
+
+### Features
+
+- improve fetching module message ([3bb70e2](https://github.com/axetroy/vscode-deno/commit/3bb70e23f51750a3eab053289772f154740c3045))
+- support Deno Dependency Viewer. close [#83](https://github.com/axetroy/vscode-deno/issues/83) ([1b327b8](https://github.com/axetroy/vscode-deno/commit/1b327b869cf74d2022dab71451c92ec3c4b5c5ea))
+
+### Performance Improvements
+
+- improve performance for file_walker ([77ce898](https://github.com/axetroy/vscode-deno/commit/77ce898b12c1e9ec9f995c1ae2b14342547f7cbd))
+
 ## [3.1.1](https://github.com/axetroy/vscode-deno/compare/v3.1.0...v3.1.1) (2020-03-03)
 
 ### Bug Fixes
@@ -85,7 +96,7 @@
 - auto detect ./vscode/settings.json in typescript plugin [#60](https://github.com/axetroy/vscode-deno/issues/60) ([95d73c6](https://github.com/axetroy/vscode-deno/commit/95d73c6b5efa7ba5951cc3c0dd150ce925a429b7))
 - make manifest be a iterator. ([8c7b7ce](https://github.com/axetroy/vscode-deno/commit/8c7b7ce81d9eb2110a59b14d7e41d6c08b00c8d3))
 - Requires minimum version of Deno 0.35.0 ([35b810c](https://github.com/axetroy/vscode-deno/commit/35b810ca4f5bbb50796d0df4d3efe27908e604a1))
-- Resurrected in Deno v0.35.0 🚀 ([3aff7ed](https://github.com/axetroy/vscode-deno/commit/3aff7edf1481a0a234a1b994b9f6cf692e444beb))
+- Resurrected in Deno v0.35.0 ?? ([3aff7ed](https://github.com/axetroy/vscode-deno/commit/3aff7edf1481a0a234a1b994b9f6cf692e444beb))
 - set the language of the document automatically ([8839799](https://github.com/axetroy/vscode-deno/commit/88397994925c42647c77df6e3626922ea3b9d953))
 - support [@deno-types](https://github.com/deno-types) hint definition. [#68](https://github.com/axetroy/vscode-deno/issues/68) ([758c5be](https://github.com/axetroy/vscode-deno/commit/758c5be8256efa263a53c8df1bf68ce6beeaed78))
 - support format range code ([498d37f](https://github.com/axetroy/vscode-deno/commit/498d37ffa7b4e85efd53c8c34d96b48b313effa1))
