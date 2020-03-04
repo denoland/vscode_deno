@@ -3,7 +3,8 @@ import {
   pathExistsSync,
   str2regexpStr,
   isHttpURL,
-  hashURL
+  hashURL,
+  normalizeFilepath
 } from "./util";
 
 test("core / util / pathExists", async () => {
@@ -41,4 +42,18 @@ test("core / util / hashURL", () => {
   expect(hashURL(new URL("https://example.com/esm/mod.ts"))).toEqual(
     "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
   );
+});
+
+test("core / util / normalizeFilepath", () => {
+  if (process.platform === "win32") {
+    expect(normalizeFilepath("/path/to/file")).toEqual("\\path\\to\\file");
+  } else {
+    expect(normalizeFilepath("/path/to/file")).toEqual("/path/to/file");
+  }
+
+  if (process.platform === "win32") {
+    expect(normalizeFilepath("d:\\path\\to\\file")).toEqual(
+      "D:\\path\\to\\file"
+    );
+  }
 });
