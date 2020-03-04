@@ -513,7 +513,8 @@ Executable ${this.denoInfo.executablePath}`;
 
               const messages = raw.split("\n");
 
-              for (const message of messages) {
+              for (let message of messages) {
+                message = message.replace("[0m[38;5;10mDownload[0m", "").trim();
                 if (message) {
                   process.report({ message });
                   this.output.appendLine(message);
