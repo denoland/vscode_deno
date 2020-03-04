@@ -35,7 +35,6 @@ export function normalizeFilepath(filepath: string): string {
 // So we need to translate it once
 // `/^C:\Users\runneradmin\AppData\Local\deno\deps\/` -> `/^C:\\Users\\runneradmin\\AppData\\Local\\deno\\deps\\/`
 export function str2regexpStr(filepath: string): string {
-  filepath = normalizeFilepath(filepath);
   return filepath.replace(/\\/gm, "\\\\");
 }
 
