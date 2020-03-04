@@ -1,57 +1,44 @@
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import * as path from "path";
 
+type FileWalkerOptions = {
+  extensionName?: string[];
+  exclude?: string[];
+};
+
 export class FileWalker {
-  static create(folder: string) {
-    return new FileWalker(folder);
+  static create(folder: string, options: FileWalkerOptions = {}) {
+    return new FileWalker(folder, options);
   }
-  constructor(private root: string) {}
-  // TODO: make it to async generator
-  *generator() {
-    let files = fs
-      .readdirSync(this.root)
-      .map(filename => path.join(this.root, filename));
+  constructor(private root: string, private options: FileWalkerOptions = {}) {}
+  async *[Symbol.asyncIterator]() {
+    let files = (await fs.readdir(this.root)).map(filename =>
+      path.join(this.root, filename)
+    );
 
     while (files.length) {
       const file = files.shift() as string;
       const filename = path.basename(file);
 
-      if (filename === "node_modules") {
+      if ((this.options.exclude || []).includes(filename)) {
         continue;
       }
 
-      const stat = fs.statSync(file);
+      const stat = await fs.stat(file);
 
       if (stat.isDirectory()) {
-        files = files.concat(fs.readdirSync(file).map(v => path.join(file, v)));
+        files = files.concat(
+          (await fs.readdir(file)).map(v => path.join(file, v))
+        );
       }
 
-      if (file.endsWith(".ts")) {
+      if (this.options.extensionName) {
+        if (this.options.extensionName.includes(path.extname(file))) {
+          yield file;
+        }
+      } else {
         yield file;
       }
     }
-  }
-  [Symbol.iterator](): Iterator<string> {
-    const files = fs
-      .readdirSync(this.root)
-      .map(filename => path.join(this.root, filename));
-
-    return {
-      next: () => {
-        if (!files.length) {
-          return {
-            value: "",
-            done: true
-          };
-        }
-
-        const file = files.shift() as string;
-
-        return {
-          value: file,
-          done: false
-        };
-      }
-    };
   }
 }

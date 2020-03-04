@@ -29,8 +29,6 @@ export class DependencyTree {
     const folderUir = URI.parse(uriStr);
     const folder = folderUir.fsPath;
 
-    const walker = FileWalker.create(folder);
-
     const depsMap = new Map<string, URLDep[]>();
 
     const config = await this.bridge.getWorkspaceConfig(uriStr);
@@ -43,7 +41,12 @@ export class DependencyTree {
 
     const importMap = ImportMap.create(importMapFilepath);
 
-    for (const filepath of walker.generator()) {
+    const walker = FileWalker.create(folder, {
+      exclude: ["node_modules"],
+      extensionName: [".ts", ".tsx", ".js", ".jsx"]
+    });
+
+    for await (const filepath of walker) {
       const fileUri = URI.file(filepath);
 
       // Parse a file
