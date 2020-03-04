@@ -51,9 +51,5 @@ test("core / util / normalizeFilepath", () => {
     expect(normalizeFilepath("/path/to/file")).toEqual("/path/to/file");
   }
 
-  if (process.platform === "win32") {
-    expect(normalizeFilepath("d:\\path\\to\\file")).toEqual(
-      "D:\\path\\to\\file"
-    );
-  }
+  expect(normalizeFilepath("d:\\path\\to\\file")).toEqual("D:\\path\\to\\file");
 });
