@@ -14,6 +14,7 @@ export function getDenoDir(): string {
       case "win32":
         denoDir = `${process.env.LOCALAPPDATA}\\deno`;
         break;
+      /* istanbul ignore next */
       case "darwin":
         denoDir = `${process.env.HOME}/Library/Caches/deno`;
         break;
@@ -23,8 +24,8 @@ export function getDenoDir(): string {
           ? `${process.env.XDG_CACHE_HOME}/deno`
           : `${process.env.HOME}/.cache/deno`;
         break;
+      /* istanbul ignore next */
       default:
-        /* istanbul ignore next */
         denoDir = `${process.env.HOME}/.deno`;
     }
   }
