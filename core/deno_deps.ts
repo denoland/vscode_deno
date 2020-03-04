@@ -24,7 +24,7 @@ export type Range = {
 /**
  * Get cached dependency files
  */
-export async function getDenoDeps(): Promise<Deps[]> {
+export async function getAllDenoCachedDeps(): Promise<Deps[]> {
   const depsRootDir = getDenoDepsDir();
   const deps: Deps[] = [];
   const protocols = await fs.readdir(depsRootDir);

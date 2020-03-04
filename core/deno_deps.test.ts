@@ -1,7 +1,11 @@
 import * as path from "path";
 import * as ts from "typescript";
 
-import { getDenoDeps, getImportModules, ImportModule } from "./deno_deps";
+import {
+  getAllDenoCachedDeps,
+  getImportModules,
+  ImportModule
+} from "./deno_deps";
 
 const TEST_DIR = path.join(__dirname, "..", "__test__");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
@@ -16,7 +20,7 @@ afterAll(() => {
 });
 
 test("core / deno_deps", async () => {
-  const deps = await getDenoDeps();
+  const deps = await getAllDenoCachedDeps();
 
   for (const dep of deps) {
     expect(typeof dep.filepath === "string").toBeTruthy();

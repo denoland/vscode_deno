@@ -9,13 +9,13 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { getDenoDir } from "../../../core/deno";
-import { getDenoDeps, Deps } from "../../../core/deno_deps";
+import { getAllDenoCachedDeps, Deps } from "../../../core/deno_deps";
 import { Cache } from "../../../core/cache";
 
 // Cache for 30 second or 30 references
 const cache = Cache.create<Deps[]>(1000 * 30, 30);
 
-getDenoDeps()
+getAllDenoCachedDeps()
   .then(deps => {
     cache.set(deps);
   })
@@ -57,7 +57,7 @@ export class Completion {
       let deps = cache.get();
 
       if (!deps) {
-        deps = await getDenoDeps();
+        deps = await getAllDenoCachedDeps();
         cache.set(deps);
       }
 
