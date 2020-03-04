@@ -36,6 +36,21 @@ import "./foo.ts"
   } as Range);
 });
 
+test("core / deno_type_hint: with compile hint", async () => {
+  const sourceFile = ts.createSourceFile(
+    "./test.ts",
+    `// @deno-types="/absolute/path/to/foo.d.ts"
+import "./foo.ts"
+`,
+    ts.ScriptTarget.ESNext
+  );
+  const [comment] = getDenoCompileHint(ts)(sourceFile);
+
+  expect(comment).not.toBe(undefined);
+  expect(comment.module).toEqual("/absolute/path/to/foo.d.ts");
+  expect(comment.text).toEqual(`// @deno-types="/absolute/path/to/foo.d.ts"`);
+});
+
 test("core / deno_type_hint: with compile hint 1", async () => {
   const sourceFile = ts.createSourceFile(
     "./test.ts",
@@ -72,8 +87,11 @@ test("core / deno_type_hint: with compile hint 2", async () => {
 // 123
 // @deno-types="./foo.d.ts"
 
-
-import "./foo.ts"
+/**
+ *
+ *
+ */
+/* prefix */ import "./foo.ts" // hasTrailingNewLine
 `,
     ts.ScriptTarget.ESNext
   );
