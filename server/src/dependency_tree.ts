@@ -47,12 +47,10 @@ export class DependencyTree {
     });
 
     for await (const filepath of walker) {
-      const fileUri = URI.file(filepath);
-
       // Parse a file
       const sourceFile = ts.createSourceFile(
-        fileUri.fsPath,
-        await fs.readFile(fileUri.fsPath, { encoding: "utf8" }),
+        filepath,
+        await fs.readFile(filepath, { encoding: "utf8" }),
         ts.ScriptTarget.ESNext,
         false,
         ts.ScriptKind.TSX

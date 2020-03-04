@@ -169,7 +169,7 @@ export function getDeps(ts: typeof typescript) {
 
         return {
           moduleName: node.text,
-          filepath,
+          filepath: filepath ? normalizeFilepath(filepath) : undefined,
           remote: true,
           url: node.text,
           location
@@ -177,9 +177,11 @@ export function getDeps(ts: typeof typescript) {
       } else {
         return {
           moduleName: node.text,
-          filepath: path.resolve(
-            path.dirname(sourceFile.fileName),
-            normalizeFilepath(node.text)
+          filepath: normalizeFilepath(
+            path.resolve(
+              path.dirname(normalizeFilepath(sourceFile.fileName)),
+              normalizeFilepath(node.text)
+            )
           ),
           remote: false,
           url: undefined,
