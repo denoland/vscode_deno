@@ -6,7 +6,7 @@ import * as ts from "typescript";
 import { URI } from "vscode-uri";
 
 import { Bridge } from "./bridge";
-import { getDeps } from "../../core/deno_deps";
+import { getImportModules } from "../../core/deno_deps";
 import { FileWalker } from "../../core/file_walker";
 import { ImportMap } from "../../core/import_map";
 import { isHttpURL } from "../../core/util";
@@ -56,10 +56,10 @@ export class DependencyTree {
         ts.ScriptKind.TSX
       );
 
-      const deps = await getDeps(ts)(sourceFile);
+      const deps = await getImportModules(ts)(sourceFile);
 
       for (const dep of deps) {
-        if (!dep.remote) {
+        if (!isHttpURL(dep.moduleName)) {
           dep.moduleName = importMap.resolveModule(dep.moduleName);
         }
 

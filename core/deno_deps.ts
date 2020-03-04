@@ -3,19 +3,23 @@ import { promises as fs } from "fs";
 
 import typescript = require("typescript");
 
-import { getDenoDepsDir, URL2filepath } from "./deno";
+import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
-import { isHttpURL, normalizeFilepath, pathExistsSync } from "./util";
 
 export type Deps = {
   url: string;
   filepath: string;
 };
 
-export interface Position {
-  line: number;
-  character: number;
-}
+export type Position = {
+  line: number; // zero base
+  character: number; // zero base
+};
+
+export type Range = {
+  start: Position;
+  end: Position;
+};
 
 /**
  * Get cached dependency files
@@ -65,20 +69,13 @@ export async function getDenoDeps(): Promise<Deps[]> {
   return deps;
 }
 
-export type ProjectDeps = {
+export type ImportModule = {
   moduleName: string;
-  remote: boolean;
-  filepath?: string; // If the module does not exist, then it will be undefined
-  url?: string; // If the module is a remote module. then it must have a URL
-  location: { start: Position; end: Position };
+  location: Range;
 };
 
-/**
- * Get Deno deps of a module
- * @param ts
- */
-export function getDeps(ts: typeof typescript) {
-  return function(sourceFile: typescript.SourceFile): ProjectDeps[] {
+export function getImportModules(ts: typeof typescript) {
+  return (sourceFile: typescript.SourceFile): ImportModule[] => {
     const moduleNodes: typescript.LiteralLikeNode[] = [];
 
     function delint(SourceFile: typescript.SourceFile) {
@@ -122,6 +119,7 @@ export function getDeps(ts: typeof typescript) {
         }
         // export { window } from "xxx";
         // export * from "xxx";
+        // export * as xxx from "xxx";
         else if (ts.isExportDeclaration(node)) {
           const exportSpec = node.moduleSpecifier;
           if (exportSpec && ts.isStringLiteral(exportSpec)) {
@@ -141,55 +139,30 @@ export function getDeps(ts: typeof typescript) {
     // delint it
     delint(sourceFile);
 
-    const deps: ProjectDeps[] = moduleNodes.map(node => {
+    const modules: ImportModule[] = moduleNodes.map(node => {
       const numberOfSpaces = Math.abs(
         // why plus 2?
         // because `moduleNode.text` only contain the plaintext without two quotes
+        // eg `import "./test"`
         node.end - node.pos - (node.text.length + 2)
       );
 
       const start = sourceFile.getLineAndCharacterOfPosition(
-        node.pos + numberOfSpaces
+        node.pos + numberOfSpaces + 1 // +1 to remove quotes
       );
-      const end = sourceFile.getLineAndCharacterOfPosition(node.end);
+      const end = sourceFile.getLineAndCharacterOfPosition(node.end - 1); // -1 to remove quotes
 
       const location = {
         start,
         end
       };
 
-      if (isHttpURL(node.text)) {
-        let filepath: string | undefined;
-
-        filepath = URL2filepath(new URL(node.text));
-
-        if (!pathExistsSync(filepath)) {
-          filepath = undefined;
-        }
-
-        return {
-          moduleName: node.text,
-          filepath: filepath ? normalizeFilepath(filepath) : undefined,
-          remote: true,
-          url: node.text,
-          location
-        };
-      } else {
-        return {
-          moduleName: node.text,
-          filepath: normalizeFilepath(
-            path.resolve(
-              path.dirname(normalizeFilepath(sourceFile.fileName)),
-              normalizeFilepath(node.text)
-            )
-          ),
-          remote: false,
-          url: undefined,
-          location
-        };
-      }
+      return {
+        moduleName: node.text,
+        location
+      };
     });
 
-    return deps;
+    return modules;
   };
 }
