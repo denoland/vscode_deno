@@ -2,7 +2,6 @@ import * as path from "path";
 
 import {
   IConnection,
-  Range,
   Diagnostic,
   DiagnosticSeverity,
   CodeAction,
@@ -19,6 +18,7 @@ import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
 import { pathExists, isHttpURL } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
+import { getImportModules } from "../../../core/deno_deps";
 
 type Fix = {
   title: string;
@@ -122,6 +122,12 @@ export class Diagnostics {
       return [];
     }
 
+    const importMapFilepath = config.import_map
+      ? path.isAbsolute(config.import_map)
+        ? config.import_map
+        : path.resolve(workspaceDir.uri.fsPath, config.import_map)
+      : undefined;
+
     const uri = URI.parse(document.uri);
 
     // Parse a file
@@ -133,92 +139,16 @@ export class Diagnostics {
       ts.ScriptKind.TSX
     );
 
-    const moduleNodes: ts.LiteralLikeNode[] = [];
-
-    function delint(SourceFile: ts.SourceFile) {
-      function delintNode(node: ts.Node) {
-        let moduleNode: ts.LiteralLikeNode | null = null;
-
-        // import('xxx')
-        if (ts.isCallExpression(node)) {
-          const expression = node.expression;
-          const args = node.arguments;
-          const isDynamicImport =
-            expression.kind === ts.SyntaxKind.ImportKeyword;
-          if (isDynamicImport) {
-            const argv = args[0] as ts.StringLiteral;
-
-            if (argv && ts.isStringLiteral(argv)) {
-              moduleNode = argv;
-            }
-          }
-        }
-        // import ts = require('typescript')
-        else if (ts.isImportEqualsDeclaration(node)) {
-          const ref = node.moduleReference;
-
-          if (
-            ts.isExternalModuleReference(ref) &&
-            ref.expression &&
-            ts.isStringLiteral(ref.expression)
-          ) {
-            moduleNode = ref.expression;
-          }
-        }
-        // import * as from 'xx'
-        // import 'xx'
-        // import xx from 'xx'
-        else if (ts.isImportDeclaration(node)) {
-          const spec = node.moduleSpecifier;
-          if (spec && ts.isStringLiteral(spec)) {
-            moduleNode = spec;
-          }
-        }
-        // export { window } from "xxx";
-        // export * from "xxx";
-        else if (ts.isExportDeclaration(node)) {
-          const exportSpec = node.moduleSpecifier;
-          if (exportSpec && ts.isStringLiteral(exportSpec)) {
-            moduleNode = exportSpec;
-          }
-        }
-
-        if (moduleNode) {
-          moduleNodes.push(moduleNode);
-        }
-
-        ts.forEachChild(node, delintNode);
-      }
-
-      delintNode(SourceFile);
-    }
-
-    // delint it
-    delint(sourceFile);
-
-    const importMapFilepath = config.import_map
-      ? path.isAbsolute(config.import_map)
-        ? config.import_map
-        : path.resolve(workspaceDir.uri.fsPath, config.import_map)
-      : undefined;
+    const importModules = getImportModules(ts)(sourceFile);
 
     const diagnosticsForThisDocument: Diagnostic[] = [];
 
-    for (const moduleNode of moduleNodes) {
-      const numberOfSpaces = Math.abs(
-        // why plus 2?
-        // because `moduleNode.text` only contain the plaintext without two quotes
-        moduleNode.end - moduleNode.pos - (moduleNode.text.length + 2)
-      );
-
-      const range = Range.create(
-        document.positionAt(moduleNode.pos + numberOfSpaces),
-        document.positionAt(moduleNode.end)
-      );
-
+    for (const importModule of importModules) {
       const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
 
-      const [resolvedModule] = resolver.resolveModules([moduleNode.text]);
+      const [resolvedModule] = resolver.resolveModules([
+        importModule.moduleName
+      ]);
 
       if (
         !resolvedModule ||
@@ -226,10 +156,12 @@ export class Diagnostics {
       ) {
         const moduleName = resolvedModule
           ? resolvedModule.origin
-          : ImportMap.create(importMapFilepath).resolveModule(moduleNode.text);
+          : ImportMap.create(importMapFilepath).resolveModule(
+              importModule.moduleName
+            );
         diagnosticsForThisDocument.push(
           Diagnostic.create(
-            range,
+            importModule.location,
             localize("diagnostic.report.module_not_found_locally", moduleName),
             DiagnosticSeverity.Error,
             isHttpURL(moduleName)

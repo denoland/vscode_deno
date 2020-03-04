@@ -381,9 +381,9 @@ Executable ${this.denoInfo.executablePath}`;
 
         range = new Range(
           range.start.line,
-          range.start.character,
+          range.start.character - 1,
           range.end.line,
-          range.end.character
+          range.end.character + 1
         );
 
         const rangeText = textEditor.document.getText(range);
