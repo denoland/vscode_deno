@@ -10,18 +10,21 @@ export function getDenoDir(): string {
   let denoDir = process.env.DENO_DIR;
   if (denoDir === undefined) {
     switch (process.platform) {
+      /* istanbul ignore next */
       case "win32":
         denoDir = `${process.env.LOCALAPPDATA}\\deno`;
         break;
       case "darwin":
         denoDir = `${process.env.HOME}/Library/Caches/deno`;
         break;
+      /* istanbul ignore next */
       case "linux":
         denoDir = process.env.XDG_CACHE_HOME
           ? `${process.env.XDG_CACHE_HOME}/deno`
           : `${process.env.HOME}/.cache/deno`;
         break;
       default:
+        /* istanbul ignore next */
         denoDir = `${process.env.HOME}/.deno`;
     }
   }
