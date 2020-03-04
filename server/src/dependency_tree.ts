@@ -42,8 +42,8 @@ export class DependencyTree {
     const importMap = ImportMap.create(importMapFilepath);
 
     const walker = FileWalker.create(folder, {
-      exclude: ["node_modules"],
-      extensionName: [".ts", ".tsx", ".js", ".jsx"]
+      exclude: ["node_modules", "bower_components", "vendor", /^\./],
+      include: [/\.tsx?$/, /\.jsx?$/]
     });
 
     for await (const filepath of walker) {

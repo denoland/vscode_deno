@@ -1,10 +1,24 @@
 import { promises as fs } from "fs";
 import * as path from "path";
 
+type Expression = string | RegExp;
+
 type FileWalkerOptions = {
-  extensionName?: string[];
-  exclude?: string[];
+  include?: Expression[];
+  exclude?: Expression[];
 };
+
+function isMatchExpression(input: string, expressions: Expression[]): boolean {
+  for (const expression of expressions) {
+    if (typeof expression === "string" && expression === input) {
+      return true;
+    } else if (expression instanceof RegExp && expression.test(input)) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 export class FileWalker {
   static create(folder: string, options: FileWalkerOptions = {}) {
@@ -20,8 +34,10 @@ export class FileWalker {
       const file = files.shift() as string;
       const filename = path.basename(file);
 
-      if ((this.options.exclude || []).includes(filename)) {
-        continue;
+      if (this.options.exclude) {
+        if (isMatchExpression(filename, this.options.exclude)) {
+          continue;
+        }
       }
 
       const stat = await fs.stat(file);
@@ -30,15 +46,17 @@ export class FileWalker {
         files = files.concat(
           (await fs.readdir(file)).map(v => path.join(file, v))
         );
+
+        continue;
       }
 
-      if (this.options.extensionName) {
-        if (this.options.extensionName.includes(path.extname(file))) {
-          yield file;
+      if (this.options.include) {
+        if (!isMatchExpression(filename, this.options.include)) {
+          continue;
         }
-      } else {
-        yield file;
       }
+
+      yield file;
     }
   }
 }
