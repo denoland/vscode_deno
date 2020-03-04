@@ -19,6 +19,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { deno } from "./deno";
 import { Bridge } from "./bridge";
+import { DependencyTree } from "./dependency_tree";
 import { Diagnostics } from "./language/diagnostics";
 import { Definition } from "./language/definition";
 import { References } from "./language/references";
@@ -45,6 +46,7 @@ const connection: IConnection = createConnection(
 const documents = new TextDocuments(TextDocument);
 
 const bridge = new Bridge(connection);
+new DependencyTree(connection, bridge);
 new Diagnostics(SERVER_NAME, connection, bridge, documents);
 new Definition(connection, documents);
 new References(connection, documents);

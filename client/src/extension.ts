@@ -30,6 +30,7 @@ import getport from "get-port";
 import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
 
+import { TreeViewProvider } from "./tree_view_provider";
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
@@ -89,15 +90,15 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
   return api;
 }
 
-class Extension {
+export class Extension {
   // the name of this extension
   private id = "axetroy.vscode-deno";
   // extension context
-  private context!: ExtensionContext;
+  public context!: ExtensionContext;
   // typescript API
   private tsAPI!: TypescriptAPI;
   // LSP client
-  private client: LanguageClient | undefined;
+  public client: LanguageClient | undefined;
   private clientReady = false;
   private configurationSection = "deno";
   // status bar
@@ -117,7 +118,7 @@ class Extension {
     dtsFilepath: ""
   };
   // get configuration of Deno
-  private getConfiguration(uri?: Uri): SynchronizedConfiguration {
+  public getConfiguration(uri?: Uri): SynchronizedConfiguration {
     const config: SynchronizedConfiguration = {};
     const _config = workspace.getConfiguration(this.configurationSection, uri);
 
@@ -595,7 +596,16 @@ Executable ${this.denoInfo.executablePath}`;
       this.StartDenoLanguageServer.bind(this)
     );
 
+    const treeView = new TreeViewProvider(this);
+    this.context.subscriptions.push(treeView);
+
+    this.context.subscriptions.push(
+      window.registerTreeDataProvider("deno", treeView)
+    );
+
     const extension = extensions.getExtension(this.id);
+
+    commands.executeCommand("setContext", "denoExtensionActivated", true);
 
     console.log(
       `Congratulations, your extension "${this.id} ${extension?.packageJSON["version"]}" is now active!`

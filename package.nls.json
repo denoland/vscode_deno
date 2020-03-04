@@ -1,6 +1,7 @@
 {
   "deno.displayName": "Deno",
   "deno.description": "Deno support for VSCode",
+  "deno.dependency": "Deno Dependencies",
   "deno.command.restart_server": "Restart Deno Language Server",
   "deno.config.enabled": "Controls whether Deno is enabled or not.\n\n**Not recommended in global configuration**",
   "deno.config.dts_file": "The file path of the Deno TypeScript declaration file (.d.ts).\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration unless you are using an absolute path.**",

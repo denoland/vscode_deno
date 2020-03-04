@@ -30,8 +30,7 @@
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
     "onLanguage:typescript",
-    "onLanguage:typescriptreact",
-    "onCommand:deno.restart_server"
+    "onLanguage:typescriptreact"
   ],
   "main": "./client/out/client/src/extension.js",
   "contributes": {
@@ -46,8 +45,45 @@
         "command": "deno.restart_server",
         "title": "%deno.command.restart_server%",
         "category": "deno"
+      },
+      {
+        "command": "deno._refresh_tree",
+        "title": "Refresh",
+        "category": "deno",
+        "icon": {
+          "light": "resource/icon/refresh.light.svg",
+          "dark": "resource/icon/refresh.dark.svg"
+        }
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "deno",
+          "name": "%deno.dependency%",
+          "when": "denoExtensionActivated"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "deno._refresh_tree",
+          "group": "navigation@1",
+          "when": "view == deno"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "deno._refresh_tree",
+          "when": "never"
+        },
+        {
+          "command": "deno.restart_server",
+          "when": "denoExtensionActivated"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "Deno",

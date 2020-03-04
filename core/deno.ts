@@ -1,5 +1,5 @@
 import * as path from "path";
-import { normalizeFilepath } from "./util";
+import { normalizeFilepath, hashURL } from "./util";
 
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
@@ -41,4 +41,13 @@ export function isInDeno(filepath: string): boolean {
   filepath = normalizeFilepath(filepath);
   const denoDir = getDenoDir();
   return filepath.startsWith(denoDir);
+}
+
+export function URL2filepath(url: URL): string {
+  return path.join(
+    getDenoDepsDir(),
+    url.protocol.replace(/:$/, ""), // https: -> https
+    url.hostname,
+    hashURL(url)
+  );
 }
