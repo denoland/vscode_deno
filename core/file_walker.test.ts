@@ -10,7 +10,7 @@ test("core / FileWalker", async () => {
   const files = [
     path.join(TEST_DIR, "file_walker", "a.js"),
     path.join(TEST_DIR, "file_walker", "b.ts"),
-    path.join(TEST_DIR, "file_walker", "node_modules", "c.ts")
+    path.join(TEST_DIR, "file_walker", "exclude", "c.ts")
   ];
 
   const result = [];
@@ -44,7 +44,7 @@ test("core / FileWalker with specified extension name", async () => {
 
 test("core / FileWalker with exclude options", async () => {
   const walker = FileWalker.create(path.join(TEST_DIR, "file_walker"), {
-    exclude: ["node_modules"]
+    exclude: ["exclude"]
   });
 
   const files = [
