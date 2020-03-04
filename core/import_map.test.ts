@@ -31,4 +31,9 @@ test("core / import_map", async () => {
     expect(typeof moduleName).toBe("string");
     expect(prefix).not.toEqual(moduleName);
   }
+
+  // if import_map not exist
+  expect(
+    ImportMap.create(path.join(__dirname, "path", "not", "exist")).toJSON()
+  ).toEqual({});
 });
