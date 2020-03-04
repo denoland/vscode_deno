@@ -20,7 +20,7 @@ test("core / deno", () => {
 
   const [, denoDir] = /"([^"]+)"/.exec(firstLine) as string[];
 
-  expect(getDenoDir()).toEqual(denoDir);
+  expect(getDenoDir()).toEqual(path.normalize(denoDir));
 
   isInDeno(path.join(getDenoDir(), "https", "example.com", "/mod.ts"));
 });
