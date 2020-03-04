@@ -47,6 +47,9 @@ export function sleep(ms: number): Promise<void> {
 }
 
 export function isHttpURL(str: string): boolean {
+  if (!/^https?:\/\/.+/.test(str)) {
+    return false;
+  }
   try {
     new URL(str);
     return true;

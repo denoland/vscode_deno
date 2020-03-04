@@ -35,6 +35,7 @@ test("core / util / isHttpURL", () => {
   expect(isHttpURL("https://")).toBeFalsy();
   expect(isHttpURL("https://example")).toBeTruthy();
   expect(isHttpURL("https://example.com")).toBeTruthy();
+  expect(isHttpURL("https://**@!)($LFKASD><MASD}{][\\")).toBeFalsy();
 });
 
 test("core / util / hashURL", () => {

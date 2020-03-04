@@ -16,6 +16,11 @@ export interface DenoCacheModule {
 export class CacheModule implements DenoCacheModule {
   static create(filepath: string, logger?: Logger): DenoCacheModule | void {
     filepath = normalizeFilepath(filepath);
+
+    if (!pathExistsSync(filepath)) {
+      return;
+    }
+
     const DENO_DEPS_DIR = getDenoDepsDir();
     // if not a Deno deps module
     if (filepath.indexOf(DENO_DEPS_DIR) !== 0) {
@@ -52,7 +57,7 @@ export class CacheModule implements DenoCacheModule {
    */
   resolveModule(moduleName: string): DenoCacheModule | void {
     // eg. import "/npm:tough-cookie@3?dew"
-    if (moduleName.indexOf("/") === 0) {
+    if (moduleName.startsWith("/")) {
       const url = new URL(this.url.href);
       url.pathname = moduleName;
 
@@ -75,7 +80,7 @@ export class CacheModule implements DenoCacheModule {
       return CacheModule.create(moduleCacheFilepath);
     }
     // eg. import "./sub/mod.ts"
-    else if (moduleName.indexOf(".") === 0) {
+    else if (moduleName.startsWith(".")) {
       const targetUrlPath = path.posix.resolve(
         path.posix.dirname(this.url.pathname),
         moduleName
@@ -92,12 +97,7 @@ export class CacheModule implements DenoCacheModule {
     }
     // eg import "https://example.com/demo/mod.ts"
     else if (isHttpURL(moduleName)) {
-      let url: URL;
-      try {
-        url = new URL(moduleName);
-      } catch {
-        return;
-      }
+      const url = new URL(moduleName);
 
       const hash = hashURL(url);
 
@@ -116,6 +116,10 @@ export class CacheModule implements DenoCacheModule {
       }
 
       return CacheModule.create(path.join(targetOriginDir, hash));
+    }
+    // invalid module
+    else {
+      return;
     }
   }
 }

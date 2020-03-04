@@ -76,3 +76,46 @@ test("core / deno_cache", () => {
     )
   );
 });
+
+test("core / deno_cache if filepath not exist in $DENO_DIR", () => {
+  const cacheModule = CacheModule.create(__filename);
+
+  expect(cacheModule).toBe(undefined);
+});
+
+test("core / deno_cache resolve absolute path module if module not exist", () => {
+  const cacheModule = CacheModule.create(cacheFilepath) as DenoCacheModule;
+
+  expect(cacheModule).not.toBe(undefined);
+
+  expect(cacheModule.resolveModule("/path/not/exist")).toBe(undefined);
+});
+
+test("core / deno_cache if module exist but metadata file not exist", () => {
+  const cacheModule = CacheModule.create(
+    // https://invalid.com/invalid
+    path.join(
+      denoDir,
+      "deps",
+      "https",
+      "invalid.com",
+      "70456f90a5c5a173c9d5bc68b36f661a4061b3cb7850e4b9675557a64513deb0"
+    )
+  ) as DenoCacheModule;
+
+  expect(cacheModule).toBe(undefined);
+});
+
+test("core / deno_cache resolve file if target metadata file not exist", () => {
+  const cacheModule = CacheModule.create(cacheFilepath) as DenoCacheModule;
+
+  expect(cacheModule).not.toBe(undefined);
+  expect(cacheModule.resolveModule("/invalid")).toBe(undefined);
+});
+
+test("core / deno_cache resolve a invalid module", () => {
+  const cacheModule = CacheModule.create(cacheFilepath) as DenoCacheModule;
+
+  expect(cacheModule).not.toBe(undefined);
+  expect(cacheModule.resolveModule("invalid:/@url(dk#!")).toBe(undefined);
+});
