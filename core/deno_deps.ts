@@ -53,6 +53,7 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
 
             for (const metaFile of metaFiles) {
               const meta = HashMeta.create(metaFile);
+              /* istanbul ignore else */
               if (meta) {
                 deps.push({
                   url: meta.url.href,
@@ -88,9 +89,11 @@ export function getImportModules(ts: typeof typescript) {
           const args = node.arguments;
           const isDynamicImport =
             expression.kind === ts.SyntaxKind.ImportKeyword;
+          /* istanbul ignore else */
           if (isDynamicImport) {
             const argv = args[0] as typescript.StringLiteral;
 
+            /* istanbul ignore else */
             if (argv && ts.isStringLiteral(argv)) {
               moduleNode = argv;
             }
@@ -100,6 +103,7 @@ export function getImportModules(ts: typeof typescript) {
         else if (ts.isImportEqualsDeclaration(node)) {
           const ref = node.moduleReference;
 
+          /* istanbul ignore else */
           if (
             ts.isExternalModuleReference(ref) &&
             ref.expression &&
@@ -113,7 +117,8 @@ export function getImportModules(ts: typeof typescript) {
         // import xx from 'xx'
         else if (ts.isImportDeclaration(node)) {
           const spec = node.moduleSpecifier;
-          if (spec && ts.isStringLiteral(spec)) {
+          /* istanbul ignore else */
+          if (ts.isStringLiteral(spec)) {
             moduleNode = spec;
           }
         }
@@ -122,6 +127,7 @@ export function getImportModules(ts: typeof typescript) {
         // export * as xxx from "xxx";
         else if (ts.isExportDeclaration(node)) {
           const exportSpec = node.moduleSpecifier;
+          /* istanbul ignore else */
           if (exportSpec && ts.isStringLiteral(exportSpec)) {
             moduleNode = exportSpec;
           }
@@ -139,30 +145,42 @@ export function getImportModules(ts: typeof typescript) {
     // delint it
     delint(sourceFile);
 
-    const modules: ImportModule[] = moduleNodes.map(node => {
-      const numberOfSpaces = Math.abs(
-        // why plus 2?
-        // because `moduleNode.text` only contain the plaintext without two quotes
-        // eg `import "./test"`
-        node.end - node.pos - (node.text.length + 2)
+    const modules: ImportModule[] = sourceFile.typeReferenceDirectives
+      .map(directive => {
+        const start = sourceFile.getLineAndCharacterOfPosition(directive.pos);
+        const end = sourceFile.getLineAndCharacterOfPosition(directive.end);
+
+        return {
+          moduleName: directive.fileName,
+          location: { start, end }
+        };
+      })
+      .concat(
+        moduleNodes.map(node => {
+          const numberOfSpaces = Math.abs(
+            // why plus 2?
+            // because `moduleNode.text` only contain the plaintext without two quotes
+            // eg `import "./test"`
+            node.end - node.pos - (node.text.length + 2)
+          );
+
+          const startPosition = node.pos + numberOfSpaces + 1; // +1 to remove quotes
+          const endPosition = startPosition + node.text.length;
+
+          const start = sourceFile.getLineAndCharacterOfPosition(startPosition);
+          const end = sourceFile.getLineAndCharacterOfPosition(endPosition);
+
+          const location = {
+            start,
+            end
+          };
+
+          return {
+            moduleName: node.text,
+            location
+          };
+        })
       );
-
-      const startPosition = node.pos + numberOfSpaces + 1; // +1 to remove quotes
-      const endPosition = startPosition + node.text.length;
-
-      const start = sourceFile.getLineAndCharacterOfPosition(startPosition);
-      const end = sourceFile.getLineAndCharacterOfPosition(endPosition);
-
-      const location = {
-        start,
-        end
-      };
-
-      return {
-        moduleName: node.text,
-        location
-      };
-    });
 
     return modules;
   };

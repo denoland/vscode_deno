@@ -142,10 +142,9 @@ export class Diagnostics {
     const importModules = getImportModules(ts)(sourceFile);
 
     const diagnosticsForThisDocument: Diagnostic[] = [];
+    const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
 
     for (const importModule of importModules) {
-      const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
-
       const [resolvedModule] = resolver.resolveModules([
         importModule.moduleName
       ]);

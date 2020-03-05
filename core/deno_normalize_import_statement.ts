@@ -14,6 +14,7 @@ export function normalizeImportStatement(importStatement: string): string {
 
   const matcher = regexp.exec(importStatement);
 
+  /* istanbul ignore else */
   if (matcher) {
     const importModuleNames = matcher[1].trim();
     // relative path is always unix path
@@ -26,8 +27,10 @@ export function normalizeImportStatement(importStatement: string): string {
     );
     const rest = matcher[3];
 
+    /* istanbul ignore else */
     if (moduleAbsoluteFilepath.indexOf(getDenoDepsDir()) >= 0) {
       const cache = CacheModule.create(moduleAbsoluteFilepath);
+      /* istanbul ignore else */
       if (cache) {
         importStatement = `import ${importModuleNames} from "${cache.url}"${
           rest ? rest : ""

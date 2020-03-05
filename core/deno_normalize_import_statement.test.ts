@@ -29,4 +29,12 @@ test("core / deno_normalize_import_statement", () => {
   expect(
     normalizeImportStatement(`import { example } from "${cacheFilepath}"`)
   ).toEqual(`import { example } from "https://example.com/demo/mod.ts"`);
+
+  expect(
+    normalizeImportStatement(`import { example } from "${cacheFilepath}";`)
+  ).toEqual(`import { example } from "https://example.com/demo/mod.ts";`);
+
+  expect(normalizeImportStatement(`import { example } from "./foo";`)).toEqual(
+    `import { example } from "./foo";`
+  );
 });

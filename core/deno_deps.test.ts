@@ -33,7 +33,7 @@ test("core / deno_deps", async () => {
 test("core / getImportModules", async () => {
   const sourceFile = ts.createSourceFile(
     "./test.ts",
-    `// comment
+    `/// <reference types="https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts" />
 import "./foo.ts";
 import "/bar.ts";
 import("./test.tsx");
@@ -48,6 +48,13 @@ export * as xx from "export_as_default.ts";
   );
 
   expect(getImportModules(ts)(sourceFile)).toStrictEqual([
+    {
+      moduleName: "https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts",
+      location: {
+        start: { line: 0, character: 22 },
+        end: { line: 0, character: 93 }
+      }
+    },
     {
       moduleName: "./foo.ts",
       location: {
