@@ -381,9 +381,9 @@ Executable ${this.denoInfo.executablePath}`;
 
         range = new Range(
           range.start.line,
-          range.start.character - 1,
+          range.start.character,
           range.end.line,
-          range.end.character + 1
+          range.end.character
         );
 
         const rangeText = textEditor.document.getText(range);
@@ -499,6 +499,8 @@ Executable ${this.denoInfo.executablePath}`;
         const importMap = ImportMap.create(importMapFilepath);
 
         const moduleName = importMap.resolveModule(text);
+
+        this.output.appendLine(`Fetching "${moduleName}"`);
 
         await window.withProgress(
           {

@@ -147,10 +147,11 @@ export function getImportModules(ts: typeof typescript) {
         node.end - node.pos - (node.text.length + 2)
       );
 
-      const start = sourceFile.getLineAndCharacterOfPosition(
-        node.pos + numberOfSpaces + 1 // +1 to remove quotes
-      );
-      const end = sourceFile.getLineAndCharacterOfPosition(node.end - 1); // -1 to remove quotes
+      const startPosition = node.pos + numberOfSpaces + 1; // +1 to remove quotes
+      const endPosition = startPosition + node.text.length;
+
+      const start = sourceFile.getLineAndCharacterOfPosition(startPosition);
+      const end = sourceFile.getLineAndCharacterOfPosition(endPosition);
 
       const location = {
         start,

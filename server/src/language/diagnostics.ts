@@ -81,11 +81,11 @@ export class Diagnostics {
               {
                 start: {
                   line: v.range.start.line,
-                  character: v.range.start.character + 1
+                  character: v.range.start.character
                 },
                 end: {
                   line: v.range.end.line,
-                  character: v.range.end.character - 1
+                  character: v.range.end.character
                 }
               }
             ),
