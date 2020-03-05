@@ -26,6 +26,8 @@ export class ModuleResolver implements ModuleResolverInterface {
 
   private importMaps = ImportMap.create(this.importMapsFile);
 
+  private denoCacheFile?: DenoCacheModule;
+
   /**
    * Module resolver constructor
    * @param containingFile Absolute file path
@@ -44,6 +46,10 @@ export class ModuleResolver implements ModuleResolverInterface {
       path.isAbsolute(containingFile),
       `ModuleResolver filepath require absolute but got ${containingFile}`
     );
+
+    this.denoCacheFile = CacheModule.create(
+      this.containingFile
+    ) as DenoCacheModule;
   }
 
   /**
@@ -139,25 +145,12 @@ export class ModuleResolver implements ModuleResolverInterface {
   resolveModules(moduleNames: string[]): (ResolvedModule | undefined)[] {
     const resolvedModules: (ResolvedModule | undefined)[] = [];
 
-    let denoCacheFile: DenoCacheModule | undefined = undefined;
-
-    if (this.isDenoCacheFile) {
-      denoCacheFile = CacheModule.create(
-        this.containingFile
-      ) as DenoCacheModule;
-
-      assert(
-        denoCacheFile !== undefined,
-        `Cache module of "${this.containingFile}" should not be undefined`
-      );
-    }
-
     for (const moduleName of moduleNames) {
       const originModuleName = moduleName;
       // If the file is in Deno's cache layout
       // Then we should look up from the cache
-      if (this.isDenoCacheFile && denoCacheFile) {
-        const moduleCacheFile = denoCacheFile.resolveModule(moduleName);
+      if (this.denoCacheFile) {
+        const moduleCacheFile = this.denoCacheFile.resolveModule(moduleName);
 
         if (moduleCacheFile) {
           resolvedModules.push({
