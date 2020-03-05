@@ -49,7 +49,8 @@ export * as xx from "export_as_default.ts";
 
   expect(getImportModules(ts)(sourceFile)).toStrictEqual([
     {
-      moduleName: "https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts",
+      moduleName:
+        "https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts",
       location: {
         start: { line: 0, character: 22 },
         end: { line: 0, character: 93 }
