@@ -83,7 +83,8 @@ test("core / module_resolver: resolve module from local", () => {
       "demo/mod.ts",
       "https://another.example.com/path/mod.ts?foo=bar",
       "./module_not_exist.ts",
-      "https://module.not.exist.com/mod.ts"
+      "https://module.not.exist.com/mod.ts",
+      "https://example.com/x-typescript-types"
     ])
   ).toEqual([
     {
@@ -136,7 +137,24 @@ test("core / module_resolver: resolve module from local", () => {
       )
     },
     undefined,
-    undefined
+    undefined,
+    {
+      origin: "/x-typescript-types.d.ts",
+      filepath: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "example.com",
+        "7617203222d94a074bea3e57a893d74af5546f17c1f90760f37f46299faf0cb0"
+      ),
+      module: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "example.com",
+        "7617203222d94a074bea3e57a893d74af5546f17c1f90760f37f46299faf0cb0"
+      )
+    }
   ] as ResolvedModule[]);
 });
 

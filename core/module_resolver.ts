@@ -60,14 +60,7 @@ export class ModuleResolver implements ModuleResolverInterface {
   }
 
   private resolveFromRemote(httpModuleURL: string): ResolvedModule | undefined {
-    let url: URL;
-
-    try {
-      url = new URL(httpModuleURL);
-    } catch {
-      // If the URL is invalid, we consider this module to not exist
-      return;
-    }
+    const url = new URL(httpModuleURL);
 
     const originDir = path.join(
       getDenoDepsDir(),
@@ -153,10 +146,10 @@ export class ModuleResolver implements ModuleResolverInterface {
         this.containingFile
       ) as DenoCacheModule;
 
-      // if cache file not found
-      if (!denoCacheFile) {
-        return new Array(moduleNames.length).fill(undefined);
-      }
+      assert(
+        denoCacheFile !== undefined,
+        `Cache module of "${this.containingFile}" should not be undefined`
+      );
     }
 
     for (const moduleName of moduleNames) {
