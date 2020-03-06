@@ -56,7 +56,7 @@ export class DependencyTree {
         ts.ScriptKind.TSX
       );
 
-      const deps = await getImportModules(ts)(sourceFile);
+      const deps = getImportModules(ts)(sourceFile);
 
       for (const dep of deps) {
         if (!isHttpURL(dep.moduleName)) {

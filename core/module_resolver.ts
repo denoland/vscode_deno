@@ -40,7 +40,7 @@ export class ModuleResolver implements ModuleResolverInterface {
   ) {
     containingFile = normalizeFilepath(containingFile);
     if (importMapsFile) {
-      importMapsFile = normalizeFilepath(importMapsFile);
+      this.importMapsFile = normalizeFilepath(importMapsFile);
     }
     assert(
       path.isAbsolute(containingFile),
