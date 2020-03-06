@@ -88,16 +88,23 @@ connection.onInitialized(async () => {
     const currentDenoTypesContent = await deno.getTypes();
     const denoDtsFile = getDenoDts();
     const isExistDtsFile = await pathExists(denoDtsFile);
-    const fileOptions = { encoding: "utf8" };
 
     // if dst file not exist. then create a new one
     if (!isExistDtsFile) {
-      await fs.writeFile(denoDtsFile, currentDenoTypesContent, fileOptions);
+      await fs.writeFile(denoDtsFile, currentDenoTypesContent, { mode: 0o444 });
     } else {
-      const typesContent = await fs.readFile(denoDtsFile, fileOptions);
+      // set it to writable
+      await fs.chmod(denoDtsFile, 0o666);
+
+      const typesContent = await fs.readFile(denoDtsFile, { encoding: "utf8" });
 
       if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await fs.writeFile(denoDtsFile, currentDenoTypesContent, fileOptions);
+        await fs.writeFile(denoDtsFile, currentDenoTypesContent, {
+          mode: 0o444
+        });
+
+        // set to readonly
+        await fs.chmod(denoDtsFile, 0o444);
       }
     }
   } catch (err) {
