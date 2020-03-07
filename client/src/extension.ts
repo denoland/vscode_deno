@@ -35,6 +35,7 @@ import { TreeViewProvider } from "./tree_view_provider";
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
+import { isValidDenoDocument } from "../../core/util";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -330,14 +331,7 @@ export class Extension {
       return;
     }
     // not typescript | javascript file
-    if (
-      ![
-        "typescript",
-        "typescriptreact",
-        "javascript",
-        "javascriptreact"
-      ].includes(document.languageId)
-    ) {
+    if (!isValidDenoDocument(document.languageId)) {
       this.statusBar.hide();
       return;
     }
@@ -406,12 +400,7 @@ Executable ${this.denoInfo.executablePath}`;
         false
       );
       if (
-        [
-          "javascript",
-          "javascriptreact",
-          "typescript",
-          "typescriptreact"
-        ].includes(document.languageId) &&
+        isValidDenoDocument(document.languageId) &&
         !path.isAbsolute(relativeFilepath)
       ) {
         const config = this.getConfiguration(document.uri);
