@@ -58,8 +58,7 @@ export class CacheModule implements DenoCacheModule {
   resolveModule(moduleName: string): DenoCacheModule | void {
     // eg. import "/npm:tough-cookie@3?dew"
     if (moduleName.startsWith("/")) {
-      const url = new URL(this.url.href);
-      url.pathname = moduleName;
+      const url = new URL(this.url.origin + moduleName);
 
       const hash = hashURL(url);
 
@@ -86,8 +85,7 @@ export class CacheModule implements DenoCacheModule {
         moduleName
       );
 
-      const url = new URL(this.url.href);
-      url.pathname = targetUrlPath;
+      const url = new URL(this.url.origin + targetUrlPath);
 
       const hash = hashURL(url);
 
