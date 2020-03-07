@@ -62,7 +62,7 @@ class Deno {
       let stdout = "";
       let stderr = "";
       subprocess.on("exit", (exitCode: number) => {
-        if (exitCode !== 0 || stderr) {
+        if (exitCode !== 0) {
           reject(new Error(stderr));
         } else {
           resolve(stdout);

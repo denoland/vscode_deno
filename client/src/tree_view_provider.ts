@@ -12,11 +12,12 @@ import {
   window,
   Range
 } from "vscode";
-import { Extension } from "./extension";
+import { Disposable } from "vscode-languageclient";
 
+import { Extension } from "./extension";
 import { str2regexpStr, normalizeFilepath } from "../../core/util";
 import { Position } from "../../core/deno_deps";
-import { Disposable } from "vscode-languageclient";
+import { Request } from "../../core/const";
 
 interface URLDep {
   filepath: string;
@@ -103,7 +104,7 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
     // Get dependencies of the project
     if (element.type === ItemType.Workspace) {
       const depsMap = (await this.extension.client?.sendRequest(
-        "getDependencyTreeOfProject",
+        Request.analysisDependency,
         element.resourceUri?.toString()
       )) as { [url: string]: URLDep[] };
 

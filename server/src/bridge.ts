@@ -1,6 +1,8 @@
 import { IConnection } from "vscode-languageserver";
 import { WorkspaceFolder } from "vscode";
 
+import { Request } from "../../core/const";
+
 type Configuration = {
   enable: boolean;
   import_map?: string;
@@ -19,7 +21,7 @@ export class Bridge {
     const workspaceFolder:
       | WorkspaceFolder
       | undefined = await this.connection.sendRequest(
-      "getWorkspaceFolder",
+      Request.getWorkspaceFolder,
       uri
     );
 
@@ -31,7 +33,7 @@ export class Bridge {
    */
   async getWorkspaceConfig(uri: string): Promise<Configuration> {
     const config: Configuration = await this.connection.sendRequest(
-      "getWorkspaceConfig",
+      Request.getWorkspaceConfig,
       uri
     );
 

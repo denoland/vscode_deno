@@ -56,6 +56,7 @@ export class CacheModule implements DenoCacheModule {
    * @param moduleName The module name is for unix style
    */
   resolveModule(moduleName: string): DenoCacheModule | void {
+    /* istanbul ignore next */
     this.logger?.info(`resolve module ${moduleName} from ${this.url}`);
     // eg. import "/npm:tough-cookie@3?dew"
     if (moduleName.startsWith("/")) {

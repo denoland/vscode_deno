@@ -36,6 +36,7 @@ import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
 import { isValidDenoDocument } from "../../core/util";
+import { Request, Notification } from "../../core/const";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
@@ -301,17 +302,20 @@ export class Extension {
 
         this.clientReady = true;
 
-        client.onNotification("init", (info: DenoInfo) => {
+        client.onNotification(Notification.init, (info: DenoInfo) => {
           this.denoInfo = { ...this.denoInfo, ...info };
           this.updateStatusBarVisibility(window.activeTextEditor?.document);
         });
-        client.onNotification("error", window.showErrorMessage.bind(window));
+        client.onNotification(
+          Notification.error,
+          window.showErrorMessage.bind(window)
+        );
 
-        client.onRequest("getWorkspaceFolder", async (uri: string) =>
+        client.onRequest(Request.getWorkspaceFolder, async (uri: string) =>
           workspace.getWorkspaceFolder(Uri.parse(uri))
         );
 
-        client.onRequest("getWorkspaceConfig", async (uri: string) => {
+        client.onRequest(Request.getWorkspaceConfig, async (uri: string) => {
           const workspaceFolder = workspace.getWorkspaceFolder(Uri.parse(uri));
 
           const config = this.getConfiguration(
@@ -390,7 +394,7 @@ Executable ${this.denoInfo.executablePath}`;
   // update diagnostic for a Document
   private updateDiagnostic(uri: Uri) {
     if (this.client && this.clientReady) {
-      this.client.sendNotification("updateDiagnostic", uri.toString());
+      this.client.sendNotification(Notification.diagnostic, uri.toString());
     }
   }
   private sync(document?: TextDocument) {

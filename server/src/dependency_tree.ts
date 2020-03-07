@@ -10,6 +10,7 @@ import { getImportModules } from "../../core/deno_deps";
 import { FileWalker } from "../../core/file_walker";
 import { ImportMap } from "../../core/import_map";
 import { isHttpURL } from "../../core/util";
+import { Request } from "../../core/const";
 
 interface URLDep {
   filepath: string;
@@ -21,7 +22,7 @@ type DependencyTreeMap = { [key: string]: URLDep[] };
 export class DependencyTree {
   constructor(connection: IConnection, private bridge: Bridge) {
     connection.onRequest(
-      "getDependencyTreeOfProject",
+      Request.analysisDependency,
       this.getDependencyTreeOfProject.bind(this)
     );
   }

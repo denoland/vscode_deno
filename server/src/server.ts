@@ -31,6 +31,7 @@ import { CodeLens } from "./language/code_lens";
 
 import { getDenoDir, getDenoDts } from "../../core/deno";
 import { pathExists } from "../../core/util";
+import { Notification } from "../../core/const";
 
 const SERVER_NAME = "Deno Language Server";
 process.title = SERVER_NAME;
@@ -108,10 +109,10 @@ connection.onInitialized(async () => {
       }
     }
   } catch (err) {
-    connection.sendNotification("error", err.message);
+    connection.sendNotification(Notification.error, err.message);
     return;
   }
-  connection.sendNotification("init", {
+  connection.sendNotification(Notification.init, {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
     DENO_DIR: getDenoDir(),

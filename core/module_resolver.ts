@@ -142,6 +142,7 @@ export class ModuleResolver implements ModuleResolverInterface {
     const resolvedModules: (ResolvedModule | undefined)[] = [];
 
     for (const moduleName of moduleNames) {
+      /* istanbul ignore next */
       this.logger?.info(
         `resolve module ${moduleName} from ${this.containingFile}`
       );
