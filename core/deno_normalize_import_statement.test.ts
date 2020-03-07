@@ -1,6 +1,7 @@
 import * as path from "path";
 
 import { normalizeImportStatement } from "./deno_normalize_import_statement";
+import { str2regexpStr } from "./util";
 
 const TEST_DIR = path.join(__dirname, "..", "__test__");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
@@ -32,10 +33,9 @@ test("core / deno_normalize_import_statement", () => {
   expect(
     normalizeImportStatement(
       __filename,
-      `import { example } from "${path.posix.relative(
-        __dirname,
-        cacheFilepath
-      )}"`
+      `import { example } from "${path
+        .relative(__dirname, cacheFilepath)
+        .replace(new RegExp(str2regexpStr(path.sep), "g"), path.posix.sep)}"`
     )
   ).toEqual(`import { example } from "https://example.com/demo/mod.ts"`);
 
