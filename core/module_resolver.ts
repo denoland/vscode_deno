@@ -20,10 +20,6 @@ export interface ModuleResolverInterface {
 }
 
 export class ModuleResolver implements ModuleResolverInterface {
-  // Whether the file is a cache file for Deno
-  private isDenoCacheFile: boolean =
-    this.containingFile.indexOf(getDenoDepsDir()) === 0; // Whether the current module is in the Deno dependency directory
-
   private importMaps = ImportMap.create(this.importMapsFile);
 
   private denoCacheFile?: DenoCacheModule;
