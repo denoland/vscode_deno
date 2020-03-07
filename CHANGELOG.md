@@ -1,3 +1,15 @@
+## [3.2.1](https://github.com/axetroy/vscode-deno/compare/v3.2.0...v3.2.1) (2020-03-07)
+
+### Bug Fixes
+
+- auto-import not work for some modules. close [#44](https://github.com/axetroy/vscode-deno/issues/44) ([11d38b3](https://github.com/axetroy/vscode-deno/commit/11d38b3f46b8521ec1ea89565f11ec65a9d2cb1d))
+- If query exists in url, module will not be parsed correctly ([a8965b5](https://github.com/axetroy/vscode-deno/commit/a8965b5a5742b8ae473d3da85f8fe4829aee82ba))
+
+### Features
+
+- copy url if click code_lens ([e3829d8](https://github.com/axetroy/vscode-deno/commit/e3829d85c355866097f1b24f845e9accc1fd8904))
+- make Deno declaration file read-only ([fba8d89](https://github.com/axetroy/vscode-deno/commit/fba8d89f70bbf42f0ea34eff4173ed0de00ef271))
+
 # [3.2.0](https://github.com/axetroy/vscode-deno/compare/v3.1.1...v3.2.0) (2020-03-04)
 
 ### Features
