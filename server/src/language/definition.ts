@@ -5,10 +5,10 @@ import {
   Location
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import * as ts from "typescript";
 import { URI } from "vscode-uri";
 
 import { getDenoTypesHintsFromDocument } from "../deno_types";
+import { pathExists } from "../../../core/util";
 
 export class Definition {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
@@ -33,7 +33,7 @@ export class Definition {
           position.character >= start.character &&
           position.character <= end.character
         ) {
-          if (ts.sys.fileExists(typeComment.filepath)) {
+          if ((await pathExists(typeComment.filepath)) === true) {
             locations.push(
               Location.create(
                 URI.file(typeComment.filepath).toString(),

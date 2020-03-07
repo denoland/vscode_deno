@@ -65,3 +65,12 @@ export function hashURL(url: URL): string {
     .update(url.pathname + url.search)
     .digest("hex");
 }
+
+export function isValidDenoDocument(languageID: string): boolean {
+  return [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ].includes(languageID);
+}

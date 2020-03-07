@@ -4,7 +4,8 @@ import {
   str2regexpStr,
   isHttpURL,
   hashURL,
-  normalizeFilepath
+  normalizeFilepath,
+  isValidDenoDocument
 } from "./util";
 
 test("core / util / pathExists", async () => {
@@ -53,4 +54,13 @@ test("core / util / normalizeFilepath", () => {
   }
 
   expect(normalizeFilepath("d:\\path\\to\\file")).toEqual("D:\\path\\to\\file");
+});
+
+test("core / util / isValidDenoDocument", () => {
+  expect(isValidDenoDocument("foo")).toBe(false);
+  expect(isValidDenoDocument("bar")).toBe(false);
+  expect(isValidDenoDocument("javascript")).toBe(true);
+  expect(isValidDenoDocument("javascriptreact")).toBe(true);
+  expect(isValidDenoDocument("typescript")).toBe(true);
+  expect(isValidDenoDocument("typescriptreact")).toBe(true);
 });

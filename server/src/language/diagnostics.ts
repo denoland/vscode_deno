@@ -16,7 +16,7 @@ import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
-import { pathExists, isHttpURL } from "../../../core/util";
+import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
 import { getImportModules } from "../../../core/deno_deps";
 
@@ -108,7 +108,7 @@ export class Diagnostics {
     documents.onDidChangeContent(params => this.diagnosis(params.document));
   }
   async generate(document: TextDocument): Promise<Diagnostic[]> {
-    if (!["typescript", "typescriptreact"].includes(document.languageId)) {
+    if (!isValidDenoDocument(document.languageId)) {
       return [];
     }
 
