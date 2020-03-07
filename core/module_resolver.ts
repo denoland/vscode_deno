@@ -142,6 +142,9 @@ export class ModuleResolver implements ModuleResolverInterface {
     const resolvedModules: (ResolvedModule | undefined)[] = [];
 
     for (const moduleName of moduleNames) {
+      this.logger?.info(
+        `resolve module ${moduleName} from ${this.containingFile}`
+      );
       const originModuleName = moduleName;
       // If the file is in Deno's cache layout
       // Then we should look up from the cache
