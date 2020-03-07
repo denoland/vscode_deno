@@ -23,18 +23,34 @@ afterAll(() => {
 
 test("core / deno_normalize_import_statement", () => {
   expect(
-    normalizeImportStatement(`import * as demo from "${cacheFilepath}"`)
+    normalizeImportStatement(
+      __filename,
+      `import * as demo from "${cacheFilepath}"`
+    )
   ).toEqual(`import * as demo from "https://example.com/demo/mod.ts"`);
 
   expect(
-    normalizeImportStatement(`import { example } from "${cacheFilepath}"`)
+    normalizeImportStatement(
+      __filename,
+      `import { example } from "${path.posix.relative(
+        __dirname,
+        cacheFilepath
+      )}"`
+    )
   ).toEqual(`import { example } from "https://example.com/demo/mod.ts"`);
 
   expect(
-    normalizeImportStatement(`import { example } from "${cacheFilepath}";`)
-  ).toEqual(`import { example } from "https://example.com/demo/mod.ts";`);
+    normalizeImportStatement(__filename, `import { example } from "./foo";`)
+  ).toEqual(`import { example } from "./foo";`);
 
-  expect(normalizeImportStatement(`import { example } from "./foo";`)).toEqual(
-    `import { example } from "./foo";`
-  );
+  expect(
+    normalizeImportStatement(__filename, `import { example } from "/foo"`)
+  ).toEqual(`import { example } from "/foo"`);
+
+  expect(
+    normalizeImportStatement(
+      __filename,
+      `import { example } from "https://example.com/foo/bar.ts";`
+    )
+  ).toEqual(`import { example } from "https://example.com/foo/bar.ts";`);
 });

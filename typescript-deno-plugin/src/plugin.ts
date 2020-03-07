@@ -246,7 +246,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             for (const change of ca.changes) {
               if (!change.isNewFile) {
                 for (const tc of change.textChanges) {
-                  tc.newText = normalizeImportStatement(tc.newText);
+                  tc.newText = normalizeImportStatement(
+                    fileName,
+                    tc.newText,
+                    this.logger
+                  );
                 }
               }
             }
@@ -260,6 +264,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
               const text = source.text;
 
               const absoluteFilepath = path.posix.resolve(
+                path.dirname(fileName),
                 normalizeFilepath(text)
               );
 
