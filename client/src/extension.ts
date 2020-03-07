@@ -18,7 +18,8 @@ import {
   CodeActionContext,
   ProgressLocation,
   TextDocument,
-  languages
+  languages,
+  env
 } from "vscode";
 import {
   LanguageClient,
@@ -477,6 +478,10 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.registerCommand("restart_server", async () => {
       this.StartDenoLanguageServer();
+    });
+
+    this.registerCommand("_copy_text", async (text: string) => {
+      await env.clipboard.writeText(text);
     });
 
     this.registerQuickFix({
