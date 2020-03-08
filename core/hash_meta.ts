@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 
 import { pathExistsSync, normalizeFilepath } from "./util";
 
@@ -11,7 +12,9 @@ type MetaFileContent = {
 
 export enum Type {
   JavaScript = "javascript",
+  JavaScriptReact = "javascriptreact",
   TypeScript = "typescript",
+  TypeScriptReact = "typescriptreact",
   JSON = "json",
   WebAssembly = "WebAssembly",
   PlainText = "plaintext"
@@ -25,12 +28,15 @@ interface HashMetaInterface {
   type: Type;
 }
 
-const regMap: [RegExp, Type][] = [
-  [/.tsx?$/, Type.TypeScript],
-  [/.jsx?$/, Type.JavaScript],
-  [/.json$/, Type.JSON],
-  [/.wasm$/, Type.WebAssembly]
-];
+const extNameMap: { [key: string]: Type } = {
+  ".ts": Type.TypeScript,
+  ".tsx": Type.TypeScriptReact,
+  ".js": Type.JavaScript,
+  ".jsx": Type.JavaScriptReact,
+  ".mjs": Type.JavaScript,
+  ".json": Type.JSON,
+  ".wasm": Type.WebAssembly
+};
 
 const contentTypeMap: [string[], Type][] = [
   [
@@ -70,10 +76,10 @@ export class HashMeta implements HashMetaInterface {
     public headers: HTTPHeaders
   ) {}
   get type(): Type {
-    for (const [regexp, type] of regMap) {
-      if (regexp.test(this.url.pathname)) {
-        return type;
-      }
+    const extname = path.posix.extname(this.url.pathname);
+
+    if (extname && extNameMap[extname]) {
+      return extNameMap[extname];
     }
 
     const contentType = (this.headers["content-type"] || "").toLowerCase();
