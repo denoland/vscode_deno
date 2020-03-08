@@ -2,7 +2,7 @@ import * as path from "path";
 import { readFileSync } from "fs";
 import assert from "assert";
 
-import { pathExistsSync, str2regexpStr, normalizeFilepath } from "./util";
+import { pathExistsSync, escapeRegExp, normalizeFilepath } from "./util";
 
 export interface ImportMapInterface {
   filepath?: string;
@@ -52,7 +52,7 @@ export class ImportMap implements ImportMapInterface {
   }
   resolveModule(moduleName: string): string {
     for (const [prefix, mapModule] of this) {
-      const reg = new RegExp("^" + str2regexpStr(prefix));
+      const reg = new RegExp("^" + escapeRegExp(prefix));
       if (reg.test(moduleName)) {
         moduleName = moduleName.replace(reg, mapModule);
         return moduleName;

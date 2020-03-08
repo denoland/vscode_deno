@@ -15,7 +15,7 @@ import {
 import { Disposable } from "vscode-languageclient";
 
 import { Extension } from "./extension";
-import { str2regexpStr, normalizeFilepath } from "../../core/util";
+import { escapeRegExp, normalizeFilepath } from "../../core/util";
 import { Position } from "../../core/deno_deps";
 import { Request } from "../../core/const";
 
@@ -151,10 +151,10 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
       const filename = normalizeFilepath(
         normalizeFilepath(r.filepath)
           .replace(
-            new RegExp("^" + str2regexpStr(workspaceFolderFilepath as string)),
+            new RegExp("^" + escapeRegExp(workspaceFolderFilepath as string)),
             ""
           )
-          .replace(new RegExp(str2regexpStr(path.sep), "gm"), path.posix.sep)
+          .replace(new RegExp(escapeRegExp(path.sep), "gm"), path.posix.sep)
       );
 
       const item: Item = {

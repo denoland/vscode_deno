@@ -1,7 +1,7 @@
 import {
   pathExists,
   pathExistsSync,
-  str2regexpStr,
+  escapeRegExp,
   isHttpURL,
   hashURL,
   normalizeFilepath,
@@ -20,11 +20,11 @@ test("core / util / pathExistsSync", () => {
   expect(pathExistsSync(__filename)).toBe(true);
 });
 
-test("core / util / str2regexpStr", () => {
-  expect(str2regexpStr("/User/demo/file/path")).toEqual("/User/demo/file/path");
+test("core / util / escapeRegExp", () => {
+  expect(escapeRegExp("/User/demo/file/path")).toEqual("/User/demo/file/path");
 
   expect(
-    str2regexpStr("C:\\Users\\runneradmin\\AppData\\Local\\deno\\deps\\")
+    escapeRegExp("C:\\Users\\runneradmin\\AppData\\Local\\deno\\deps\\")
   ).toEqual(
     "C:\\\\Users\\\\runneradmin\\\\AppData\\\\Local\\\\deno\\\\deps\\\\"
   );
