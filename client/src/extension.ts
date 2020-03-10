@@ -475,6 +475,7 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.registerCommand("_copy_text", async (text: string) => {
       await env.clipboard.writeText(text);
+      await window.showInformationMessage(`Copied to clipboard.`);
     });
 
     this.registerQuickFix({
