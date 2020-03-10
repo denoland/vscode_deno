@@ -207,8 +207,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
       const ignoreCodeMapInDeno: { [k: number]: boolean } = {
         2691: true, // can not import module which end with `.ts`
-        1308: true, // support top level await below typescript 3.8.0
-        1378: true, // support top level await in typescript^3.8.0
+        // TODO: remove this once typescript support `for await` at top level
         1103: true // support `for of await`
       };
 

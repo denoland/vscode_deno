@@ -1,6 +1,6 @@
 {
   "engines": {
-    "vscode": "^1.42.0"
+    "vscode": "^1.43.0"
   },
   "dependencies": {
     "execa": "4.0.0",
