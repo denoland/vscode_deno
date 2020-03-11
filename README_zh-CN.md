@@ -139,8 +139,6 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.enabled` - 是否启用扩展. 默认值 `false`
 
-- `deno.dts_file` - TypeScript 声明文件 (.d.ts) 的路径. 默认值 `[]`
-
 - `deno.import_map` - Import Map 的文件路径. 默认值 `null`
 
 我们不推荐你在全局配置中配置他们。而应该在项目目录的 `.vscode/settings.json` 文件中
@@ -149,7 +147,6 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 // .vscode/settings.json
 {
   "deno.enable": true,
-  "deno.dts_file": ["./path/to/your/customize/lib.d.ts"],
   "deno.import_map": "./path/to/import_map.json"
 }
 ```

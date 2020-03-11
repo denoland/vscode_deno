@@ -43,7 +43,6 @@ const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
 type SynchronizedConfiguration = {
   enable?: boolean;
-  dts_file?: string[];
   import_map?: string;
 };
 
@@ -141,7 +140,6 @@ export class Extension {
     }
 
     withConfigValue(_config, config, "enable");
-    withConfigValue(_config, config, "dts_file");
     withConfigValue(_config, config, "import_map");
 
     if (!config.enable) {
@@ -150,10 +148,6 @@ export class Extension {
 
     if (!config.import_map) {
       config.import_map = undefined;
-    }
-
-    if (!config.dts_file) {
-      config.dts_file = [];
     }
 
     return config;

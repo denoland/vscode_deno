@@ -3,20 +3,17 @@ import equal from "deep-equal";
 
 export type DenoPluginConfig = {
   enable: boolean;
-  dts_file: string[];
   import_map: string;
 };
 
 type UpdateDenoPluginConfig = {
   enable?: boolean;
-  dts_file?: string[];
   import_map?: string;
 };
 
 export class ConfigurationManager {
   private static readonly defaultConfiguration: DenoPluginConfig = {
     enable: false,
-    dts_file: [],
     import_map: ""
   };
 

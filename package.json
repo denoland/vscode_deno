@@ -98,19 +98,6 @@
             false
           ]
         },
-        "deno.dts_file": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "markdownDescription": "%deno.config.dts_file%",
-          "scope": "resource",
-          "examples": [
-            "./deno.d.ts",
-            "/absolute/path/to/deno.d.ts"
-          ]
-        },
         "deno.import_map": {
           "type": "string",
           "markdownDescription": "%deno.config.import_map%",

@@ -139,8 +139,6 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 - `deno.enabled` - Enable extension. Default is `false`
 
-- `deno.dts_file` - The file paths of the TypeScript declaration file (.d.ts). Default is `[]`
-
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
@@ -149,7 +147,6 @@ We recommend that you do not set global configuration. It should be configured i
 // .vscode/settings.json
 {
   "deno.enable": true,
-  "deno.dts_file": ["./path/to/your/customize/lib.d.ts"],
   "deno.import_map": "./path/to/import_map.json"
 }
 ```
