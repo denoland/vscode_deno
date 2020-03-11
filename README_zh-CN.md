@@ -1,4 +1,4 @@
-English | [中文简体](README_zh-CN.md)
+[English](README.md) | 中文简体
 
 <div align="center">
 
@@ -18,78 +18,78 @@ English | [中文简体](README_zh-CN.md)
 ![GitHub repo size](https://img.shields.io/github/repo-size/axetroy/vscode-deno)
 ![GitHub](https://img.shields.io/github/license/axetroy/vscode-deno)
 
-Adds Deno support for the Visual Studio Code.
+添加 Visual Studio Code 对 Deno 的支持.
 
 ![screenshot](screenshot/screenshot.gif)
 
 </div>
 
-Features:
+特性:
 
-<details><summary>Full intellisense support</summary>
+<details><summary>Deno 的智能提示</summary>
 
 ![Deno Support](screenshot/deno.gif)
 
 </details>
 
-<details><summary>Intelligent module import</summary>
+<details><summary>模块导入自动补全</summary>
 
 ![Import](screenshot/import.gif)
 
 </details>
 
-<details><summary>Supports importing ECMAScript modules</summary>
+<details><summary>支持加载 ES 模块</summary>
 
 ![Import](screenshot/ecma.gif)
 
 </details>
 
-<details><summary>Diagnostics and quick fixes</summary>
+<details><summary>代码诊断和快速修复</summary>
 
 ![Diagnostics](screenshot/diagnostics.gif)
 
 </details>
 
-<details><summary>Optional use of Deno's built in formatting</summary>
+<details><summary>可选的 Deno 内置的格式化工具</summary>
 
 ![Format](screenshot/format.gif)
 
 </details>
 
-<details><summary>Client/Server model with LSP</summary>
+<details><summary>基于 LSP 的 C/S 架构模型</summary>
 
-The extension separates Client/Server with LSP
+该扩展使用 LSP 分离出 客户端/服务端
 
-This means that complicated problems are handled on the server-side
+这意味着复杂的工作处理将会在服务端运行
 
-The extension won't block your Visual Studio Code
+扩展不会让你的 Visual Studio Code 变慢
 
 ![Process](screenshot/process.png)
 
 </details>
 
-<details><summary>Supports `Import Maps` for Deno</summary>
+<details><summary>支持 `Import Maps` 的模块导入</summary>
 
 ![import_map](screenshot/import_map.gif)
 
 </details>
 
-<details><summary>External type definitions</summary>
+<details><summary>支持外部的类型声明</summary>
 
-The extension supports the following ways to load external declaration files
+该扩展支持以下方式加载外部声明的文件
 
-> These are all supported by Deno
+> 这些方式都被 Deno 支持
 
-1. ~Compiler hint~
+1. ~编译注释~
 
 ```ts
 // @deno-types="./foo.d.ts"
 import * as foo from "./foo.js";
 ```
 
-> This will not be implemented in then extensions.
+> 目前它不会在扩展中实现.
 
-2. `Triple-slash` reference directive
+2. `三斜杠`引用指令
 
 ```ts
 /// <reference types="https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts" />
@@ -99,7 +99,7 @@ import { format } from "https://deno.land/x/date_fns/index.js";
 format(new Date(), "yyyy/MM/DD");
 ```
 
-3. `X-TypeScript-Types` custom header
+3. `X-TypeScript-Types` 自定义返回头
 
 ```ts
 import { array } from "https://cdn.pika.dev/fp-ts";
@@ -110,21 +110,21 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 </details>
 
-<details><summary>Deno version manager integration</summary>
+<details><summary>Deno 版本管理的集成</summary>
 
-Investigating integration into the extension
+我已经写了一个 Deno 的版本管理工具 [github.com/axetroy/dvm](https://github.com/axetroy/dvm)
 
-We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Deno version.
+我推荐你使用它进行版本管理
 
 </details>
 
-## Usage
+## 使用方式
 
-1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
+1. 从 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno) 下载并启用扩展
 
-2. Enable Deno for your project:
+2. 为你的 Deno 项目启用扩展:
 
-   Create a file `.vscode/settings.json` in your project folder:
+   在 Deno 的项目目录中创建文件 `.vscode/settings.json`:
 
    ```json5
    // .vscode/settings.json
@@ -135,15 +135,15 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 3. Enjoy!
 
-## Configuration
+## 配置
 
-- `deno.enabled` - Enable extension. Default is `false`
+- `deno.enabled` - 是否启用扩展. 默认值 `false`
 
-- `deno.dts_file` - The file paths of the TypeScript declaration file (.d.ts). Default is `[]`
+- `deno.dts_file` - TypeScript 声明文件 (.d.ts) 的路径. 默认值 `[]`
 
-- `deno.import_map` - The file paths of Import Map. Default is `null`
+- `deno.import_map` - Import Map 的文件路径. 默认值 `null`
 
-We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
+我们不推荐你在全局配置中配置他们。而应该在项目目录的 `.vscode/settings.json` 文件中
 
 ```json5
 // .vscode/settings.json
@@ -154,7 +154,7 @@ We recommend that you do not set global configuration. It should be configured i
 }
 ```
 
-This extension also provides Deno's formatting tools, settings are in `.vscode/settings.json`:
+扩展也提供了 Deno 的格式化工具，通过在 `.vscode/settings.json` 中设置
 
 ```json5
 // .vscode/settings.json
@@ -168,13 +168,13 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 }
 ```
 
-## Contribute
+## 参与贡献
 
-Follow these steps to contribute, the community needs your strength.
+跟随以下步骤参与贡献，社区的发展需要您的力量
 
-1. Fork project
+1. Fork 项目
 
-2. Clone onto your computer:
+2. 克隆到您的电脑中:
 
    ```bash
    $ git clone https://github.com/your_github_name/vscode-deno.git
@@ -182,23 +182,22 @@ Follow these steps to contribute, the community needs your strength.
    $ yarn # or npm install
    ```
 
-3. Disable extension in Visual Studio Code if you have extension before
+3. 如果你之前已经安装并启用了扩展，请先禁用
 
-4. Start debug extension
+4. 开始调试扩展
 
-   Open Visual Studio Code, find the `Run` item in the sidebar
-   and then run `Launch Client` task.
+   打开 Visual Studio Code, 在侧边栏找到 `Run` 项后运行 `Launch Client` 任务
 
-   Wait for Visual Studio Code debugger to open a new window
+   然后等待 Visual Studio Code 调试器打开新窗口
 
-5. Try updating Visual Studio Code and restart the debugger
+5. 试试在 Visual Studio Code 中更新扩展的代码，然后重新运行任务
 
-6. Finally, push to your fork and send a PR
+6. 最后, 把最新的代码推送到您的分支，然后发起一个 PR
 
-## Thanks
+## 致谢
 
-This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno), Thanks for their contributions.
+这个项目最初是 [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno) 的一个分支, 感谢他们的贡献。
 
-## License
+## 开源许可
 
 The [MIT License](LICENSE)
