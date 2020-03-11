@@ -16,7 +16,6 @@ export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
   static readonly PLUGIN_NAME = "typescript-deno-plugin";
   private readonly configurationManager = new ConfigurationManager();
-  private ready = false;
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
   private readonly DEFAULT_OPTIONS: ts_module.CompilerOptions = {
     allowJs: true,
@@ -50,53 +49,38 @@ export class DenoPlugin implements ts_module.server.PluginModule {
   constructor(private readonly typescript: typeof ts_module) {}
 
   create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
-    const projectDirectory = info.project.getCurrentDirectory();
+    const { project, languageService, languageServiceHost } = info;
+    const projectDirectory = project.getCurrentDirectory();
 
     // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
     process.chdir(projectDirectory);
 
-    this.configurationManager.onUpdatedConfig(() => {
-      if (this.ready) {
-        info.project.refreshDiagnostics();
-        info.project.updateGraph();
-        info.languageService.getProgram()?.emit();
-      }
-    });
-
     this.logger = Logger.forPlugin(DenoPlugin.PLUGIN_NAME, info);
 
-    const vscodeSettings = readConfigurationFromVscodeSettings(
-      projectDirectory
-    );
-
-    if (vscodeSettings) {
-      this.configurationManager.update(vscodeSettings);
-    }
-
     this.logger.info(`Create typescript-deno-plugin`);
-    const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(
-      info.languageServiceHost
+    const getCompilationSettings = languageServiceHost.getCompilationSettings.bind(
+      languageServiceHost
     );
-    const getScriptFileNames = info.languageServiceHost.getScriptFileNames.bind(
-      info.languageServiceHost
+    const getScriptFileNames = languageServiceHost.getScriptFileNames.bind(
+      languageServiceHost
     );
     // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-    const resolveModuleNames = info.languageServiceHost.resolveModuleNames?.bind(
-      info.languageServiceHost
+    const resolveModuleNames = languageServiceHost.resolveModuleNames?.bind(
+      languageServiceHost
     );
-    const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics.bind(
-      info.languageService
-    );
-
-    const resolveTypeReferenceDirectives = info.languageServiceHost.resolveTypeReferenceDirectives?.bind(
-      info.languageServiceHost
+    const getSemanticDiagnostics = languageService.getSemanticDiagnostics.bind(
+      languageService
     );
 
-    const getCompletionEntryDetails = info.languageService.getCompletionEntryDetails.bind(
-      info.languageService
+    const resolveTypeReferenceDirectives = languageServiceHost.resolveTypeReferenceDirectives?.bind(
+      languageServiceHost
     );
 
-    info.languageServiceHost.getCompilationSettings = () => {
+    const getCompletionEntryDetails = languageService.getCompletionEntryDetails.bind(
+      languageService
+    );
+
+    languageServiceHost.getCompilationSettings = () => {
       const projectConfig = getCompilationSettings();
 
       if (!this.configurationManager.config.enable) {
@@ -114,7 +98,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       return compilationSettings;
     };
 
-    info.languageServiceHost.getScriptFileNames = () => {
+    languageServiceHost.getScriptFileNames = () => {
       const scriptFileNames = getScriptFileNames();
 
       if (!this.configurationManager.config.enable) {
@@ -127,7 +111,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         .map(filepath => {
           const absoluteFilepath = path.isAbsolute(filepath)
             ? filepath
-            : path.resolve(info.project.getCurrentDirectory(), filepath);
+            : path.resolve(project.getCurrentDirectory(), filepath);
           return absoluteFilepath;
         })
         .filter(v => v.endsWith(this.typescript.Extension.Dts));
@@ -142,7 +126,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     };
 
     if (resolveTypeReferenceDirectives) {
-      info.languageServiceHost.resolveTypeReferenceDirectives = (
+      languageServiceHost.resolveTypeReferenceDirectives = (
         typeDirectiveNames: string[],
         containingFile: string,
         ...rest
@@ -155,7 +139,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           );
         }
 
-        const realpath = info.project.realpath;
+        const realpath = project.realpath;
 
         // in Windows.
         // containingFile may be a unix-like style
@@ -169,14 +153,14 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         // containingFile may be `untitled: ^ Untitled-1`
         // This is not a valid file path and may cause the typescript server to crash
         if (/^untitled:/.test(realContainingFile)) {
-          realContainingFile = info.project.getCurrentDirectory();
+          realContainingFile = project.getCurrentDirectory();
         }
 
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
             ? this.configurationManager.config.import_map
             : path.resolve(
-                info.project.getCurrentDirectory(),
+                project.getCurrentDirectory(),
                 this.configurationManager.config.import_map
               )
           : undefined;
@@ -198,7 +182,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       };
     }
 
-    info.languageService.getSemanticDiagnostics = (filename: string) => {
+    languageService.getSemanticDiagnostics = (filename: string) => {
       const diagnostics = getSemanticDiagnostics(filename);
 
       if (!this.configurationManager.config.enable) {
@@ -216,7 +200,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       });
     };
 
-    info.languageService.getCompletionEntryDetails = (
+    languageService.getCompletionEntryDetails = (
       fileName: string,
       position: number,
       name: string,
@@ -286,7 +270,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     };
 
     if (resolveModuleNames) {
-      info.languageServiceHost.resolveModuleNames = (
+      languageServiceHost.resolveModuleNames = (
         moduleNames: string[],
         containingFile: string,
         ...rest
@@ -295,7 +279,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           return resolveModuleNames(moduleNames, containingFile, ...rest);
         }
 
-        const realpath = info.project.realpath;
+        const realpath = project.realpath;
 
         // in Windows.
         // containingFile may be a unix-like style
@@ -309,14 +293,14 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         // containingFile may be `untitled: ^ Untitled-1`
         // This is not a valid file path and may cause the typescript server to crash
         if (/^untitled:/.test(realContainingFile)) {
-          realContainingFile = info.project.getCurrentDirectory();
+          realContainingFile = project.getCurrentDirectory();
         }
 
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
             ? this.configurationManager.config.import_map
             : path.resolve(
-                info.project.getCurrentDirectory(),
+                project.getCurrentDirectory(),
                 this.configurationManager.config.import_map
               )
           : undefined;
@@ -358,9 +342,21 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       };
     }
 
-    this.ready = true;
+    const vscodeSettings = readConfigurationFromVscodeSettings(
+      projectDirectory
+    );
 
-    return info.languageService;
+    if (vscodeSettings) {
+      this.configurationManager.update(vscodeSettings);
+    }
+
+    this.configurationManager.onUpdatedConfig(() => {
+      project.refreshDiagnostics();
+      project.updateGraph();
+      languageService.getProgram()?.emit();
+    });
+
+    return languageService;
   }
 
   onConfigurationChanged(c: DenoPluginConfig) {
