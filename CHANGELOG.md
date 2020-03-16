@@ -1,3 +1,40 @@
+# [3.3.0](https://github.com/axetroy/vscode-deno/compare/v3.2.1...v3.3.0) (2020-03-16)
+
+### Bug Fixes
+
+- cannot resolve module if location headers is relative or absolute path. close [#97](https://github.com/axetroy/vscode-deno/issues/97) ([75d6027](https://github.com/axetroy/vscode-deno/commit/75d602755f81a0c22331e08b1c97fdf6782fd9ac))
+
+### Features
+
+- add copy to clipboard message ([4dd4b8d](https://github.com/axetroy/vscode-deno/commit/4dd4b8dc2be31a4d0b628fac638981013284b36a))
+- remove `deno.dts_file` configuration ([#94](https://github.com/axetroy/vscode-deno/issues/94)) ([f06e852](https://github.com/axetroy/vscode-deno/commit/f06e852b60883e7499a5c7976d026511bd6dd0ad))
+
+### BREAKING CHANGES
+
+- no more use `deno.dts_file` anymore
+  We think this configuration item is redundant
+
+  You can configure external declaration files in `tsconfig.json`
+
+  before:
+
+  ```json5
+  //.vscode/settings.json
+  {
+    "deno.enable": true,
+    "deno.dts_file": ["./path/to/demo.d.ts"]
+  }
+  ```
+
+  after:
+
+  ```json5
+  //.vscode/settings.json
+  {
+    "deno.enable": true
+  }
+  ```
+
 ## [3.2.1](https://github.com/axetroy/vscode-deno/compare/v3.2.0...v3.2.1) (2020-03-07)
 
 ### Bug Fixes
