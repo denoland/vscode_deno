@@ -80,9 +80,23 @@ export class ModuleResolver implements ModuleResolverInterface {
       return;
     }
 
-    const redirect = meta.headers["location"];
+    let redirect = meta.headers["location"];
 
-    if (redirect && redirect !== httpModuleURL) {
+    if (redirect) {
+      redirect = isHttpURL(redirect) // eg: https://redirect.com/path/to/redirect
+        ? redirect
+        : path.posix.isAbsolute(redirect) // eg: /path/to/redirect
+        ? `${url.protocol}//${url.host}${redirect}`
+        : // eg: ./path/to/redirect
+          `${url.protocol}//${url.host}${path.posix.resolve(
+            url.pathname,
+            redirect
+          )}`;
+
+      if (!isHttpURL(redirect) || redirect === httpModuleURL) {
+        return;
+      }
+
       return this.resolveFromRemote(redirect);
     }
 

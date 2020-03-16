@@ -163,7 +163,14 @@ test("core / module_resolver: resolve module if redirect", () => {
 
   const resolver = ModuleResolver.create(__filename, importMapFile);
 
-  expect(resolver.resolveModules(["https://example.com/redirect"])).toEqual([
+  expect(
+    resolver.resolveModules([
+      "https://example.com/redirect",
+      "https://example.com/redirect_to_absolute",
+      "https://example.com/redirect_to_invalid",
+      "https://example.com/redirect_to_loop"
+    ])
+  ).toEqual([
     {
       origin: "https://another.example.com/path/mod.ts",
       filepath: path.join(
@@ -180,6 +187,25 @@ test("core / module_resolver: resolve module if redirect", () => {
         "another.example.com",
         "32cd9336a09393d88fc22cf6f95ae006e3f2742a6c461967b2ba7954c5283fbf"
       )
-    }
+    },
+    {
+      origin: "https://example.com/esm/mod.ts",
+      filepath: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "example.com",
+        "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
+      ),
+      module: path.join(
+        denoDir,
+        "deps",
+        "https",
+        "example.com",
+        "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
+      )
+    },
+    undefined,
+    undefined
   ] as ResolvedModule[]);
 });
