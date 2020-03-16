@@ -113,6 +113,7 @@ export class ModuleResolver implements ModuleResolverInterface {
       );
       const [typeModule] = resolver.resolveModules([typescriptTypes]);
 
+      /* istanbul ignore else */
       if (typeModule) {
         typeModule.origin = httpModuleURL;
       }
