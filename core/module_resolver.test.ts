@@ -109,7 +109,7 @@ test("core / module_resolver: resolve module from local", () => {
       )
     },
     {
-      origin: "https://example.com/demo/mod.ts",
+      origin: "demo/mod.ts",
       filepath: path.join(
         path.dirname(cacheFilepath),
         "933405cb905c548e870daee56d0589b7dd8e146c0cdbd5f16a959f8227c1fe06"
@@ -139,7 +139,7 @@ test("core / module_resolver: resolve module from local", () => {
     undefined,
     undefined,
     {
-      origin: "/x-typescript-types.d.ts",
+      origin: "https://example.com/x-typescript-types",
       filepath: path.join(
         denoDir,
         "deps",
@@ -172,7 +172,7 @@ test("core / module_resolver: resolve module if redirect", () => {
     ])
   ).toEqual([
     {
-      origin: "https://another.example.com/path/mod.ts",
+      origin: "https://example.com/redirect",
       filepath: path.join(
         denoDir,
         "deps",
@@ -189,7 +189,7 @@ test("core / module_resolver: resolve module if redirect", () => {
       )
     },
     {
-      origin: "https://example.com/esm/mod.ts",
+      origin: "https://example.com/redirect_to_absolute",
       filepath: path.join(
         denoDir,
         "deps",

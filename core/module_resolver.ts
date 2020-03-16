@@ -61,7 +61,10 @@ export class ModuleResolver implements ModuleResolverInterface {
     return new ModuleResolver(containingFile, importMapsFile, logger);
   }
 
-  private resolveFromRemote(httpModuleURL: string): ResolvedModule | undefined {
+  private resolveFromRemote(
+    httpModuleURL: string,
+    origin: string
+  ): ResolvedModule | undefined {
     const url = new URL(httpModuleURL);
 
     const originDir = path.join(
@@ -97,7 +100,7 @@ export class ModuleResolver implements ModuleResolverInterface {
         return;
       }
 
-      return this.resolveFromRemote(redirect);
+      return this.resolveFromRemote(redirect, origin);
     }
 
     const moduleFilepath = path.join(originDir, hash);
@@ -110,11 +113,15 @@ export class ModuleResolver implements ModuleResolverInterface {
       );
       const [typeModule] = resolver.resolveModules([typescriptTypes]);
 
+      if (typeModule) {
+        typeModule.origin = httpModuleURL;
+      }
+
       return typeModule;
     }
 
     return {
-      origin: httpModuleURL,
+      origin: origin,
       filepath: moduleFilepath,
       module: moduleFilepath
     };
@@ -125,7 +132,7 @@ export class ModuleResolver implements ModuleResolverInterface {
     moduleName = this.importMaps.resolveModule(moduleName);
 
     if (isHttpURL(moduleName)) {
-      return this.resolveFromRemote(moduleName);
+      return this.resolveFromRemote(moduleName, originModuleName);
     }
 
     const moduleFilepath = path.resolve(
@@ -160,7 +167,6 @@ export class ModuleResolver implements ModuleResolverInterface {
       this.logger?.info(
         `resolve module ${moduleName} from ${this.containingFile}`
       );
-      const originModuleName = moduleName;
       // If the file is in Deno's cache layout
       // Then we should look up from the cache
       if (this.denoCacheFile) {
@@ -168,7 +174,7 @@ export class ModuleResolver implements ModuleResolverInterface {
 
         if (moduleCacheFile) {
           resolvedModules.push({
-            origin: originModuleName,
+            origin: moduleName,
             filepath: moduleCacheFile.filepath,
             module: moduleCacheFile.filepath
           });
@@ -181,7 +187,7 @@ export class ModuleResolver implements ModuleResolverInterface {
 
       // If import from remote
       if (isHttpURL(moduleName)) {
-        resolvedModules.push(this.resolveFromRemote(moduleName));
+        resolvedModules.push(this.resolveFromRemote(moduleName, moduleName));
         continue;
       }
 
