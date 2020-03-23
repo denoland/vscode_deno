@@ -49,6 +49,7 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
         containingFile: string,
         reusedNames?: string[],
         redirectedReference?: ts_module.ResolvedProjectReference,
+        options: ts_module.CompilerOptions = OPTIONS,
       ) => {
         moduleNames = moduleNames.map(convertRemoteToLocalCache).map(stripExtNameDotTs);
 
@@ -58,6 +59,7 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
           containingFile,
           reusedNames,
           redirectedReference,
+          options,
         );
       };
 
