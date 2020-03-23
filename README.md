@@ -31,6 +31,18 @@ or **use yarn**:
 yarn add -D typescript-deno-plugin typescript
 ```
 
+### With JetBrains IDEs
+
+Prerequisite: Follow manual installation instructions as described in [VSCode install](/With-VS-Code).
+
+1. Open TypScript preferences:
+
+`Preferences | Languages & Frameworks | TypeScript`
+
+2. Change the TypeScript path to the local installed typescript path e.g. `~/myapp/node_modules/typescript`
+
+*Tested with WebStorm. Hypothetically, should run in all JetBrains IDEs.*
+
 ### Configuration
 
 After install typescript-deno-plugin, Then you can add a `plugins` section to your [tsconfig.json](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html).
