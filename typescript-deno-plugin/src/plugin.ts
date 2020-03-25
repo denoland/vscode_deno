@@ -6,7 +6,7 @@ import ts_module from "typescript/lib/tsserverlibrary";
 import { Logger } from "./logger";
 import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { getDenoDts } from "../../core/deno";
-import { ModuleResolver, ResolvedModule } from "../../core/module_resolver";
+import { ModuleResolver } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
 import { pathExistsSync, normalizeFilepath } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
@@ -162,15 +162,25 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           importMapsFilepath
         );
 
-        const resolvedModules = resolver
-          .resolveModules(typeDirectiveNames)
-          .filter(v => v) as ResolvedModule[];
+        const resolvedModules = resolver.resolveModules(typeDirectiveNames);
 
-        return resolveTypeReferenceDirectives(
-          resolvedModules.map(v => v.module),
-          containingFile,
-          ...rest
-        );
+        return resolvedModules
+          .map((v, i) => {
+            if (!v) {
+              return resolveTypeReferenceDirectives(
+                [typeDirectiveNames[i]],
+                containingFile,
+                ...rest
+              )[0];
+            }
+            const target: ts_module.ResolvedTypeReferenceDirective = {
+              primary: true,
+              resolvedFileName: v.module
+            };
+
+            return target;
+          })
+          .filter(v => v);
       };
     }
 
