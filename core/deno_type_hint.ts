@@ -29,13 +29,13 @@ export const Position = {
    */
   create(line: number, character: number): Position {
     return { line, character };
-  }
+  },
 };
 
 export const Range = {
   create(start: Position, end: Position): Range {
     return { start, end };
-  }
+  },
 };
 
 /**
@@ -43,7 +43,7 @@ export const Range = {
  * @param ts
  */
 export function getDenoCompileHint(ts: typeof typescript) {
-  return function(sourceFile: typescript.SourceFile) {
+  return function (sourceFile: typescript.SourceFile) {
     const denoTypesComments: CommentRange[] = [];
 
     const comments =
@@ -85,7 +85,7 @@ export function getDenoCompileHint(ts: typeof typescript) {
             module: moduleName,
             filepath: targetFilepath,
             range: Range.create(start, end),
-            contentRange: Range.create(moduleNameStart, moduleNameEnd)
+            contentRange: Range.create(moduleNameStart, moduleNameEnd),
           });
         }
       }

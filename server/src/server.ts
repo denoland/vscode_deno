@@ -13,7 +13,7 @@ import {
   TextDocuments,
   InitializeResult,
   TextDocumentSyncKind,
-  CodeActionKind
+  CodeActionKind,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -65,20 +65,20 @@ connection.onInitialize(
         documentRangeFormattingProvider: true,
         textDocumentSync: {
           openClose: true,
-          change: TextDocumentSyncKind.Full
+          change: TextDocumentSyncKind.Full,
         },
         completionProvider: {
-          triggerCharacters: ["http", "https"]
+          triggerCharacters: ["http", "https"],
         },
         codeActionProvider: {
-          codeActionKinds: [CodeActionKind.QuickFix]
+          codeActionKinds: [CodeActionKind.QuickFix],
         },
         documentHighlightProvider: true,
         hoverProvider: true,
         referencesProvider: true,
         definitionProvider: true,
-        codeLensProvider: {}
-      }
+        codeLensProvider: {},
+      },
     };
   }
 );
@@ -101,7 +101,7 @@ connection.onInitialized(async () => {
 
       if (typesContent.toString() !== currentDenoTypesContent.toString()) {
         await fs.writeFile(denoDtsFile, currentDenoTypesContent, {
-          mode: 0o444
+          mode: 0o444,
         });
 
         // set to readonly
@@ -116,7 +116,7 @@ connection.onInitialized(async () => {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
     DENO_DIR: getDenoDir(),
-    dtsFilepath: getDenoDts()
+    dtsFilepath: getDenoDts(),
   });
   connection.console.log("server initialized.");
 });

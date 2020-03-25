@@ -2,7 +2,7 @@ import {
   IConnection,
   Range,
   TextDocuments,
-  Position
+  Position,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
@@ -12,7 +12,7 @@ import { isInDeno } from "../../../core/deno";
 
 export class CodeLens {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
-    connection.onCodeLens(params => {
+    connection.onCodeLens((params) => {
       const { textDocument } = params;
 
       const document = documents.get(textDocument.uri);
@@ -39,9 +39,9 @@ export class CodeLens {
           command: {
             title: `Deno cached module \`${cache.url.href}\``,
             command: "deno._copy_text",
-            arguments: [cache.url.href]
-          }
-        }
+            arguments: [cache.url.href],
+          },
+        },
       ];
     });
   }

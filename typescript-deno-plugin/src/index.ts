@@ -2,7 +2,7 @@ import ts_module from "typescript/lib/tsserverlibrary";
 import { DenoPlugin } from "./plugin";
 
 module.exports = function init({
-  typescript
+  typescript,
 }: {
   typescript: typeof ts_module;
 }) {

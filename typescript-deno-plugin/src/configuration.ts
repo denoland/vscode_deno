@@ -14,7 +14,7 @@ type UpdateDenoPluginConfig = {
 export class ConfigurationManager {
   private static readonly defaultConfiguration: DenoPluginConfig = {
     enable: false,
-    import_map: ""
+    import_map: "",
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();

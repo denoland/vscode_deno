@@ -129,7 +129,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
    ```json5
    // .vscode/settings.json
    {
-     "deno.enable": true
+     "deno.enable": true,
    }
    ```
 
@@ -147,7 +147,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 // .vscode/settings.json
 {
   "deno.enable": true,
-  "deno.import_map": "./path/to/import_map.json"
+  "deno.import_map": "./path/to/import_map.json",
 }
 ```
 
@@ -157,11 +157,11 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 // .vscode/settings.json
 {
   "[typescript]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
+    "editor.defaultFormatter": "axetroy.vscode-deno",
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
-  }
+    "editor.defaultFormatter": "axetroy.vscode-deno",
+  },
 }
 ```
 

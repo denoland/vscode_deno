@@ -21,7 +21,7 @@ export class ImportMap implements ImportMapInterface {
   constructor(public map: ImportFileMapContent, public filepath?: string) {}
   static create(importMapFilepath?: string): ImportMapInterface {
     let importMap: ImportFileMapContent = {
-      imports: {}
+      imports: {},
     };
 
     //  try resolve import maps
@@ -34,7 +34,7 @@ export class ImportMap implements ImportMapInterface {
 
       if (pathExistsSync(importMapFilepath) === true) {
         const importMapContent = readFileSync(importMapFilepath, {
-          encoding: "utf8"
+          encoding: "utf8",
         });
 
         try {
@@ -71,7 +71,7 @@ export class ImportMap implements ImportMapInterface {
         if (currentIndex === keys.length) {
           return {
             value: [],
-            done: true
+            done: true,
           };
         }
 
@@ -82,9 +82,9 @@ export class ImportMap implements ImportMapInterface {
 
         return {
           value: [key, value],
-          done: false
+          done: false,
         };
-      }
+      },
     };
   }
 }

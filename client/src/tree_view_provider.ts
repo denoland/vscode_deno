@@ -10,7 +10,7 @@ import {
   Event,
   commands,
   window,
-  Range
+  Range,
 } from "vscode";
 import { Disposable } from "vscode-languageclient";
 
@@ -27,7 +27,7 @@ interface URLDep {
 enum ItemType {
   Workspace = 1,
   URL = 2,
-  Reference = 3
+  Reference = 3,
 }
 
 interface Item extends TreeItem {
@@ -71,7 +71,7 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
               location.start.character,
               location.end.line,
               location.end.character
-            )
+            ),
           });
         }
       )
@@ -87,13 +87,13 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
       return (
         workspaceFolders
           // only list the workspace which already set `deno.enable: true`
-          .filter(v => this.extension.getConfiguration(v.uri).enable)
-          .map(v => {
+          .filter((v) => this.extension.getConfiguration(v.uri).enable)
+          .map((v) => {
             const item: Item = {
               resourceUri: v.uri,
               type: ItemType.Workspace,
               label: v.name,
-              collapsibleState: TreeItemCollapsibleState.Collapsed
+              collapsibleState: TreeItemCollapsibleState.Collapsed,
             };
 
             return item;
@@ -110,7 +110,7 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
 
       const deps = Object.keys(depsMap);
 
-      return deps.map(url => {
+      return deps.map((url) => {
         const item: Item = {
           parentNode: element,
           iconPath: {
@@ -125,13 +125,13 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
               "resource",
               "icon",
               "url.dark.svg"
-            )
+            ),
           },
           resourceUri: Uri.parse(url),
           type: ItemType.URL,
           label: url,
           collapsibleState: TreeItemCollapsibleState.Collapsed,
-          references: depsMap[url]
+          references: depsMap[url],
         };
 
         return item;
@@ -147,7 +147,7 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
       element.parentNode?.resourceUri?.fsPath + path.sep
     );
 
-    return element.references.map(r => {
+    return element.references.map((r) => {
       const filename = normalizeFilepath(
         normalizeFilepath(r.filepath)
           .replace(
@@ -162,14 +162,15 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
         resourceUri: Uri.file(r.filepath),
         type: ItemType.Reference,
         label: filename,
-        description: `Line ${r.location.start.line + 1}, Col ${r.location.start
-          .character + 1}`,
+        description: `Line ${r.location.start.line + 1}, Col ${
+          r.location.start.character + 1
+        }`,
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Open the file",
           command: "deno._open_file",
-          arguments: [r.filepath, r.location]
-        }
+          arguments: [r.filepath, r.location],
+        },
       };
 
       return item;

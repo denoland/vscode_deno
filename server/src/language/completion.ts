@@ -4,7 +4,7 @@ import {
   TextDocuments,
   CompletionItem,
   CompletionItemKind,
-  Position
+  Position,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -16,7 +16,7 @@ import { Cache } from "../../../core/cache";
 const cache = Cache.create<Deps[]>(1000 * 30, 30);
 
 getAllDenoCachedDeps()
-  .then(deps => {
+  .then((deps) => {
     cache.set(deps);
   })
   .catch(() => {
@@ -25,7 +25,7 @@ getAllDenoCachedDeps()
 
 export class Completion {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
-    connection.onCompletion(async params => {
+    connection.onCompletion(async (params) => {
       const { position, partialResultToken, textDocument } = params;
 
       const doc = documents.get(textDocument.uri);
@@ -66,7 +66,7 @@ export class Completion {
         position
       );
 
-      const completes: CompletionItem[] = deps.map(dep => {
+      const completes: CompletionItem[] = deps.map((dep) => {
         return {
           label: dep.url,
           detail: dep.url,
@@ -75,7 +75,7 @@ export class Completion {
           kind: CompletionItemKind.File,
           insertText: dep.url,
           cancel: partialResultToken,
-          range: range
+          range: range,
         } as CompletionItem;
       });
 

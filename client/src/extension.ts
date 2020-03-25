@@ -19,13 +19,13 @@ import {
   ProgressLocation,
   TextDocument,
   languages,
-  env
+  env,
 } from "vscode";
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind
+  TransportKind,
 } from "vscode-languageclient";
 import getport from "get-port";
 import execa from "execa";
@@ -114,10 +114,10 @@ export class Extension {
       deno: "",
       v8: "",
       typescript: "",
-      raw: ""
+      raw: "",
     },
     executablePath: "",
-    dtsFilepath: ""
+    dtsFilepath: "",
   };
   // get configuration of Deno
   public getConfiguration(uri?: Uri): SynchronizedConfiguration {
@@ -167,7 +167,7 @@ export class Extension {
   // watch deno configuration change
   private watchConfiguration(handler: () => void | Promise<void>) {
     this.context.subscriptions.push(
-      workspace.onDidChangeConfiguration(e => {
+      workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration(this.configurationSection)) {
           handler();
         }
@@ -179,7 +179,7 @@ export class Extension {
     await window.withProgress(
       {
         location: ProgressLocation.Window,
-        title: localize("deno.initializing")
+        title: localize("deno.initializing"),
       },
       async () => {
         if (this.client) {
@@ -206,9 +206,9 @@ export class Extension {
               cwd: this.context.extensionPath,
               env: {
                 VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
-                VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
-              }
-            }
+                VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG,
+              },
+            },
           },
           debug: {
             module: serverModule,
@@ -218,10 +218,10 @@ export class Extension {
               execArgv: ["--nolazy", `--inspect=${port}`],
               env: {
                 VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
-                VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG
-              }
-            }
-          }
+                VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG,
+              },
+            },
+          },
         };
 
         // Options to control the language client
@@ -230,11 +230,11 @@ export class Extension {
             { scheme: "file", language: "javascript" },
             { scheme: "file", language: "javascriptreact" },
             { scheme: "file", language: "typescript" },
-            { scheme: "file", language: "typescriptreact" }
+            { scheme: "file", language: "typescriptreact" },
           ],
           diagnosticCollectionName: this.configurationSection,
           synchronize: {
-            configurationSection: this.configurationSection
+            configurationSection: this.configurationSection,
           },
           progressOnInitialization: true,
           middleware: {
@@ -256,7 +256,7 @@ export class Extension {
                 return [];
               }
               const newContext: CodeActionContext = Object.assign({}, context, {
-                diagnostics: denoDiagnostics
+                diagnostics: denoDiagnostics,
               } as CodeActionContext);
               return next(document, range, newContext, token);
             },
@@ -278,8 +278,8 @@ export class Extension {
                 return;
               }
               return next(document, token);
-            }
-          }
+            },
+          },
         };
 
         // Create the language client and start the client.
@@ -451,14 +451,14 @@ Executable ${this.denoInfo.executablePath}`;
     this.context.subscriptions.push(this.output);
 
     this.context.subscriptions.push(
-      window.onDidChangeActiveTextEditor(async editor => {
+      window.onDidChangeActiveTextEditor(async (editor) => {
         this.sync(editor?.document);
         await this.setDocumentLanguage(editor?.document);
       })
     );
 
     this.context.subscriptions.push(
-      workspace.onDidOpenTextDocument(async document => {
+      workspace.onDidOpenTextDocument(async (document) => {
         this.sync(document);
       })
     );
@@ -499,7 +499,7 @@ Executable ${this.denoInfo.executablePath}`;
           {
             title: `Fetching`,
             location: ProgressLocation.Notification,
-            cancellable: true
+            cancellable: true,
           },
           (process, cancelToken) => {
             const ps = execa(
@@ -507,7 +507,7 @@ Executable ${this.denoInfo.executablePath}`;
               ["fetch", moduleName],
               {
                 // timeout of 2 minute
-                timeout: 1000 * 60 * 2
+                timeout: 1000 * 60 * 2,
               }
             );
 
@@ -530,7 +530,7 @@ Executable ${this.denoInfo.executablePath}`;
             ps.stdout?.on("data", updateProgress);
             ps.stderr?.on("data", updateProgress);
 
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
               ps.on("exit", (code: number) => {
                 if (code !== 0 && !cancelToken.isCancellationRequested) {
                   this.output.show();
@@ -585,7 +585,7 @@ Executable ${this.denoInfo.executablePath}`;
         await fs.writeFile(absModuleFilepath, defaultTextContent);
 
         this.updateDiagnostic(editor.document.uri);
-      }
+      },
     });
 
     this.watchConfiguration(() => {

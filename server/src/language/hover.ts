@@ -2,7 +2,7 @@ import {
   IConnection,
   TextDocuments,
   MarkedString,
-  Hover as LanguageServerHover
+  Hover as LanguageServerHover,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -10,7 +10,7 @@ import { getDenoTypesHintsFromDocument } from "../deno_types";
 
 export class Hover {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
-    connection.onHover(async params => {
+    connection.onHover(async (params) => {
       const { textDocument, position } = params;
       const document = documents.get(textDocument.uri);
 
@@ -34,8 +34,8 @@ export class Hover {
             contents: [
               MarkedString.fromPlainText(
                 "Deno's external declaration library. For more detail: https://deno.land/std/manual.md"
-              )
-            ]
+              ),
+            ],
           };
 
           return hover;

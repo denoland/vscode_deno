@@ -17,7 +17,7 @@ export enum Type {
   TypeScriptReact = "typescriptreact",
   JSON = "json",
   WebAssembly = "WebAssembly",
-  PlainText = "plaintext"
+  PlainText = "plaintext",
 }
 
 interface HashMetaInterface {
@@ -35,13 +35,13 @@ const extNameMap: { [key: string]: Type } = {
   ".jsx": Type.JavaScriptReact,
   ".mjs": Type.JavaScript,
   ".json": Type.JSON,
-  ".wasm": Type.WebAssembly
+  ".wasm": Type.WebAssembly,
 };
 
 const contentTypeMap: [string[], Type][] = [
   [
     ["text/typescript", "application/typescript", "application/x-typescript"],
-    Type.TypeScript
+    Type.TypeScript,
   ],
   [
     [
@@ -50,12 +50,12 @@ const contentTypeMap: [string[], Type][] = [
       "application/x-javascript",
       "text/ecmascript",
       "application/ecmascript",
-      "text/jscript"
+      "text/jscript",
     ],
-    Type.JavaScript
+    Type.JavaScript,
   ],
   [["application/json"], Type.JSON],
-  [["application/wasm"], Type.WebAssembly]
+  [["application/wasm"], Type.WebAssembly],
 ];
 
 export class HashMeta implements HashMetaInterface {

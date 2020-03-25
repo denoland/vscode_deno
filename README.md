@@ -129,7 +129,7 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
    ```json5
    // .vscode/settings.json
    {
-     "deno.enable": true
+     "deno.enable": true,
    }
    ```
 
@@ -147,7 +147,7 @@ We recommend that you do not set global configuration. It should be configured i
 // .vscode/settings.json
 {
   "deno.enable": true,
-  "deno.import_map": "./path/to/import_map.json"
+  "deno.import_map": "./path/to/import_map.json",
 }
 ```
 
@@ -157,11 +157,11 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 // .vscode/settings.json
 {
   "[typescript]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
+    "editor.defaultFormatter": "axetroy.vscode-deno",
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno"
-  }
+    "editor.defaultFormatter": "axetroy.vscode-deno",
+  },
 }
 ```
 

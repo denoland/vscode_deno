@@ -5,7 +5,7 @@ import {
   isHttpURL,
   hashURL,
   normalizeFilepath,
-  isValidDenoDocument
+  isValidDenoDocument,
 } from "./util";
 
 test("core / util / pathExists", async () => {

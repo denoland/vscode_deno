@@ -34,7 +34,7 @@ export function readConfigurationFromVscodeSettings(
       const configurationInProjectFolder: DenoPluginConfig = {
         enable: isEnable,
         dts_file,
-        import_map
+        import_map,
       };
 
       return configurationInProjectFolder;

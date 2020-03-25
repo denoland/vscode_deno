@@ -4,7 +4,7 @@ import * as ts from "typescript";
 import {
   getAllDenoCachedDeps,
   getImportModules,
-  ImportModule
+  ImportModule,
 } from "./deno_deps";
 
 const TEST_DIR = path.join(__dirname, "..", "__test__");
@@ -53,71 +53,71 @@ export * as xx from "export_as_default.ts";
         "https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts",
       location: {
         start: { line: 0, character: 22 },
-        end: { line: 0, character: 93 }
-      }
+        end: { line: 0, character: 93 },
+      },
     },
     {
       moduleName: "./foo.ts",
       location: {
         start: { line: 1, character: 8 },
-        end: { line: 1, character: 16 }
-      }
+        end: { line: 1, character: 16 },
+      },
     },
     {
       moduleName: "/bar.ts",
       location: {
         start: { line: 2, character: 8 },
-        end: { line: 2, character: 15 }
-      }
+        end: { line: 2, character: 15 },
+      },
     },
     {
       moduleName: "./test.tsx",
       location: {
         start: { line: 3, character: 8 },
-        end: { line: 3, character: 18 }
-      }
+        end: { line: 3, character: 18 },
+      },
     },
     {
       moduleName: "typescript",
       location: {
         start: { line: 4, character: 21 },
-        end: { line: 4, character: 31 }
-      }
+        end: { line: 4, character: 31 },
+      },
     },
     {
       moduleName: "test.ts",
       location: {
         start: { line: 5, character: 18 },
-        end: { line: 5, character: 25 }
-      }
+        end: { line: 5, character: 25 },
+      },
     },
     {
       moduleName: "test.ts",
       location: {
         start: { line: 6, character: 23 },
-        end: { line: 6, character: 30 }
-      }
+        end: { line: 6, character: 30 },
+      },
     },
     {
       moduleName: "export.ts",
       location: {
         start: { line: 7, character: 24 },
-        end: { line: 7, character: 33 }
-      }
+        end: { line: 7, character: 33 },
+      },
     },
     {
       moduleName: "export_as.ts",
       location: {
         start: { line: 8, character: 15 },
-        end: { line: 8, character: 27 }
-      }
+        end: { line: 8, character: 27 },
+      },
     },
     {
       moduleName: "export_as_default.ts",
       location: {
         start: { line: 9, character: 21 },
-        end: { line: 9, character: 41 }
-      }
-    }
+        end: { line: 9, character: 41 },
+      },
+    },
   ] as ImportModule[]);
 });
