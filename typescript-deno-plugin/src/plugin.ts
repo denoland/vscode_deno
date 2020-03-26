@@ -43,6 +43,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     strict: this.DEFAULT_OPTIONS.strict,
     noEmit: this.DEFAULT_OPTIONS.noEmit,
     noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers,
+    target: this.typescript.ScriptTarget.ESNext,
   };
   private logger!: Logger;
 
