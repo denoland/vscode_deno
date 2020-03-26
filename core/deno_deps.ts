@@ -30,17 +30,17 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
   const protocols = await fs.readdir(depsRootDir);
 
   await Promise.all(
-    protocols.map(async protocol => {
+    protocols.map(async (protocol) => {
       const protocolFolderpath = path.join(depsRootDir, protocol);
       const protocolStat = await fs.stat(protocolFolderpath);
 
       if (protocolStat.isDirectory()) {
-        const origins = (await fs.readdir(protocolFolderpath)).map(v =>
+        const origins = (await fs.readdir(protocolFolderpath)).map((v) =>
           path.join(protocolFolderpath, v)
         );
 
         await Promise.all(
-          origins.map(async origin => {
+          origins.map(async (origin) => {
             const stat = await fs.stat(origin);
 
             if (!stat.isDirectory()) {
@@ -48,8 +48,8 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
             }
 
             const metaFiles = (await fs.readdir(origin))
-              .filter(file => file.endsWith(".metadata.json"))
-              .map(file => path.join(origin, file));
+              .filter((file) => file.endsWith(".metadata.json"))
+              .map((file) => path.join(origin, file));
 
             for (const metaFile of metaFiles) {
               const meta = HashMeta.create(metaFile);
@@ -57,7 +57,7 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
               if (meta) {
                 deps.push({
                   url: meta.url.href,
-                  filepath: meta.destinationFilepath
+                  filepath: meta.destinationFilepath,
                 });
               }
             }
@@ -146,17 +146,17 @@ export function getImportModules(ts: typeof typescript) {
     delint(sourceFile);
 
     const modules: ImportModule[] = sourceFile.typeReferenceDirectives
-      .map(directive => {
+      .map((directive) => {
         const start = sourceFile.getLineAndCharacterOfPosition(directive.pos);
         const end = sourceFile.getLineAndCharacterOfPosition(directive.end);
 
         return {
           moduleName: directive.fileName,
-          location: { start, end }
+          location: { start, end },
         };
       })
       .concat(
-        moduleNodes.map(node => {
+        moduleNodes.map((node) => {
           const numberOfSpaces = Math.abs(
             // why plus 2?
             // because `moduleNode.text` only contain the plaintext without two quotes
@@ -172,12 +172,12 @@ export function getImportModules(ts: typeof typescript) {
 
           const location = {
             start,
-            end
+            end,
           };
 
           return {
             moduleName: node.text,
-            location
+            location,
           };
         })
       );

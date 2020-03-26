@@ -11,7 +11,7 @@ test("core / import_map", async () => {
   const validImportMapFilepath = path.join(mockWorkspaceDir, "import_map.json");
 
   expect(ImportMap.create(validImportMapFilepath).toJSON()).toEqual({
-    "demo/": "https://example.com/demo/"
+    "demo/": "https://example.com/demo/",
   });
 
   expect(

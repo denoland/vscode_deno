@@ -2,7 +2,7 @@ import {
   IConnection,
   TextDocuments,
   TextEdit,
-  Range
+  Range,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -15,7 +15,7 @@ export class DocumentFormatting {
     documents: TextDocuments<TextDocument>,
     bridge: Bridge
   ) {
-    connection.onDocumentFormatting(async params => {
+    connection.onDocumentFormatting(async (params) => {
       const uri = params.textDocument.uri;
       const doc = documents.get(uri);
 
@@ -39,7 +39,7 @@ export class DocumentFormatting {
       return [TextEdit.replace(range, formatted)];
     });
 
-    connection.onDocumentRangeFormatting(async params => {
+    connection.onDocumentRangeFormatting(async (params) => {
       const uri = params.textDocument.uri;
       const range = params.range;
       const doc = documents.get(uri);

@@ -44,7 +44,7 @@ export class DependencyTree {
 
     const walker = FileWalker.create(folder, {
       exclude: ["node_modules", "bower_components", "vendor", /^\./],
-      include: [/\.tsx?$/, /\.jsx?$/]
+      include: [/\.tsx?$/, /\.jsx?$/],
     });
 
     for await (const filepath of walker) {

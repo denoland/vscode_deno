@@ -28,11 +28,11 @@ import "./foo.ts"
   expect(comment.text).toEqual(`// @deno-types="./foo.d.ts"`);
   expect(comment.range).toEqual({
     start: { line: 0, character: 0 },
-    end: { line: 0, character: 27 }
+    end: { line: 0, character: 27 },
   } as Range);
   expect(comment.contentRange).toEqual({
     start: { line: 0, character: 16 },
-    end: { line: 0, character: 26 }
+    end: { line: 0, character: 26 },
   } as Range);
 });
 
@@ -71,11 +71,11 @@ import "./foo.ts"
   expect(comment.text).toEqual(`// @deno-types="./foo.d.ts"`);
   expect(comment.range).toEqual({
     start: { line: 3, character: 0 },
-    end: { line: 3, character: 27 }
+    end: { line: 3, character: 27 },
   } as Range);
   expect(comment.contentRange).toEqual({
     start: { line: 3, character: 16 },
-    end: { line: 3, character: 26 }
+    end: { line: 3, character: 26 },
   } as Range);
 });
 
@@ -102,10 +102,10 @@ test("core / deno_type_hint: with compile hint 2", async () => {
   expect(comment.text).toEqual(`// @deno-types="./foo.d.ts"`);
   expect(comment.range).toEqual({
     start: { line: 3, character: 0 },
-    end: { line: 3, character: 27 }
+    end: { line: 3, character: 27 },
   } as Range);
   expect(comment.contentRange).toEqual({
     start: { line: 3, character: 16 },
-    end: { line: 3, character: 26 }
+    end: { line: 3, character: 26 },
   } as Range);
 });

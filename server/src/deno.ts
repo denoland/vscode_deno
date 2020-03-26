@@ -55,7 +55,7 @@ class Deno {
       cwd: options.cwd,
       stdout: "pipe",
       stderr: "pipe",
-      stdin: "pipe"
+      stdin: "pipe",
     });
 
     const formattedCode = (await new Promise((resolve, reject) => {
@@ -94,7 +94,7 @@ class Deno {
   private async getDenoVersion(): Promise<Version | undefined> {
     const { stdout, stderr } = await execa(this.executablePath as string, [
       "eval",
-      "console.log(JSON.stringify(Deno.version))"
+      "console.log(JSON.stringify(Deno.version))",
     ]);
 
     if (stderr) {
@@ -107,7 +107,7 @@ class Deno {
       deno,
       v8,
       typescript,
-      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`
+      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`,
     };
   }
 }

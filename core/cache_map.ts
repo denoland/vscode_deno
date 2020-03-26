@@ -68,7 +68,7 @@ export class CacheMap<T> {
     this.map.set(key, {
       data: value,
       updatedAt: new Date(),
-      referenceTimes: 0
+      referenceTimes: 0,
     });
   }
 }

@@ -124,7 +124,7 @@ export class ModuleResolver implements ModuleResolverInterface {
     return {
       origin: origin,
       filepath: moduleFilepath,
-      module: moduleFilepath
+      module: moduleFilepath,
     };
   }
 
@@ -148,7 +148,7 @@ export class ModuleResolver implements ModuleResolverInterface {
     return {
       origin: originModuleName,
       filepath: moduleFilepath,
-      module: moduleFilepath.replace(/(\.d)?\.(t|j)sx?$/, "") // "./foo.ts" -> "./foo"
+      module: moduleFilepath.replace(/(\.d)?\.(t|j)sx?$/, ""), // "./foo.ts" -> "./foo"
     };
   }
 
@@ -177,7 +177,7 @@ export class ModuleResolver implements ModuleResolverInterface {
           resolvedModules.push({
             origin: moduleName,
             filepath: moduleCacheFile.filepath,
-            module: moduleCacheFile.filepath
+            module: moduleCacheFile.filepath,
           });
         } else {
           resolvedModules.push(undefined);

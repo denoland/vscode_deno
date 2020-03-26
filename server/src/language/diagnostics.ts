@@ -7,7 +7,7 @@ import {
   CodeAction,
   CodeActionKind,
   Command,
-  TextDocuments
+  TextDocuments,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
@@ -27,18 +27,18 @@ type Fix = {
 
 enum DiagnosticCode {
   LocalModuleNotExist = 1004,
-  RemoteModuleNotExist = 1005
+  RemoteModuleNotExist = 1005,
 }
 
 const FixItems: { [code: number]: Fix } = {
   [DiagnosticCode.LocalModuleNotExist]: {
     title: localize("diagnostic.fix.create_module"),
-    command: "deno._create_local_module"
+    command: "deno._create_local_module",
   },
   [DiagnosticCode.RemoteModuleNotExist]: {
     title: localize("diagnostic.fix.fetch_module"),
-    command: "deno._fetch_remote_module"
-  }
+    command: "deno._fetch_remote_module",
+  },
 };
 
 export class Diagnostics {
@@ -48,17 +48,17 @@ export class Diagnostics {
     private bridge: Bridge,
     private documents: TextDocuments<TextDocument>
   ) {
-    connection.onCodeAction(async params => {
+    connection.onCodeAction(async (params) => {
       const { context, textDocument } = params;
       const { diagnostics } = context;
-      const denoDiagnostics = diagnostics.filter(v => v.source === this.name);
+      const denoDiagnostics = diagnostics.filter((v) => v.source === this.name);
 
       if (!denoDiagnostics.length) {
         return;
       }
 
       const actions: CodeAction[] = denoDiagnostics
-        .map(v => {
+        .map((v) => {
           const code = v.code;
 
           if (!code) {
@@ -81,12 +81,12 @@ export class Diagnostics {
               {
                 start: {
                   line: v.range.start.line,
-                  character: v.range.start.character
+                  character: v.range.start.character,
                 },
                 end: {
                   line: v.range.end.line,
-                  character: v.range.end.character
-                }
+                  character: v.range.end.character,
+                },
               }
             ),
             CodeActionKind.QuickFix
@@ -94,7 +94,7 @@ export class Diagnostics {
 
           return action;
         })
-        .filter(v => v) as CodeAction[];
+        .filter((v) => v) as CodeAction[];
 
       return actions;
     });
@@ -104,8 +104,8 @@ export class Diagnostics {
       document && this.diagnosis(document);
     });
 
-    documents.onDidOpen(params => this.diagnosis(params.document));
-    documents.onDidChangeContent(params => this.diagnosis(params.document));
+    documents.onDidOpen((params) => this.diagnosis(params.document));
+    documents.onDidChangeContent((params) => this.diagnosis(params.document));
   }
   async generate(document: TextDocument): Promise<Diagnostic[]> {
     if (!isValidDenoDocument(document.languageId)) {
@@ -115,7 +115,7 @@ export class Diagnostics {
     // get workspace config
     const [config, workspaceDir] = await Promise.all([
       this.bridge.getWorkspaceConfig(document.uri),
-      this.bridge.getWorkspace(document.uri)
+      this.bridge.getWorkspace(document.uri),
     ]);
 
     if (!config.enable || !workspaceDir) {
@@ -146,7 +146,7 @@ export class Diagnostics {
 
     for (const importModule of importModules) {
       const [resolvedModule] = resolver.resolveModules([
-        importModule.moduleName
+        importModule.moduleName,
       ]);
 
       if (
@@ -182,7 +182,7 @@ export class Diagnostics {
     this.connection.sendDiagnostics({
       uri: document.uri,
       version: document.version,
-      diagnostics: await this.generate(document)
+      diagnostics: await this.generate(document),
     });
   }
 }

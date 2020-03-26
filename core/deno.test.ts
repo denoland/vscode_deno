@@ -8,7 +8,7 @@ import {
   getDenoDepsDir,
   getDenoDts,
   isInDeno,
-  URL2filepath
+  URL2filepath,
 } from "./deno";
 
 test("core / deno", () => {

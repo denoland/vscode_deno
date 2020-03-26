@@ -1,4 +1,5 @@
 {
   "semi": true,
-  "singleQuote": false
+  "singleQuote": false,
+  "endOfLine": "lf"
 }

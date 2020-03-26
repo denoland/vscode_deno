@@ -26,7 +26,7 @@ export class FileWalker {
   }
   constructor(private root: string, private options: FileWalkerOptions) {}
   async *[Symbol.asyncIterator]() {
-    let files = (await fs.readdir(this.root)).map(filename =>
+    let files = (await fs.readdir(this.root)).map((filename) =>
       path.join(this.root, filename)
     );
 
@@ -44,7 +44,7 @@ export class FileWalker {
 
       if (stat.isDirectory()) {
         files = files.concat(
-          (await fs.readdir(file)).map(v => path.join(file, v))
+          (await fs.readdir(file)).map((v) => path.join(file, v))
         );
 
         continue;

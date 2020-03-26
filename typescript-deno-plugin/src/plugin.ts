@@ -31,7 +31,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     stripComments: true,
     target: this.typescript.ScriptTarget.ESNext,
     noEmit: true,
-    noEmitHelpers: true
+    noEmitHelpers: true,
   };
   // No matter how tsconfig.json is set in the working directory
   // It will always overwrite the configuration
@@ -42,7 +42,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     resolveJsonModule: this.DEFAULT_OPTIONS.resolveJsonModule,
     strict: this.DEFAULT_OPTIONS.strict,
     noEmit: this.DEFAULT_OPTIONS.noEmit,
-    noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers
+    noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers,
   };
   private logger!: Logger;
 
@@ -175,12 +175,12 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             }
             const target: ts_module.ResolvedTypeReferenceDirective = {
               primary: true,
-              resolvedFileName: v.module
+              resolvedFileName: v.module,
             };
 
             return target;
           })
-          .filter(v => v);
+          .filter((v) => v);
       };
     }
 
@@ -194,10 +194,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       const ignoreCodeMapInDeno: { [k: number]: boolean } = {
         2691: true, // can not import module which end with `.ts`
         // TODO: remove this once typescript support `for await` at top level
-        1103: true // support `for of await`
+        1103: true, // support `for of await`
       };
 
-      return diagnostics.filter(v => {
+      return diagnostics.filter((v) => {
         return !ignoreCodeMapInDeno[v.code];
       });
     };
@@ -333,7 +333,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
                 return {
                   extension: this.typescript.Extension.Js,
                   isExternalLibraryImport: false,
-                  resolvedFileName: moduleFilepath
+                  resolvedFileName: moduleFilepath,
                 } as ts_module.ResolvedModuleFull;
               }
             }

@@ -40,7 +40,7 @@ export function escapeRegExp(str: string): string {
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);
@@ -72,6 +72,6 @@ export function isValidDenoDocument(languageID: string): boolean {
     "javascript",
     "javascriptreact",
     "typescript",
-    "typescriptreact"
+    "typescriptreact",
   ].includes(languageID);
 }

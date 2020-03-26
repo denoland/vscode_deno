@@ -22,7 +22,7 @@
   //.vscode/settings.json
   {
     "deno.enable": true,
-    "deno.dts_file": ["./path/to/demo.d.ts"]
+    "deno.dts_file": ["./path/to/demo.d.ts"],
   }
   ```
 
@@ -31,7 +31,7 @@
   ```json5
   //.vscode/settings.json
   {
-    "deno.enable": true
+    "deno.enable": true,
   }
   ```
 

@@ -2,7 +2,7 @@ import {
   IConnection,
   Range,
   TextDocuments,
-  Location
+  Location,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
@@ -12,7 +12,7 @@ import { pathExists } from "../../../core/util";
 
 export class Definition {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
-    connection.onDefinition(async params => {
+    connection.onDefinition(async (params) => {
       const { textDocument, position } = params;
       const document = documents.get(textDocument.uri);
 

@@ -11,7 +11,7 @@ test("core / FileWalker", async () => {
     path.join(TEST_DIR, "file_walker", ".hidden_file.js"),
     path.join(TEST_DIR, "file_walker", "a.js"),
     path.join(TEST_DIR, "file_walker", "b.ts"),
-    path.join(TEST_DIR, "file_walker", "exclude", "c.tsx")
+    path.join(TEST_DIR, "file_walker", "exclude", "c.tsx"),
   ];
 
   const result = [];
@@ -27,12 +27,12 @@ test("core / FileWalker", async () => {
 
 test("core / FileWalker with specified extension name", async () => {
   const walker = FileWalker.create(path.join(TEST_DIR, "file_walker"), {
-    include: [/\.tsx?$/]
+    include: [/\.tsx?$/],
   });
 
   const files = [
     path.join(TEST_DIR, "file_walker", "b.ts"),
-    path.join(TEST_DIR, "file_walker", "exclude", "c.tsx")
+    path.join(TEST_DIR, "file_walker", "exclude", "c.tsx"),
   ];
 
   const result = [];
@@ -48,13 +48,13 @@ test("core / FileWalker with specified extension name", async () => {
 
 test("core / FileWalker with exclude options", async () => {
   const walker = FileWalker.create(path.join(TEST_DIR, "file_walker"), {
-    exclude: ["exclude"]
+    exclude: ["exclude"],
   });
 
   const files = [
     path.join(TEST_DIR, "file_walker", ".hidden_file.js"),
     path.join(TEST_DIR, "file_walker", "a.js"),
-    path.join(TEST_DIR, "file_walker", "b.ts")
+    path.join(TEST_DIR, "file_walker", "b.ts"),
   ];
 
   const result = [];
@@ -70,12 +70,12 @@ test("core / FileWalker with exclude options", async () => {
 
 test("core / FileWalker ignore hidden file", async () => {
   const walker = FileWalker.create(path.join(TEST_DIR, "file_walker"), {
-    exclude: ["exclude", /^\./]
+    exclude: ["exclude", /^\./],
   });
 
   const files = [
     path.join(TEST_DIR, "file_walker", "a.js"),
-    path.join(TEST_DIR, "file_walker", "b.ts")
+    path.join(TEST_DIR, "file_walker", "b.ts"),
   ];
 
   const result = [];
