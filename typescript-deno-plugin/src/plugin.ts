@@ -225,8 +225,15 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return details;
       }
 
-      if (details && details.kindModifiers === "export") {
-        if (details.codeActions && details.codeActions.length) {
+      if (details) {
+        // modifiers maybe contain multiple values. eg `export,declare`
+        const modifiers = details.kindModifiers.split(",") || [];
+
+        if (
+          modifiers.includes("export") &&
+          details.codeActions &&
+          details.codeActions.length
+        ) {
           for (const ca of details.codeActions) {
             for (const change of ca.changes) {
               if (!change.isNewFile) {
