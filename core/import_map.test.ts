@@ -12,6 +12,7 @@ test("core / import_map", async () => {
 
   expect(ImportMap.create(validImportMapFilepath).toJSON()).toEqual({
     "demo/": "https://example.com/demo/",
+    core: "./src/relative/path/to",
   });
 
   expect(
@@ -21,6 +22,12 @@ test("core / import_map", async () => {
   expect(
     ImportMap.create(validImportMapFilepath).resolveModule("demo1/mod.ts")
   ).toEqual("demo1/mod.ts");
+
+  expect(
+    ImportMap.create(validImportMapFilepath).resolveModule("core/mod.ts")
+  ).toEqual(
+    path.join(mockWorkspaceDir, "src", "relative", "path", "to", "mod.ts")
+  );
 
   expect(ImportMap.create(invalidImportMapFilepath).toJSON()).toEqual({});
 

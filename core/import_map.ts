@@ -55,6 +55,15 @@ export class ImportMap implements ImportMapInterface {
       const reg = new RegExp("^" + escapeRegExp(prefix));
       if (reg.test(moduleName)) {
         moduleName = moduleName.replace(reg, mapModule);
+
+        // if module name is a relative path
+        if (moduleName.startsWith(".") && this.filepath) {
+          moduleName = path.resolve(
+            path.dirname(this.filepath),
+            normalizeFilepath(moduleName)
+          );
+        }
+
         return moduleName;
       }
     }
