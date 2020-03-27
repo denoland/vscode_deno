@@ -168,14 +168,16 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         return resolvedModules
           .map((v, i) => {
             if (!v) {
-              return resolveTypeReferenceDirectives(
+              const [result] = resolveTypeReferenceDirectives(
                 [typeDirectiveNames[i]],
                 containingFile,
                 ...rest
-              )[0];
+              );
+
+              return result;
             }
             const target: ts_module.ResolvedTypeReferenceDirective = {
-              primary: true,
+              primary: false,
               resolvedFileName: v.module,
             };
 
@@ -345,6 +347,46 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         );
 
         const resolvedModules = resolver.resolveModules(moduleNames);
+
+        // try resolve typeReferenceDirectives
+        for (const resolvedModule of resolvedModules) {
+          if (!resolvedModule) {
+            continue;
+          }
+
+          const content = this.typescript.sys.readFile(resolvedModule.filepath);
+
+          if (!content) {
+            continue;
+          }
+
+          const { typeReferenceDirectives } = this.typescript.preProcessFile(
+            content,
+            true,
+            true
+          );
+
+          if (!typeReferenceDirectives.length) {
+            continue;
+          }
+
+          const _resolver = ModuleResolver.create(
+            resolvedModule.filepath,
+            importMapsFilepath
+          );
+
+          const modules = _resolver.resolveModules(
+            typeReferenceDirectives.map((v) => v.fileName)
+          );
+
+          for (const m of modules) {
+            if (m) {
+              resolvedModule.origin = m.origin;
+              resolvedModule.module = m.module;
+              resolvedModule.filepath = m.filepath;
+            }
+          }
+        }
 
         return resolveModuleNames(
           resolvedModules.map((v, index) =>
