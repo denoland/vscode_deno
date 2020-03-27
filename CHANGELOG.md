@@ -1,3 +1,13 @@
+# [3.4.0](https://github.com/axetroy/vscode-deno/compare/v3.3.1...v3.4.0) (2020-03-27)
+
+### Bug Fixes
+
+- importmap not work when set to a relative path. close [#103](https://github.com/axetroy/vscode-deno/issues/103) ([0e8398f](https://github.com/axetroy/vscode-deno/commit/0e8398f0892f1a705cff6c4f8721e7b3f71dc948))
+
+### Features
+
+- add diagnostic for checking valid import statement ([b2f070a](https://github.com/axetroy/vscode-deno/commit/b2f070a85058432542fe9721be2d3aa66e6901b3))
+
 ## [3.3.1](https://github.com/axetroy/vscode-deno/compare/v3.3.0...v3.3.1) (2020-03-27)
 
 ### Bug Fixes
