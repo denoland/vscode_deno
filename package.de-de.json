@@ -11,5 +11,6 @@
   "err.below_deno_minimum_requirements": "Deno's version is below minimum requirements. Please upgrade to v{0} or above.",
   "diagnostic.fix.create_module": "Erstellen das Modul",
   "diagnostic.fix.fetch_module": "Download das Modul",
-  "diagnostic.report.module_not_found_locally": "Modul `{0}` konnte lokal nicht gefunden werden."
+  "diagnostic.report.module_not_found_locally": "Modul `{0}` konnte lokal nicht gefunden werden.",
+  "diagnostic.report.invalid_import": "Import module `{0}` must be a relative path or remote HTTP URL."
 }

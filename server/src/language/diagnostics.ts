@@ -26,6 +26,7 @@ type Fix = {
 };
 
 enum DiagnosticCode {
+  InvalidImport = 1000,
   LocalModuleNotExist = 1004,
   RemoteModuleNotExist = 1005,
 }
@@ -158,14 +159,52 @@ export class Diagnostics {
           : ImportMap.create(importMapFilepath).resolveModule(
               importModule.moduleName
             );
+
+        if (isHttpURL(moduleName)) {
+          diagnosticsForThisDocument.push(
+            Diagnostic.create(
+              importModule.location,
+              localize(
+                "diagnostic.report.module_not_found_locally",
+                moduleName
+              ),
+              DiagnosticSeverity.Error,
+              DiagnosticCode.RemoteModuleNotExist,
+              this.name
+            )
+          );
+          continue;
+        }
+
+        console.log(moduleName);
+
+        if (
+          path.isAbsolute(moduleName) ||
+          moduleName.startsWith(".") ||
+          moduleName.startsWith("file://")
+        ) {
+          diagnosticsForThisDocument.push(
+            Diagnostic.create(
+              importModule.location,
+              localize(
+                "diagnostic.report.module_not_found_locally",
+                moduleName
+              ),
+              DiagnosticSeverity.Error,
+              DiagnosticCode.LocalModuleNotExist,
+              this.name
+            )
+          );
+          continue;
+        }
+
+        // invalid module
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             importModule.location,
-            localize("diagnostic.report.module_not_found_locally", moduleName),
+            localize("diagnostic.report.invalid_import", moduleName),
             DiagnosticSeverity.Error,
-            isHttpURL(moduleName)
-              ? DiagnosticCode.RemoteModuleNotExist
-              : DiagnosticCode.LocalModuleNotExist,
+            DiagnosticCode.InvalidImport,
             this.name
           )
         );
