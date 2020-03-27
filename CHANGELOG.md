@@ -1,3 +1,15 @@
+## [3.3.1](https://github.com/axetroy/vscode-deno/compare/v3.3.0...v3.3.1) (2020-03-27)
+
+### Bug Fixes
+
+- auto import module not working properly in some edge cases ([71b518b](https://github.com/axetroy/vscode-deno/commit/71b518bf229546c4015763cfea3a30ab7739f7cc))
+- output target of compileOption now is esnext ([fcbd234](https://github.com/axetroy/vscode-deno/commit/fcbd234c5a426efac91fc7b4456b1ea63828fc3c))
+- Synchronization Deno error code ([4b6efd4](https://github.com/axetroy/vscode-deno/commit/4b6efd41a0d5be3d2b681e0be8e20398a66cae92))
+- Triple-Slash Directive does not work. ref [#102](https://github.com/axetroy/vscode-deno/issues/102) ([e381390](https://github.com/axetroy/vscode-deno/commit/e381390ac9461f9bdc7b67a9228e071d64d2ac3b))
+- Triple-Slash Directive not resolve module correctly ([175b021](https://github.com/axetroy/vscode-deno/commit/175b02140b0d86872338b35f1070a4739f7bb0d5))
+- **deps:** update dependency vscode-languageclient to v6.1.2 ([#99](https://github.com/axetroy/vscode-deno/issues/99)) ([550f0bc](https://github.com/axetroy/vscode-deno/commit/550f0bcf21b9d9a83107c65367a1bd375ccbdb1e))
+- **deps:** update dependency vscode-languageclient to v6.1.3 ([#101](https://github.com/axetroy/vscode-deno/issues/101)) ([f5a743c](https://github.com/axetroy/vscode-deno/commit/f5a743c51e789f79540244fc5599291fca9741ab))
+
 # [3.3.0](https://github.com/axetroy/vscode-deno/compare/v3.2.1...v3.3.0) (2020-03-16)
 
 ### Bug Fixes
@@ -145,7 +157,7 @@
 - auto detect ./vscode/settings.json in typescript plugin [#60](https://github.com/axetroy/vscode-deno/issues/60) ([95d73c6](https://github.com/axetroy/vscode-deno/commit/95d73c6b5efa7ba5951cc3c0dd150ce925a429b7))
 - make manifest be a iterator. ([8c7b7ce](https://github.com/axetroy/vscode-deno/commit/8c7b7ce81d9eb2110a59b14d7e41d6c08b00c8d3))
 - Requires minimum version of Deno 0.35.0 ([35b810c](https://github.com/axetroy/vscode-deno/commit/35b810ca4f5bbb50796d0df4d3efe27908e604a1))
-- Resurrected in Deno v0.35.0 ?? ([3aff7ed](https://github.com/axetroy/vscode-deno/commit/3aff7edf1481a0a234a1b994b9f6cf692e444beb))
+- Resurrected in Deno v0.35.0 🚀 ([3aff7ed](https://github.com/axetroy/vscode-deno/commit/3aff7edf1481a0a234a1b994b9f6cf692e444beb))
 - set the language of the document automatically ([8839799](https://github.com/axetroy/vscode-deno/commit/88397994925c42647c77df6e3626922ea3b9d953))
 - support [@deno-types](https://github.com/deno-types) hint definition. [#68](https://github.com/axetroy/vscode-deno/issues/68) ([758c5be](https://github.com/axetroy/vscode-deno/commit/758c5be8256efa263a53c8df1bf68ce6beeaed78))
 - support format range code ([498d37f](https://github.com/axetroy/vscode-deno/commit/498d37ffa7b4e85efd53c8c34d96b48b313effa1))
