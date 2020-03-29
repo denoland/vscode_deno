@@ -149,6 +149,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           realContainingFile = project.getCurrentDirectory();
         }
 
+        if (!this.typescript.sys.fileExists(realContainingFile)) {
+          return [];
+        }
+
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
             ? this.configurationManager.config.import_map
@@ -163,27 +167,34 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           importMapsFilepath
         );
 
-        const resolvedModules = resolver.resolveModules(typeDirectiveNames);
+        const result: (
+          | ts_module.ResolvedTypeReferenceDirective
+          | undefined
+        )[] = [];
 
-        return resolvedModules
-          .map((v, i) => {
-            if (!v) {
-              const [result] = resolveTypeReferenceDirectives(
-                [typeDirectiveNames[i]],
-                containingFile,
-                ...rest
-              );
+        for (const typeDirectiveName of typeDirectiveNames) {
+          const [resolvedModule] = resolver.resolveModules([typeDirectiveName]);
 
-              return result;
-            }
+          if (resolvedModule) {
             const target: ts_module.ResolvedTypeReferenceDirective = {
               primary: false,
-              resolvedFileName: v.module,
+              resolvedFileName: resolvedModule.filepath,
             };
 
-            return target;
-          })
-          .filter((v) => v);
+            result.push(target);
+            continue;
+          }
+
+          const [target] = resolveTypeReferenceDirectives(
+            [typeDirectiveName],
+            containingFile,
+            ...rest
+          );
+
+          result.push(target);
+        }
+
+        return result;
       };
     }
 
