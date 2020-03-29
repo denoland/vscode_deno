@@ -33,3 +33,4 @@ server/package.json
 **/node_modules/typescript-deno-plugin/src
 
 screenshot/*
+examples/*
