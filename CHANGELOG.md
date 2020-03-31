@@ -1,3 +1,9 @@
+## [3.4.1](https://github.com/axetroy/vscode-deno/compare/v3.4.0...v3.4.1) (2020-03-31)
+
+### Bug Fixes
+
+- Tsserver crashes in some cases ([11563b4](https://github.com/axetroy/vscode-deno/commit/11563b4df4e84b0c92bc256f2be6bf0dd6fc9954))
+
 # [3.4.0](https://github.com/axetroy/vscode-deno/compare/v3.3.1...v3.4.0) (2020-03-27)
 
 ### Bug Fixes
