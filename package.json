@@ -25,8 +25,8 @@
   },
   "devDependencies": {
     "@types/mock-require": "^2.0.0",
-    "@types/node": "^13.9.3",
-    "tslint": "^6.1.0",
+    "@types/node": "^13.11.0",
+    "tslint": "^6.1.1",
     "typescript": "^3.8.3"
   }
 }
