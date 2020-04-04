@@ -184,7 +184,7 @@
     "husky": "4.2.3",
     "jest": "25.2.7",
     "prettier": "2.0.2",
-    "ts-jest": "25.3.0",
+    "ts-jest": "25.3.1",
     "typescript": "3.8.3",
     "vscode": "1.1.36",
     "which": "2.0.2"
