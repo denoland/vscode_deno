@@ -6,9 +6,11 @@ import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
 import { pathExistsSync, isHttpURL, hashURL, normalizeFilepath } from "./util";
 import { Logger } from "./logger";
+import { Extension } from "./extension";
 
 export interface DenoCacheModule {
   filepath: string;
+  extension: Extension;
   url: URL;
   resolveModule(moduleName: string): DenoCacheModule | void;
 }
@@ -37,12 +39,13 @@ export class CacheModule implements DenoCacheModule {
       return;
     }
 
-    return new CacheModule(filepath, meta.url, logger);
+    return new CacheModule(filepath, meta.url, meta.extension, logger);
   }
 
   constructor(
     public filepath: string,
     public url: URL,
+    public extension: Extension,
     private logger?: Logger
   ) {
     filepath = normalizeFilepath(filepath);

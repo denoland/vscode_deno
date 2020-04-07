@@ -175,6 +175,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         for (const typeDirectiveName of typeDirectiveNames) {
           const [resolvedModule] = resolver.resolveModules([typeDirectiveName]);
 
+          // if module found. then return the module file
           if (resolvedModule) {
             const target: ts_module.ResolvedTypeReferenceDirective = {
               primary: false,
@@ -185,6 +186,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             continue;
           }
 
+          // If the module does not exist, then apply the native reference method
           const [target] = resolveTypeReferenceDirectives(
             [typeDirectiveName],
             containingFile,
@@ -293,8 +295,8 @@ export class DenoPlugin implements ts_module.server.PluginModule {
               // text is always unix style
               const text = source.text;
 
-              const absoluteFilepath = path.posix.resolve(
-                path.dirname(fileName),
+              const absoluteFilepath = path.resolve(
+                normalizeFilepath(path.dirname(fileName)),
                 normalizeFilepath(text)
               );
 
@@ -321,7 +323,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         moduleNames: string[],
         containingFile: string,
         ...rest
-      ): (ts_module.ResolvedModule | undefined)[] => {
+      ): (
+        | ts_module.ResolvedModule
+        | ts_module.ResolvedModuleFull
+        | undefined
+      )[] => {
         if (!this.configurationManager.config.enable) {
           return resolveModuleNames(moduleNames, containingFile, ...rest);
         }
@@ -415,11 +421,13 @@ export class DenoPlugin implements ts_module.server.PluginModule {
                 path.isAbsolute(moduleFilepath) &&
                 pathExistsSync(moduleFilepath)
               ) {
-                return {
-                  extension: this.typescript.Extension.Js,
+                const result: ts_module.ResolvedModuleFull = {
+                  extension: cacheModule.extension,
                   isExternalLibraryImport: false,
                   resolvedFileName: moduleFilepath,
                 } as ts_module.ResolvedModuleFull;
+
+                return result;
               }
             }
           }

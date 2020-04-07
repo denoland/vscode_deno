@@ -33,6 +33,7 @@ test("core / module_resolver: resolve module from Deno cache", () => {
     ])
   ).toEqual([
     {
+      extension: ".ts",
       origin: "./sub/mod.ts",
       filepath: path.join(
         path.dirname(cacheFilepath),
@@ -44,6 +45,7 @@ test("core / module_resolver: resolve module from Deno cache", () => {
       ),
     },
     {
+      extension: ".ts",
       origin: "/esm/mod.ts",
       filepath: path.join(
         path.dirname(cacheFilepath),
@@ -55,6 +57,7 @@ test("core / module_resolver: resolve module from Deno cache", () => {
       ),
     },
     {
+      extension: ".ts",
       origin: "https://example.com/esm/mod.ts",
       filepath: path.join(
         path.dirname(cacheFilepath),
@@ -88,16 +91,19 @@ test("core / module_resolver: resolve module from local", () => {
     ])
   ).toEqual([
     {
+      extension: ".ts",
       origin: "./deno.ts",
       filepath: path.join(__dirname, "deno.ts"),
       module: path.join(__dirname, "deno.ts").replace(/\.ts$/, ""),
     },
     {
+      extension: ".json",
       origin: "../package.json",
       filepath: path.join(__dirname, "..", "package.json"),
       module: path.join(__dirname, "..", "package.json"),
     },
     {
+      extension: ".ts",
       origin: "https://example.com/esm/mod.ts",
       filepath: path.join(
         path.dirname(cacheFilepath),
@@ -109,6 +115,7 @@ test("core / module_resolver: resolve module from local", () => {
       ),
     },
     {
+      extension: ".ts",
       origin: "demo/mod.ts",
       filepath: path.join(
         path.dirname(cacheFilepath),
@@ -120,6 +127,7 @@ test("core / module_resolver: resolve module from local", () => {
       ),
     },
     {
+      extension: ".ts",
       origin: "https://another.example.com/path/mod.ts?foo=bar",
       filepath: path.join(
         denoDir,
@@ -139,6 +147,7 @@ test("core / module_resolver: resolve module from local", () => {
     undefined,
     undefined,
     {
+      extension: ".ts",
       origin: "https://example.com/x-typescript-types",
       filepath: path.join(
         denoDir,
@@ -172,6 +181,7 @@ test("core / module_resolver: resolve module if redirect", () => {
     ])
   ).toEqual([
     {
+      extension: ".ts",
       origin: "https://example.com/redirect",
       filepath: path.join(
         denoDir,
@@ -189,6 +199,7 @@ test("core / module_resolver: resolve module if redirect", () => {
       ),
     },
     {
+      extension: ".ts",
       origin: "https://example.com/redirect_to_absolute",
       filepath: path.join(
         denoDir,

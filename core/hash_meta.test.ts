@@ -25,6 +25,7 @@ test("core / hash_meta", () => {
   expect(meta).not.toBe(undefined);
   expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
   expect(meta.type).toEqual(Type.TypeScript);
+  expect(meta.extension).toEqual(".ts");
   expect(meta.url.href).toEqual("https://example.com/demo/mod.ts");
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });
@@ -42,6 +43,7 @@ test("core / hash_meta with javascript file", () => {
   expect(meta).not.toBe(undefined);
   expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
   expect(meta.type).toEqual(Type.JavaScript);
+  expect(meta.extension).toEqual(".js");
   expect(meta.url.href).toEqual("https://example.com/demo.js");
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });
@@ -59,6 +61,7 @@ test("core / hash_meta with json file", () => {
   expect(meta).not.toBe(undefined);
   expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
   expect(meta.type).toEqual(Type.JSON);
+  expect(meta.extension).toEqual(".json");
   expect(meta.url.href).toEqual("https://example.com/demo.json");
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });
@@ -76,6 +79,7 @@ test("core / hash_meta without extension name", () => {
   expect(meta).not.toBe(undefined);
   expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
   expect(meta.type).toEqual(Type.PlainText);
+  expect(meta.extension).toEqual("");
   expect(meta.url.href).toEqual("https://example.com/without-extension-name");
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });
@@ -93,6 +97,7 @@ test("core / hash_meta if have content-type", () => {
   expect(meta).not.toBe(undefined);
   expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
   expect(meta.type).toEqual(Type.JavaScript);
+  expect(meta.extension).toEqual(".js");
   expect(meta.url.href).toEqual("https://example.com/content-type");
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });
@@ -110,6 +115,7 @@ test("core / hash_meta if have content-type typescript", () => {
   expect(meta).not.toBe(undefined);
   expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
   expect(meta.type).toEqual(Type.TypeScript);
+  expect(meta.extension).toEqual(".ts");
   expect(meta.url.href).toEqual("https://example.com/content-type-typescript");
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });

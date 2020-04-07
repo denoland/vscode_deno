@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { pathExistsSync, normalizeFilepath } from "./util";
+import { Extension } from "./extension";
 
 type HTTPHeaders = { [key: string]: string };
 
@@ -98,6 +99,29 @@ export class HashMeta implements HashMetaInterface {
     }
 
     return Type.PlainText;
+  }
+  get extension(): Extension {
+    const type = this.type;
+
+    switch (type) {
+      case Type.JavaScript:
+        return ".js";
+      /* istanbul ignore next */
+      case Type.JavaScriptReact:
+        return ".jsx";
+      case Type.TypeScript:
+        return ".ts";
+      /* istanbul ignore next */
+      case Type.TypeScriptReact:
+        return ".tsx";
+      case Type.JSON:
+        return ".json";
+      /* istanbul ignore next */
+      case Type.WebAssembly:
+        return ".wasm";
+    }
+
+    return "";
   }
   get destinationFilepath(): string {
     return this.filepath.replace(/\.metadata\.json$/, "");
