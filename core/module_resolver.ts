@@ -118,9 +118,8 @@ export class ModuleResolver implements ModuleResolverInterface {
       /* istanbul ignore else */
       if (typeModule) {
         typeModule.origin = httpModuleURL;
+        return typeModule;
       }
-
-      return typeModule;
     }
 
     return {
