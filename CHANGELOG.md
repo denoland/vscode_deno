@@ -1,3 +1,10 @@
+## [3.4.2](https://github.com/axetroy/vscode-deno/compare/v3.4.1...v3.4.2) (2020-04-08)
+
+### Bug Fixes
+
+- if `x-typescript-types` do not exist. then fallback to origin file ([05496e3](https://github.com/axetroy/vscode-deno/commit/05496e3022e371c5be7e821c9f778c8ed7cfbc77))
+- **deps:** update dependency semver to v7.2.1 ([#128](https://github.com/axetroy/vscode-deno/issues/128)) ([90f4ad2](https://github.com/axetroy/vscode-deno/commit/90f4ad2f94db9762f23fdd9b79d73572cf1db5e2))
+
 ## [3.4.1](https://github.com/axetroy/vscode-deno/compare/v3.4.0...v3.4.1) (2020-03-31)
 
 ### Bug Fixes
