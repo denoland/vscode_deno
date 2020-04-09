@@ -39,6 +39,15 @@ export class ImportMap implements ImportMapInterface {
 
         try {
           importMap = JSON.parse(importMapContent || "");
+
+          // Make sure `importMap.imports` is a key-value object
+          // Otherwise, an exception may be thrown
+          if (
+            Object.prototype.toString.call(importMap.imports) !==
+            "[object Object]"
+          ) {
+            importMap.imports = {};
+          }
         } catch {
           importMap.imports = {};
         }
