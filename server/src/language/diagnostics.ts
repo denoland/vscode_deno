@@ -18,7 +18,7 @@ import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
 import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
-import { getImportModules } from "../../../core/deno_deps";
+import { getImportModules, Range } from "../../../core/deno_deps";
 
 type Fix = {
   title: string;
@@ -136,7 +136,7 @@ export class Diagnostics {
       uri.fsPath,
       document.getText(),
       ts.ScriptTarget.ESNext,
-      false,
+      true,
       ts.ScriptKind.TSX
     );
 
@@ -145,10 +145,10 @@ export class Diagnostics {
     const diagnosticsForThisDocument: Diagnostic[] = [];
     const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
 
-    for (const importModule of importModules) {
-      const [resolvedModule] = resolver.resolveModules([
-        importModule.moduleName,
-      ]);
+    const handle = async (originModuleName: string, location: Range) => {
+      const importModuleName = originModuleName;
+
+      const [resolvedModule] = resolver.resolveModules([importModuleName]);
 
       if (
         !resolvedModule ||
@@ -156,14 +156,12 @@ export class Diagnostics {
       ) {
         const moduleName = resolvedModule
           ? resolvedModule.origin
-          : ImportMap.create(importMapFilepath).resolveModule(
-              importModule.moduleName
-            );
+          : ImportMap.create(importMapFilepath).resolveModule(importModuleName);
 
         if (isHttpURL(moduleName)) {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
-              importModule.location,
+              location,
               localize(
                 "diagnostic.report.module_not_found_locally",
                 moduleName
@@ -173,7 +171,7 @@ export class Diagnostics {
               this.name
             )
           );
-          continue;
+          return;
         }
 
         console.log(moduleName);
@@ -185,7 +183,7 @@ export class Diagnostics {
         ) {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
-              importModule.location,
+              location,
               localize(
                 "diagnostic.report.module_not_found_locally",
                 moduleName
@@ -195,19 +193,26 @@ export class Diagnostics {
               this.name
             )
           );
-          continue;
+          return;
         }
 
         // invalid module
         diagnosticsForThisDocument.push(
           Diagnostic.create(
-            importModule.location,
+            location,
             localize("diagnostic.report.invalid_import", moduleName),
             DiagnosticSeverity.Error,
             DiagnosticCode.InvalidImport,
             this.name
           )
         );
+      }
+    };
+
+    for (const importModule of importModules) {
+      await handle(importModule.moduleName, importModule.location);
+      if (importModule.hint) {
+        await handle(importModule.hint.text, importModule.hint.contentRange);
       }
     }
 

@@ -110,6 +110,9 @@ export class HashMeta implements HashMetaInterface {
       case Type.JavaScriptReact:
         return ".jsx";
       case Type.TypeScript:
+        if (this.url.pathname.endsWith(".d.ts")) {
+          return ".d.ts";
+        }
         return ".ts";
       /* istanbul ignore next */
       case Type.TypeScriptReact:

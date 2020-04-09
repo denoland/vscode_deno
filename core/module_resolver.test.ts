@@ -147,7 +147,7 @@ test("core / module_resolver: resolve module from local", () => {
     undefined,
     undefined,
     {
-      extension: ".ts",
+      extension: ".d.ts",
       origin: "https://example.com/x-typescript-types",
       filepath: path.join(
         denoDir,

@@ -8,7 +8,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
 
 import { getDenoTypesHintsFromDocument } from "../deno_types";
-import { pathExists } from "../../../core/util";
+import { ModuleResolver } from "../../../core/module_resolver";
 
 export class References {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
@@ -19,6 +19,10 @@ export class References {
       if (!document) {
         return;
       }
+
+      const uri = URI.parse(document.uri);
+
+      const resolver = ModuleResolver.create(uri.fsPath);
 
       const locations: Location[] = [];
 
@@ -33,10 +37,11 @@ export class References {
           position.character >= start.character &&
           position.character <= end.character
         ) {
-          if ((await pathExists(typeComment.filepath)) === true) {
+          const [typeModule] = resolver.resolveModules([typeComment.text]);
+          if (typeModule) {
             locations.push(
               Location.create(
-                URI.file(typeComment.filepath).toString(),
+                URI.file(typeModule.filepath).toString(),
                 Range.create(0, 0, 0, 0)
               )
             );

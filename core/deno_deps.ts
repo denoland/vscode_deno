@@ -5,6 +5,11 @@ import typescript = require("typescript");
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
+import { parseCompileHint } from "./deno_type_hint";
+
+interface Comment extends typescript.CommentRange {
+  text: string;
+}
 
 export type Deps = {
   url: string;
@@ -70,9 +75,18 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
   return deps;
 }
 
+export type Hint = {
+  text: string;
+  range: Range;
+  contentRange: Range;
+};
+
 export type ImportModule = {
   moduleName: string;
+  hint?: Hint; // if import module with @deno-types="xxx" hint
   location: Range;
+  leadingComments?: Comment[];
+  trailingComments?: Comment[];
 };
 
 export function getImportModules(ts: typeof typescript) {
@@ -145,15 +159,52 @@ export function getImportModules(ts: typeof typescript) {
     // delint it
     delint(sourceFile);
 
+    const text = sourceFile.getFullText();
+
+    const getComments = (
+      node: typescript.Node,
+      isTrailing: boolean
+    ): Comment[] | undefined => {
+      /* istanbul ignore else */
+      if (node.parent) {
+        const nodePos = isTrailing ? node.end : node.pos;
+        const parentPos = isTrailing ? node.parent.end : node.parent.pos;
+
+        if (
+          node.parent.kind === ts.SyntaxKind.SourceFile ||
+          nodePos !== parentPos
+        ) {
+          const comments = isTrailing
+            ? ts.getTrailingCommentRanges(sourceFile.text, nodePos)
+            : ts.getLeadingCommentRanges(sourceFile.text, nodePos);
+
+          if (Array.isArray(comments)) {
+            return comments.map((v) => {
+              const target: Comment = {
+                ...v,
+                text: text.substring(v.pos, v.end),
+              };
+
+              return target;
+            });
+          }
+
+          return undefined;
+        }
+      }
+    };
+
     const modules: ImportModule[] = sourceFile.typeReferenceDirectives
       .map((directive) => {
         const start = sourceFile.getLineAndCharacterOfPosition(directive.pos);
         const end = sourceFile.getLineAndCharacterOfPosition(directive.end);
 
-        return {
+        const module: ImportModule = {
           moduleName: directive.fileName,
           location: { start, end },
         };
+
+        return module;
       })
       .concat(
         moduleNodes.map((node) => {
@@ -175,10 +226,30 @@ export function getImportModules(ts: typeof typescript) {
             end,
           };
 
-          return {
+          const leadingComments = getComments(node.parent, false);
+          const trailingComments = getComments(node.parent, true);
+
+          const module: ImportModule = {
             moduleName: node.text,
             location,
           };
+
+          if (trailingComments) {
+            module.trailingComments = trailingComments;
+          }
+
+          if (leadingComments) {
+            module.leadingComments = leadingComments;
+            // get the last comment
+            const comment =
+              module.leadingComments[module.leadingComments.length - 1];
+
+            const hint = parseCompileHint(sourceFile, comment);
+
+            module.hint = hint;
+          }
+
+          return module;
         })
       );
 

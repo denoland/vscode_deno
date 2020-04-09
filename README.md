@@ -84,10 +84,10 @@ The extension supports the following ways to load external declaration files
 
 ```ts
 // @deno-types="./foo.d.ts"
-import * as foo from "./foo.js";
+import { foo } from "./foo.js";
 ```
 
-> This will not be implemented in then extensions.
+see [example](/examples/compile-hint/mod.ts)
 
 2. `Triple-slash` reference directive
 
@@ -98,6 +98,8 @@ import { format } from "https://deno.land/x/date_fns/index.js";
 
 format(new Date(), "yyyy/MM/DD");
 ```
+
+see [example](/examples/react/mod.tsx)
 
 3. `X-TypeScript-Types` custom header
 

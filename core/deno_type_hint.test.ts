@@ -19,13 +19,14 @@ test("core / deno_type_hint: with compile hint", async () => {
     `// @deno-types="./foo.d.ts"
 import "./foo.ts"
 `,
-    ts.ScriptTarget.ESNext
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TSX
   );
   const [comment] = getDenoCompileHint(ts)(sourceFile);
 
   expect(comment).not.toBe(undefined);
-  expect(comment.module).toEqual("./foo.d.ts");
-  expect(comment.text).toEqual(`// @deno-types="./foo.d.ts"`);
+  expect(comment.text).toEqual(`./foo.d.ts`);
   expect(comment.range).toEqual({
     start: { line: 0, character: 0 },
     end: { line: 0, character: 27 },
@@ -42,13 +43,14 @@ test("core / deno_type_hint: with compile hint", async () => {
     `// @deno-types="/absolute/path/to/foo.d.ts"
 import "./foo.ts"
 `,
-    ts.ScriptTarget.ESNext
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TSX
   );
   const [comment] = getDenoCompileHint(ts)(sourceFile);
 
   expect(comment).not.toBe(undefined);
-  expect(comment.module).toEqual("/absolute/path/to/foo.d.ts");
-  expect(comment.text).toEqual(`// @deno-types="/absolute/path/to/foo.d.ts"`);
+  expect(comment.text).toEqual(`/absolute/path/to/foo.d.ts`);
 });
 
 test("core / deno_type_hint: with compile hint 1", async () => {
@@ -62,13 +64,14 @@ test("core / deno_type_hint: with compile hint 1", async () => {
 
 import "./foo.ts"
 `,
-    ts.ScriptTarget.ESNext
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TSX
   );
   const [comment] = getDenoCompileHint(ts)(sourceFile);
 
   expect(comment).not.toBe(undefined);
-  expect(comment.module).toEqual("./foo.d.ts");
-  expect(comment.text).toEqual(`// @deno-types="./foo.d.ts"`);
+  expect(comment.text).toEqual(`./foo.d.ts`);
   expect(comment.range).toEqual({
     start: { line: 3, character: 0 },
     end: { line: 3, character: 27 },
@@ -93,13 +96,14 @@ test("core / deno_type_hint: with compile hint 2", async () => {
  */
 /* prefix */ import "./foo.ts" // hasTrailingNewLine
 `,
-    ts.ScriptTarget.ESNext
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TSX
   );
   const [comment] = getDenoCompileHint(ts)(sourceFile);
 
   expect(comment).not.toBe(undefined);
-  expect(comment.module).toEqual("./foo.d.ts");
-  expect(comment.text).toEqual(`// @deno-types="./foo.d.ts"`);
+  expect(comment.text).toEqual(`./foo.d.ts`);
   expect(comment.range).toEqual({
     start: { line: 3, character: 0 },
     end: { line: 3, character: 27 },

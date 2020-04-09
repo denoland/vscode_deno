@@ -1,15 +1,4 @@
-import * as path from "path";
 import typescript = require("typescript");
-
-import { normalizeFilepath } from "./util";
-
-interface CommentRange extends typescript.CommentRange {
-  text: string;
-  module: string;
-  filepath: string;
-  range: Range;
-  contentRange: Range;
-}
 
 export interface Position {
   line: number;
@@ -38,16 +27,53 @@ export const Range = {
   },
 };
 
+export type compileHint = {
+  text: string;
+  range: Range;
+  contentRange: Range;
+};
+
+export function parseCompileHint(
+  sourceFile: typescript.SourceFile,
+  comment: typescript.CommentRange
+): compileHint | undefined {
+  const text = sourceFile.getFullText().substring(comment.pos, comment.end);
+  const regexp = /@deno-types=['"]([^'"]+)['"]/;
+
+  const matchers = regexp.exec(text);
+
+  if (!matchers) {
+    return;
+  }
+
+  const start = sourceFile.getLineAndCharacterOfPosition(comment.pos);
+  const end = sourceFile.getLineAndCharacterOfPosition(comment.end);
+
+  const moduleNameStart = Position.create(
+    start.line,
+    start.character + '// @deno-types="'.length
+  );
+  const moduleNameEnd = Position.create(end.line, end.character - '"'.length);
+
+  const moduleName = matchers[1];
+
+  return {
+    text: moduleName,
+    range: Range.create(start, end),
+    contentRange: Range.create(moduleNameStart, moduleNameEnd),
+  };
+}
+
 /**
  * Get Deno compile hint from a source file
  * @param ts
  */
 export function getDenoCompileHint(ts: typeof typescript) {
-  return function (sourceFile: typescript.SourceFile) {
-    const denoTypesComments: CommentRange[] = [];
+  return function (sourceFile: typescript.SourceFile, pos = 0): compileHint[] {
+    const denoTypesComments: compileHint[] = [];
 
     const comments =
-      ts.getLeadingCommentRanges(sourceFile.getFullText(), 0) || [];
+      ts.getLeadingCommentRanges(sourceFile.getFullText(), pos) || [];
 
     for (const comment of comments) {
       if (comment.hasTrailingNewLine) {
@@ -59,34 +85,12 @@ export function getDenoCompileHint(ts: typeof typescript) {
         const matchers = regexp.exec(text);
 
         if (matchers) {
-          const start = sourceFile.getLineAndCharacterOfPosition(comment.pos);
-          const end = sourceFile.getLineAndCharacterOfPosition(comment.end);
+          const compileHint = parseCompileHint(sourceFile, comment);
 
-          const moduleNameStart = Position.create(
-            start.line,
-            start.character + '// @deno-types="'.length
-          );
-          const moduleNameEnd = Position.create(
-            end.line,
-            end.character - '"'.length
-          );
-
-          const moduleName = matchers[1];
-
-          const moduleFilepath = normalizeFilepath(moduleName);
-
-          const targetFilepath = path.isAbsolute(moduleFilepath)
-            ? moduleFilepath
-            : path.resolve(path.dirname(sourceFile.fileName), moduleFilepath);
-
-          denoTypesComments.push({
-            ...comment,
-            text,
-            module: moduleName,
-            filepath: targetFilepath,
-            range: Range.create(start, end),
-            contentRange: Range.create(moduleNameStart, moduleNameEnd),
-          });
+          /* istanbul ignore else */
+          if (compileHint) {
+            denoTypesComments.push(compileHint);
+          }
         }
       }
     }

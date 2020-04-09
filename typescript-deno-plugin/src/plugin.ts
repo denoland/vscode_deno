@@ -11,6 +11,7 @@ import { CacheModule } from "../../core/deno_cache";
 import { pathExistsSync, normalizeFilepath } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
+import { getImportModules } from "../../core/deno_deps";
 
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
@@ -93,9 +94,6 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         this.MUST_OVERWRITE_OPTIONS
       );
 
-      this.logger.info(
-        `compilationSettings:${JSON.stringify(compilationSettings)}`
-      );
       return compilationSettings;
     };
 
@@ -362,6 +360,28 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           realContainingFile,
           importMapsFilepath
         );
+
+        const content = this.typescript.sys.readFile(containingFile, "utf8");
+
+        // handle @deno-types
+        if (content && content.indexOf("// @deno-types=") >= 0) {
+          const sourceFile = this.typescript.createSourceFile(
+            containingFile,
+            content,
+            this.typescript.ScriptTarget.ESNext,
+            true
+          );
+
+          const modules = getImportModules(this.typescript)(sourceFile);
+
+          for (const m of modules) {
+            if (m.hint) {
+              const index = moduleNames.findIndex((v) => v === m.moduleName);
+
+              moduleNames[index] = m.hint.text;
+            }
+          }
+        }
 
         const resolvedModules = resolver.resolveModules(moduleNames);
 

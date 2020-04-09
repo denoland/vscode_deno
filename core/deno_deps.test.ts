@@ -42,9 +42,11 @@ import test from "test.ts";
 import * as test from "test.ts";
 export { window } from "export.ts";
 export * from "export_as.ts";
-export * as xx from "export_as_default.ts";
+export * as xx from "export_as_default.ts"; // example
 `,
-    ts.ScriptTarget.ESNext
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TSX
   );
 
   expect(getImportModules(ts)(sourceFile)).toStrictEqual([
@@ -57,6 +59,16 @@ export * as xx from "export_as_default.ts";
       },
     },
     {
+      hint: undefined,
+      leadingComments: [
+        {
+          end: 97,
+          hasTrailingNewLine: true,
+          kind: 2,
+          pos: 0,
+          text: `/// <reference types="https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts" />`,
+        },
+      ],
       moduleName: "./foo.ts",
       location: {
         start: { line: 1, character: 8 },
@@ -118,6 +130,15 @@ export * as xx from "export_as_default.ts";
         start: { line: 9, character: 21 },
         end: { line: 9, character: 41 },
       },
+      trailingComments: [
+        {
+          end: 373,
+          hasTrailingNewLine: true,
+          kind: 2,
+          pos: 363,
+          text: "// example",
+        },
+      ],
     },
   ] as ImportModule[]);
 });

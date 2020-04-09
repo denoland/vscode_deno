@@ -15,7 +15,7 @@ export function getDenoTypesHintsFromDocument(document: TextDocument) {
     uri.fsPath,
     document.getText(),
     ts.ScriptTarget.ESNext,
-    false,
+    true,
     ts.ScriptKind.TSX
   );
 

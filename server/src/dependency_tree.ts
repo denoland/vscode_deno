@@ -53,7 +53,7 @@ export class DependencyTree {
         filepath,
         await fs.readFile(filepath, { encoding: "utf8" }),
         ts.ScriptTarget.ESNext,
-        false,
+        true,
         ts.ScriptKind.TSX
       );
 
