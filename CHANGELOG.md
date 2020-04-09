@@ -1,3 +1,14 @@
+# [3.5.0](https://github.com/axetroy/vscode-deno/compare/v3.4.2...v3.5.0) (2020-04-09)
+
+### Bug Fixes
+
+- refresh diagnostic not work ([f8e8e70](https://github.com/axetroy/vscode-deno/commit/f8e8e706f9ef2e45b78aafd5a7b28ddd03c80679))
+
+### Features
+
+- compatible deno cache command since Deno v0.40.0 ([7309b0c](https://github.com/axetroy/vscode-deno/commit/7309b0c3b58bd1a2ed4fc5af65fa0bd3f4626336))
+- support deno-types compile hint ([#129](https://github.com/axetroy/vscode-deno/issues/129)) ([9be33a4](https://github.com/axetroy/vscode-deno/commit/9be33a41c8d94c49a1420d124dcdad74b7778ee9))
+
 ## [3.4.2](https://github.com/axetroy/vscode-deno/compare/v3.4.1...v3.4.2) (2020-04-08)
 
 ### Bug Fixes
