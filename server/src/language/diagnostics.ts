@@ -19,6 +19,7 @@ import { ModuleResolver } from "../../../core/module_resolver";
 import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
 import { getImportModules, Range } from "../../../core/deno_deps";
+import { Notification } from "../../../core/const";
 
 type Fix = {
   title: string;
@@ -100,7 +101,7 @@ export class Diagnostics {
       return actions;
     });
 
-    connection.onNotification("updateDiagnostic", (uri: string) => {
+    connection.onNotification(Notification.diagnostic, (uri: string) => {
       const document = this.documents.get(uri);
       document && this.diagnosis(document);
     });
