@@ -30,6 +30,7 @@ import {
 import getport from "get-port";
 import execa from "execa";
 import { init, localize } from "vscode-nls-i18n";
+import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
 import { ImportMap } from "../../core/import_map";
@@ -502,14 +503,14 @@ Executable ${this.denoInfo.executablePath}`;
             cancellable: true,
           },
           (process, cancelToken) => {
-            const ps = execa(
-              this.denoInfo.executablePath,
-              ["fetch", moduleName],
-              {
-                // timeout of 2 minute
-                timeout: 1000 * 60 * 2,
-              }
-            );
+            // `deno fetch xxx` has been renamed to `deno cache xxx` since Deno v0.40.0
+            const cmd = semver.gte(this.denoInfo.version.deno, "0.40.0")
+              ? "cache"
+              : "fetch";
+            const ps = execa(this.denoInfo.executablePath, [cmd, moduleName], {
+              // timeout of 2 minute
+              timeout: 1000 * 60 * 2,
+            });
 
             const updateProgress = (buf: Buffer) => {
               const raw = buf.toString();
