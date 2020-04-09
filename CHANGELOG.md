@@ -1,3 +1,9 @@
+## [3.5.1](https://github.com/axetroy/vscode-deno/compare/v3.5.0...v3.5.1) (2020-04-09)
+
+### Bug Fixes
+
+- add more test case for import_map. ref [#132](https://github.com/axetroy/vscode-deno/issues/132) ([e4b1d6a](https://github.com/axetroy/vscode-deno/commit/e4b1d6aee4f55f17f00ef204048e77285f5b5ee3))
+
 # [3.5.0](https://github.com/axetroy/vscode-deno/compare/v3.4.2...v3.5.0) (2020-04-09)
 
 ### Bug Fixes
