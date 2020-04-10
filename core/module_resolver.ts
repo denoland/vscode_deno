@@ -11,9 +11,8 @@ import { Logger } from "./logger";
 import { Extension, getExtensionFromFile } from "./extension";
 
 export type ResolvedModule = {
-  origin: string; // the origin resolve module
-  filepath: string; // full file name path. May be relative or absolute
-  module: string; // final resolve module. It may not have an extension
+  origin: string;
+  filepath: string;
   extension: Extension;
 };
 
@@ -125,7 +124,6 @@ export class ModuleResolver implements ModuleResolverInterface {
     return {
       origin: origin,
       filepath: moduleFilepath,
-      module: moduleFilepath,
       extension: meta.extension,
     };
   }
@@ -150,7 +148,6 @@ export class ModuleResolver implements ModuleResolverInterface {
     return {
       origin: originModuleName,
       filepath: moduleFilepath,
-      module: moduleFilepath.replace(/(\.d)?\.(t|j)sx?$/, ""), // "./foo.ts" -> "./foo",
       extension: getExtensionFromFile(moduleFilepath),
     };
   }
@@ -180,7 +177,6 @@ export class ModuleResolver implements ModuleResolverInterface {
           resolvedModules.push({
             origin: moduleName,
             filepath: moduleCacheFile.filepath,
-            module: moduleCacheFile.filepath,
             extension: moduleCacheFile.extension,
           });
         } else {

@@ -8,7 +8,7 @@ import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
-import { pathExistsSync, normalizeFilepath } from "../../core/util";
+import { normalizeFilepath } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
 import { getImportModules } from "../../core/deno_deps";
@@ -485,40 +485,23 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           for (const m of modules) {
             if (m) {
               resolvedModule.origin = m.origin;
-              resolvedModule.module = m.module;
               resolvedModule.filepath = m.filepath;
             }
           }
         }
 
-        return resolveModuleNames(
-          resolvedModules.map((v, index) =>
-            v ? v.module : moduleNames[index]
-          ),
-          containingFile,
-          ...rest
-        ).map((v, index) => {
+        return resolvedModules.map((v) => {
           if (!v) {
-            const cacheModule = resolvedModules[index];
-            if (cacheModule) {
-              const moduleFilepath = cacheModule.filepath;
-              // import * as React from 'https://dev.jspm.io/react'
-              if (
-                path.isAbsolute(moduleFilepath) &&
-                pathExistsSync(moduleFilepath)
-              ) {
-                const result: ts_module.ResolvedModuleFull = {
-                  extension: cacheModule.extension,
-                  isExternalLibraryImport: false,
-                  resolvedFileName: moduleFilepath,
-                } as ts_module.ResolvedModuleFull;
-
-                return result;
-              }
-            }
+            return v;
           }
 
-          return v;
+          const result: ts_module.ResolvedModuleFull = {
+            extension: v.extension as ts_module.Extension,
+            isExternalLibraryImport: false,
+            resolvedFileName: v.filepath,
+          };
+
+          return result;
         });
       };
     }
