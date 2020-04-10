@@ -1,8 +1,5 @@
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
 /// <reference no-default-lib="true" />
 /// <reference lib="esnext" />
 
@@ -10,55 +7,213 @@ declare namespace Deno {
   /** The current process id of the runtime. */
   export let pid: number;
 
-  /** Reflects the NO_COLOR environment variable: https://no-color.org/ */
+  /** Reflects the NO_COLOR environment variable.
+   *
+   * See: https://no-color.org/ */
   export let noColor: boolean;
 
-  /** Check if running in terminal.
-   *
-   *       console.log(Deno.isTTY().stdout);
-   */
-  export function isTTY(): {
-    stdin: boolean;
-    stdout: boolean;
-    stderr: boolean;
-  };
+  export interface TestDefinition {
+    fn: () => void | Promise<void>;
+    name: string;
+    ignore?: boolean;
+    disableOpSanitizer?: boolean;
+    disableResourceSanitizer?: boolean;
+  }
 
-  /** Get the hostname. Requires the `--allow-env` flag.
+  /** Register a test which will be run when `deno test` is used on the command
+   * line and the containing module looks like a test module, or explicitly
+   * when `Deno.runTests` is used.  `fn` can be async if required.
+   *
+   *          import {assert, fail, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+   *
+   *          Deno.test({
+   *            name: "example test",
+   *            fn(): void {
+   *              assertEquals("world", "world");
+   *            },
+   *          });
+   *
+   *          Deno.test({
+   *            name: "example ignored test",
+   *            ignore: Deno.build.os === "win"
+   *            fn(): void {
+   *              //This test is ignored only on Windows machines
+   *            },
+   *          });
+   *
+   *          Deno.test({
+   *            name: "example async test",
+   *            async fn() {
+   *              const decoder = new TextDecoder("utf-8");
+   *              const data = await Deno.readFile("hello_world.txt");
+   *              assertEquals(decoder.decode(data), "Hello world")
+   *            }
+   *          });
+   */
+  export function test(t: TestDefinition): void;
+
+  /** Register a test which will be run when `deno test` is used on the command
+   * line and the containing module looks like a test module, or explicitly
+   * when `Deno.runTests` is used
+   *
+   *        import {assert, fail, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+   *
+   *        Deno.test(function myTestFunction():void {
+   *          assertEquals("hello", "hello");
+   *        });
+   *
+   *        Deno.test(async function myAsyncTestFunction():Promise<void> {
+   *          const decoder = new TextDecoder("utf-8");
+   *          const data = await Deno.readFile("hello_world.txt");
+   *          assertEquals(decoder.decode(data), "Hello world")
+   *        });
+   **/
+  export function test(fn: () => void | Promise<void>): void;
+
+  /** Register a test which will be run when `deno test` is used on the command
+   * line and the containing module looks like a test module, or explicitly
+   * when `Deno.runTests` is used
+   *
+   *        import {assert, fail, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+   *
+   *        Deno.test("My test description", ():void => {
+   *          assertEquals("hello", "hello");
+   *        });
+   *
+   *        Deno.test("My async test description", async ():Promise<void> => {
+   *          const decoder = new TextDecoder("utf-8");
+   *          const data = await Deno.readFile("hello_world.txt");
+   *          assertEquals(decoder.decode(data), "Hello world")
+   *        });
+   * */
+  export function test(name: string, fn: () => void | Promise<void>): void;
+
+  export interface TestMessage {
+    start?: {
+      tests: TestDefinition[];
+    };
+    testStart?: {
+      [P in keyof TestDefinition]: TestDefinition[P];
+    };
+    testEnd?: {
+      name: string;
+      status: "passed" | "failed" | "ignored";
+      duration: number;
+      error?: Error;
+    };
+    end?: {
+      filtered: number;
+      ignored: number;
+      measured: number;
+      passed: number;
+      failed: number;
+      duration: number;
+      results: Array<TestMessage["testEnd"] & {}>;
+    };
+  }
+
+  export interface RunTestsOptions {
+    /** If `true`, Deno will exit with status code 1 if there was
+     * test failure. Defaults to `true`. */
+    exitOnFail?: boolean;
+    /** If `true`, Deno will exit upon first test failure. Defaults to `false`. */
+    failFast?: boolean;
+    /** String or RegExp used to filter test to run. Only test with names
+     * matching provided `String` or `RegExp` will be run. */
+    filter?: string | RegExp;
+    /** String or RegExp used to skip tests to run. Tests with names
+     * matching provided `String` or `RegExp` will not be run. */
+    skip?: string | RegExp;
+    /** Disable logging of the results. Defaults to `false`. */
+    disableLog?: boolean;
+    /** If true, report results to the console as is done for `deno test`. Defaults to `true`. */
+    reportToConsole?: boolean;
+    /** Called for each message received from the test run. */
+    onMessage?: (message: TestMessage) => void | Promise<void>;
+  }
+
+  /** Run any tests which have been registered via `Deno.test()`. Always resolves
+   * asynchronously.
+   *
+   *        //Register test
+   *        Deno.test({
+   *          name: "example test",
+   *          fn(): void {
+   *            assertEquals("world", "world");
+   *            assertEquals({ hello: "world" }, { hello: "world" });
+   *          },
+   *        });
+   *
+   *        //Run tests
+   *        const runInfo = await Deno.runTests();
+   *        console.log(runInfo.duration);  // all tests duration, e.g. "5" (in ms)
+   *        console.log(runInfo.stats.passed);  //e.g. 1
+   *        console.log(runInfo.results[0].name);  //e.g. "example test"
+   */
+  export function runTests(
+    opts?: RunTestsOptions
+  ): Promise<TestMessage["end"]> & {};
+
+  /** Returns an array containing the 1, 5, and 15 minute load averages. The
+   * load average is a measure of CPU and IO utilization of the last one, five,
+   * and 15 minute periods expressed as a fractional number.  Zero means there
+   * is no load. On Windows, the three values are always the same and represent
+   * the current load, not the 1, 5 and 15 minute load averages.
+   *
+   *       console.log(Deno.loadavg());  //e.g. [ 0.71, 0.44, 0.44 ]
+   *
+   * Requires `allow-env` permission.
+   */
+  export function loadavg(): number[];
+
+  /** Get the `hostname` of the machine the Deno process is running on.
    *
    *       console.log(Deno.hostname());
+   *
+   *  Requires `allow-env` permission.
    */
   export function hostname(): string;
 
-  /** Exit the Deno process with optional exit code. */
+  /** Returns the release version of the Operating System.
+   *
+   *       console.log(Deno.osRelease());
+   *
+   * Requires `allow-env` permission.
+   */
+  export function osRelease(): string;
+
+  /** Exit the Deno process with optional exit code. If no exit code is supplied
+   * then Deno will exit with return code of 0.
+   *
+   *       Deno.exit(5);
+   */
   export function exit(code?: number): never;
 
-  /** Returns a snapshot of the environment variables at invocation. Mutating a
-   * property in the object will set that variable in the environment for
-   * the process. The environment object will only accept `string`s
-   * as values.
+  /** Returns a snapshot of the environment variables at invocation. Changing a
+   * property in the object will set that variable in the environment for the
+   * process. The environment object will only accept `string`s as values.
    *
    *       const myEnv = Deno.env();
    *       console.log(myEnv.SHELL);
    *       myEnv.TEST_VAR = "HELLO";
    *       const newEnv = Deno.env();
-   *       console.log(myEnv.TEST_VAR == newEnv.TEST_VAR);
-   */
+   *       console.log(myEnv.TEST_VAR === newEnv.TEST_VAR);  //outputs "true"
+   *
+   * Requires `allow-env` permission. */
   export function env(): {
     [index: string]: string;
   };
 
-  /** Returns the value of an environment variable at invocation.
-   * If the variable is not present, `undefined` will be returned.
+  /** Retrieve the value of an environment variable. Returns undefined if that
+   * key doesn't exist.
    *
-   *       const myEnv = Deno.env();
-   *       console.log(myEnv.SHELL);
-   *       myEnv.TEST_VAR = "HELLO";
-   *       const newEnv = Deno.env();
-   *       console.log(myEnv.TEST_VAR == newEnv.TEST_VAR);
-   */
+   *       console.log(Deno.env("HOME"));  //e.g. outputs "/home/alice"
+   *       console.log(Deno.env("MADE_UP_VAR"));  //outputs "Undefined"
+   *
+   * Requires `allow-env` permission. */
   export function env(key: string): string | undefined;
 
-  /** UNSTABLE */
+  /** **UNSTABLE** */
   export type DirKind =
     | "home"
     | "cache"
@@ -74,342 +229,544 @@ declare namespace Deno {
     | "picture"
     | "public"
     | "template"
+    | "tmp"
     | "video";
 
-  // TODO(ry) markdown in jsdoc broken https://deno.land/typedoc/index.html#dir
   /**
-   * UNSTABLE: Might rename method dir and type alias DirKind.
+   * **UNSTABLE**: Currently under evaluation to decide if method name `dir` and
+   * parameter type alias name `DirKind` should be renamed.
    *
    * Returns the user and platform specific directories.
-   * Requires the `--allow-env` flag.
-   * Returns null if there is no applicable directory or if any other error
+   *
+   *       const homeDirectory = Deno.dir("home");
+   *
+   * Requires `allow-env` permission.
+   *
+   * Returns `null` if there is no applicable directory or if any other error
    * occurs.
    *
-   * Argument values: "home", "cache", "config", "executable", "data",
-   * "data_local", "audio", "desktop", "document", "download", "font", "picture",
-   * "public", "template", "video"
+   * Argument values: `"home"`, `"cache"`, `"config"`, `"executable"`, `"data"`,
+   * `"data_local"`, `"audio"`, `"desktop"`, `"document"`, `"download"`,
+   * `"font"`, `"picture"`, `"public"`, `"template"`, `"tmp"`, `"video"`
    *
-   * "cache"
+   * `"home"`
+   *
+   * |Platform | Value                                    | Example                |
+   * | ------- | -----------------------------------------| -----------------------|
+   * | Linux   | `$HOME`                                  | /home/alice            |
+   * | macOS   | `$HOME`                                  | /Users/alice           |
+   * | Windows | `{FOLDERID_Profile}`                     | C:\Users\Alice         |
+   *
+   * `"cache"`
+   *
    * |Platform | Value                               | Example                      |
    * | ------- | ----------------------------------- | ---------------------------- |
    * | Linux   | `$XDG_CACHE_HOME` or `$HOME`/.cache | /home/alice/.cache           |
    * | macOS   | `$HOME`/Library/Caches              | /Users/Alice/Library/Caches  |
    * | Windows | `{FOLDERID_LocalAppData}`           | C:\Users\Alice\AppData\Local |
    *
-   * "config"
+   * `"config"`
+   *
    * |Platform | Value                                 | Example                          |
    * | ------- | ------------------------------------- | -------------------------------- |
    * | Linux   | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config              |
    * | macOS   | `$HOME`/Library/Preferences           | /Users/Alice/Library/Preferences |
    * | Windows | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming   |
    *
-   * "executable"
+   * `"executable"`
+   *
    * |Platform | Value                                                           | Example                |
    * | ------- | --------------------------------------------------------------- | -----------------------|
    * | Linux   | `XDG_BIN_HOME` or `$XDG_DATA_HOME`/../bin or `$HOME`/.local/bin | /home/alice/.local/bin |
    * | macOS   | -                                                               | -                      |
    * | Windows | -                                                               | -                      |
    *
-   * "data"
+   * `"data"`
+   *
    * |Platform | Value                                    | Example                                  |
    * | ------- | ---------------------------------------- | ---------------------------------------- |
    * | Linux   | `$XDG_DATA_HOME` or `$HOME`/.local/share | /home/alice/.local/share                 |
    * | macOS   | `$HOME`/Library/Application Support      | /Users/Alice/Library/Application Support |
    * | Windows | `{FOLDERID_RoamingAppData}`              | C:\Users\Alice\AppData\Roaming           |
    *
-   * "data_local"
+   * `"data_local"`
+   *
    * |Platform | Value                                    | Example                                  |
    * | ------- | ---------------------------------------- | ---------------------------------------- |
    * | Linux   | `$XDG_DATA_HOME` or `$HOME`/.local/share | /home/alice/.local/share                 |
    * | macOS   | `$HOME`/Library/Application Support      | /Users/Alice/Library/Application Support |
    * | Windows | `{FOLDERID_LocalAppData}`                | C:\Users\Alice\AppData\Local             |
    *
-   * "audio"
+   * `"audio"`
+   *
    * |Platform | Value              | Example              |
    * | ------- | ------------------ | -------------------- |
    * | Linux   | `XDG_MUSIC_DIR`    | /home/alice/Music    |
    * | macOS   | `$HOME`/Music      | /Users/Alice/Music   |
    * | Windows | `{FOLDERID_Music}` | C:\Users\Alice\Music |
    *
-   * "desktop"
+   * `"desktop"`
+   *
    * |Platform | Value                | Example                |
    * | ------- | -------------------- | ---------------------- |
    * | Linux   | `XDG_DESKTOP_DIR`    | /home/alice/Desktop    |
    * | macOS   | `$HOME`/Desktop      | /Users/Alice/Desktop   |
    * | Windows | `{FOLDERID_Desktop}` | C:\Users\Alice\Desktop |
    *
-   * "document"
+   * `"document"`
+   *
    * |Platform | Value                  | Example                  |
    * | ------- | ---------------------- | ------------------------ |
    * | Linux   | `XDG_DOCUMENTS_DIR`    | /home/alice/Documents    |
    * | macOS   | `$HOME`/Documents      | /Users/Alice/Documents   |
    * | Windows | `{FOLDERID_Documents}` | C:\Users\Alice\Documents |
    *
-   * "download"
+   * `"download"`
+   *
    * |Platform | Value                  | Example                  |
    * | ------- | ---------------------- | ------------------------ |
    * | Linux   | `XDG_DOWNLOAD_DIR`     | /home/alice/Downloads    |
    * | macOS   | `$HOME`/Downloads      | /Users/Alice/Downloads   |
    * | Windows | `{FOLDERID_Downloads}` | C:\Users\Alice\Downloads |
    *
-   * "font"
+   * `"font"`
+   *
    * |Platform | Value                                                | Example                        |
    * | ------- | ---------------------------------------------------- | ------------------------------ |
    * | Linux   | `$XDG_DATA_HOME`/fonts or `$HOME`/.local/share/fonts | /home/alice/.local/share/fonts |
    * | macOS   | `$HOME/Library/Fonts`                                | /Users/Alice/Library/Fonts     |
-   * | Windows | –                                                    | –                              |
+   * | Windows | 鈥?                                                   | 鈥?                             |
    *
-   * "picture"
+   * `"picture"`
+   *
    * |Platform | Value                 | Example                 |
    * | ------- | --------------------- | ----------------------- |
    * | Linux   | `XDG_PICTURES_DIR`    | /home/alice/Pictures    |
    * | macOS   | `$HOME`/Pictures      | /Users/Alice/Pictures   |
    * | Windows | `{FOLDERID_Pictures}` | C:\Users\Alice\Pictures |
    *
-   * "public"
+   * `"public"`
+   *
    * |Platform | Value                 | Example             |
    * | ------- | --------------------- | ------------------- |
    * | Linux   | `XDG_PUBLICSHARE_DIR` | /home/alice/Public  |
    * | macOS   | `$HOME`/Public        | /Users/Alice/Public |
    * | Windows | `{FOLDERID_Public}`   | C:\Users\Public     |
    *
-   * "template"
+   * `"template"`
+   *
    * |Platform | Value                  | Example                                                    |
    * | ------- | ---------------------- | ---------------------------------------------------------- |
    * | Linux   | `XDG_TEMPLATES_DIR`    | /home/alice/Templates                                      |
-   * | macOS   | –                      | –                                                          |
+   * | macOS   | 鈥?                     | 鈥?                                                         |
    * | Windows | `{FOLDERID_Templates}` | C:\Users\Alice\AppData\Roaming\Microsoft\Windows\Templates |
    *
-   * "video"
+   * `"tmp"`
+   *
+   * |Platform | Value                  | Example                                                    |
+   * | ------- | ---------------------- | ---------------------------------------------------------- |
+   * | Linux   | `TMPDIR`               | /tmp                                                       |
+   * | macOS   | `TMPDIR`               | /tmp                                                       |
+   * | Windows | `{TMP}`                | C:\Users\Alice\AppData\Local\Temp                          |
+   *
+   * `"video"`
+   *
    * |Platform | Value               | Example               |
    * | ------- | ------------------- | --------------------- |
    * | Linux   | `XDG_VIDEOS_DIR`    | /home/alice/Videos    |
    * | macOS   | `$HOME`/Movies      | /Users/Alice/Movies   |
    * | Windows | `{FOLDERID_Videos}` | C:\Users\Alice\Videos |
+   *
    */
   export function dir(kind: DirKind): string | null;
 
   /**
    * Returns the path to the current deno executable.
-   * Requires the `--allow-env` flag.
+   *
+   *       console.log(Deno.execPath());  //e.g. "/home/alice/.local/bin/deno"
+   *
+   * Requires `allow-env` permission.
    */
   export function execPath(): string;
 
   /**
-   * UNSTABLE: maybe needs permissions.
+   * **UNSTABLE**: Currently under evaluation to decide if explicit permission is
+   * required to get the value of the current working directory.
    *
-   * `cwd()` Return a string representing the current working directory.
-   * If the current directory can be reached via multiple paths
-   * (due to symbolic links), `cwd()` may return
-   * any one of them.
-   * throws `NotFound` exception if directory not available
+   * Return a string representing the current working directory.
+   *
+   * If the current directory can be reached via multiple paths (due to symbolic
+   * links), `cwd()` may return any one of them.
+   *
+   *       const currentWorkingDirectory = Deno.cwd();
+   *
+   * Throws `Deno.errors.NotFound` if directory not available.
    */
   export function cwd(): string;
 
   /**
-   * UNSTABLE: maybe needs permissions.
+   * **UNSTABLE**: Currently under evaluation to decide if explicit permission is
+   * required to change the current working directory.
    *
-   * `chdir()` Change the current working directory to path.
-   * throws `NotFound` exception if directory not available
+   * Change the current working directory to the specified path.
+   *
+   *       Deno.chdir("/home/userA");
+   *       Deno.chdir("../userB");
+   *       Deno.chdir("C:\\Program Files (x86)\\Java");
+   *
+   * Throws `Deno.errors.NotFound` if directory not found.
+   * Throws `Deno.errors.PermissionDenied` if the user does not have access
+   * rights
    */
   export function chdir(directory: string): void;
 
-  /** UNSTABLE: might move to Deno.symbols */
-  export const EOF: unique symbol;
+  /**
+   * **UNSTABLE**: New API, yet to be vetted.  This API is under consideration to
+   * determine if permissions are required to call it.
+   *
+   * Retrieve the process umask.  If `mask` is provided, sets the process umask.
+   * This call always returns what the umask was before the call.
+   *
+   *        console.log(Deno.umask());  //e.g. 18 (0o022)
+   *        const prevUmaskValue = Deno.umask(0o077);  //e.g. 18 (0o022)
+   *        console.log(Deno.umask());  //e.g. 63 (0o077)
+   *
+   * NOTE:  This API is not implemented on Windows
+   */
+  export function umask(mask?: number): number;
 
-  /** UNSTABLE: might move to Deno.symbols */
+  /** **UNSTABLE**: might move to `Deno.symbols`. */
+  export const EOF: unique symbol;
   export type EOF = typeof EOF;
 
-  /** UNSTABLE: maybe remove "SEEK_" prefix. Maybe capitalization wrong. */
+  /** **UNSTABLE**: might remove `"SEEK_"` prefix. Might not use all-caps. */
   export enum SeekMode {
     SEEK_START = 0,
     SEEK_CURRENT = 1,
-    SEEK_END = 2
+    SEEK_END = 2,
   }
 
-  /** UNSTABLE: Make Reader into iterator of some sort */
+  /** **UNSTABLE**: might make `Reader` into iterator of some sort. */
   export interface Reader {
-    /** Reads up to p.byteLength bytes into `p`. It resolves to the number
-     * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error encountered.
-     * Even if `read()` returns `n` < `p.byteLength`, it may use all of `p` as
-     * scratch space during the call. If some data is available but not
-     * `p.byteLength` bytes, `read()` conventionally returns what is available
-     * instead of waiting for more.
+    /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
+     * bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
+     * encountered. Even if `read()` resolves to `n` < `p.byteLength`, it may
+     * use all of `p` as scratch space during the call. If some data is
+     * available but not `p.byteLength` bytes, `read()` conventionally resolves
+     * to what is available instead of waiting for more.
      *
-     * When `read()` encounters end-of-file condition, it returns EOF symbol.
+     * When `read()` encounters end-of-file condition, it resolves to
+     * `Deno.EOF` symbol.
      *
      * When `read()` encounters an error, it rejects with an error.
      *
      * Callers should always process the `n` > `0` bytes returned before
-     * considering the EOF. Doing so correctly handles I/O errors that happen
+     * considering the `EOF`. Doing so correctly handles I/O errors that happen
      * after reading some bytes and also both of the allowed EOF behaviors.
      *
-     * Implementations must not retain `p`.
+     * Implementations should not retain a reference to `p`.
      */
     read(p: Uint8Array): Promise<number | EOF>;
   }
+
   export interface SyncReader {
+    /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
+     * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
+     * encountered. Even if `read()` returns `n` < `p.byteLength`, it may use
+     * all of `p` as scratch space during the call. If some data is available
+     * but not `p.byteLength` bytes, `read()` conventionally returns what is
+     * available instead of waiting for more.
+     *
+     * When `readSync()` encounters end-of-file condition, it returns `Deno.EOF`
+     * symbol.
+     *
+     * When `readSync()` encounters an error, it throws with an error.
+     *
+     * Callers should always process the `n` > `0` bytes returned before
+     * considering the `EOF`. Doing so correctly handles I/O errors that happen
+     * after reading some bytes and also both of the allowed EOF behaviors.
+     *
+     * Implementations should not retain a reference to `p`.
+     */
     readSync(p: Uint8Array): number | EOF;
   }
 
   export interface Writer {
-    /** Writes `p.byteLength` bytes from `p` to the underlying data
-     * stream. It resolves to the number of bytes written from `p` (`0` <= `n` <=
-     * `p.byteLength`) and any error encountered that caused the write to stop
-     * early. `write()` must return a non-null error if it returns `n` <
-     * `p.byteLength`. write() must not modify the slice data, even temporarily.
+    /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
+     * resolves to the number of bytes written from `p` (`0` <= `n` <=
+     * `p.byteLength`) or reject with the error encountered that caused the
+     * write to stop early. `write()` must reject with a non-null error if
+     * would resolve to `n` < `p.byteLength`. `write()` must not modify the
+     * slice data, even temporarily.
      *
-     * Implementations must not retain `p`.
+     * Implementations should not retain a reference to `p`.
      */
     write(p: Uint8Array): Promise<number>;
   }
+
   export interface SyncWriter {
+    /** Writes `p.byteLength` bytes from `p` to the underlying data
+     * stream. It returns the number of bytes written from `p` (`0` <= `n`
+     * <= `p.byteLength`) and any error encountered that caused the write to
+     * stop early. `writeSync()` must throw a non-null error if it returns `n` <
+     * `p.byteLength`. `writeSync()` must not modify the slice data, even
+     * temporarily.
+     *
+     * Implementations should not retain a reference to `p`.
+     */
     writeSync(p: Uint8Array): number;
   }
+
   export interface Closer {
     close(): void;
   }
+
   export interface Seeker {
     /** Seek sets the offset for the next `read()` or `write()` to offset,
-     * interpreted according to `whence`: `SeekStart` means relative to the start
-     * of the file, `SeekCurrent` means relative to the current offset, and
-     * `SeekEnd` means relative to the end. Seek returns the new offset relative
-     * to the start of the file and an error, if any.
+     * interpreted according to `whence`: `SEEK_START` means relative to the
+     * start of the file, `SEEK_CURRENT` means relative to the current offset,
+     * and `SEEK_END` means relative to the end. Seek resolves to the new offset
+     * relative to the start of the file.
      *
      * Seeking to an offset before the start of the file is an error. Seeking to
-     * any positive offset is legal, but the behavior of subsequent I/O operations
-     * on the underlying object is implementation-dependent.
+     * any positive offset is legal, but the behavior of subsequent I/O
+     * operations on the underlying object is implementation-dependent.
+     * It returns the number of cursor position.
      */
-    seek(offset: number, whence: SeekMode): Promise<void>;
+    seek(offset: number, whence: SeekMode): Promise<number>;
   }
+
   export interface SyncSeeker {
-    seekSync(offset: number, whence: SeekMode): void;
+    /** Seek sets the offset for the next `readSync()` or `writeSync()` to
+     * offset, interpreted according to `whence`: `SEEK_START` means relative
+     * to the start of the file, `SEEK_CURRENT` means relative to the current
+     * offset, and `SEEK_END` means relative to the end.
+     *
+     * Seeking to an offset before the start of the file is an error. Seeking to
+     * any positive offset is legal, but the behavior of subsequent I/O
+     * operations on the underlying object is implementation-dependent.
+     */
+    seekSync(offset: number, whence: SeekMode): number;
   }
+
   export interface ReadCloser extends Reader, Closer {}
   export interface WriteCloser extends Writer, Closer {}
   export interface ReadSeeker extends Reader, Seeker {}
   export interface WriteSeeker extends Writer, Seeker {}
   export interface ReadWriteCloser extends Reader, Writer, Closer {}
   export interface ReadWriteSeeker extends Reader, Writer, Seeker {}
-  /** Copies from `src` to `dst` until either `EOF` is reached on `src`
-   * or an error occurs. It returns the number of bytes copied and the first
-   * error encountered while copying, if any.
+
+  /** Copies from `src` to `dst` until either `EOF` is reached on `src` or an
+   * error occurs. It resolves to the number of bytes copied or rejects with
+   * the first error encountered while copying.
+   *
+   *       const source = await Deno.open("my_file.txt");
+   *       const buffer = new Deno.Buffer()
+   *       const bytesCopied1 = await Deno.copy(Deno.stdout, source);
+   *       const bytesCopied2 = await Deno.copy(buffer, source);
    *
    * Because `copy()` is defined to read from `src` until `EOF`, it does not
    * treat an `EOF` from `read()` as an error to be reported.
+   *
+   * @param dst The destination to copy to
+   * @param src The source to copy from
    */
   export function copy(dst: Writer, src: Reader): Promise<number>;
-  /** Turns `r` into async iterator.
+
+  /** Turns a Reader, `r`, into an async iterator.
    *
    *      for await (const chunk of toAsyncIterator(reader)) {
-   *          console.log(chunk)
+   *        console.log(chunk);
    *      }
    */
   export function toAsyncIterator(r: Reader): AsyncIterableIterator<Uint8Array>;
 
-  // @url js/files.d.ts
-
-  /** Open a file and return an instance of the `File` object
-   *  synchronously.
+  /** Synchronously open a file and return an instance of `Deno.File`.  The
+   * file does not need to previously exist if using the `create` or `createNew`
+   * open options.  It is the callers responsibility to close the file when finished
+   * with it.
    *
-   *       const file = Deno.openSync("/foo/bar.txt");
+   *       const file = Deno.openSync("/foo/bar.txt", { read: true, write: true });
+   *       // Do work with file
+   *       Deno.close(file.rid);
    *
-   * Requires allow-read or allow-write or both depending on mode.
+   * Requires `allow-read` and/or `allow-write` permissions depending on options.
    */
-  export function openSync(filename: string, mode?: OpenMode): File;
+  export function openSync(path: string, options?: OpenOptions): File;
 
-  /** Open a file and return an instance of the `File` object.
+  /** Synchronously open a file and return an instance of `Deno.File`.  The file
+   * may be created depending on the mode passed in.  It is the callers responsibility
+   * to close the file when finished with it.
    *
-   *       const file = await Deno.open("/foo/bar.txt");
+   *       const file = Deno.openSync("/foo/bar.txt", "r");
+   *       // Do work with file
+   *       Deno.close(file.rid);
    *
-   * Requires allow-read or allow-write or both depending on mode.
+   * Requires `allow-read` and/or `allow-write` permissions depending on openMode.
    */
-  export function open(filename: string, mode?: OpenMode): Promise<File>;
+  export function openSync(path: string, openMode?: OpenMode): File;
+
+  /** Open a file and resolve to an instance of `Deno.File`.  The
+   * file does not need to previously exist if using the `create` or `createNew`
+   * open options.  It is the callers responsibility to close the file when finished
+   * with it.
+   *
+   *       const file = await Deno.open("/foo/bar.txt", { read: true, write: true });
+   *       // Do work with file
+   *       Deno.close(file.rid);
+   *
+   * Requires `allow-read` and/or `allow-write` permissions depending on options.
+   */
+  export function open(path: string, options?: OpenOptions): Promise<File>;
+
+  /** Open a file and resolve to an instance of `Deno.File`.  The file may be
+   * created depending on the mode passed in.  It is the callers responsibility
+   * to close the file when finished with it.
+   *
+   *       const file = await Deno.open("/foo/bar.txt", "w+");
+   *       // Do work with file
+   *       Deno.close(file.rid);
+   *
+   * Requires `allow-read` and/or `allow-write` permissions depending on openMode.
+   */
+  export function open(path: string, openMode?: OpenMode): Promise<File>;
 
   /** Creates a file if none exists or truncates an existing file and returns
-   *  an instance of the `File` object synchronously.
+   *  an instance of `Deno.File`.
    *
    *       const file = Deno.createSync("/foo/bar.txt");
    *
-   * Requires allow-read and allow-write.
+   * Requires `allow-read` and `allow-write` permissions.
    */
-  export function createSync(filename: string): File;
-  /** Creates a file if none exists or truncates an existing file and returns
-   *  an instance of the `File` object.
+  export function createSync(path: string): File;
+
+  /** Creates a file if none exists or truncates an existing file and resolves to
+   *  an instance of `Deno.File`.
    *
    *       const file = await Deno.create("/foo/bar.txt");
    *
-   * Requires allow-read and allow-write.
+   * Requires `allow-read` and `allow-write` permissions.
    */
-  export function create(filename: string): Promise<File>;
+  export function create(path: string): Promise<File>;
 
-  /** Read synchronously from a file ID into an array buffer.
+  /** Synchronously read from a resource ID (`rid`) into an array buffer (`buffer`).
    *
-   * Return `number | EOF` for the operation.
+   * Returns either the number of bytes read during the operation or End Of File
+   * (`Symbol(EOF)`) if there was nothing to read.
    *
+   *      // if "/foo/bar.txt" contains the text "hello world":
    *      const file = Deno.openSync("/foo/bar.txt");
    *      const buf = new Uint8Array(100);
-   *      const nread = Deno.readSync(file.rid, buf);
-   *      const text = new TextDecoder().decode(buf);
-   *
+   *      const numberOfBytesRead = Deno.readSync(file.rid, buf); // 11 bytes
+   *      const text = new TextDecoder().decode(buf);  // "hello world"
+   *      Deno.close(file.rid);
    */
-  export function readSync(rid: number, p: Uint8Array): number | EOF;
+  export function readSync(rid: number, buffer: Uint8Array): number | EOF;
 
-  /** Read from a resource ID into an array buffer.
+  /** Read from a resource ID (`rid`) into an array buffer (`buffer`).
    *
-   * Resolves with the `number | EOF` for the operation.
+   * Resolves to either the number of bytes read during the operation or End Of
+   * File (`Symbol(EOF)`) if there was nothing to read.
    *
-   *       const file = await Deno.open("/foo/bar.txt");
-   *       const buf = new Uint8Array(100);
-   *       const nread = await Deno.read(file.rid, buf);
-   *       const text = new TextDecoder().decode(buf);
+   *      // if "/foo/bar.txt" contains the text "hello world":
+   *      const file = await Deno.open("/foo/bar.txt");
+   *      const buf = new Uint8Array(100);
+   *      const numberOfBytesRead = await Deno.read(file.rid, buf); // 11 bytes
+   *      const text = new TextDecoder().decode(buf);  // "hello world"
+   *      Deno.close(file.rid);
    */
-  export function read(rid: number, p: Uint8Array): Promise<number | EOF>;
+  export function read(rid: number, buffer: Uint8Array): Promise<number | EOF>;
 
-  /** Write synchronously to the resource ID the contents of the array buffer.
+  /** Synchronously write to the resource ID (`rid`) the contents of the array
+   * buffer (`data`).
    *
-   * Resolves with the number of bytes written.
+   * Returns the number of bytes written.
    *
    *       const encoder = new TextEncoder();
-   *       const data = encoder.encode("Hello world\n");
+   *       const data = encoder.encode("Hello world");
    *       const file = Deno.openSync("/foo/bar.txt");
-   *       Deno.writeSync(file.rid, data);
+   *       const bytesWritten = Deno.writeSync(file.rid, data); // 11
+   *       Deno.close(file.rid);
    */
-  export function writeSync(rid: number, p: Uint8Array): number;
+  export function writeSync(rid: number, data: Uint8Array): number;
 
-  /** Write to the resource ID the contents of the array buffer.
+  /** Write to the resource ID (`rid`) the contents of the array buffer (`data`).
    *
-   * Resolves with the number of bytes written.
+   * Resolves to the number of bytes written.
    *
    *      const encoder = new TextEncoder();
-   *      const data = encoder.encode("Hello world\n");
+   *      const data = encoder.encode("Hello world");
    *      const file = await Deno.open("/foo/bar.txt");
-   *      await Deno.write(file.rid, data);
-   *
+   *      const bytesWritten = await Deno.write(file.rid, data); // 11
+   *      Deno.close(file.rid);
    */
-  export function write(rid: number, p: Uint8Array): Promise<number>;
+  export function write(rid: number, data: Uint8Array): Promise<number>;
 
-  /** Seek a file ID synchronously to the given offset under mode given by `whence`.
+  /** Synchronously seek a resource ID (`rid`) to the given `offset` under mode
+   * given by `whence`.  The new position within the resource (bytes from the
+   * start) is returned.
    *
-   *       const file = Deno.openSync("/foo/bar.txt");
-   *       Deno.seekSync(file.rid, 0, 0);
+   *        const file = Deno.openSync('hello.txt', {read: true, write: true, truncate: true, create: true});
+   *        Deno.writeSync(file.rid, new TextEncoder().encode("Hello world"));
+   *        //advance cursor 6 bytes
+   *        const cursorPosition = Deno.seekSync(file.rid, 6, Deno.SeekMode.SEEK_START);
+   *        console.log(cursorPosition);  // 6
+   *        const buf = new Uint8Array(100);
+   *        file.readSync(buf);
+   *        console.log(new TextDecoder().decode(buf)); // "world"
+   *
+   * The seek modes work as follows:
+   *
+   *        //Given file.rid pointing to file with "Hello world", which is 11 bytes long:
+   *        //Seek 6 bytes from the start of the file
+   *        console.log(Deno.seekSync(file.rid, 6, Deno.SeekMode.SEEK_START)); //"6"
+   *        //Seek 2 more bytes from the current position
+   *        console.log(Deno.seekSync(file.rid, 2, Deno.SeekMode.SEEK_CURRENT)); //"8"
+   *        //Seek backwards 2 bytes from the end of the file
+   *        console.log(Deno.seekSync(file.rid, -2, Deno.SeekMode.SEEK_END)); //"9" (e.g. 11-2)
    */
-  export function seekSync(rid: number, offset: number, whence: SeekMode): void;
+  export function seekSync(
+    rid: number,
+    offset: number,
+    whence: SeekMode
+  ): number;
 
-  /** Seek a file ID to the given offset under mode given by `whence`.
+  /** Seek a resource ID (`rid`) to the given `offset` under mode given by `whence`.
+   * The call resolves to the new position within the resource (bytes from the start).
    *
-   *      (async () => {
-   *        const file = await Deno.open("/foo/bar.txt");
-   *        await Deno.seek(file.rid, 0, 0);
-   *      })();
+   *        const file = await Deno.open('hello.txt', {read: true, write: true, truncate: true, create: true});
+   *        await Deno.write(file.rid, new TextEncoder().encode("Hello world"));
+   *        //advance cursor 6 bytes
+   *        const cursorPosition = await Deno.seek(file.rid, 6, Deno.SeekMode.SEEK_START);
+   *        console.log(cursorPosition);  // 6
+   *        const buf = new Uint8Array(100);
+   *        await file.read(buf);
+   *        console.log(new TextDecoder().decode(buf)); // "world"
+   *
+   * The seek modes work as follows:
+   *
+   *        //Given file.rid pointing to file with "Hello world", which is 11 bytes long:
+   *        //Seek 6 bytes from the start of the file
+   *        console.log(await Deno.seek(file.rid, 6, Deno.SeekMode.SEEK_START)); //"6"
+   *        //Seek 2 more bytes from the current position
+   *        console.log(await Deno.seek(file.rid, 2, Deno.SeekMode.SEEK_CURRENT)); //"8"
+   *        //Seek backwards 2 bytes from the end of the file
+   *        console.log(await Deno.seek(file.rid, -2, Deno.SeekMode.SEEK_END)); //"9" (e.g. 11-2)
    */
   export function seek(
     rid: number,
     offset: number,
     whence: SeekMode
-  ): Promise<void>;
+  ): Promise<number>;
 
-  /** Close the given resource ID. */
+  /** Close the given resource ID (rid) which has been previously opened, such
+   * as via opening or creating a file.  Closing a file when you are finished
+   * with it is important to avoid leaking resources.
+   *
+   *      const file = await Deno.open("my_file.txt");
+   *      // do work with "file" object
+   *      Deno.close(file.rid);
+   */
   export function close(rid: number): void;
 
   /** The Deno abstraction for reading and writing files. */
@@ -428,154 +785,265 @@ declare namespace Deno {
     writeSync(p: Uint8Array): number;
     read(p: Uint8Array): Promise<number | EOF>;
     readSync(p: Uint8Array): number | EOF;
-    seek(offset: number, whence: SeekMode): Promise<void>;
-    seekSync(offset: number, whence: SeekMode): void;
+    seek(offset: number, whence: SeekMode): Promise<number>;
+    seekSync(offset: number, whence: SeekMode): number;
     close(): void;
   }
-  /** An instance of `File` for stdin. */
+
+  /** An instance of `Deno.File` for `stdin`. */
   export const stdin: File;
-  /** An instance of `File` for stdout. */
+  /** An instance of `Deno.File` for `stdout`. */
   export const stdout: File;
-  /** An instance of `File` for stderr. */
+  /** An instance of `Deno.File` for `stderr`. */
   export const stderr: File;
 
-  /** UNSTABLE: merge https://github.com/denoland/deno/pull/3119 */
-  export type OpenMode =
-    | "r"
-    /** Read-write. Start at beginning of file. */
-    | "r+"
-    /** Write-only. Opens and truncates existing file or creates new one for
-     * writing only.
-     */
-    | "w"
-    /** Read-write. Opens and truncates existing file or creates new one for
-     * writing and reading.
-     */
-    | "w+"
-    /** Write-only. Opens existing file or creates new one. Each write appends
-     * content to the end of file.
-     */
-    | "a"
-    /** Read-write. Behaves like "a" and allows to read from file. */
-    | "a+"
-    /** Write-only. Exclusive create - creates new file only if one doesn't exist
-     * already.
-     */
-    | "x"
-    /** Read-write. Behaves like `x` and allows to read from file. */
-    | "x+";
-
-  // @url js/buffer.d.ts
-
-  /** A Buffer is a variable-sized buffer of bytes with read() and write()
-   * methods. Based on https://golang.org/pkg/bytes/#Buffer
-   */
-  export class Buffer implements Reader, SyncReader, Writer, SyncWriter {
-    private buf;
-    private off;
-    constructor(ab?: ArrayBuffer);
-    /** bytes() returns a slice holding the unread portion of the buffer.
-     * The slice is valid for use only until the next buffer modification (that
-     * is, only until the next call to a method like read(), write(), reset(), or
-     * truncate()). The slice aliases the buffer content at least until the next
-     * buffer modification, so immediate changes to the slice will affect the
-     * result of future reads.
-     */
-    bytes(): Uint8Array;
-    /** toString() returns the contents of the unread portion of the buffer
-     * as a string. Warning - if multibyte characters are present when data is
-     * flowing through the buffer, this method may result in incorrect strings
-     * due to a character being split.
-     */
-    toString(): string;
-    /** empty() returns whether the unread portion of the buffer is empty. */
-    empty(): boolean;
-    /** length is a getter that returns the number of bytes of the unread
-     * portion of the buffer
-     */
-    readonly length: number;
-    /** Returns the capacity of the buffer's underlying byte slice, that is,
-     * the total space allocated for the buffer's data.
-     */
-    readonly capacity: number;
-    /** truncate() discards all but the first n unread bytes from the buffer but
-     * continues to use the same allocated storage.  It throws if n is negative or
-     * greater than the length of the buffer.
-     */
-    truncate(n: number): void;
-    /** reset() resets the buffer to be empty, but it retains the underlying
-     * storage for use by future writes. reset() is the same as truncate(0)
-     */
-    reset(): void;
-    /** _tryGrowByReslice() is a version of grow for the fast-case
-     * where the internal buffer only needs to be resliced. It returns the index
-     * where bytes should be written and whether it succeeded.
-     * It returns -1 if a reslice was not needed.
-     */
-    private _tryGrowByReslice;
-    private _reslice;
-    /** readSync() reads the next len(p) bytes from the buffer or until the buffer
-     * is drained. The return value n is the number of bytes read. If the
-     * buffer has no data to return, eof in the response will be true.
-     */
-    readSync(p: Uint8Array): number | EOF;
-    read(p: Uint8Array): Promise<number | EOF>;
-    writeSync(p: Uint8Array): number;
-    write(p: Uint8Array): Promise<number>;
-    /** _grow() grows the buffer to guarantee space for n more bytes.
-     * It returns the index where bytes should be written.
-     * If the buffer can't grow it will throw with ErrTooLarge.
-     */
-    private _grow;
-    /** grow() grows the buffer's capacity, if necessary, to guarantee space for
-     * another n bytes. After grow(n), at least n bytes can be written to the
-     * buffer without another allocation. If n is negative, grow() will panic. If
-     * the buffer can't grow it will throw ErrTooLarge.
-     * Based on https://golang.org/pkg/bytes/#Buffer.Grow
-     */
-    grow(n: number): void;
-    /** readFrom() reads data from r until EOF and appends it to the buffer,
-     * growing the buffer as needed. It returns the number of bytes read. If the
-     * buffer becomes too large, readFrom will panic with ErrTooLarge.
-     * Based on https://golang.org/pkg/bytes/#Buffer.ReadFrom
-     */
-    readFrom(r: Reader): Promise<number>;
-    /** Sync version of `readFrom`
-     */
-    readFromSync(r: SyncReader): number;
-  }
-
-  /** Read `r` until EOF and return the content as `Uint8Array` */
-  export function readAll(r: Reader): Promise<Uint8Array>;
-
-  /** Read synchronously `r` until EOF and return the content as `Uint8Array`  */
-  export function readAllSync(r: SyncReader): Uint8Array;
-
-  /** Write all the content of `arr` to `w` */
-  export function writeAll(w: Writer, arr: Uint8Array): Promise<void>;
-
-  /** Write synchronously all the content of `arr` to `w` */
-  export function writeAllSync(w: SyncWriter, arr: Uint8Array): void;
-
-  export interface MkdirOption {
-    recursive?: boolean;
+  export interface OpenOptions {
+    /** Sets the option for read access. This option, when `true`, means that the
+     * file should be read-able if opened. */
+    read?: boolean;
+    /** Sets the option for write access. This option, when `true`, means that
+     * the file should be write-able if opened. If the file already exists,
+     * any write calls on it will overwrite its contents, by default without
+     * truncating it. */
+    write?: boolean;
+    /**Sets the option for the append mode. This option, when `true`, means that
+     * writes will append to a file instead of overwriting previous contents.
+     * Note that setting `{ write: true, append: true }` has the same effect as
+     * setting only `{ append: true }`. */
+    append?: boolean;
+    /** Sets the option for truncating a previous file. If a file is
+     * successfully opened with this option set it will truncate the file to `0`
+     * size if it already exists. The file must be opened with write access
+     * for truncate to work. */
+    truncate?: boolean;
+    /** Sets the option to allow creating a new file, if one doesn't already
+     * exist at the specified path. Requires write or append access to be
+     * used. */
+    create?: boolean;
+    /** Defaults to `false`. If set to `true`, no file, directory, or symlink is
+     * allowed to exist at the target location. Requires write or append
+     * access to be used. When createNew is set to `true`, create and truncate
+     * are ignored. */
+    createNew?: boolean;
+    /** Permissions to use if creating the file (defaults to `0o666`, before
+     * the process's umask).
+     * Ignored on Windows. */
     mode?: number;
   }
 
-  /** Creates a new directory with the specified path synchronously.
-   * If `recursive` is set to true, nested directories will be created (also known
-   * as "mkdir -p").
-   * `mode` sets permission bits (before umask) on UNIX and does nothing on
-   * Windows.
+  /** A set of string literals which specify how to open a file.
+   *
+   * |Value |Description                                                                                       |
+   * |------|--------------------------------------------------------------------------------------------------|
+   * |`"r"` |Read-only. Default. Starts at beginning of file.                                                  |
+   * |`"r+"`|Read-write. Start at beginning of file.                                                           |
+   * |`"w"` |Write-only. Opens and truncates existing file or creates new one for writing only.                |
+   * |`"w+"`|Read-write. Opens and truncates existing file or creates new one for writing and reading.         |
+   * |`"a"` |Write-only. Opens existing file or creates new one. Each write appends content to the end of file.|
+   * |`"a+"`|Read-write. Behaves like `"a"` and allows to read from file.                                      |
+   * |`"x"` |Write-only. Exclusive create - creates new file only if one doesn't exist already.                |
+   * |`"x+"`|Read-write. Behaves like `x` and allows reading from file.                                        |
+   */
+  export type OpenMode = "r" | "r+" | "w" | "w+" | "a" | "a+" | "x" | "x+";
+
+  /** **UNSTABLE**: new API, yet to be vetted
+   *
+   *  Check if a given resource id (`rid`) is a TTY.
+   *
+   *       //This example is system and context specific
+   *       const nonTTYRid = Deno.openSync("my_file.txt").rid;
+   *       const ttyRid = Deno.openSync("/dev/tty6").rid;
+   *       console.log(Deno.isatty(nonTTYRid)); // false
+   *       console.log(Deno.isatty(ttyRid)); // true
+   *       Deno.close(nonTTYRid);
+   *       Deno.close(ttyRid);
+   */
+  export function isatty(rid: number): boolean;
+
+  /** **UNSTABLE**: new API, yet to be vetted
+   *
+   * Set TTY to be under raw mode or not. In raw mode, characters are read and
+   * returned as is, without being processed. All special processing of
+   * characters by the terminal is disabled, including echoing input characters.
+   * Reading from a TTY device in raw mode is faster than reading from a TTY
+   * device in canonical mode.
+   *
+   *       Deno.setRaw(myTTY.rid, true);
+   */
+  export function setRaw(rid: number, mode: boolean): void;
+
+  /** A variable-sized buffer of bytes with `read()` and `write()` methods.
+   *
+   * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer). */
+  export class Buffer implements Reader, SyncReader, Writer, SyncWriter {
+    constructor(ab?: ArrayBuffer);
+    /** Returns a slice holding the unread portion of the buffer.
+     *
+     * The slice is valid for use only until the next buffer modification (that
+     * is, only until the next call to a method like `read()`, `write()`,
+     * `reset()`, or `truncate()`). The slice aliases the buffer content at
+     * least until the next buffer modification, so immediate changes to the
+     * slice will affect the result of future reads. */
+    bytes(): Uint8Array;
+    /** Returns the contents of the unread portion of the buffer as a `string`.
+     *
+     * **Warning**: if multibyte characters are present when data is flowing
+     * through the buffer, this method may result in incorrect strings due to a
+     * character being split. */
+    toString(): string;
+    /** Returns whether the unread portion of the buffer is empty. */
+    empty(): boolean;
+    /** A read only number of bytes of the unread portion of the buffer. */
+    readonly length: number;
+    /** The read only capacity of the buffer's underlying byte slice, that is,
+     * the total space allocated for the buffer's data. */
+    readonly capacity: number;
+    /** Discards all but the first `n` unread bytes from the buffer but
+     * continues to use the same allocated storage. It throws if `n` is
+     * negative or greater than the length of the buffer. */
+    truncate(n: number): void;
+    /** Resets the buffer to be empty, but it retains the underlying storage for
+     * use by future writes. `.reset()` is the same as `.truncate(0)`. */
+    reset(): void;
+    /** Reads the next `p.length` bytes from the buffer or until the buffer is
+     * drained. Returns the number of bytes read. If the buffer has no data to
+     * return, the return is `Deno.EOF`. */
+    readSync(p: Uint8Array): number | EOF;
+    /** Reads the next `p.length` bytes from the buffer or until the buffer is
+     * drained. Resolves to the number of bytes read. If the buffer has no
+     * data to return, resolves to `Deno.EOF`. */
+    read(p: Uint8Array): Promise<number | EOF>;
+    writeSync(p: Uint8Array): number;
+    write(p: Uint8Array): Promise<number>;
+    /** Grows the buffer's capacity, if necessary, to guarantee space for
+     * another `n` bytes. After `.grow(n)`, at least `n` bytes can be written to
+     * the buffer without another allocation. If `n` is negative, `.grow()` will
+     * throw. If the buffer can't grow it will throw an error.
+     *
+     * Based on Go Lang's
+     * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
+    grow(n: number): void;
+    /** Reads data from `r` until `Deno.EOF` and appends it to the buffer,
+     * growing the buffer as needed. It resolves to the number of bytes read.
+     * If the buffer becomes too large, `.readFrom()` will reject with an error.
+     *
+     * Based on Go Lang's
+     * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
+    readFrom(r: Reader): Promise<number>;
+    /** Reads data from `r` until `Deno.EOF` and appends it to the buffer,
+     * growing the buffer as needed. It returns the number of bytes read. If the
+     * buffer becomes too large, `.readFromSync()` will throw an error.
+     *
+     * Based on Go Lang's
+     * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
+    readFromSync(r: SyncReader): number;
+  }
+
+  /** Read Reader `r` until end of file (`Deno.EOF`) and resolve to the content
+   * as `Uint8Array`.
+   *
+   *       //Example from stdin
+   *       const stdinContent = await Deno.readAll(Deno.stdin);
+   *
+   *       //Example from file
+   *       const file = await Deno.open("my_file.txt", {read: true});
+   *       const myFileContent = await Deno.readAll(file);
+   *       Deno.close(file.rid);
+   *
+   *       //Example from buffer
+   *       const myData = new Uint8Array(100);
+   *       // ... fill myData array with data
+   *       const reader = new Deno.Buffer(myData.buffer as ArrayBuffer);
+   *       const bufferContent = await Deno.readAll(reader);
+   */
+  export function readAll(r: Reader): Promise<Uint8Array>;
+
+  /** Synchronously reads Reader `r` until end of file (`Deno.EOF`) and returns
+   * the content as `Uint8Array`.
+   *
+   *       //Example from stdin
+   *       const stdinContent = Deno.readAllSync(Deno.stdin);
+   *
+   *       //Example from file
+   *       const file = Deno.openSync("my_file.txt", {read: true});
+   *       const myFileContent = Deno.readAllSync(file);
+   *       Deno.close(file.rid);
+   *
+   *       //Example from buffer
+   *       const myData = new Uint8Array(100);
+   *       // ... fill myData array with data
+   *       const reader = new Deno.Buffer(myData.buffer as ArrayBuffer);
+   *       const bufferContent = Deno.readAllSync(reader);
+   */
+  export function readAllSync(r: SyncReader): Uint8Array;
+
+  /** Write all the content of the array buffer (`arr`) to the writer (`w`).
+   *
+   *       //Example writing to stdout
+   *       const contentBytes = new TextEncoder().encode("Hello World");
+   *       await Deno.writeAll(Deno.stdout, contentBytes);
+   *
+   *       //Example writing to file
+   *       const contentBytes = new TextEncoder().encode("Hello World");
+   *       const file = await Deno.open('test.file', {write: true});
+   *       await Deno.writeAll(file, contentBytes);
+   *       Deno.close(file.rid);
+   *
+   *       //Example writing to buffer
+   *       const contentBytes = new TextEncoder().encode("Hello World");
+   *       const writer = new Deno.Buffer();
+   *       await Deno.writeAll(writer, contentBytes);
+   *       console.log(writer.bytes().length);  // 11
+   */
+  export function writeAll(w: Writer, arr: Uint8Array): Promise<void>;
+
+  /** Synchronously write all the content of the array buffer (`arr`) to the
+   * writer (`w`).
+   *
+   *       //Example writing to stdout
+   *       const contentBytes = new TextEncoder().encode("Hello World");
+   *       Deno.writeAllSync(Deno.stdout, contentBytes);
+   *
+   *       //Example writing to file
+   *       const contentBytes = new TextEncoder().encode("Hello World");
+   *       const file = Deno.openSync('test.file', {write: true});
+   *       Deno.writeAllSync(file, contentBytes);
+   *       Deno.close(file.rid);
+   *
+   *       //Example writing to buffer
+   *       const contentBytes = new TextEncoder().encode("Hello World");
+   *       const writer = new Deno.Buffer();
+   *       Deno.writeAllSync(writer, contentBytes);
+   *       console.log(writer.bytes().length);  // 11
+   */
+  export function writeAllSync(w: SyncWriter, arr: Uint8Array): void;
+
+  export interface MkdirOptions {
+    /** Defaults to `false`. If set to `true`, means that any intermediate
+     * directories will also be created (as with the shell command `mkdir -p`).
+     * Intermediate directories are created with the same permissions.
+     * When recursive is set to `true`, succeeds silently (without changing any
+     * permissions) if a directory already exists at the path, or if the path
+     * is a symlink to an existing directory. */
+    recursive?: boolean;
+    /** Permissions to use when creating the directory (defaults to `0o777`,
+     * before the process's umask).
+     * Ignored on Windows. */
+    mode?: number;
+  }
+
+  /** Synchronously creates a new directory with the specified path.
    *
    *       Deno.mkdirSync("new_dir");
    *       Deno.mkdirSync("nested/directories", { recursive: true });
+   *       Deno.mkdirSync("restricted_access_dir", { mode: 0o700 });
    *
-   * Requires allow-write.
-   */
-  export function mkdirSync(path: string, options?: MkdirOption): void;
+   * Defaults to throwing error if the directory already exists.
+   *
+   * Requires `allow-write` permission. */
+  export function mkdirSync(path: string, options?: MkdirOptions): void;
 
-  /** Deprecated */
+  /** @deprecated */
   export function mkdirSync(
     path: string,
     recursive?: boolean,
@@ -583,513 +1051,598 @@ declare namespace Deno {
   ): void;
 
   /** Creates a new directory with the specified path.
-   * If `recursive` is set to true, nested directories will be created (also known
-   * as "mkdir -p").
-   * `mode` sets permission bits (before umask) on UNIX and does nothing on
-   * Windows.
    *
    *       await Deno.mkdir("new_dir");
    *       await Deno.mkdir("nested/directories", { recursive: true });
+   *       await Deno.mkdir("restricted_access_dir", { mode: 0o700 });
    *
-   * Requires allow-write.
-   */
-  export function mkdir(path: string, options?: MkdirOption): Promise<void>;
+   * Defaults to throwing error if the directory already exists.
+   *
+   * Requires `allow-write` permission. */
+  export function mkdir(path: string, options?: MkdirOptions): Promise<void>;
 
-  /** Deprecated */
+  /** @deprecated */
   export function mkdir(
     path: string,
     recursive?: boolean,
     mode?: number
   ): Promise<void>;
 
-  // @url js/make_temp_dir.d.ts
-
-  export interface MakeTempDirOptions {
+  export interface MakeTempOptions {
+    /** Directory where the temporary directory should be created (defaults to
+     * the env variable TMPDIR, or the system's default, usually /tmp). */
     dir?: string;
+    /** String that should precede the random portion of the temporary
+     * directory's name. */
     prefix?: string;
+    /** String that should follow the random portion of the temporary
+     * directory's name. */
     suffix?: string;
   }
 
-  /** makeTempDirSync is the synchronous version of `makeTempDir`.
+  /** Synchronously creates a new temporary directory in the default directory
+   * for temporary files (see also `Deno.dir("temp")`), unless `dir` is specified.
+   * Other optional options include prefixing and suffixing the directory name
+   * with `prefix` and `suffix` respectively.
    *
-   *       const tempDirName0 = Deno.makeTempDirSync();
-   *       const tempDirName1 = Deno.makeTempDirSync({ prefix: 'my_temp' });
+   * The full path to the newly created directory is returned.
    *
-   * Requires allow-write.
-   */
+   * Multiple programs calling this function simultaneously will create different
+   * directories. It is the caller's responsibility to remove the directory when
+   * no longer needed.
+   *
+   *       const tempDirName0 = Deno.makeTempDirSync();  // e.g. /tmp/2894ea76
+   *       const tempDirName1 = Deno.makeTempDirSync({ prefix: 'my_temp' });  // e.g. /tmp/my_temp339c944d
+   *
+   * Requires `allow-write` permission. */
   // TODO(ry) Doesn't check permissions.
-  export function makeTempDirSync(options?: MakeTempDirOptions): string;
+  export function makeTempDirSync(options?: MakeTempOptions): string;
 
-  /** makeTempDir creates a new temporary directory in the directory `dir`, its
-   * name beginning with `prefix` and ending with `suffix`.
-   * It returns the full path to the newly created directory.
-   * If `dir` is unspecified, tempDir uses the default directory for temporary
-   * files. Multiple programs calling tempDir simultaneously will not choose the
-   * same directory. It is the caller's responsibility to remove the directory
-   * when no longer needed.
+  /** Creates a new temporary directory in the default directory for temporary
+   * files (see also `Deno.dir("temp")`), unless `dir` is specified.  Other
+   * optional options include prefixing and suffixing the directory name with
+   * `prefix` and `suffix` respectively.
    *
-   *       const tempDirName0 = await Deno.makeTempDir();
-   *       const tempDirName1 = await Deno.makeTempDir({ prefix: 'my_temp' });
+   * This call resolves to the full path to the newly created directory.
    *
-   * Requires allow-write.
-   */
+   * Multiple programs calling this function simultaneously will create different
+   * directories. It is the caller's responsibility to remove the directory when
+   * no longer needed.
+   *
+   *       const tempDirName0 = await Deno.makeTempDir();  // e.g. /tmp/2894ea76
+   *       const tempDirName1 = await Deno.makeTempDir({ prefix: 'my_temp' }); // e.g. /tmp/my_temp339c944d
+   *
+   * Requires `allow-write` permission. */
   // TODO(ry) Doesn't check permissions.
-  export function makeTempDir(options?: MakeTempDirOptions): Promise<string>;
+  export function makeTempDir(options?: MakeTempOptions): Promise<string>;
 
-  /** Changes the permission of a specific file/directory of specified path
-   * synchronously.
+  /** Synchronously creates a new temporary file in the default directory for
+   * temporary files (see also `Deno.dir("temp")`), unless `dir` is specified.
+   * Other optional options include prefixing and suffixing the directory name
+   * with `prefix` and `suffix` respectively.
+   *
+   * The full path to the newly created file is returned.
+   *
+   * Multiple programs calling this function simultaneously will create different
+   * files. It is the caller's responsibility to remove the file when no longer
+   * needed.
+   *
+   *       const tempFileName0 = Deno.makeTempFileSync(); // e.g. /tmp/419e0bf2
+   *       const tempFileName1 = Deno.makeTempFileSync({ prefix: 'my_temp' });  //e.g. /tmp/my_temp754d3098
+   *
+   * Requires `allow-write` permission. */
+  export function makeTempFileSync(options?: MakeTempOptions): string;
+
+  /** Creates a new temporary file in the default directory for temporary
+   * files (see also `Deno.dir("temp")`), unless `dir` is specified.  Other
+   * optional options include prefixing and suffixing the directory name with
+   * `prefix` and `suffix` respectively.
+   *
+   * This call resolves to the full path to the newly created file.
+   *
+   * Multiple programs calling this function simultaneously will create different
+   * files. It is the caller's responsibility to remove the file when no longer
+   * needed.
+   *
+   *       const tmpFileName0 = await Deno.makeTempFile();  // e.g. /tmp/419e0bf2
+   *       const tmpFileName1 = await Deno.makeTempFile({ prefix: 'my_temp' });  //e.g. /tmp/my_temp754d3098
+   *
+   * Requires `allow-write` permission. */
+  export function makeTempFile(options?: MakeTempOptions): Promise<string>;
+
+  /** Synchronously changes the permission of a specific file/directory of
+   * specified path.  Ignores the process's umask.
    *
    *       Deno.chmodSync("/path/to/file", 0o666);
    *
-   * Needs allow-write
-   */
+   * For a full description, see [chmod](#chmod)
+   *
+   * NOTE: This API currently throws on Windows
+   *
+   * Requires `allow-write` permission. */
   export function chmodSync(path: string, mode: number): void;
 
   /** Changes the permission of a specific file/directory of specified path.
+   * Ignores the process's umask.
    *
    *       await Deno.chmod("/path/to/file", 0o666);
    *
-   * Needs allow-write
-   */
+   * The mode is a sequence of 3 octal numbers.  The first/left-most number
+   * specifies the permissions for the owner.  The second number specifies the
+   * permissions for the group. The last/right-most number specifies the
+   * permissions for others.  For example, with a mode of 0o764, the owner (7) can
+   * read/write/execute, the group (6) can read/write and everyone else (4) can
+   * read only.
+   *
+   * | Number | Description |
+   * | ------ | ----------- |
+   * | 7      | read, write, and execute |
+   * | 6      | read and write |
+   * | 5      | read and execute |
+   * | 4      | read only |
+   * | 3      | write and execute |
+   * | 2      | write only |
+   * | 1      | execute only |
+   * | 0      | no permission |
+   *
+   * NOTE: This API currently throws on Windows
+   *
+   * Requires `allow-write` permission. */
   export function chmod(path: string, mode: number): Promise<void>;
 
-  /**
-   * Change owner of a regular file or directory synchronously. Unix only at the moment.
+  /** Synchronously change owner of a regular file or directory. This functionality
+   * is not available on Windows.
    *
-   * Needs allow-write permission.
+   *      Deno.chownSync("myFile.txt", 1000, 1002);
+   *
+   * Requires `allow-write` permission.
+   *
+   * Throws Error (not implemented) if executed on Windows
    *
    * @param path path to the file
-   * @param uid user id of the new owner
-   * @param gid group id of the new owner
+   * @param uid user id (UID) of the new owner
+   * @param gid group id (GID) of the new owner
    */
   export function chownSync(path: string, uid: number, gid: number): void;
 
-  /**
-   * Change owner of a regular file or directory asynchronously. Unix only at the moment.
+  /** Change owner of a regular file or directory. This functionality
+   * is not available on Windows.
    *
-   * Needs allow-write permission.
+   *      await Deno.chown("myFile.txt", 1000, 1002);
+   *
+   * Requires `allow-write` permission.
+   *
+   * Throws Error (not implemented) if executed on Windows
    *
    * @param path path to the file
-   * @param uid user id of the new owner
-   * @param gid group id of the new owner
+   * @param uid user id (UID) of the new owner
+   * @param gid group id (GID) of the new owner
    */
   export function chown(path: string, uid: number, gid: number): Promise<void>;
 
-  /** UNSTABLE: needs investigation into high precision time.
+  /** **UNSTABLE**: needs investigation into high precision time.
    *
-   * Synchronously changes the access and modification times of a file system
-   * object referenced by `filename`. Given times are either in seconds
-   * (Unix epoch time) or as `Date` objects.
+   * Synchronously changes the access (`atime`) and modification (`mtime`) times
+   * of a file system object referenced by `path`. Given times are either in
+   * seconds (UNIX epoch time) or as `Date` objects.
    *
    *       Deno.utimeSync("myfile.txt", 1556495550, new Date());
    *
-   * Requires allow-write.
-   */
+   * Requires `allow-write` permission. */
   export function utimeSync(
-    filename: string,
+    path: string,
     atime: number | Date,
     mtime: number | Date
   ): void;
 
-  /** UNSTABLE: needs investigation into high precision time.
+  /** **UNSTABLE**: needs investigation into high precision time.
    *
-   * Changes the access and modification times of a file system object
-   * referenced by `filename`. Given times are either in seconds
-   * (Unix epoch time) or as `Date` objects.
+   * Changes the access (`atime`) and modification (`mtime`) times of a file
+   * system object referenced by `path`. Given times are either in seconds
+   * (UNIX epoch time) or as `Date` objects.
    *
    *       await Deno.utime("myfile.txt", 1556495550, new Date());
    *
-   * Requires allow-write.
-   */
+   * Requires `allow-write` permission. */
   export function utime(
-    filename: string,
+    path: string,
     atime: number | Date,
     mtime: number | Date
   ): Promise<void>;
 
-  /** UNSTABLE: rename to RemoveOptions */
-  export interface RemoveOption {
+  export interface RemoveOptions {
+    /** Defaults to `false`. If set to `true`, path will be removed even if
+     * it's a non-empty directory. */
     recursive?: boolean;
   }
 
-  /** Removes the named file or directory synchronously. Would throw
-   * error if permission denied, not found, or directory not empty if `recursive`
-   * set to false.
-   * `recursive` is set to false by default.
+  /** Synchronously removes the named file or directory.
    *
-   *       Deno.removeSync("/path/to/dir/or/file", {recursive: false});
+   *       Deno.removeSync("/path/to/empty_dir/or/file");
+   *       Deno.removeSync("/path/to/populated_dir/or/file", { recursive: true });
    *
-   * Requires allow-write permission.
-   */
+   * Throws error if permission denied, path not found, or path is a non-empty
+   * directory and the `recursive` option isn't set to `true`.
+   *
+   * Requires `allow-write` permission. */
+  export function removeSync(path: string, options?: RemoveOptions): void;
 
-  export function removeSync(path: string, options?: RemoveOption): void;
-  /** Removes the named file or directory. Would throw error if
-   * permission denied, not found, or directory not empty if `recursive` set
-   * to false.
-   * `recursive` is set to false by default.
+  /** Removes the named file or directory.
    *
-   *       await Deno.remove("/path/to/dir/or/file", {recursive: false});
+   *       await Deno.remove("/path/to/empty_dir/or/file");
+   *       await Deno.remove("/path/to/populated_dir/or/file", { recursive: true });
    *
-   * Requires allow-write permission.
-   */
-  export function remove(path: string, options?: RemoveOption): Promise<void>;
+   * Throws error if permission denied, path not found, or path is a non-empty
+   * directory and the `recursive` option isn't set to `true`.
+   *
+   * Requires `allow-write` permission. */
+  export function remove(path: string, options?: RemoveOptions): Promise<void>;
 
-  /** Synchronously renames (moves) `oldpath` to `newpath`. If `newpath` already
-   * exists and is not a directory, `renameSync()` replaces it. OS-specific
-   * restrictions may apply when `oldpath` and `newpath` are in different
-   * directories.
+  /** Synchronously renames (moves) `oldpath` to `newpath`. Paths may be files or
+   * directories.  If `newpath` already exists and is not a directory,
+   * `renameSync()` replaces it. OS-specific restrictions may apply when
+   * `oldpath` and `newpath` are in different directories.
    *
    *       Deno.renameSync("old/path", "new/path");
    *
-   * Requires allow-read and allow-write.
-   */
+   * On Unix, this operation does not follow symlinks at either path.
+   *
+   * It varies between platforms when the operation throws errors, and if so what
+   * they are. It's always an error to rename anything to a non-empty directory.
+   *
+   * Requires `allow-read` and `allow-write` permissions. */
   export function renameSync(oldpath: string, newpath: string): void;
 
-  /** Renames (moves) `oldpath` to `newpath`. If `newpath` already exists and is
-   * not a directory, `rename()` replaces it. OS-specific restrictions may apply
-   * when `oldpath` and `newpath` are in different directories.
+  /** Renames (moves) `oldpath` to `newpath`.  Paths may be files or directories.
+   * If `newpath` already exists and is not a directory, `rename()` replaces it.
+   * OS-specific restrictions may apply when `oldpath` and `newpath` are in
+   * different directories.
    *
    *       await Deno.rename("old/path", "new/path");
    *
-   * Requires allow-read and allow-write.
-   */
+   * On Unix, this operation does not follow symlinks at either path.
+   *
+   * It varies between platforms when the operation throws errors, and if so what
+   * they are. It's always an error to rename anything to a non-empty directory.
+   *
+   * Requires `allow-read` and `allow-write` permission. */
   export function rename(oldpath: string, newpath: string): Promise<void>;
 
-  // @url js/read_file.d.ts
-
-  /** Read the entire contents of a file synchronously.
+  /** Synchronously reads and returns the entire contents of a file as an array
+   * of bytes. `TextDecoder` can be used to transform the bytes to string if
+   * required.  Reading a directory returns an empty data array.
    *
    *       const decoder = new TextDecoder("utf-8");
    *       const data = Deno.readFileSync("hello.txt");
    *       console.log(decoder.decode(data));
    *
-   * Requires allow-read.
-   */
-  export function readFileSync(filename: string): Uint8Array;
+   * Requires `allow-read` permission. */
+  export function readFileSync(path: string): Uint8Array;
 
-  /** Read the entire contents of a file.
+  /** Reads and resolves to the entire contents of a file as an array of bytes.
+   * `TextDecoder` can be used to transform the bytes to string if required.
+   * Reading a directory returns an empty data array.
    *
    *       const decoder = new TextDecoder("utf-8");
    *       const data = await Deno.readFile("hello.txt");
    *       console.log(decoder.decode(data));
    *
-   * Requires allow-read.
-   */
-  export function readFile(filename: string): Promise<Uint8Array>;
+   * Requires `allow-read` permission. */
+  export function readFile(path: string): Promise<Uint8Array>;
 
-  /** UNSTABLE: 'len' maybe should be 'length' or 'size'.
-   *
-   * A FileInfo describes a file and is returned by `stat`, `lstat`,
-   * `statSync`, `lstatSync`.
-   */
+  /** A FileInfo describes a file and is returned by `stat`, `lstat`,
+   * `statSync`, `lstatSync`. A list of FileInfo is returned by `readdir`,
+   * `readdirSync`. */
   export interface FileInfo {
-    /** UNSTABLE: 'len' maybe should be 'length' or 'size'.
-     *
-     * The size of the file, in bytes. */
-    len: number;
+    /** The size of the file, in bytes. */
+    size: number;
     /** The last modification time of the file. This corresponds to the `mtime`
-     * field from `stat` on Unix and `ftLastWriteTime` on Windows. This may not
-     * be available on all platforms.
-     */
+     * field from `stat` on Linux/Mac OS and `ftLastWriteTime` on Windows. This
+     * may not be available on all platforms. */
     modified: number | null;
     /** The last access time of the file. This corresponds to the `atime`
      * field from `stat` on Unix and `ftLastAccessTime` on Windows. This may not
-     * be available on all platforms.
-     */
+     * be available on all platforms. */
     accessed: number | null;
     /** The last access time of the file. This corresponds to the `birthtime`
-     * field from `stat` on Unix and `ftCreationTime` on Windows. This may not
-     * be available on all platforms.
-     */
+     * field from `stat` on Mac/BSD and `ftCreationTime` on Windows. This may not
+     * be available on all platforms. */
     created: number | null;
     /** The file or directory name. */
     name: string | null;
-    /** ID of the device containing the file. Unix only. */
-    dev: number | null;
-    /** Inode number. Unix only. */
-    ino: number | null;
-    /** UNSTABLE: Match behavior with Go on windows for mode.
+    /** ID of the device containing the file.
      *
-     * The underlying raw st_mode bits that contain the standard Unix permissions
-     * for this file/directory.
-     */
+     * _Linux/Mac OS only._ */
+    dev: number | null;
+    /** Inode number.
+     *
+     * _Linux/Mac OS only._ */
+    ino: number | null;
+    /** **UNSTABLE**: Match behavior with Go on Windows for `mode`.
+     *
+     * The underlying raw `st_mode` bits that contain the standard Unix
+     * permissions for this file/directory. */
     mode: number | null;
-    /** Number of hard links pointing to this file. Unix only. */
+    /** Number of hard links pointing to this file.
+     *
+     * _Linux/Mac OS only._ */
     nlink: number | null;
-    /** User ID of the owner of this file. Unix only. */
+    /** User ID of the owner of this file.
+     *
+     * _Linux/Mac OS only._ */
     uid: number | null;
-    /** User ID of the owner of this file. Unix only. */
+    /** User ID of the owner of this file.
+     *
+     * _Linux/Mac OS only._ */
     gid: number | null;
-    /** Device ID of this file. Unix only. */
+    /** Device ID of this file.
+     *
+     * _Linux/Mac OS only._ */
     rdev: number | null;
-    /** Blocksize for filesystem I/O. Unix only. */
+    /** Blocksize for filesystem I/O.
+     *
+     * _Linux/Mac OS only._ */
     blksize: number | null;
-    /** Number of blocks allocated to the file, in 512-byte units. Unix only. */
+    /** Number of blocks allocated to the file, in 512-byte units.
+     *
+     * _Linux/Mac OS only._ */
     blocks: number | null;
     /** Returns whether this is info for a regular file. This result is mutually
-     * exclusive to `FileInfo.isDirectory` and `FileInfo.isSymlink`.
-     */
+     * exclusive to `FileInfo.isDirectory` and `FileInfo.isSymlink`. */
     isFile(): boolean;
     /** Returns whether this is info for a regular directory. This result is
-     * mutually exclusive to `FileInfo.isFile` and `FileInfo.isSymlink`.
-     */
+     * mutually exclusive to `FileInfo.isFile` and `FileInfo.isSymlink`. */
     isDirectory(): boolean;
     /** Returns whether this is info for a symlink. This result is
-     * mutually exclusive to `FileInfo.isFile` and `FileInfo.isDirectory`.
-     */
+     * mutually exclusive to `FileInfo.isFile` and `FileInfo.isDirectory`. */
     isSymlink(): boolean;
   }
 
-  // @url js/realpath.d.ts
-
-  /** Returns absolute normalized path with symbolic links resolved
-   * synchronously.
+  /** Returns absolute normalized path, with symbolic links resolved.
    *
-   *       const realPath = Deno.realpathSync("./some/path");
+   *       // e.g. given /home/alice/file.txt and current directory /home/alice
+   *       Deno.symlinkSync("file.txt", "symlink_file.txt");
+   *       const realPath = Deno.realpathSync("./file.txt");
+   *       const realSymLinkPath = Deno.realpathSync("./symlink_file.txt");
+   *       console.log(realPath);  // outputs "/home/alice/file.txt"
+   *       console.log(realSymLinkPath);  //outputs "/home/alice/file.txt"
    *
-   * Requires allow-read.
-   */
+   * Requires `allow-read` permission. */
   export function realpathSync(path: string): string;
 
-  /** Returns absolute normalized path with symbolic links resolved.
+  /** Resolves to the absolute normalized path, with symbolic links resolved.
    *
-   *       const realPath = await Deno.realpath("./some/path");
+   *       // e.g. given /home/alice/file.txt and current directory /home/alice
+   *       await Deno.symlink("file.txt", "symlink_file.txt");
+   *       const realPath = await Deno.realpath("./file.txt");
+   *       const realSymLinkPath = await Deno.realpath("./symlink_file.txt");
+   *       console.log(realPath);  // outputs "/home/alice/file.txt"
+   *       console.log(realSymLinkPath);  //outputs "/home/alice/file.txt"
    *
-   * Requires allow-read.
-   */
+   * Requires `allow-read` permission. */
   export function realpath(path: string): Promise<string>;
 
-  /** UNSTABLE: Unstable rename to readdirSync.
+  /** UNSTABLE: This API is likely to change to return an iterable object instead
    *
-   * Reads the directory given by path and returns a list of file info
-   * synchronously.
+   * Synchronously reads the directory given by `path` and returns an array of
+   * `Deno.FileInfo`.
    *
-   *       const files = Deno.readDirSync("/");
+   *       const files = Deno.readdirSync("/");
    *
-   * Requires allow-read.
-   */
-  export function readDirSync(path: string): FileInfo[];
+   * Throws error if `path` is not a directory.
+   *
+   * Requires `allow-read` permission. */
+  export function readdirSync(path: string): FileInfo[];
 
-  /** UNSTABLE: Unstable rename to readdir. Maybe need to return AsyncIterable.
+  /** UNSTABLE: This API is likely to change to return an `AsyncIterable`.
    *
-   * Reads the directory given by path and returns a list of file info.
+   * Reads the directory given by `path` and resolves to an array of `Deno.FileInfo`.
    *
-   *       const files = await Deno.readDir("/");
+   *       const files = await Deno.readdir("/");
    *
-   * Requires allow-read.
-   */
-  export function readDir(path: string): Promise<FileInfo[]>;
+   * Throws error if `path` is not a directory.
+   *
+   * Requires `allow-read` permission. */
+  export function readdir(path: string): Promise<FileInfo[]>;
 
-  /** Copies the contents of a file to another by name synchronously.
-   * Creates a new file if target does not exists, and if target exists,
-   * overwrites original content of the target file.
-   *
-   * It would also copy the permission of the original file
-   * to the destination.
+  /** Synchronously copies the contents and permissions of one file to another
+   * specified path, by default creating a new file if needed, else overwriting.
+   * Fails if target path is a directory or is unwritable.
    *
    *       Deno.copyFileSync("from.txt", "to.txt");
    *
-   * Needs allow-read and allow-write permissions.
-   */
-  export function copyFileSync(from: string, to: string): void;
-  /** Copies the contents of a file to another by name.
-   *
-   * Creates a new file if target does not exists, and if target exists,
-   * overwrites original content of the target file.
-   *
-   * It would also copy the permission of the original file
-   * to the destination.
+   * Requires `allow-read` permission on fromPath.
+   * Requires `allow-write` permission on toPath. */
+  export function copyFileSync(fromPath: string, toPath: string): void;
+
+  /** Copies the contents and permissions of one file to another specified path,
+   * by default creating a new file if needed, else overwriting. Fails if target
+   * path is a directory or is unwritable.
    *
    *       await Deno.copyFile("from.txt", "to.txt");
    *
-   * Needs allow-read and allow-write permissions.
-   */
-  export function copyFile(from: string, to: string): Promise<void>;
+   * Requires `allow-read` permission on fromPath.
+   * Requires `allow-write` permission on toPath. */
+  export function copyFile(fromPath: string, toPath: string): Promise<void>;
 
-  // @url js/read_link.d.ts
+  /** Returns the full path destination of the named symbolic link.
+   *
+   *       Deno.symlinkSync("./test.txt", "./test_link.txt");
+   *       const target = Deno.readlinkSync("./test_link.txt"); // full path of ./test.txt
+   *
+   * Throws TypeError if called with a hard link
+   *
+   * Requires `allow-read` permission. */
+  export function readlinkSync(path: string): string;
 
-  /** Returns the destination of the named symbolic link synchronously.
+  /** Resolves to the full path destination of the named symbolic link.
    *
-   *       const targetPath = Deno.readlinkSync("symlink/path");
+   *       await Deno.symlink("./test.txt", "./test_link.txt");
+   *       const target = await Deno.readlink("./test_link.txt"); // full path of ./test.txt
    *
-   * Requires allow-read.
-   */
-  export function readlinkSync(name: string): string;
+   * Throws TypeError if called with a hard link
+   *
+   * Requires `allow-read` permission. */
+  export function readlink(path: string): Promise<string>;
 
-  /** Returns the destination of the named symbolic link.
-   *
-   *       const targetPath = await Deno.readlink("symlink/path");
-   *
-   * Requires allow-read.
-   */
-  export function readlink(name: string): Promise<string>;
-
-  interface StatResponse {
-    isFile: boolean;
-    isSymlink: boolean;
-    len: number;
-    modified: number;
-    accessed: number;
-    created: number;
-    name: string | null;
-    dev: number;
-    ino: number;
-    mode: number;
-    nlink: number;
-    uid: number;
-    gid: number;
-    rdev: number;
-    blksize: number;
-    blocks: number;
-  }
-  /** Queries the file system for information on the path provided. If the given
-   * path is a symlink information about the symlink will be returned.
+  /** Resolves to a `Deno.FileInfo` for the specified `path`. If `path` is a
+   * symlink, information for the symlink will be returned instead of what it
+   * points to.
    *
    *       const fileInfo = await Deno.lstat("hello.txt");
    *       assert(fileInfo.isFile());
    *
-   * Requires allow-read permission.
-   */
-  export function lstat(filename: string): Promise<FileInfo>;
+   * Requires `allow-read` permission. */
+  export function lstat(path: string): Promise<FileInfo>;
 
-  /** Queries the file system for information on the path provided synchronously.
-   * If the given path is a symlink information about the symlink will be
-   * returned.
+  /** Synchronously returns a `Deno.FileInfo` for the specified `path`. If
+   * `path` is a symlink, information for the symlink will be returned instead of
+   * what it points to..
    *
    *       const fileInfo = Deno.lstatSync("hello.txt");
    *       assert(fileInfo.isFile());
    *
-   * Requires allow-read permission.
-   */
-  export function lstatSync(filename: string): FileInfo;
+   * Requires `allow-read` permission. */
+  export function lstatSync(path: string): FileInfo;
 
-  /** Queries the file system for information on the path provided. `stat` Will
-   * always follow symlinks.
+  /** Resolves to a `Deno.FileInfo` for the specified `path`. Will always
+   * follow symlinks.
    *
    *       const fileInfo = await Deno.stat("hello.txt");
    *       assert(fileInfo.isFile());
    *
-   * Requires allow-read permission.
-   */
-  export function stat(filename: string): Promise<FileInfo>;
-  /** Queries the file system for information on the path provided synchronously.
-   * `statSync` Will always follow symlinks.
+   * Requires `allow-read` permission. */
+  export function stat(path: string): Promise<FileInfo>;
+
+  /** Synchronously returns a `Deno.FileInfo` for the specified `path`. Will
+   * always follow symlinks.
    *
    *       const fileInfo = Deno.statSync("hello.txt");
    *       assert(fileInfo.isFile());
    *
-   * Requires allow-read permission.
-   */
-  export function statSync(filename: string): FileInfo;
+   * Requires `allow-read` permission. */
+  export function statSync(path: string): FileInfo;
 
-  /** Synchronously creates `newname` as a hard link to `oldname`.
+  /** Synchronously creates `newpath` as a hard link to `oldpath`.
    *
    *       Deno.linkSync("old/name", "new/name");
    *
-   * Requires allow-read and allow-write permissions.
-   */
-  export function linkSync(oldname: string, newname: string): void;
+   * Requires `allow-read` and `allow-write` permissions. */
+  export function linkSync(oldpath: string, newpath: string): void;
 
-  /** Creates `newname` as a hard link to `oldname`.
+  /** Creates `newpath` as a hard link to `oldpath`.
    *
    *       await Deno.link("old/name", "new/name");
    *
-   * Requires allow-read and allow-write permissions.
-   */
-  export function link(oldname: string, newname: string): Promise<void>;
+   * Requires `allow-read` and `allow-write` permissions. */
+  export function link(oldpath: string, newpath: string): Promise<void>;
 
-  /** UNSTABLE type argument may be changed to "dir" | "file"
+  /** **UNSTABLE**: `type` argument type may be changed to `"dir" | "file"`.
    *
-   * Synchronously creates `newname` as a symbolic link to `oldname`. The type
-   * argument can be set to `dir` or `file` and is only available on Windows
-   * (ignored on other platforms).
+   * Creates `newpath` as a symbolic link to `oldpath`.
+   *
+   * The type argument can be set to `dir` or `file`. This argument is only
+   * available on Windows and ignored on other platforms.
+   *
+   * NOTE: This function is not yet implemented on Windows.
    *
    *       Deno.symlinkSync("old/name", "new/name");
    *
-   * Requires allow-read and allow-write permissions.
-   */
+   * Requires `allow-read` and `allow-write` permissions. */
   export function symlinkSync(
-    oldname: string,
-    newname: string,
+    oldpath: string,
+    newpath: string,
     type?: string
   ): void;
 
-  /** UNSTABLE type argument may be changed to "dir" | "file"
+  /** **UNSTABLE**: `type` argument may be changed to `"dir" | "file"`
    *
-   * Creates `newname` as a symbolic link to `oldname`. The type argument can be
-   * set to `dir` or `file` and is only available on Windows (ignored on other
-   * platforms).
+   * Creates `newpath` as a symbolic link to `oldpath`.
+   *
+   * The type argument can be set to `dir` or `file`. This argument is only
+   * available on Windows and ignored on other platforms.
+   *
+   * NOTE: This function is not yet implemented on Windows.
    *
    *       await Deno.symlink("old/name", "new/name");
    *
-   * Requires allow-read and allow-write permissions.
-   */
+   * Requires `allow-read` and `allow-write` permissions. */
   export function symlink(
-    oldname: string,
-    newname: string,
+    oldpath: string,
+    newpath: string,
     type?: string
   ): Promise<void>;
 
-  /** Options for writing to a file.
-   * `perm` would change the file's permission if set.
-   * `create` decides if the file should be created if not exists (default: true)
-   * `append` decides if the file should be appended (default: false)
-   */
+  /** Options for writing to a file. */
   export interface WriteFileOptions {
-    perm?: number;
-    create?: boolean;
+    /** Defaults to `false`. If set to `true`, will append to a file instead of
+     * overwriting previous contents. */
     append?: boolean;
+    /** Sets the option to allow creating a new file, if one doesn't already
+     * exist at the specified path (defaults to `true`). */
+    create?: boolean;
+    /** Permissions always applied to file. */
+    mode?: number;
   }
 
-  /** Write a new file, with given filename and data synchronously.
+  /** Synchronously write `data` to the given `path`, by default creating a new
+   * file if needed, else overwriting.
    *
    *       const encoder = new TextEncoder();
    *       const data = encoder.encode("Hello world\n");
-   *       Deno.writeFileSync("hello.txt", data);
+   *       Deno.writeFileSync("hello1.txt", data);  //overwrite "hello.txt" or create it
+   *       Deno.writeFileSync("hello2.txt", data, {create: false});  //only works if "hello2.txt" exists
+   *       Deno.writeFileSync("hello3.txt", data, {mode: 0o777});  //set permissions on new file
+   *       Deno.writeFileSync("hello4.txt", data, {append: true});  //add data to the end of the file
    *
-   * Requires allow-write and allow-read if create is false.
+   * Requires `allow-write` permission, and `allow-read` if `options.create` is
+   * `false`.
    */
   export function writeFileSync(
-    filename: string,
+    path: string,
     data: Uint8Array,
     options?: WriteFileOptions
   ): void;
 
-  /** Write a new file, with given filename and data.
+  /** Write `data` to the given `path`, by default creating a new file if needed,
+   * else overwriting.
    *
    *       const encoder = new TextEncoder();
    *       const data = encoder.encode("Hello world\n");
-   *       await Deno.writeFile("hello.txt", data);
+   *       await Deno.writeFile("hello1.txt", data);  //overwrite "hello.txt" or create it
+   *       await Deno.writeFile("hello2.txt", data, {create: false});  //only works if "hello2.txt" exists
+   *       await Deno.writeFile("hello3.txt", data, {mode: 0o777});  //set permissions on new file
+   *       await Deno.writeFile("hello4.txt", data, {append: true});  //add data to the end of the file
    *
-   * Requires allow-write and allow-read if create is false.
+   * Requires `allow-write` permission, and `allow-read` if `options.create` is `false`.
    */
   export function writeFile(
-    filename: string,
+    path: string,
     data: Uint8Array,
     options?: WriteFileOptions
   ): Promise<void>;
 
-  /** UNSTABLE: Should not have same name as window.location type. */
+  /** **UNSTABLE**: Should not have same name as `window.location` type. */
   interface Location {
     /** The full url for the module, e.g. `file://some/file.ts` or
      * `https://some/file.ts`. */
     filename: string;
-    /** The line number in the file.  It is assumed to be 1-indexed. */
+    /** The line number in the file. It is assumed to be 1-indexed. */
     line: number;
-    /** The column number in the file.  It is assumed to be 1-indexed. */
+    /** The column number in the file. It is assumed to be 1-indexed. */
     column: number;
   }
 
-  /** UNSTABLE: new API, not yet vetted.
+  /** UNSTABLE: new API, yet to be vetted.
    *
-   * Given a current location in a module, lookup the source location and
-   * return it.
+   * Given a current location in a module, lookup the source location and return
+   * it.
    *
-   * When Deno transpiles code, it keep source maps of the transpiled code.  This
-   * function can be used to lookup the original location.  This is automatically
-   * done when accessing the `.stack` of an error, or when an uncaught error is
-   * logged.  This function can be used to perform the lookup for creating better
-   * error handling.
+   * When Deno transpiles code, it keep source maps of the transpiled code. This
+   * function can be used to lookup the original location. This is
+   * automatically done when accessing the `.stack` of an error, or when an
+   * uncaught error is logged. This function can be used to perform the lookup
+   * for creating better error handling.
    *
    * **Note:** `line` and `column` are 1 indexed, which matches display
    * expectations, but is not typical of most index numbers in Deno.
@@ -1102,88 +1655,35 @@ declare namespace Deno {
    *         column: 15
    *       });
    *       console.log(`${orig.filename}:${orig.line}:${orig.column}`);
-   *
    */
   export function applySourceMap(location: Location): Location;
 
-  /** A Deno specific error.  The `kind` property is set to a specific error code
-   * which can be used to in application logic.
-   *
-   *       try {
-   *         somethingThatMightThrow();
-   *       } catch (e) {
-   *         if (
-   *           e instanceof Deno.DenoError &&
-   *           e.kind === Deno.ErrorKind.Overflow
-   *         ) {
-   *           console.error("Overflow error!");
-   *         }
-   *       }
-   *
-   */
-  export class DenoError<T extends ErrorKind> extends Error {
-    readonly kind: T;
-    constructor(kind: T, msg: string);
-  }
-  export enum ErrorKind {
-    NoError = 0,
-    NotFound = 1,
-    PermissionDenied = 2,
-    ConnectionRefused = 3,
-    ConnectionReset = 4,
-    ConnectionAborted = 5,
-    NotConnected = 6,
-    AddrInUse = 7,
-    AddrNotAvailable = 8,
-    BrokenPipe = 9,
-    AlreadyExists = 10,
-    WouldBlock = 11,
-    InvalidInput = 12,
-    InvalidData = 13,
-    TimedOut = 14,
-    Interrupted = 15,
-    WriteZero = 16,
-    Other = 17,
-    UnexpectedEof = 18,
-    BadResource = 19,
-    CommandFailed = 20,
-    EmptyHost = 21,
-    IdnaError = 22,
-    InvalidPort = 23,
-    InvalidIpv4Address = 24,
-    InvalidIpv6Address = 25,
-    InvalidDomainCharacter = 26,
-    RelativeUrlWithoutBase = 27,
-    RelativeUrlWithCannotBeABaseBase = 28,
-    SetHostOnCannotBeABaseUrl = 29,
-    Overflow = 30,
-    HttpUser = 31,
-    HttpClosed = 32,
-    HttpCanceled = 33,
-    HttpParse = 34,
-    HttpOther = 35,
-    TooLarge = 36,
-    InvalidUri = 37,
-    InvalidSeekMode = 38,
-    OpNotAvailable = 39,
-    WorkerInitFailed = 40,
-    UnixError = 41,
-    NoAsyncSupport = 42,
-    NoSyncSupport = 43,
-    ImportMapError = 44,
-    InvalidPath = 45,
-    ImportPrefixMissing = 46,
-    UnsupportedFetchScheme = 47,
-    TooManyRedirects = 48,
-    Diagnostic = 49,
-    JSError = 50
-  }
+  /** A set of error constructors that are raised by Deno APIs. */
+  export const errors: {
+    NotFound: ErrorConstructor;
+    PermissionDenied: ErrorConstructor;
+    ConnectionRefused: ErrorConstructor;
+    ConnectionReset: ErrorConstructor;
+    ConnectionAborted: ErrorConstructor;
+    NotConnected: ErrorConstructor;
+    AddrInUse: ErrorConstructor;
+    AddrNotAvailable: ErrorConstructor;
+    BrokenPipe: ErrorConstructor;
+    AlreadyExists: ErrorConstructor;
+    InvalidData: ErrorConstructor;
+    TimedOut: ErrorConstructor;
+    Interrupted: ErrorConstructor;
+    WriteZero: ErrorConstructor;
+    UnexpectedEof: ErrorConstructor;
+    BadResource: ErrorConstructor;
+    Http: ErrorConstructor;
+  };
 
-  /** UNSTABLE: potentially want names to overlap more with browser.
+  /** **UNSTABLE**: potentially want names to overlap more with browser.
    *
-   * Permissions as granted by the caller
-   * See: https://w3c.github.io/permissions/#permission-registry
-   */
+   * The permissions as granted by the caller.
+   *
+   * See: https://w3c.github.io/permissions/#permission-registry */
   export type PermissionName =
     | "run"
     | "read"
@@ -1192,29 +1692,42 @@ declare namespace Deno {
     | "env"
     | "plugin"
     | "hrtime";
-  /** https://w3c.github.io/permissions/#status-of-a-permission */
+
+  /** The current status of the permission.
+   *
+   * See: https://w3c.github.io/permissions/#status-of-a-permission */
   export type PermissionState = "granted" | "denied" | "prompt";
+
   interface RunPermissionDescriptor {
     name: "run";
   }
+
   interface ReadWritePermissionDescriptor {
     name: "read" | "write";
     path?: string;
   }
+
   interface NetPermissionDescriptor {
     name: "net";
     url?: string;
   }
+
   interface EnvPermissionDescriptor {
     name: "env";
   }
+
   interface PluginPermissionDescriptor {
     name: "plugin";
   }
+
   interface HrtimePermissionDescriptor {
     name: "hrtime";
   }
-  /** See: https://w3c.github.io/permissions/#permission-descriptor */
+
+  /** Permission descriptors which define a permission which can be queried,
+   * requested, or revoked.
+   *
+   * See: https://w3c.github.io/permissions/#permission-descriptor */
   type PermissionDescriptor =
     | RunPermissionDescriptor
     | ReadWritePermissionDescriptor
@@ -1224,19 +1737,24 @@ declare namespace Deno {
     | HrtimePermissionDescriptor;
 
   export class Permissions {
-    /** Queries the permission.
+    /** Resolves to the current status of a permission.
+     *
      *       const status = await Deno.permissions.query({ name: "read", path: "/etc" });
      *       if (status.state === "granted") {
      *         data = await Deno.readFile("/etc/passwd");
      *       }
      */
-    query(d: PermissionDescriptor): Promise<PermissionStatus>;
-    /** Revokes the permission.
+    query(desc: PermissionDescriptor): Promise<PermissionStatus>;
+
+    /** Revokes a permission, and resolves to the state of the permission.
+     *
      *       const status = await Deno.permissions.revoke({ name: "run" });
      *       assert(status.state !== "granted")
      */
-    revoke(d: PermissionDescriptor): Promise<PermissionStatus>;
-    /** Requests the permission.
+    revoke(desc: PermissionDescriptor): Promise<PermissionStatus>;
+
+    /** Requests the permission, and resolves to the state of the permission.
+     *
      *       const status = await Deno.permissions.request({ name: "env" });
      *       if (status.state === "granted") {
      *         console.log(Deno.homeDir());
@@ -1246,31 +1764,47 @@ declare namespace Deno {
      */
     request(desc: PermissionDescriptor): Promise<PermissionStatus>;
   }
-  /** UNSTABLE: maybe move to navigator.permissions to match web API. */
+
+  /** **UNSTABLE**: maybe move to `navigator.permissions` to match web API. */
   export const permissions: Permissions;
 
-  /** https://w3c.github.io/permissions/#permissionstatus */
+  /** see: https://w3c.github.io/permissions/#permissionstatus */
   export class PermissionStatus {
     state: PermissionState;
     constructor(state: PermissionState);
   }
 
-  /** Truncates or extends the specified file synchronously, updating the size of
-   * this file to become size.
+  /** Synchronously truncates or extends the specified file, to reach the
+   * specified `len`.  If `len` is not specified then the entire file contents
+   * are truncated.
    *
-   *       Deno.truncateSync("hello.txt", 10);
+   *       //truncate the entire file
+   *       Deno.truncateSync("my_file.txt");
    *
-   * Requires allow-write.
-   */
+   *       //truncate part of the file
+   *       const file = Deno.makeTempFileSync();
+   *       Deno.writeFileSync(file, new TextEncoder().encode("Hello World"));
+   *       Deno.truncateSync(file, 7);
+   *       const data = Deno.readFileSync(file);
+   *       console.log(new TextDecoder().decode(data));
+   *
+   * Requires `allow-write` permission. */
   export function truncateSync(name: string, len?: number): void;
-  /**
-   * Truncates or extends the specified file, updating the size of this file to
-   * become size.
+
+  /** Truncates or extends the specified file, to reach the specified `len`. If
+   * `len` is not specified then the entire file contents are truncated.
    *
-   *       await Deno.truncate("hello.txt", 10);
+   *       //truncate the entire file
+   *       await Deno.truncate("my_file.txt");
    *
-   * Requires allow-write.
-   */
+   *       //truncate part of the file
+   *       const file = await Deno.makeTempFile();
+   *       await Deno.writeFile(file, new TextEncoder().encode("Hello World"));
+   *       await Deno.truncate(file, 7);
+   *       const data = await Deno.readFile(file);
+   *       console.log(new TextDecoder().decode(data));  //"Hello W"
+   *
+   * Requires `allow-write` permission. */
   export function truncate(name: string, len?: number): Promise<void>;
 
   export interface AsyncHandler {
@@ -1291,37 +1825,42 @@ declare namespace Deno {
     };
   }
 
-  /** UNSTABLE: New API, not yet vetted.
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
    * Open and initalize a plugin.
-   * Requires the `--allow-plugin` flag.
    *
    *        const plugin = Deno.openPlugin("./path/to/some/plugin.so");
    *        const some_op = plugin.ops.some_op;
    *        const response = some_op.dispatch(new Uint8Array([1,2,3,4]));
    *        console.log(`Response from plugin ${response}`);
-   */
+   *
+   * Requires `allow-plugin` permission. */
   export function openPlugin(filename: string): Plugin;
+  export interface NetAddr {
+    transport: "tcp" | "udp";
+    hostname: string;
+    port: number;
+  }
 
-  type Transport = "tcp";
-
-  interface Addr {
-    transport: Transport;
-    /** UNSTABLE: Address is unstable because inconsistent with DialOptions. */
+  export interface UnixAddr {
+    transport: "unix" | "unixpacket";
     address: string;
   }
 
-  /** UNSTABLE: Maybe remove ShutdownMode entirely. */
+  export type Addr = NetAddr | UnixAddr;
+  /** **UNSTABLE**: Maybe remove `ShutdownMode` entirely.
+   *
+   * Corresponds to `SHUT_RD`, `SHUT_WR`, `SHUT_RDWR` on POSIX-like systems.
+   *
+   * See: http://man7.org/linux/man-pages/man2/shutdown.2.html */
   export enum ShutdownMode {
-    // See http://man7.org/linux/man-pages/man2/shutdown.2.html
-    // Corresponding to SHUT_RD, SHUT_WR, SHUT_RDWR
     Read = 0,
     Write,
-    ReadWrite // TODO(ry) panics on ReadWrite.
+    ReadWrite, // TODO(ry) panics on ReadWrite.
   }
 
-  /** UNSTABLE: Maybe should remove how parameter maybe remove ShutdownMode
-   * entirely.
+  /** **UNSTABLE**: Both the `how` parameter and `ShutdownMode` enum are under
+   * consideration for removal.
    *
    * Shutdown socket send and receive operations.
    *
@@ -1333,215 +1872,303 @@ declare namespace Deno {
    */
   export function shutdown(rid: number, how: ShutdownMode): void;
 
-  /** A Listener is a generic network listener for stream-oriented protocols. */
-  export interface Listener extends AsyncIterator<Conn> {
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * A generic transport listener for message-oriented protocols. */
+  export interface DatagramConn extends AsyncIterable<[Uint8Array, Addr]> {
+    /** **UNSTABLE**: new API, yet to be vetted.
+     *
+     * Waits for and resolves to the next message to the `UDPConn`. */
+    receive(p?: Uint8Array): Promise<[Uint8Array, Addr]>;
+    /** UNSTABLE: new API, yet to be vetted.
+     *
+     * Sends a message to the target. */
+    send(p: Uint8Array, addr: Addr): Promise<void>;
+    /** UNSTABLE: new API, yet to be vetted.
+     *
+     * Close closes the socket. Any pending message promises will be rejected
+     * with errors. */
+    close(): void;
+    /** Return the address of the `UDPConn`. */
+    readonly addr: Addr;
+    [Symbol.asyncIterator](): AsyncIterator<[Uint8Array, Addr]>;
+  }
+
+  /** A generic network listener for stream-oriented protocols. */
+  export interface Listener extends AsyncIterable<Conn> {
     /** Waits for and resolves to the next connection to the `Listener`. */
     accept(): Promise<Conn>;
     /** Close closes the listener. Any pending accept promises will be rejected
-     * with errors.
-     */
+     * with errors. */
     close(): void;
     /** Return the address of the `Listener`. */
-    addr(): Addr;
+    readonly addr: Addr;
+
     [Symbol.asyncIterator](): AsyncIterator<Conn>;
   }
 
   export interface Conn extends Reader, Writer, Closer {
-    /** UNSTABLE: return Addr?
-     *
-     * The local address of the connection.
-     */
-    localAddr: string;
-    /** UNSTABLE: return Addr?
-     *
-     * The remote address of the connection.
-     */
-    remoteAddr: string;
+    /** The local address of the connection. */
+    readonly localAddr: Addr;
+    /** The remote address of the connection. */
+    readonly remoteAddr: Addr;
     /** The resource ID of the connection. */
-    rid: number;
+    readonly rid: number;
     /** Shuts down (`shutdown(2)`) the reading side of the TCP connection. Most
-     * callers should just use `close()`.
-     */
+     * callers should just use `close()`. */
     closeRead(): void;
     /** Shuts down (`shutdown(2)`) the writing side of the TCP connection. Most
-     * callers should just use `close()`.
-     */
+     * callers should just use `close()`. */
     closeWrite(): void;
   }
 
   export interface ListenOptions {
+    /** The port to listen on. */
     port: number;
+    /** A literal IP address or host name that can be resolved to an IP address.
+     * If not specified, defaults to `0.0.0.0`. */
     hostname?: string;
-    transport?: Transport;
   }
 
-  /** Listen announces on the local transport address.
+  export interface UnixListenOptions {
+    /** A Path to the Unix Socket. */
+    address: string;
+  }
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
-   * Requires the allow-net permission.
+   * Listen announces on the local transport address.
    *
-   * @param options
-   * @param options.port The port to connect to. (Required.)
-   * @param options.hostname A literal IP address or host name that can be
-   *   resolved to an IP address. If not specified, defaults to 0.0.0.0
-   * @param options.transport Defaults to "tcp". Later we plan to add "tcp4",
-   *   "tcp6", "udp", "udp4", "udp6", "ip", "ip4", "ip6", "unix", "unixgram" and
-   *   "unixpacket".
+   *      const listener1 = Deno.listen({ port: 80 })
+   *      const listener2 = Deno.listen({ hostname: "192.0.2.1", port: 80 })
+   *      const listener3 = Deno.listen({ hostname: "[2001:db8::1]", port: 80 });
+   *      const listener4 = Deno.listen({ hostname: "golang.org", port: 80, transport: "tcp" });
    *
-   * Examples:
+   * Requires `allow-net` permission. */
+  export function listen(
+    options: ListenOptions & { transport?: "tcp" }
+  ): Listener;
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
-   *     listen({ port: 80 })
-   *     listen({ hostname: "192.0.2.1", port: 80 })
-   *     listen({ hostname: "[2001:db8::1]", port: 80 });
-   *     listen({ hostname: "golang.org", port: 80, transport: "tcp" })
-   */
-  export function listen(options: ListenOptions): Listener;
+   * Listen announces on the local transport address.
+   *
+   *     const listener = Deno.listen({ address: "/foo/bar.sock", transport: "unix" })
+   *
+   * Requires `allow-read` permission. */
+  export function listen(
+    options: UnixListenOptions & { transport: "unix" }
+  ): Listener;
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * Listen announces on the local transport address.
+   *
+   *      const listener1 = Deno.listen({ port: 80, transport: "udp" })
+   *      const listener2 = Deno.listen({ hostname: "golang.org", port: 80, transport: "udp" });
+   *
+   * Requires `allow-net` permission. */
+  export function listen(
+    options: ListenOptions & { transport: "udp" }
+  ): DatagramConn;
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * Listen announces on the local transport address.
+   *
+   *     const listener = Deno.listen({ address: "/foo/bar.sock", transport: "unixpacket" })
+   *
+   * Requires `allow-read` permission. */
+  export function listen(
+    options: UnixListenOptions & { transport: "unixpacket" }
+  ): DatagramConn;
 
-  export interface ListenTLSOptions {
-    port: number;
-    hostname?: string;
-    transport?: Transport;
+  export interface ListenTLSOptions extends ListenOptions {
+    /** Server certificate file. */
     certFile: string;
+    /** Server public key file. */
     keyFile: string;
+
+    transport?: "tcp";
   }
 
-  /** Listen announces on the local transport address over TLS (transport layer security).
+  /** Listen announces on the local transport address over TLS (transport layer
+   * security).
    *
-   * @param options
-   * @param options.port The port to connect to. (Required.)
-   * @param options.hostname A literal IP address or host name that can be
-   *   resolved to an IP address. If not specified, defaults to 0.0.0.0
-   * @param options.certFile Server certificate file
-   * @param options.keyFile Server public key file
+   *      const lstnr = Deno.listenTLS({ port: 443, certFile: "./server.crt", keyFile: "./server.key" });
    *
-   * Examples:
-   *
-   *     Deno.listenTLS({ port: 443, certFile: "./my_server.crt", keyFile: "./my_server.key" })
-   */
+   * Requires `allow-net` permission. */
   export function listenTLS(options: ListenTLSOptions): Listener;
 
-  /** UNSTABLE rename to ConnectOptions */
-  export interface DialOptions {
+  export interface ConnectOptions {
+    /** The port to connect to. */
     port: number;
+    /** A literal IP address or host name that can be resolved to an IP address.
+     * If not specified, defaults to `127.0.0.1`. */
     hostname?: string;
-    transport?: Transport;
+    transport?: "tcp";
   }
 
-  /** UNSTABLE: Rename to connect.
-   *
-   * Dial connects to the address on the named transport.
-   *
-   * @param options
-   * @param options.port The port to connect to. (Required.)
-   * @param options.hostname A literal IP address or host name that can be
-   *   resolved to an IP address. If not specified, defaults to 127.0.0.1
-   * @param options.transport Defaults to "tcp". Later we plan to add "tcp4",
-   *   "tcp6", "udp", "udp4", "udp6", "ip", "ip4", "ip6", "unix", "unixgram" and
-   *   "unixpacket".
-   *
-   * Examples:
-   *
-   *     dial({ port: 80 })
-   *     dial({ hostname: "192.0.2.1", port: 80 })
-   *     dial({ hostname: "[2001:db8::1]", port: 80 });
-   *     dial({ hostname: "golang.org", port: 80, transport: "tcp" })
-   */
-  export function dial(options: DialOptions): Promise<Conn>;
+  export interface UnixConnectOptions {
+    transport: "unix";
+    address: string;
+  }
 
-  /** UNSTABLE: rename to ConnectTLSOptions */
-  export interface DialTLSOptions {
+  /**
+   * Connects to the hostname (default is "127.0.0.1") and port on the named
+   * transport (default is "tcp"), and resolves to the connection (`Conn`).
+   *
+   *     const conn1 = await Deno.connect({ port: 80 });
+   *     const conn2 = await Deno.connect({ hostname: "192.0.2.1", port: 80 });
+   *     const conn3 = await Deno.connect({ hostname: "[2001:db8::1]", port: 80 });
+   *     const conn4 = await Deno.connect({ hostname: "golang.org", port: 80, transport: "tcp" });
+   *     const conn5 = await Deno.connect({ address: "/foo/bar.sock", transport: "unix" });
+   *
+   * Requires `allow-net` permission for "tcp" and `allow-read` for unix. */
+  export function connect(
+    options: ConnectOptions | UnixConnectOptions
+  ): Promise<Conn>;
+
+  export interface ConnectTLSOptions {
+    /** The port to connect to. */
     port: number;
+    /** A literal IP address or host name that can be resolved to an IP address.
+     * If not specified, defaults to `127.0.0.1`. */
     hostname?: string;
+    /** Server certificate file. */
     certFile?: string;
   }
 
-  /** UNSTABLE: rename to connectTLS.
+  /** Establishes a secure connection over TLS (transport layer security) using
+   * an optional cert file, hostname (default is "127.0.0.1") and port.  The
+   * cert file is optional and if not included Mozilla's root certificates will
+   * be used (see also https://github.com/ctz/webpki-roots for specifics)
    *
-   * dialTLS establishes a secure connection over TLS (transport layer security).
+   *     const conn1 = await Deno.connectTLS({ port: 80 });
+   *     const conn2 = await Deno.connectTLS({ certFile: "./certs/my_custom_root_CA.pem", hostname: "192.0.2.1", port: 80 });
+   *     const conn3 = await Deno.connectTLS({ hostname: "[2001:db8::1]", port: 80 });
+   *     const conn4 = await Deno.connectTLS({ certFile: "./certs/my_custom_root_CA.pem", hostname: "golang.org", port: 80});
+   *
+   * Requires `allow-net` permission.
    */
-  export function dialTLS(options: DialTLSOptions): Promise<Conn>;
+  export function connectTLS(options: ConnectTLSOptions): Promise<Conn>;
 
-  /** UNSTABLE: not sure if broken or not */
+  /** **UNSTABLE**: not sure if broken or not */
   export interface Metrics {
     opsDispatched: number;
+    opsDispatchedSync: number;
+    opsDispatchedAsync: number;
+    opsDispatchedAsyncUnref: number;
     opsCompleted: number;
+    opsCompletedSync: number;
+    opsCompletedAsync: number;
+    opsCompletedAsyncUnref: number;
     bytesSentControl: number;
     bytesSentData: number;
     bytesReceived: number;
   }
 
-  /** UNSTABLE: potentially broken.
-   *
-   * Receive metrics from the privileged side of Deno.
+  /** Receive metrics from the privileged side of Deno.  This is primarily used
+   * in the development of Deno. 'Ops', also called 'bindings', are the go-between
+   * between Deno Javascript and Deno Rust.
    *
    *      > console.table(Deno.metrics())
-   *      ┌──────────────────┬────────┐
-   *      │     (index)      │ Values │
-   *      ├──────────────────┼────────┤
-   *      │  opsDispatched   │   9    │
-   *      │   opsCompleted   │   9    │
-   *      │ bytesSentControl │  504   │
-   *      │  bytesSentData   │   0    │
-   *      │  bytesReceived   │  856   │
-   *      └──────────────────┴────────┘
-   */
+   *      鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?   *      鈹?        (index)         鈹?Values 鈹?   *      鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?   *      鈹?     opsDispatched      鈹?  3    鈹?   *      鈹?   opsDispatchedSync    鈹?  2    鈹?   *      鈹?  opsDispatchedAsync    鈹?  1    鈹?   *      鈹?opsDispatchedAsyncUnref 鈹?  0    鈹?   *      鈹?     opsCompleted       鈹?  3    鈹?   *      鈹?   opsCompletedSync     鈹?  2    鈹?   *      鈹?   opsCompletedAsync    鈹?  1    鈹?   *      鈹?opsCompletedAsyncUnref  鈹?  0    鈹?   *      鈹?   bytesSentControl     鈹?  73   鈹?   *      鈹?     bytesSentData      鈹?  0    鈹?   *      鈹?     bytesReceived      鈹? 375   鈹?   *      鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?   */
   export function metrics(): Metrics;
 
-  /** UNSTABLE: reconsider representation. */
+  /** **UNSTABLE**: reconsider representation. */
   interface ResourceMap {
     [rid: number]: string;
   }
 
-  /** UNSTABLE: reconsider return type.
+  /** **UNSTABLE**: The return type is under consideration and may change.
    *
-   * Returns a map of open _file like_ resource ids along with their string
-   * representation.
+   * Returns a map of open _file like_ resource ids (rid) along with their string
+   * representations.
+   *
+   *       console.log(Deno.resources()); //e.g. { 0: "stdin", 1: "stdout", 2: "stderr" }
+   *       Deno.openSync('../test.file');
+   *       console.log(Deno.resources()); //e.g. { 0: "stdin", 1: "stdout", 2: "stderr", 3: "fsFile" }
    */
   export function resources(): ResourceMap;
 
+  /** **UNSTABLE**: new API. Needs docs. */
+  export interface FsEvent {
+    kind: "any" | "access" | "create" | "modify" | "remove";
+    paths: string[];
+  }
+
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * Watch for file system events against one or more `paths`, which can be files
+   * or directories.  These paths must exist already.  One user action (e.g.
+   * `touch test.file`) can  generate multiple file system events.  Likewise,
+   * one user action can result in multiple file paths in one event (e.g. `mv
+   * old_name.txt new_name.txt`).  Recursive option is `true` by default and,
+   * for directories, will watch the specified directory and all sub directories.
+   * Note that the exact ordering of the events can vary between operating systems.
+   *
+   *       const iter = Deno.fsEvents("/");
+   *       for await (const event of iter) {
+   *          console.log(">>>> event", event);  //e.g. { kind: "create", paths: [ "/foo.txt" ] }
+   *       }
+   *
+   * Requires `allow-read` permission.
+   */
+  export function fsEvents(
+    paths: string | string[],
+    options?: { recursive: boolean }
+  ): AsyncIterableIterator<FsEvent>;
+
   /** How to handle subprocess stdio.
    *
-   * "inherit" The default if unspecified. The child inherits from the
+   * `"inherit"` The default if unspecified. The child inherits from the
    * corresponding parent descriptor.
    *
-   * "piped"  A new pipe should be arranged to connect the parent and child
-   * subprocesses.
+   * `"piped"` A new pipe should be arranged to connect the parent and child
+   * sub-processes.
    *
-   * "null" This stream will be ignored. This is the equivalent of attaching the
-   * stream to /dev/null.
-   */
+   * `"null"` This stream will be ignored. This is the equivalent of attaching
+   * the stream to `/dev/null`. */
   type ProcessStdio = "inherit" | "piped" | "null";
 
-  /** UNSTABLE: the signo parameter maybe shouldn't be number.
+  /** **UNSTABLE**: The `signo` argument may change to require the Deno.Signal
+   * enum.
    *
-   * Send a signal to process under given PID. Unix only at this moment.
-   * If pid is negative, the signal will be sent to the process group identified
-   * by -pid.
+   * Send a signal to process under given `pid`. This functionality currently
+   * only works on Linux and Mac OS.
    *
-   * Requires the `--allow-run` flag.
+   * If `pid` is negative, the signal will be sent to the process group
+   * identified by `pid`.
    *
-   * Currently no-op on Windows. TODO Should throw on windows instead of silently succeeding.
-   */
+   *      const p = Deno.run({
+   *        cmd: ["python", "-c", "from time import sleep; sleep(10000)"]
+   *      });
+   *
+   *      Deno.kill(p.pid, Deno.Signal.SIGINT);
+   *
+   * Throws Error (not yet implemented) on Windows
+   *
+   * Requires `allow-run` permission. */
   export function kill(pid: number, signo: number): void;
 
-  /** UNSTABLE: There are some issues to work out with respect to when and how
-   * the process should be closed.
-   */
+  /** **UNSTABLE**: There are some issues to work out with respect to when and
+   * how the process should be closed. */
   export class Process {
     readonly rid: number;
     readonly pid: number;
     readonly stdin?: WriteCloser;
     readonly stdout?: ReadCloser;
     readonly stderr?: ReadCloser;
+    /** Resolves to the current status of the process. */
     status(): Promise<ProcessStatus>;
-    /** Buffer the stdout and return it as Uint8Array after EOF.
-     * You must set stdout to "piped" when creating the process.
-     * This calls close() on stdout after its done.
-     */
+    /** Buffer the stdout and return it as `Uint8Array` after `Deno.EOF`.
+     *
+     * You must set stdout to `"piped"` when creating the process.
+     *
+     * This calls `close()` on stdout after its done. */
     output(): Promise<Uint8Array>;
-    /** Buffer the stderr and return it as Uint8Array after EOF.
-     * You must set stderr to "piped" when creating the process.
-     * This calls close() on stderr after its done.
-     */
+    /** Buffer the stderr and return it as `Uint8Array` after `Deno.EOF`.
+     *
+     * You must set stderr to `"piped"` when creating the process.
+     *
+     * This calls `close()` on stderr after its done. */
     stderrOutput(): Promise<Uint8Array>;
     close(): void;
     kill(signo: number): void;
@@ -1553,11 +2180,12 @@ declare namespace Deno {
     signal?: number;
   }
 
-  /** UNSTABLE:  Maybe rename args to argv to differentiate from Deno.args Note
-   * the first element needs to be a path to the binary.
-   */
+  /** **UNSTABLE**: `args` has been recently renamed to `cmd` to differentiate from
+   * `Deno.args`. */
   export interface RunOptions {
-    args: string[];
+    /** Arguments to pass. Note, the first element needs to be a path to the
+     * binary */
+    cmd: string[];
     cwd?: string;
     env?: {
       [key: string]: string;
@@ -1567,8 +2195,8 @@ declare namespace Deno {
     stdin?: ProcessStdio | number;
   }
 
-  /**
-   * Spawns new subprocess.
+  /** Spawns new subprocess.  RunOptions must contain at a minimum the `opt.cmd`,
+   * an array of program arguments, the first of which is the binary.
    *
    * Subprocess uses same working directory as parent process unless `opt.cwd`
    * is specified.
@@ -1579,7 +2207,14 @@ declare namespace Deno {
    * By default subprocess inherits stdio of parent process. To change that
    * `opt.stdout`, `opt.stderr` and `opt.stdin` can be specified independently -
    * they can be set to either `ProcessStdio` or `rid` of open file.
-   */
+   *
+   * Details of the spawned process are returned.
+   *
+   *       const p = Deno.run({
+   *         cmd: ["echo", "hello"],
+   *       });
+   *
+   * Requires `allow-run` permission. */
   export function run(opt: RunOptions): Process;
 
   enum LinuxSignal {
@@ -1613,7 +2248,7 @@ declare namespace Deno {
     SIGWINCH = 28,
     SIGIO = 29,
     SIGPWR = 30,
-    SIGSYS = 31
+    SIGSYS = 31,
   }
   enum MacOSSignal {
     SIGHUP = 1,
@@ -1646,35 +2281,58 @@ declare namespace Deno {
     SIGWINCH = 28,
     SIGINFO = 29,
     SIGUSR1 = 30,
-    SIGUSR2 = 31
+    SIGUSR2 = 31,
   }
-  /** UNSTABLE: make platform independent.
+
+  /** **UNSTABLE**: make platform independent.
    *
-   * Signals numbers. This is platform dependent.
-   */
+   * Signals numbers. This is platform dependent. */
   export const Signal: typeof MacOSSignal | typeof LinuxSignal;
 
-  /** UNSTABLE: rename to InspectOptions */
-  type ConsoleOptions = Partial<{
-    showHidden: boolean;
-    depth: number;
-    colors: boolean;
-    indentLevel: number;
-  }>;
+  interface InspectOptions {
+    showHidden?: boolean;
+    depth?: number;
+    colors?: boolean;
+    indentLevel?: number;
+  }
 
-  /** UNSTABLE: ConsoleOptions rename to InspectOptions. Also the exact form of
-   * string output subject to change.
+  /** **UNSTABLE**: The exact form of the string output is under consideration
+   * and may change.
    *
-   * `inspect()` converts input into string that has the same format
-   * as printed by `console.log(...)`;
+   * Converts the input into a string that has the same format as printed by
+   * `console.log()`.
+   *
+   *      const obj = {};
+   *      obj.propA = 10;
+   *      obj.propB = "hello"
+   *      const objAsString = Deno.inspect(obj); //{ propA: 10, propB: "hello" }
+   *      console.log(obj);  //prints same value as objAsString, e.g. { propA: 10, propB: "hello" }
+   *
+   * You can also register custom inspect functions, via the `customInspect` Deno
+   * symbol on objects, to control and customize the output.
+   *
+   *      class A {
+   *        x = 10;
+   *        y = "hello";
+   *        [Deno.symbols.customInspect](): string {
+   *          return "x=" + this.x + ", y=" + this.y;
+   *        }
+   *      }
+   *
+   *      const inStringFormat = Deno.inspect(new A()); //"x=10, y=hello"
+   *      console.log(inStringFormat);  //prints "x=10, y=hello"
+   *
+   * Finally, a number of output options are also available.
+   *
+   *      const out = Deno.inspect(obj, {showHidden: true, depth: 4, colors: true, indentLevel: 2});
+   *
    */
-  export function inspect(value: unknown, options?: ConsoleOptions): string;
+  export function inspect(value: unknown, options?: InspectOptions): string;
 
   export type OperatingSystem = "mac" | "win" | "linux";
 
   export type Arch = "x64" | "arm64";
 
-  /** Build related information */
   interface BuildInfo {
     /** The CPU architecture. */
     arch: Arch;
@@ -1682,6 +2340,7 @@ declare namespace Deno {
     os: OperatingSystem;
   }
 
+  /** Build related information. */
   export const build: BuildInfo;
 
   interface Version {
@@ -1689,16 +2348,17 @@ declare namespace Deno {
     v8: string;
     typescript: string;
   }
+  /** Version related information. */
   export const version: Version;
 
-  /** The log category for a diagnostic message */
+  /** The log category for a diagnostic message. */
   export enum DiagnosticCategory {
     Log = 0,
     Debug = 1,
     Info = 2,
     Error = 3,
     Warning = 4,
-    Suggestion = 5
+    Suggestion = 5,
   }
 
   export interface DiagnosticMessageChain {
@@ -1711,39 +2371,28 @@ declare namespace Deno {
   export interface DiagnosticItem {
     /** A string message summarizing the diagnostic. */
     message: string;
-
     /** An ordered array of further diagnostics. */
     messageChain?: DiagnosticMessageChain;
-
-    /** Information related to the diagnostic.  This is present when there is a
+    /** Information related to the diagnostic. This is present when there is a
      * suggestion or other additional diagnostic information */
     relatedInformation?: DiagnosticItem[];
-
-    /** The text of the source line related to the diagnostic */
+    /** The text of the source line related to the diagnostic. */
     sourceLine?: string;
-
-    /** The line number that is related to the diagnostic */
+    /** The line number that is related to the diagnostic. */
     lineNumber?: number;
-
-    /** The name of the script resource related to the diagnostic */
+    /** The name of the script resource related to the diagnostic. */
     scriptResourceName?: string;
-
-    /** The start position related to the diagnostic */
+    /** The start position related to the diagnostic. */
     startPosition?: number;
-
-    /** The end position related to the diagnostic */
+    /** The end position related to the diagnostic. */
     endPosition?: number;
-
-    /** The category of the diagnostic */
+    /** The category of the diagnostic. */
     category: DiagnosticCategory;
-
-    /** A number identifier */
+    /** A number identifier. */
     code: number;
-
-    /** The the start column of the sourceLine related to the diagnostic */
+    /** The the start column of the sourceLine related to the diagnostic. */
     startColumn?: number;
-
-    /** The end column of the sourceLine related to the diagnostic */
+    /** The end column of the sourceLine related to the diagnostic. */
     endColumn?: number;
   }
 
@@ -1752,113 +2401,102 @@ declare namespace Deno {
     items: DiagnosticItem[];
   }
 
-  /** UNSTABLE: new API, yet to be vetted.
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
-   * A specific subset TypeScript compiler options that can be supported by
-   * the Deno TypeScript compiler.
+   * Format an array of diagnostic items and return them as a single string in a
+   * user friendly format.
+   *
+   *       const [diagnostics, result] = Deno.compile("file_with_compile_issues.ts");
+   *       console.table(diagnostics);  //Prints raw diagnostic data
+   *       console.log(Deno.formatDiagnostics(diagnostics));  //User friendly output of diagnostics
+   *
+   * @param items An array of diagnostic items to format
    */
+  export function formatDiagnostics(items: DiagnosticItem[]): string;
+
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * A specific subset TypeScript compiler options that can be supported by the
+   * Deno TypeScript compiler. */
   export interface CompilerOptions {
     /** Allow JavaScript files to be compiled. Defaults to `true`. */
     allowJs?: boolean;
-
     /** Allow default imports from modules with no default export. This does not
      * affect code emit, just typechecking. Defaults to `false`. */
     allowSyntheticDefaultImports?: boolean;
-
     /** Allow accessing UMD globals from modules. Defaults to `false`. */
     allowUmdGlobalAccess?: boolean;
-
     /** Do not report errors on unreachable code. Defaults to `false`. */
     allowUnreachableCode?: boolean;
-
     /** Do not report errors on unused labels. Defaults to `false` */
     allowUnusedLabels?: boolean;
-
     /** Parse in strict mode and emit `"use strict"` for each source file.
      * Defaults to `true`. */
     alwaysStrict?: boolean;
-
     /** Base directory to resolve non-relative module names. Defaults to
      * `undefined`. */
     baseUrl?: string;
-
     /** Report errors in `.js` files. Use in conjunction with `allowJs`. Defaults
      * to `false`. */
     checkJs?: boolean;
-
     /** Generates corresponding `.d.ts` file. Defaults to `false`. */
     declaration?: boolean;
-
     /** Output directory for generated declaration files. */
     declarationDir?: string;
-
     /** Generates a source map for each corresponding `.d.ts` file. Defaults to
      * `false`. */
     declarationMap?: boolean;
-
     /** Provide full support for iterables in `for..of`, spread and
-     * destructuring when targeting ES5 or ES3.  Defaults to `false`. */
+     * destructuring when targeting ES5 or ES3. Defaults to `false`. */
     downlevelIteration?: boolean;
-
     /** Emit a UTF-8 Byte Order Mark (BOM) in the beginning of output files.
      * Defaults to `false`. */
     emitBOM?: boolean;
-
     /** Only emit `.d.ts` declaration files. Defaults to `false`. */
     emitDeclarationOnly?: boolean;
-
     /** Emit design-type metadata for decorated declarations in source. See issue
      * [microsoft/TypeScript#2577](https://github.com/Microsoft/TypeScript/issues/2577)
      * for details. Defaults to `false`. */
     emitDecoratorMetadata?: boolean;
-
     /** Emit `__importStar` and `__importDefault` helpers for runtime babel
      * ecosystem compatibility and enable `allowSyntheticDefaultImports` for type
      * system compatibility. Defaults to `true`. */
     esModuleInterop?: boolean;
-
     /** Enables experimental support for ES decorators. Defaults to `false`. */
     experimentalDecorators?: boolean;
-
     /** Emit a single file with source maps instead of having a separate file.
      * Defaults to `false`. */
     inlineSourceMap?: boolean;
-
     /** Emit the source alongside the source maps within a single file; requires
      * `inlineSourceMap` or `sourceMap` to be set. Defaults to `false`. */
     inlineSources?: boolean;
-
     /** Perform additional checks to ensure that transpile only would be safe.
      * Defaults to `false`. */
     isolatedModules?: boolean;
-
     /** Support JSX in `.tsx` files: `"react"`, `"preserve"`, `"react-native"`.
      * Defaults to `"react"`. */
     jsx?: "react" | "preserve" | "react-native";
-
     /** Specify the JSX factory function to use when targeting react JSX emit,
      * e.g. `React.createElement` or `h`. Defaults to `React.createElement`. */
     jsxFactory?: string;
-
     /** Resolve keyof to string valued property names only (no numbers or
      * symbols). Defaults to `false`. */
     keyofStringsOnly?: string;
-
     /** Emit class fields with ECMAScript-standard semantics. Defaults to `false`.
      * Does not apply to `"esnext"` target. */
     useDefineForClassFields?: boolean;
-
+    /** List of library files to be included in the compilation. If omitted,
+     * then the Deno main runtime libs are used. */
+    lib?: string[];
     /** The locale to use to show error messages. */
     locale?: string;
-
     /** Specifies the location where debugger should locate map files instead of
      * generated locations. Use this flag if the `.map` files will be located at
      * run-time in a different location than the `.js` files. The location
      * specified will be embedded in the source map to direct the debugger where
      * the map files will be located. Defaults to `undefined`. */
     mapRoot?: string;
-
-    /** Specify the module format for the emitted code.  Defaults to
+    /** Specify the module format for the emitted code. Defaults to
      * `"esnext"`. */
     module?:
       | "none"
@@ -1869,115 +2507,88 @@ declare namespace Deno {
       | "es6"
       | "es2015"
       | "esnext";
-
     /** Do not generate custom helper functions like `__extends` in compiled
      * output. Defaults to `false`. */
     noEmitHelpers?: boolean;
-
     /** Report errors for fallthrough cases in switch statement. Defaults to
      * `false`. */
     noFallthroughCasesInSwitch?: boolean;
-
     /** Raise error on expressions and declarations with an implied any type.
      * Defaults to `true`. */
     noImplicitAny?: boolean;
-
     /** Report an error when not all code paths in function return a value.
      * Defaults to `false`. */
     noImplicitReturns?: boolean;
-
     /** Raise error on `this` expressions with an implied `any` type. Defaults to
      * `true`. */
     noImplicitThis?: boolean;
-
     /** Do not emit `"use strict"` directives in module output. Defaults to
      * `false`. */
     noImplicitUseStrict?: boolean;
-
     /** Do not add triple-slash references or module import targets to the list of
      * compiled files. Defaults to `false`. */
     noResolve?: boolean;
-
     /** Disable strict checking of generic signatures in function types. Defaults
      * to `false`. */
     noStrictGenericChecks?: boolean;
-
     /** Report errors on unused locals. Defaults to `false`. */
     noUnusedLocals?: boolean;
-
     /** Report errors on unused parameters. Defaults to `false`. */
     noUnusedParameters?: boolean;
-
     /** Redirect output structure to the directory. This only impacts
-     * `Deno.compile` and only changes the emitted file names.  Defaults to
+     * `Deno.compile` and only changes the emitted file names. Defaults to
      * `undefined`. */
     outDir?: string;
-
     /** List of path mapping entries for module names to locations relative to the
      * `baseUrl`. Defaults to `undefined`. */
     paths?: Record<string, string[]>;
-
     /** Do not erase const enum declarations in generated code. Defaults to
      * `false`. */
     preserveConstEnums?: boolean;
-
     /** Remove all comments except copy-right header comments beginning with
      * `/*!`. Defaults to `true`. */
     removeComments?: boolean;
-
     /** Include modules imported with `.json` extension. Defaults to `true`. */
     resolveJsonModule?: boolean;
-
     /** Specifies the root directory of input files. Only use to control the
      * output directory structure with `outDir`. Defaults to `undefined`. */
     rootDir?: string;
-
     /** List of _root_ folders whose combined content represent the structure of
      * the project at runtime. Defaults to `undefined`. */
     rootDirs?: string[];
-
     /** Generates corresponding `.map` file. Defaults to `false`. */
     sourceMap?: boolean;
-
     /** Specifies the location where debugger should locate TypeScript files
      * instead of source locations. Use this flag if the sources will be located
      * at run-time in a different location than that at design-time. The location
      * specified will be embedded in the sourceMap to direct the debugger where
      * the source files will be located. Defaults to `undefined`. */
     sourceRoot?: string;
-
     /** Enable all strict type checking options. Enabling `strict` enables
      * `noImplicitAny`, `noImplicitThis`, `alwaysStrict`, `strictBindCallApply`,
      * `strictNullChecks`, `strictFunctionTypes` and
      * `strictPropertyInitialization`. Defaults to `true`. */
     strict?: boolean;
-
     /** Enable stricter checking of the `bind`, `call`, and `apply` methods on
      * functions. Defaults to `true`. */
     strictBindCallApply?: boolean;
-
     /** Disable bivariant parameter checking for function types. Defaults to
      * `true`. */
     strictFunctionTypes?: boolean;
-
     /** Ensure non-undefined class properties are initialized in the constructor.
      * This option requires `strictNullChecks` be enabled in order to take effect.
      * Defaults to `true`. */
     strictPropertyInitialization?: boolean;
-
     /** In strict null checking mode, the `null` and `undefined` values are not in
      * the domain of every type and are only assignable to themselves and `any`
      * (the one exception being that `undefined` is also assignable to `void`). */
     strictNullChecks?: boolean;
-
     /** Suppress excess property checks for object literals. Defaults to
      * `false`. */
     suppressExcessPropertyErrors?: boolean;
-
     /** Suppress `noImplicitAny` errors for indexing objects lacking index
      * signatures. */
     suppressImplicitAnyIndexErrors?: boolean;
-
     /** Specify ECMAScript target version. Defaults to `esnext`. */
     target?:
       | "es3"
@@ -1990,24 +2601,35 @@ declare namespace Deno {
       | "es2019"
       | "es2020"
       | "esnext";
-
-    /** List of names of type definitions to include. Defaults to `undefined`. */
+    /** List of names of type definitions to include. Defaults to `undefined`.
+     *
+     * The type definitions are resolved according to the normal Deno resolution
+     * irrespective of if sources are provided on the call. Like other Deno
+     * modules, there is no "magical" resolution. For example:
+     *
+     *      Deno.compile(
+     *        "./foo.js",
+     *        undefined,
+     *        {
+     *          types: [ "./foo.d.ts", "https://deno.land/x/example/types.d.ts" ]
+     *        }
+     *      );
+     */
     types?: string[];
   }
 
-  /** UNSTABLE: new API, yet to be vetted.
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
    * The results of a transpile only command, where the `source` contains the
-   * emitted source, and `map` optionally contains the source map.
-   */
+   * emitted source, and `map` optionally contains the source map. */
   export interface TranspileOnlyResult {
     source: string;
     map?: string;
   }
 
-  /** UNSTABLE: new API, yet to be vetted.
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
-   * Takes a set of TypeScript sources and resolves with a map where the key was
+   * Takes a set of TypeScript sources and resolves to a map where the key was
    * the original file name provided in sources and the result contains the
    * `source` and optionally the `map` from the transpile operation. This does no
    * type checking and validation, it effectively "strips" the types from the
@@ -2018,7 +2640,7 @@ declare namespace Deno {
    *      });
    *
    * @param sources A map where the key is the filename and the value is the text
-   *                to transpile.  The filename is only used in the transpile and
+   *                to transpile. The filename is only used in the transpile and
    *                not resolved, for example to fill in the source name in the
    *                source map.
    * @param options An option object of options to send to the compiler. This is
@@ -2031,14 +2653,15 @@ declare namespace Deno {
     options?: CompilerOptions
   ): Promise<Record<string, TranspileOnlyResult>>;
 
-  /** UNSTABLE: new API, yet to be vetted.
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
-   * Takes a root module name, any optionally a record set of sources. Resolves
-   * with a compiled set of modules.  If just a root name is provided, the modules
+   * Takes a root module name, and optionally a record set of sources. Resolves
+   * with a compiled set of modules and possibly diagnostics if the compiler
+   * encountered any issues. If just a root name is provided, the modules
    * will be resolved as if the root module had been passed on the command line.
    *
    * If sources are passed, all modules will be resolved out of this object, where
-   * the key is the module name and the value is the content.  The extension of
+   * the key is the module name and the value is the content. The extension of
    * the module name will be used to determine the media type of the module.
    *
    *      const [ maybeDiagnostics1, output1 ] = await Deno.compile("foo.ts");
@@ -2049,13 +2672,13 @@ declare namespace Deno {
    *      });
    *
    * @param rootName The root name of the module which will be used as the
-   *                 "starting point".  If no `sources` is specified, Deno will
+   *                 "starting point". If no `sources` is specified, Deno will
    *                 resolve the module externally as if the `rootName` had been
    *                 specified on the command line.
    * @param sources An optional key/value map of sources to be used when resolving
    *                modules, where the key is the module name, and the value is
-   *                the source content.  The extension of the key will determine
-   *                the media type of the file when processing.  If supplied,
+   *                the source content. The extension of the key will determine
+   *                the media type of the file when processing. If supplied,
    *                Deno will not attempt to resolve any modules externally.
    * @param options An optional object of options to send to the compiler. This is
    *                a subset of ts.CompilerOptions which can be supported by Deno.
@@ -2064,19 +2687,24 @@ declare namespace Deno {
     rootName: string,
     sources?: Record<string, string>,
     options?: CompilerOptions
-  ): Promise<[Diagnostic | undefined, Record<string, string>]>;
+  ): Promise<[DiagnosticItem[] | undefined, Record<string, string>]>;
 
-  /** UNSTABLE: new API, yet to be vetted.
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * `bundle()` is part the compiler API.  A full description of this functionality
+   * can be found in the [manual](https://deno.land/std/manual.md#denobundle).
    *
    * Takes a root module name, and optionally a record set of sources. Resolves
-   * with a single JavaScript string that is like the output of a `deno bundle`
-   * command.  If just a root name is provided, the modules will be resolved as if
-   * the root module had been passed on the command line.
+   * with a single JavaScript string (and bundle diagnostics if issues arise with
+   * the bundling) that is like the output of a `deno bundle` command. If just
+   * a root name is provided, the modules will be resolved as if the root module
+   * had been passed on the command line.
    *
    * If sources are passed, all modules will be resolved out of this object, where
    * the key is the module name and the value is the content. The extension of the
    * module name will be used to determine the media type of the module.
    *
+   *      //equivalent to "deno bundle foo.ts" from the command line
    *      const [ maybeDiagnostics1, output1 ] = await Deno.bundle("foo.ts");
    *
    *      const [ maybeDiagnostics2, output2 ] = await Deno.bundle("/foo.ts", {
@@ -2085,13 +2713,13 @@ declare namespace Deno {
    *      });
    *
    * @param rootName The root name of the module which will be used as the
-   *                 "starting point".  If no `sources` is specified, Deno will
+   *                 "starting point". If no `sources` is specified, Deno will
    *                 resolve the module externally as if the `rootName` had been
    *                 specified on the command line.
    * @param sources An optional key/value map of sources to be used when resolving
    *                modules, where the key is the module name, and the value is
-   *                the source content.  The extension of the key will determine
-   *                the media type of the file when processing.  If supplied,
+   *                the source content. The extension of the key will determine
+   *                the media type of the file when processing. If supplied,
    *                Deno will not attempt to resolve any modules externally.
    * @param options An optional object of options to send to the compiler. This is
    *                a subset of ts.CompilerOptions which can be supported by Deno.
@@ -2100,131 +2728,376 @@ declare namespace Deno {
     rootName: string,
     sources?: Record<string, string>,
     options?: CompilerOptions
-  ): Promise<[Diagnostic | undefined, string]>;
+  ): Promise<[DiagnosticItem[] | undefined, string]>;
 
-  /** Returns the script arguments to the program. If for example we run a program
+  /** Returns the script arguments to the program. If for example we run a
+   * program:
    *
-   *   deno --allow-read https://deno.land/std/examples/cat.ts /etc/passwd
+   *      deno --allow-read https://deno.land/std/examples/cat.ts /etc/passwd
    *
-   * Then Deno.args will contain just
+   * Then `Deno.args` will contain:
    *
-   *   [ "/etc/passwd" ]
+   *      [ "/etc/passwd" ]
    */
   export const args: string[];
 
-  /** UNSTABLE: new API. Maybe move EOF here.
+  /** **UNSTABLE**: new API, yet to be vetted.
    *
-   * Special Deno related symbols.
+   * Represents the stream of signals, implements both `AsyncIterator` and
+   * `PromiseLike`. */
+  export class SignalStream
+    implements AsyncIterableIterator<void>, PromiseLike<void> {
+    constructor(signal: typeof Deno.Signal);
+    then<T, S>(
+      f: (v: void) => T | Promise<T>,
+      g?: (v: void) => S | Promise<S>
+    ): Promise<T | S>;
+    next(): Promise<IteratorResult<void>>;
+    [Symbol.asyncIterator](): AsyncIterableIterator<void>;
+    dispose(): void;
+  }
+
+  /** **UNSTABLE**: new API, yet to be vetted.
+   *
+   * Returns the stream of the given signal number. You can use it as an async
+   * iterator.
+   *
+   *      for await (const _ of Deno.signal(Deno.Signal.SIGTERM)) {
+   *        console.log("got SIGTERM!");
+   *      }
+   *
+   * You can also use it as a promise. In this case you can only receive the
+   * first one.
+   *
+   *      await Deno.signal(Deno.Signal.SIGTERM);
+   *      console.log("SIGTERM received!")
+   *
+   * If you want to stop receiving the signals, you can use `.dispose()` method
+   * of the signal stream object.
+   *
+   *      const sig = Deno.signal(Deno.Signal.SIGTERM);
+   *      setTimeout(() => { sig.dispose(); }, 5000);
+   *      for await (const _ of sig) {
+   *        console.log("SIGTERM!")
+   *      }
+   *
+   * The above for-await loop exits after 5 seconds when `sig.dispose()` is
+   * called.
+   *
+   * NOTE: This functionality is not yet implemented on Windows.
    */
+  export function signal(signo: number): SignalStream;
+
+  /** **UNSTABLE**: new API, yet to be vetted. */
+  export const signals: {
+    /** Returns the stream of SIGALRM signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGALRM)`. */
+    alarm: () => SignalStream;
+    /** Returns the stream of SIGCHLD signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGCHLD)`. */
+    child: () => SignalStream;
+    /** Returns the stream of SIGHUP signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGHUP)`. */
+    hungup: () => SignalStream;
+    /** Returns the stream of SIGINT signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGINT)`. */
+    interrupt: () => SignalStream;
+    /** Returns the stream of SIGIO signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGIO)`. */
+    io: () => SignalStream;
+    /** Returns the stream of SIGPIPE signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGPIPE)`. */
+    pipe: () => SignalStream;
+    /** Returns the stream of SIGQUIT signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGQUIT)`. */
+    quit: () => SignalStream;
+    /** Returns the stream of SIGTERM signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGTERM)`. */
+    terminate: () => SignalStream;
+    /** Returns the stream of SIGUSR1 signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGUSR1)`. */
+    userDefined1: () => SignalStream;
+    /** Returns the stream of SIGUSR2 signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGUSR2)`. */
+    userDefined2: () => SignalStream;
+    /** Returns the stream of SIGWINCH signals.
+     *
+     * This method is the shorthand for `Deno.signal(Deno.Signal.SIGWINCH)`. */
+    windowChange: () => SignalStream;
+  };
+
+  /** **UNSTABLE**: new API. Maybe move `Deno.EOF` here.
+   *
+   * Special Deno related symbols. */
   export const symbols: {
     /** Symbol to access exposed internal Deno API */
     readonly internal: unique symbol;
-    /** A symbol which can be used as a key for a custom method which will be called
-     * when `Deno.inspect()` is called, or when the object is logged to the console.
-     */
+    /** A symbol which can be used as a key for a custom method which will be
+     * called when `Deno.inspect()` is called, or when the object is logged to
+     * the console. */
     readonly customInspect: unique symbol;
     // TODO(ry) move EOF here?
   };
 }
 
-declare interface Window {
-  window: Window & typeof globalThis;
-  atob: typeof __textEncoding.atob;
-  btoa: typeof __textEncoding.btoa;
+// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+
+/// <reference no-default-lib="true" />
+// TODO: we need to remove this, but Fetch::Response::Body implements Reader
+// which requires Deno.EOF, and we shouldn't be leaking that, but https_proxy
+// at the least requires the Reader interface on Body, which it shouldn't
+/// <reference lib="deno.ns" />
+/// <reference lib="esnext" />
+
+// https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope
+
+declare interface WindowOrWorkerGlobalScope {
+  // methods
   fetch: typeof __fetch.fetch;
-  clearTimeout: typeof __timers.clearTimeout;
-  clearInterval: typeof __timers.clearInterval;
-  console: __console.Console;
-  setTimeout: typeof __timers.setTimeout;
-  setInterval: typeof __timers.setInterval;
-  location: __domTypes.Location;
-  onload: Function | undefined;
-  onunload: Function | undefined;
-  crypto: Crypto;
-  Blob: typeof __blob.DenoBlob;
+  // properties
   File: __domTypes.DomFileConstructor;
   CustomEvent: typeof __customEvent.CustomEvent;
   Event: typeof __event.Event;
   EventTarget: typeof __eventTarget.EventTarget;
-  URL: typeof __url.URL;
-  URLSearchParams: typeof __urlSearchParams.URLSearchParams;
   Headers: __domTypes.HeadersConstructor;
   FormData: __domTypes.FormDataConstructor;
-  TextEncoder: typeof __textEncoding.TextEncoder;
-  TextDecoder: typeof __textEncoding.TextDecoder;
+  ReadableStream: __domTypes.ReadableStreamConstructor;
   Request: __domTypes.RequestConstructor;
   Response: typeof __fetch.Response;
-  performance: __performanceUtil.Performance;
-  onmessage: (e: { data: any }) => void;
-  onerror: undefined | typeof onerror;
-  workerMain: typeof __workers.workerMain;
-  workerClose: typeof __workers.workerClose;
-  postMessage: typeof __workers.postMessage;
-  Worker: typeof __workers.WorkerImpl;
-  addEventListener: (
-    type: string,
-    callback: (event: __domTypes.Event) => void | null,
-    options?: boolean | __domTypes.AddEventListenerOptions | undefined
-  ) => void;
-  dispatchEvent: (event: __domTypes.Event) => boolean;
-  removeEventListener: (
-    type: string,
-    callback: (event: __domTypes.Event) => void | null,
-    options?: boolean | __domTypes.EventListenerOptions | undefined
-  ) => void;
-  queueMicrotask: (task: () => void) => void;
-  Deno: typeof Deno;
+  location: __domTypes.Location;
 }
 
-declare const window: Window & typeof globalThis;
-declare const atob: typeof __textEncoding.atob;
-declare const btoa: typeof __textEncoding.btoa;
+// This follows the WebIDL at: https://webassembly.github.io/spec/js-api/
+// and: https://webassembly.github.io/spec/web-api/
+
+declare namespace WebAssembly {
+  interface WebAssemblyInstantiatedSource {
+    module: Module;
+    instance: Instance;
+  }
+
+  /** Compiles a `WebAssembly.Module` from WebAssembly binary code.  This
+   * function is useful if it is necessary to a compile a module before it can
+   * be instantiated (otherwise, the `WebAssembly.instantiate()` function
+   * should be used). */
+  function compile(bufferSource: BufferSource): Promise<Module>;
+
+  /** Compiles a `WebAssembly.Module` directly from a streamed underlying
+   * source. This function is useful if it is necessary to a compile a module
+   * before it can be instantiated (otherwise, the
+   * `WebAssembly.instantiateStreaming()` function should be used). */
+  function compileStreaming(
+    source: Promise<__domTypes.Response>
+  ): Promise<Module>;
+
+  /** Takes the WebAssembly binary code, in the form of a typed array or
+   * `ArrayBuffer`, and performs both compilation and instantiation in one step.
+   * The returned `Promise` resolves to both a compiled `WebAssembly.Module` and
+   * its first `WebAssembly.Instance`. */
+  function instantiate(
+    bufferSource: BufferSource,
+    importObject?: object
+  ): Promise<WebAssemblyInstantiatedSource>;
+
+  /** Takes an already-compiled `WebAssembly.Module` and returns a `Promise`
+   * that resolves to an `Instance` of that `Module`. This overload is useful if
+   * the `Module` has already been compiled. */
+  function instantiate(
+    module: Module,
+    importObject?: object
+  ): Promise<Instance>;
+
+  /** Compiles and instantiates a WebAssembly module directly from a streamed
+   * underlying source. This is the most efficient, optimized way to load wasm
+   * code. */
+  function instantiateStreaming(
+    source: Promise<__domTypes.Response>,
+    importObject?: object
+  ): Promise<WebAssemblyInstantiatedSource>;
+
+  /** Validates a given typed array of WebAssembly binary code, returning
+   * whether the bytes form a valid wasm module (`true`) or not (`false`). */
+  function validate(bufferSource: BufferSource): boolean;
+
+  type ImportExportKind = "function" | "table" | "memory" | "global";
+
+  interface ModuleExportDescriptor {
+    name: string;
+    kind: ImportExportKind;
+  }
+  interface ModuleImportDescriptor {
+    module: string;
+    name: string;
+    kind: ImportExportKind;
+  }
+
+  class Module {
+    constructor(bufferSource: BufferSource);
+
+    /** Given a `Module` and string, returns a copy of the contents of all
+     * custom sections in the module with the given string name. */
+    static customSections(
+      moduleObject: Module,
+      sectionName: string
+    ): ArrayBuffer;
+
+    /** Given a `Module`, returns an array containing descriptions of all the
+     * declared exports. */
+    static exports(moduleObject: Module): ModuleExportDescriptor[];
+
+    /** Given a `Module`, returns an array containing descriptions of all the
+     * declared imports. */
+    static imports(moduleObject: Module): ModuleImportDescriptor[];
+  }
+
+  class Instance<T extends object = { [key: string]: any }> {
+    constructor(module: Module, importObject?: object);
+
+    /** An object containing as its members all the functions exported from the
+     * WebAssembly module instance, to allow them to be accessed and used by
+     * JavaScript. */
+    readonly exports: T;
+  }
+
+  interface MemoryDescriptor {
+    initial: number;
+    maximum?: number;
+  }
+
+  class Memory {
+    constructor(descriptor: MemoryDescriptor);
+
+    /** An accessor property that returns the buffer contained in the memory. */
+    readonly buffer: ArrayBuffer;
+
+    /** Increases the size of the memory instance by a specified number of
+     * WebAssembly pages (each one is 64KB in size). */
+    grow(delta: number): number;
+  }
+
+  type TableKind = "anyfunc";
+
+  interface TableDescriptor {
+    element: TableKind;
+    initial: number;
+    maximum?: number;
+  }
+
+  class Table {
+    constructor(descriptor: TableDescriptor);
+
+    /** Returns the length of the table, i.e. the number of elements. */
+    readonly length: number;
+
+    /** Accessor function 鈥?gets the element stored at a given index. */
+    get(index: number): (...args: any[]) => any;
+
+    /** Increases the size of the Table instance by a specified number of
+     * elements. */
+    grow(delta: number): number;
+
+    /** Sets an element stored at a given index to a given value. */
+    set(index: number, value: (...args: any[]) => any): void;
+  }
+
+  type ValueType = "i32" | "i64" | "f32" | "f64";
+
+  interface GlobalDescriptor {
+    value: ValueType;
+    mutable?: boolean;
+  }
+
+  /** Represents a global variable instance, accessible from both JavaScript and
+   * importable/exportable across one or more `WebAssembly.Module` instances.
+   * This allows dynamic linking of multiple modules. */
+  class Global {
+    constructor(descriptor: GlobalDescriptor, value?: any);
+
+    /** Old-style method that returns the value contained inside the global
+     * variable. */
+    valueOf(): any;
+
+    /** The value contained inside the global variable 鈥?this can be used to
+     * directly set and get the global's value. */
+    value: any;
+  }
+
+  /** Indicates an error during WebAssembly decoding or validation */
+  class CompileError extends Error {
+    constructor(message: string, fileName?: string, lineNumber?: string);
+  }
+
+  /** Indicates an error during module instantiation (besides traps from the
+   * start function). */
+  class LinkError extends Error {
+    constructor(message: string, fileName?: string, lineNumber?: string);
+  }
+
+  /** Is thrown whenever WebAssembly specifies a trap. */
+  class RuntimeError extends Error {
+    constructor(message: string, fileName?: string, lineNumber?: string);
+  }
+}
+
 declare const fetch: typeof __fetch.fetch;
-declare const clearTimeout: typeof __timers.clearTimeout;
-declare const clearInterval: typeof __timers.clearInterval;
-declare const console: __console.Console;
-declare const setTimeout: typeof __timers.setTimeout;
-declare const setInterval: typeof __timers.setInterval;
-declare const location: __domTypes.Location;
-declare const onload: Function | undefined;
-declare const onunload: Function | undefined;
-declare const crypto: Crypto;
-declare const Blob: typeof __blob.DenoBlob;
+
+/** Sets a timer which executes a function once after the timer expires. */
+declare function setTimeout(
+  cb: (...args: unknown[]) => void,
+  delay?: number,
+  ...args: unknown[]
+): number;
+/** Repeatedly calls a function , with a fixed time delay between each call. */
+declare function setInterval(
+  cb: (...args: unknown[]) => void,
+  delay?: number,
+  ...args: unknown[]
+): number;
+declare function clearTimeout(id?: number): void;
+declare function clearInterval(id?: number): void;
+declare function queueMicrotask(func: Function): void;
+
+declare const console: Console;
 declare const File: __domTypes.DomFileConstructor;
 declare const CustomEventInit: typeof __customEvent.CustomEventInit;
 declare const CustomEvent: typeof __customEvent.CustomEvent;
 declare const EventInit: typeof __event.EventInit;
 declare const Event: typeof __event.Event;
-declare const EventListener: typeof __eventTarget.EventListener;
+declare const EventListener: __domTypes.EventListener;
 declare const EventTarget: typeof __eventTarget.EventTarget;
-declare const URL: typeof __url.URL;
-declare const URLSearchParams: typeof __urlSearchParams.URLSearchParams;
 declare const Headers: __domTypes.HeadersConstructor;
+declare const location: __domTypes.Location;
 declare const FormData: __domTypes.FormDataConstructor;
-declare const TextEncoder: typeof __textEncoding.TextEncoder;
-declare const TextDecoder: typeof __textEncoding.TextDecoder;
+declare const ReadableStream: __domTypes.ReadableStreamConstructor;
 declare const Request: __domTypes.RequestConstructor;
 declare const Response: typeof __fetch.Response;
-declare const performance: __performanceUtil.Performance;
-declare let onmessage: (e: { data: any }) => void;
-declare let onerror: (e: Event) => void;
-declare const workerMain: typeof __workers.workerMain;
-declare const workerClose: typeof __workers.workerClose;
-declare const postMessage: typeof __workers.postMessage;
-declare const Worker: typeof __workers.WorkerImpl;
-declare const addEventListener: (
-  type: string,
-  callback: (event: __domTypes.Event) => void | null,
-  options?: boolean | __domTypes.AddEventListenerOptions | undefined
-) => void;
-declare const dispatchEvent: (event: __domTypes.Event) => boolean;
-declare const removeEventListener: (
-  type: string,
-  callback: (event: __domTypes.Event) => void | null,
-  options?: boolean | __domTypes.EventListenerOptions | undefined
-) => void;
 
-declare type Blob = __domTypes.Blob;
+declare function addEventListener(
+  type: string,
+  callback: __domTypes.EventListenerOrEventListenerObject | null,
+  options?: boolean | __domTypes.AddEventListenerOptions | undefined
+): void;
+
+declare function dispatchEvent(event: __domTypes.Event): boolean;
+
+declare function removeEventListener(
+  type: string,
+  callback: __domTypes.EventListenerOrEventListenerObject | null,
+  options?: boolean | __domTypes.EventListenerOptions | undefined
+): void;
+
 declare type Body = __domTypes.Body;
 declare type File = __domTypes.DomFile;
 declare type CustomEventInit = __domTypes.CustomEventInit;
@@ -2233,48 +3106,21 @@ declare type EventInit = __domTypes.EventInit;
 declare type Event = __domTypes.Event;
 declare type EventListener = __domTypes.EventListener;
 declare type EventTarget = __domTypes.EventTarget;
-declare type URL = __url.URL;
-declare type URLSearchParams = __domTypes.URLSearchParams;
 declare type Headers = __domTypes.Headers;
 declare type FormData = __domTypes.FormData;
-declare type TextEncoder = __textEncoding.TextEncoder;
-declare type TextDecoder = __textEncoding.TextDecoder;
+declare type ReadableStream<R = any> = __domTypes.ReadableStream<R>;
 declare type Request = __domTypes.Request;
 declare type Response = __domTypes.Response;
-declare type Worker = __workers.Worker;
 
 declare interface ImportMeta {
   url: string;
   main: boolean;
 }
 
-declare interface Crypto {
-  readonly subtle: null;
-  getRandomValues: <
-    T extends
-      | Int8Array
-      | Uint8Array
-      | Uint8ClampedArray
-      | Int16Array
-      | Uint16Array
-      | Int32Array
-      | Uint32Array
-  >(
-    typedArray: T
-  ) => T;
-}
-
 declare namespace __domTypes {
-  // @url js/dom_types.d.ts
-
-  export type BufferSource = ArrayBufferView | ArrayBuffer;
   export type HeadersInit =
     | Headers
     | Array<[string, string]>
-    | Record<string, string>;
-  export type URLSearchParamsInit =
-    | string
-    | string[][]
     | Record<string, string>;
   type BodyInit =
     | Blob
@@ -2291,7 +3137,6 @@ declare namespace __domTypes {
     | "origin-only"
     | "origin-when-cross-origin"
     | "unsafe-url";
-  export type BlobPart = BufferSource | Blob | string;
   export type FormDataEntryValue = DomFile | string;
   export interface DomIterable<K, V> {
     keys(): IterableIterator<K>;
@@ -2303,37 +3148,41 @@ declare namespace __domTypes {
       thisArg?: any
     ): void;
   }
-  type EndingType = "transparent" | "native";
-  export interface BlobPropertyBag {
-    type?: string;
-    ending?: EndingType;
-  }
   interface AbortSignalEventMap {
     abort: ProgressEvent;
   }
   export enum NodeType {
     ELEMENT_NODE = 1,
     TEXT_NODE = 3,
-    DOCUMENT_FRAGMENT_NODE = 11
+    DOCUMENT_FRAGMENT_NODE = 11,
+  }
+  export interface EventListener {
+    (evt: Event): void | Promise<void>;
+  }
+  export interface EventListenerObject {
+    handleEvent(evt: Event): void | Promise<void>;
+  }
+  export type EventListenerOrEventListenerObject =
+    | EventListener
+    | EventListenerObject;
+  export interface EventTargetListener {
+    callback: EventListenerOrEventListenerObject;
+    options: AddEventListenerOptions;
   }
   export const eventTargetHost: unique symbol;
   export const eventTargetListeners: unique symbol;
   export const eventTargetMode: unique symbol;
   export const eventTargetNodeType: unique symbol;
   export interface EventTarget {
-    [eventTargetHost]: EventTarget | null;
-    [eventTargetListeners]: { [type in string]: EventListener[] };
-    [eventTargetMode]: string;
-    [eventTargetNodeType]: NodeType;
     addEventListener(
       type: string,
-      callback: (event: Event) => void | null,
+      callback: EventListenerOrEventListenerObject | null,
       options?: boolean | AddEventListenerOptions
     ): void;
     dispatchEvent(event: Event): boolean;
     removeEventListener(
       type: string,
-      callback?: (event: Event) => void | null,
+      callback?: EventListenerOrEventListenerObject | null,
       options?: EventListenerOptions | boolean
     ): void;
   }
@@ -2341,57 +3190,6 @@ declare namespace __domTypes {
     lengthComputable?: boolean;
     loaded?: number;
     total?: number;
-  }
-  export interface URLSearchParams extends DomIterable<string, string> {
-    /**
-     * Appends a specified key/value pair as a new search parameter.
-     */
-    append(name: string, value: string): void;
-    /**
-     * Deletes the given search parameter, and its associated value,
-     * from the list of all search parameters.
-     */
-    delete(name: string): void;
-    /**
-     * Returns the first value associated to the given search parameter.
-     */
-    get(name: string): string | null;
-    /**
-     * Returns all the values association with a given search parameter.
-     */
-    getAll(name: string): string[];
-    /**
-     * Returns a Boolean indicating if such a search parameter exists.
-     */
-    has(name: string): boolean;
-    /**
-     * Sets the value associated to a given search parameter to the given value.
-     * If there were several values, delete the others.
-     */
-    set(name: string, value: string): void;
-    /**
-     * Sort all key/value pairs contained in this object in place
-     * and return undefined. The sort order is according to Unicode
-     * code points of the keys.
-     */
-    sort(): void;
-    /**
-     * Returns a query string suitable for use in a URL.
-     */
-    toString(): string;
-    /**
-     * Iterates over each name-value pair in the query
-     * and invokes the given function.
-     */
-    forEach(
-      callbackfn: (value: string, key: string, parent: this) => void,
-      thisArg?: any
-    ): void;
-  }
-  export interface EventListener {
-    handleEvent(event: Event): void;
-    readonly callback: (event: Event) => void | null;
-    readonly options: boolean | AddEventListenerOptions;
   }
   export interface EventInit {
     bubbles?: boolean;
@@ -2405,7 +3203,7 @@ declare namespace __domTypes {
     NONE = 0,
     CAPTURING_PHASE = 1,
     AT_TARGET = 2,
-    BUBBLING_PHASE = 3
+    BUBBLING_PHASE = 3,
   }
   export interface EventPath {
     item: EventTarget;
@@ -2469,11 +3267,11 @@ declare namespace __domTypes {
     readonly total: number;
   }
   export interface EventListenerOptions {
-    capture: boolean;
+    capture?: boolean;
   }
   export interface AddEventListenerOptions extends EventListenerOptions {
-    once: boolean;
-    passive: boolean;
+    once?: boolean;
+    passive?: boolean;
   }
   interface AbortSignal extends EventTarget {
     readonly aborted: boolean;
@@ -2499,16 +3297,105 @@ declare namespace __domTypes {
       options?: boolean | EventListenerOptions
     ): void;
   }
-  export interface ReadableStream {
-    readonly locked: boolean;
-    cancel(): Promise<void>;
-    getReader(): ReadableStreamReader;
-    tee(): [ReadableStream, ReadableStream];
+  export interface ReadableStreamReadDoneResult<T> {
+    done: true;
+    value?: T;
   }
-  export interface ReadableStreamReader {
-    cancel(): Promise<void>;
-    read(): Promise<any>;
+  export interface ReadableStreamReadValueResult<T> {
+    done: false;
+    value: T;
+  }
+  export type ReadableStreamReadResult<T> =
+    | ReadableStreamReadValueResult<T>
+    | ReadableStreamReadDoneResult<T>;
+  export interface ReadableStreamDefaultReader<R = any> {
+    readonly closed: Promise<void>;
+    cancel(reason?: any): Promise<void>;
+    read(): Promise<ReadableStreamReadResult<R>>;
     releaseLock(): void;
+  }
+  export interface PipeOptions {
+    preventAbort?: boolean;
+    preventCancel?: boolean;
+    preventClose?: boolean;
+    signal?: AbortSignal;
+  }
+  export interface UnderlyingSource<R = any> {
+    cancel?: ReadableStreamErrorCallback;
+    pull?: ReadableStreamDefaultControllerCallback<R>;
+    start?: ReadableStreamDefaultControllerCallback<R>;
+    type?: undefined;
+  }
+  export interface ReadableStreamErrorCallback {
+    (reason: any): void | PromiseLike<void>;
+  }
+
+  export interface ReadableStreamDefaultControllerCallback<R> {
+    (controller: ReadableStreamDefaultController<R>): void | PromiseLike<void>;
+  }
+
+  export interface ReadableStreamDefaultController<R> {
+    readonly desiredSize: number;
+    enqueue(chunk?: R): void;
+    close(): void;
+    error(e?: any): void;
+  }
+
+  /** This Streams API interface represents a readable stream of byte data. The
+   * Fetch API offers a concrete instance of a ReadableStream through the body
+   * property of a Response object. */
+  export interface ReadableStream<R = any> {
+    readonly locked: boolean;
+    cancel(reason?: any): Promise<void>;
+    getReader(options: { mode: "byob" }): ReadableStreamBYOBReader;
+    getReader(): ReadableStreamDefaultReader<R>;
+    /* disabled for now
+    pipeThrough<T>(
+      {
+        writable,
+        readable
+      }: {
+        writable: WritableStream<R>;
+        readable: ReadableStream<T>;
+      },
+      options?: PipeOptions
+    ): ReadableStream<T>;
+    pipeTo(dest: WritableStream<R>, options?: PipeOptions): Promise<void>;
+    */
+    tee(): [ReadableStream<R>, ReadableStream<R>];
+  }
+
+  export interface ReadableStreamConstructor<R = any> {
+    new (src?: UnderlyingSource<R>): ReadableStream<R>;
+    prototype: ReadableStream<R>;
+  }
+
+  export interface ReadableStreamReader<R = any> {
+    cancel(reason: any): Promise<void>;
+    read(): Promise<ReadableStreamReadResult<R>>;
+    releaseLock(): void;
+  }
+  export interface ReadableStreamBYOBReader {
+    readonly closed: Promise<void>;
+    cancel(reason?: any): Promise<void>;
+    read<T extends ArrayBufferView>(
+      view: T
+    ): Promise<ReadableStreamReadResult<T>>;
+    releaseLock(): void;
+  }
+  export interface WritableStream<W = any> {
+    readonly locked: boolean;
+    abort(reason?: any): Promise<void>;
+    getWriter(): WritableStreamDefaultWriter<W>;
+  }
+  export interface WritableStreamDefaultWriter<W = any> {
+    readonly closed: Promise<void>;
+    readonly desiredSize: number | null;
+    readonly ready: Promise<void>;
+    abort(reason?: any): Promise<void>;
+    close(): Promise<void>;
+    releaseLock(): void;
+    write(chunk: W): Promise<void>;
   }
   export interface FormData extends DomIterable<string, FormDataEntryValue> {
     append(name: string, value: string | Blob, fileName?: string): void;
@@ -2522,22 +3409,9 @@ declare namespace __domTypes {
     new (): FormData;
     prototype: FormData;
   }
-  /** A blob object represents a file-like object of immutable, raw data. */
-  export interface Blob {
-    /** The size, in bytes, of the data contained in the `Blob` object. */
-    readonly size: number;
-    /** A string indicating the media type of the data contained in the `Blob`.
-     * If the type is unknown, this string is empty.
-     */
-    readonly type: string;
-    /** Returns a new `Blob` object containing the data in the specified range of
-     * bytes of the source `Blob`.
-     */
-    slice(start?: number, end?: number, contentType?: string): Blob;
-  }
   export interface Body {
     /** A simple getter used to expose a `ReadableStream` of the body contents. */
-    readonly body: ReadableStream | null;
+    readonly body: ReadableStream<Uint8Array> | null;
     /** Stores a `Boolean` that declares whether the body has been used in a
      * response yet.
      */
@@ -2766,58 +3640,63 @@ declare namespace __domTypes {
     /** Creates a clone of a `Response` object. */
     clone(): Response;
   }
+  export interface DOMStringList {
+    /** Returns the number of strings in strings. */
+    readonly length: number;
+    /** Returns true if strings contains string, and false otherwise. */
+    contains(string: string): boolean;
+    /** Returns the string with index index from strings. */
+    item(index: number): string | null;
+    [index: number]: string;
+  }
+  /** The location (URL) of the object it is linked to. Changes done on it are
+   * reflected on the object it relates to. Both the Document and Window
+   * interface have such a linked Location, accessible via Document.location and
+   * Window.location respectively. */
   export interface Location {
-    /**
-     * Returns a DOMStringList object listing the origins of the ancestor browsing
-     * contexts, from the parent browsing context to the top-level browsing
-     * context.
-     */
-    readonly ancestorOrigins: string[];
-    /**
-     * Returns the Location object's URL's fragment (includes leading "#" if
+    /** Returns a DOMStringList object listing the origins of the ancestor
+     * browsing contexts, from the parent browsing context to the top-level
+     * browsing context. */
+    readonly ancestorOrigins: DOMStringList;
+    /** Returns the Location object's URL's fragment (includes leading "#" if
      * non-empty).
+     *
      * Can be set, to navigate to the same URL with a changed fragment (ignores
-     * leading "#").
-     */
+     * leading "#"). */
     hash: string;
-    /**
-     * Returns the Location object's URL's host and port (if different from the
-     * default port for the scheme).  Can be set, to navigate to the same URL with
-     * a changed host and port.
-     */
+    /** Returns the Location object's URL's host and port (if different from the
+     * default port for the scheme).
+     *
+     * Can be set, to navigate to the same URL with a changed host and port. */
     host: string;
-    /**
-     * Returns the Location object's URL's host.  Can be set, to navigate to the
-     * same URL with a changed host.
-     */
+    /** Returns the Location object's URL's host.
+     *
+     * Can be set, to navigate to the same URL with a changed host. */
     hostname: string;
-    /**
-     * Returns the Location object's URL.  Can be set, to navigate to the given
-     * URL.
-     */
+    /** Returns the Location object's URL.
+     *
+     * Can be set, to navigate to the given URL. */
     href: string;
+    toString(): string;
     /** Returns the Location object's URL's origin. */
     readonly origin: string;
-    /**
-     * Returns the Location object's URL's path.
-     * Can be set, to navigate to the same URL with a changed path.
-     */
+    /** Returns the Location object's URL's path.
+     *
+     * Can be set, to navigate to the same URL with a changed path. */
     pathname: string;
-    /**
-     * Returns the Location object's URL's port.
-     * Can be set, to navigate to the same URL with a changed port.
-     */
+    /** Returns the Location object's URL's port.
+     *
+     * Can be set, to navigate to the same URL with a changed port. */
     port: string;
-    /**
-     * Returns the Location object's URL's scheme.
-     * Can be set, to navigate to the same URL with a changed scheme.
-     */
+    /** Returns the Location object's URL's scheme.
+     *
+     * Can be set, to navigate to the same URL with a changed scheme. */
     protocol: string;
-    /**
-     * Returns the Location object's URL's query (includes leading "?" if
-     * non-empty). Can be set, to navigate to the same URL with a changed query
-     * (ignores leading "?").
-     */
+    /** Returns the Location object's URL's query (includes leading "?" if
+     * non-empty).
+     *
+     * Can be set, to navigate to the same URL with a changed query (ignores
+     * leading "?"). */
     search: string;
     /**
      * Navigates to the given URL.
@@ -2827,126 +3706,102 @@ declare namespace __domTypes {
      * Reloads the current page.
      */
     reload(): void;
-    /** @deprecated */
-    reload(forcedReload: boolean): void;
-    /**
-     * Removes the current page from the session history and navigates to the
-     * given URL.
-     */
+    /** Removes the current page from the session history and navigates to the
+     * given URL. */
     replace(url: string): void;
   }
 }
 
-declare namespace __blob {
-  // @url js/blob.d.ts
+type BufferSource = ArrayBufferView | ArrayBuffer;
+type BlobPart = BufferSource | Blob | string;
 
-  export const bytesSymbol: unique symbol;
-  export const blobBytesWeakMap: WeakMap<__domTypes.Blob, Uint8Array>;
-  export class DenoBlob implements __domTypes.Blob {
-    private readonly [bytesSymbol];
-    readonly size: number;
-    readonly type: string;
-    /** A blob object represents a file-like object of immutable, raw data. */
-    constructor(
-      blobParts?: __domTypes.BlobPart[],
-      options?: __domTypes.BlobPropertyBag
-    );
-    slice(start?: number, end?: number, contentType?: string): DenoBlob;
-  }
+interface BlobPropertyBag {
+  type?: string;
+  ending?: "transparent" | "native";
 }
 
-declare namespace __console {
-  // @url js/console.d.ts
+/** A file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system. */
+interface Blob {
+  readonly size: number;
+  readonly type: string;
+  arrayBuffer(): Promise<ArrayBuffer>;
+  slice(start?: number, end?: number, contentType?: string): Blob;
+  stream(): ReadableStream;
+  text(): Promise<string>;
+}
 
-  type ConsoleOptions = Partial<{
-    showHidden: boolean;
-    depth: number;
-    colors: boolean;
-    indentLevel: number;
-  }>;
-  export class CSI {
-    static kClear: string;
-    static kClearScreenDown: string;
-  }
-  const isConsoleInstance: unique symbol;
-  export class Console {
-    private printFunc;
-    indentLevel: number;
-    [isConsoleInstance]: boolean;
-    /** Writes the arguments to stdout */
-    log: (...args: unknown[]) => void;
-    /** Writes the arguments to stdout */
-    debug: (...args: unknown[]) => void;
-    /** Writes the arguments to stdout */
-    info: (...args: unknown[]) => void;
-    /** Writes the properties of the supplied `obj` to stdout */
-    dir: (
-      obj: unknown,
-      options?: Partial<{
-        showHidden: boolean;
-        depth: number;
-        colors: boolean;
-        indentLevel: number;
-      }>
-    ) => void;
+declare const Blob: {
+  prototype: Blob;
+  new (blobParts?: BlobPart[], options?: BlobPropertyBag): Blob;
+};
 
-    /** From MDN:
-     * Displays an interactive tree of the descendant elements of
-     * the specified XML/HTML element. If it is not possible to display
-     * as an element the JavaScript Object view is shown instead.
-     * The output is presented as a hierarchical listing of expandable
-     * nodes that let you see the contents of child nodes.
-     *
-     * Since we write to stdout, we can't display anything interactive
-     * we just fall back to `console.dir`.
-     */
-    dirxml: (
-      obj: unknown,
-      options?: Partial<{
-        showHidden: boolean;
-        depth: number;
-        colors: boolean;
-        indentLevel: number;
-      }>
-    ) => void;
+declare const isConsoleInstance: unique symbol;
 
-    /** Writes the arguments to stdout */
-    warn: (...args: unknown[]) => void;
-    /** Writes the arguments to stdout */
-    error: (...args: unknown[]) => void;
-    /** Writes an error message to stdout if the assertion is `false`. If the
-     * assertion is `true`, nothing happens.
-     *
-     * ref: https://console.spec.whatwg.org/#assert
-     */
-    assert: (condition?: boolean, ...args: unknown[]) => void;
-    count: (label?: string) => void;
-    countReset: (label?: string) => void;
-    table: (data: unknown, properties?: string[] | undefined) => void;
-    time: (label?: string) => void;
-    timeLog: (label?: string, ...args: unknown[]) => void;
-    timeEnd: (label?: string) => void;
-    group: (...label: unknown[]) => void;
-    groupCollapsed: (...label: unknown[]) => void;
-    groupEnd: () => void;
-    clear: () => void;
-    trace: (...args: unknown[]) => void;
-    static [Symbol.hasInstance](instance: Console): boolean;
-  }
-  /** A symbol which can be used as a key for a custom method which will be called
-   * when `Deno.inspect()` is called, or when the object is logged to the console.
+declare class Console {
+  indentLevel: number;
+  [isConsoleInstance]: boolean;
+  /** Writes the arguments to stdout */
+  log: (...args: unknown[]) => void;
+  /** Writes the arguments to stdout */
+  debug: (...args: unknown[]) => void;
+  /** Writes the arguments to stdout */
+  info: (...args: unknown[]) => void;
+  /** Writes the properties of the supplied `obj` to stdout */
+  dir: (
+    obj: unknown,
+    options?: Partial<{
+      showHidden: boolean;
+      depth: number;
+      colors: boolean;
+      indentLevel: number;
+    }>
+  ) => void;
+
+  /** From MDN:
+   * Displays an interactive tree of the descendant elements of
+   * the specified XML/HTML element. If it is not possible to display
+   * as an element the JavaScript Object view is shown instead.
+   * The output is presented as a hierarchical listing of expandable
+   * nodes that let you see the contents of child nodes.
+   *
+   * Since we write to stdout, we can't display anything interactive
+   * we just fall back to `console.dir`.
    */
-  export const customInspect: unique symbol;
-  /**
-   * `inspect()` converts input into string that has the same format
-   * as printed by `console.log(...)`;
+  dirxml: (
+    obj: unknown,
+    options?: Partial<{
+      showHidden: boolean;
+      depth: number;
+      colors: boolean;
+      indentLevel: number;
+    }>
+  ) => void;
+
+  /** Writes the arguments to stdout */
+  warn: (...args: unknown[]) => void;
+  /** Writes the arguments to stdout */
+  error: (...args: unknown[]) => void;
+  /** Writes an error message to stdout if the assertion is `false`. If the
+   * assertion is `true`, nothing happens.
+   *
+   * ref: https://console.spec.whatwg.org/#assert
    */
-  export function inspect(value: unknown, options?: ConsoleOptions): string;
+  assert: (condition?: boolean, ...args: unknown[]) => void;
+  count: (label?: string) => void;
+  countReset: (label?: string) => void;
+  table: (data: unknown, properties?: string[] | undefined) => void;
+  time: (label?: string) => void;
+  timeLog: (label?: string, ...args: unknown[]) => void;
+  timeEnd: (label?: string) => void;
+  group: (...label: unknown[]) => void;
+  groupCollapsed: (...label: unknown[]) => void;
+  groupEnd: () => void;
+  clear: () => void;
+  trace: (...args: unknown[]) => void;
+  static [Symbol.hasInstance](instance: Console): boolean;
 }
 
 declare namespace __event {
-  // @url js/event.d.ts
-
   export const eventAttributes: WeakMap<object, any>;
   export class EventInit implements __domTypes.EventInit {
     bubbles: boolean;
@@ -2955,7 +3810,7 @@ declare namespace __event {
     constructor({
       bubbles,
       cancelable,
-      composed
+      composed,
     }?: {
       bubbles?: boolean | undefined;
       cancelable?: boolean | undefined;
@@ -2988,7 +3843,7 @@ declare namespace __event {
     target: __domTypes.EventTarget;
     readonly timeStamp: Date;
     readonly type: string;
-    /** Returns the event’s path (objects on which listeners will be
+    /** Returns the event鈥檚 path (objects on which listeners will be
      * invoked). This does not include nodes in shadow trees if the
      * shadow root was created with its ShadowRoot.mode closed.
      *
@@ -3018,8 +3873,6 @@ declare namespace __event {
 }
 
 declare namespace __customEvent {
-  // @url js/custom_event.d.ts
-
   export const customEventAttributes: WeakMap<object, any>;
   export class CustomEventInit extends __event.EventInit
     implements __domTypes.CustomEventInit {
@@ -3028,7 +3881,7 @@ declare namespace __customEvent {
       bubbles,
       cancelable,
       composed,
-      detail
+      detail,
     }: __domTypes.CustomEventInit);
   }
   export class CustomEvent extends __event.Event
@@ -3046,8 +3899,6 @@ declare namespace __customEvent {
 }
 
 declare namespace __eventTarget {
-  // @url js/event_target.d.ts
-
   export class EventListenerOptions implements __domTypes.EventListenerOptions {
     _capture: boolean;
     constructor({ capture }?: { capture?: boolean | undefined });
@@ -3060,7 +3911,7 @@ declare namespace __eventTarget {
     constructor({
       capture,
       passive,
-      once
+      once,
     }?: {
       capture?: boolean | undefined;
       passive?: boolean | undefined;
@@ -3068,21 +3919,6 @@ declare namespace __eventTarget {
     });
     readonly passive: boolean;
     readonly once: boolean;
-  }
-  export class EventListener implements __domTypes.EventListener {
-    allEvents: __domTypes.Event[];
-    atEvents: __domTypes.Event[];
-    bubbledEvents: __domTypes.Event[];
-    capturedEvents: __domTypes.Event[];
-    private _callback;
-    private _options;
-    constructor(
-      callback: (event: __domTypes.Event) => void | null,
-      options: boolean | __domTypes.AddEventListenerOptions
-    );
-    handleEvent(event: __domTypes.Event): void;
-    readonly callback: (event: __domTypes.Event) => void | null;
-    readonly options: __domTypes.AddEventListenerOptions | boolean;
   }
   export const eventTargetAssignedSlot: unique symbol;
   export const eventTargetHasActivationBehavior: unique symbol;
@@ -3097,12 +3933,12 @@ declare namespace __eventTarget {
     private [eventTargetHasActivationBehavior];
     addEventListener(
       type: string,
-      callback: (event: __domTypes.Event) => void | null,
+      callback: __domTypes.EventListenerOrEventListenerObject | null,
       options?: __domTypes.AddEventListenerOptions | boolean
     ): void;
     removeEventListener(
       type: string,
-      callback: (event: __domTypes.Event) => void | null,
+      callback: __domTypes.EventListenerOrEventListenerObject | null,
       options?: __domTypes.EventListenerOptions | boolean
     ): void;
     dispatchEvent(event: __domTypes.Event): boolean;
@@ -3110,121 +3946,28 @@ declare namespace __eventTarget {
   }
 }
 
-declare namespace __io {
-  /** UNSTABLE: maybe remove "SEEK_" prefix. Maybe capitalization wrong. */
-  export enum SeekMode {
-    SEEK_START = 0,
-    SEEK_CURRENT = 1,
-    SEEK_END = 2
-  }
-  export interface Reader {
-    /** Reads up to p.byteLength bytes into `p`. It resolves to the number
-     * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error encountered.
-     * Even if `read()` returns `n` < `p.byteLength`, it may use all of `p` as
-     * scratch space during the call. If some data is available but not
-     * `p.byteLength` bytes, `read()` conventionally returns what is available
-     * instead of waiting for more.
-     *
-     * When `read()` encounters end-of-file condition, it returns EOF symbol.
-     *
-     * When `read()` encounters an error, it rejects with an error.
-     *
-     * Callers should always process the `n` > `0` bytes returned before
-     * considering the EOF. Doing so correctly handles I/O errors that happen
-     * after reading some bytes and also both of the allowed EOF behaviors.
-     *
-     * Implementations must not retain `p`.
-     */
-    read(p: Uint8Array): Promise<number | Deno.EOF>;
-  }
-  export interface SyncReader {
-    readSync(p: Uint8Array): number | Deno.EOF;
-  }
-  export interface Writer {
-    /** Writes `p.byteLength` bytes from `p` to the underlying data
-     * stream. It resolves to the number of bytes written from `p` (`0` <= `n` <=
-     * `p.byteLength`) and any error encountered that caused the write to stop
-     * early. `write()` must return a non-null error if it returns `n` <
-     * `p.byteLength`. write() must not modify the slice data, even temporarily.
-     *
-     * Implementations must not retain `p`.
-     */
-    write(p: Uint8Array): Promise<number>;
-  }
-  export interface SyncWriter {
-    writeSync(p: Uint8Array): number;
-  }
-  export interface Closer {
-    close(): void;
-  }
-  export interface Seeker {
-    /** Seek sets the offset for the next `read()` or `write()` to offset,
-     * interpreted according to `whence`: `SeekStart` means relative to the start
-     * of the file, `SeekCurrent` means relative to the current offset, and
-     * `SeekEnd` means relative to the end. Seek returns the new offset relative
-     * to the start of the file and an error, if any.
-     *
-     * Seeking to an offset before the start of the file is an error. Seeking to
-     * any positive offset is legal, but the behavior of subsequent I/O operations
-     * on the underlying object is implementation-dependent.
-     */
-    seek(offset: number, whence: SeekMode): Promise<void>;
-  }
-  export interface SyncSeeker {
-    seekSync(offset: number, whence: SeekMode): void;
-  }
-  export interface ReadCloser extends Reader, Closer {}
-  export interface WriteCloser extends Writer, Closer {}
-  export interface ReadSeeker extends Reader, Seeker {}
-  export interface WriteSeeker extends Writer, Seeker {}
-  export interface ReadWriteCloser extends Reader, Writer, Closer {}
-  export interface ReadWriteSeeker extends Reader, Writer, Seeker {}
-
-  /** UNSTABLE: controversial.
-   *
-   * Copies from `src` to `dst` until either `EOF` is reached on `src`
-   * or an error occurs. It returns the number of bytes copied and the first
-   * error encountered while copying, if any.
-   *
-   * Because `copy()` is defined to read from `src` until `EOF`, it does not
-   * treat an `EOF` from `read()` as an error to be reported.
-   */
-  export function copy(dst: Writer, src: Reader): Promise<number>;
-
-  /** UNSTABLE: Make Reader into AsyncIterable? Remove this?
-   *
-   * Turns `r` into async iterator.
-   *
-   *      for await (const chunk of toAsyncIterator(reader)) {
-   *          console.log(chunk)
-   *      }
-   */
-  export function toAsyncIterator(r: Reader): AsyncIterableIterator<Uint8Array>;
-}
-
 declare namespace __fetch {
-  // @url js/fetch.d.ts
-
   class Body
-    implements __domTypes.Body, __domTypes.ReadableStream, __io.ReadCloser {
-    private rid;
+    implements
+      __domTypes.Body,
+      __domTypes.ReadableStream<Uint8Array>,
+      Deno.ReadCloser {
     readonly contentType: string;
     bodyUsed: boolean;
-    private _bodyPromise;
-    private _data;
     readonly locked: boolean;
-    readonly body: null | Body;
+    readonly body: __domTypes.ReadableStream<Uint8Array>;
     constructor(rid: number, contentType: string);
-    private _bodyBuffer;
     arrayBuffer(): Promise<ArrayBuffer>;
-    blob(): Promise<__domTypes.Blob>;
+    blob(): Promise<Blob>;
     formData(): Promise<__domTypes.FormData>;
     json(): Promise<any>;
     text(): Promise<string>;
     read(p: Uint8Array): Promise<number | Deno.EOF>;
     close(): void;
     cancel(): Promise<void>;
-    getReader(): __domTypes.ReadableStreamReader;
+    getReader(options: { mode: "byob" }): __domTypes.ReadableStreamBYOBReader;
+    getReader(): __domTypes.ReadableStreamDefaultReader<Uint8Array>;
+    getReader(): __domTypes.ReadableStreamBYOBReader;
     tee(): [__domTypes.ReadableStream, __domTypes.ReadableStream];
     [Symbol.asyncIterator](): AsyncIterableIterator<Uint8Array>;
   }
@@ -3232,7 +3975,7 @@ declare namespace __fetch {
     readonly url: string;
     readonly status: number;
     statusText: string;
-    readonly type = "basic";
+    readonly type: __domTypes.ResponseType;
     readonly redirected: boolean;
     headers: __domTypes.Headers;
     readonly trailer: Promise<__domTypes.Headers>;
@@ -3241,457 +3984,283 @@ declare namespace __fetch {
     constructor(
       url: string,
       status: number,
+      statusText: string,
       headersList: Array<[string, string]>,
       rid: number,
       redirected_: boolean,
+      type_?: null | __domTypes.ResponseType,
       body_?: null | Body
     );
     arrayBuffer(): Promise<ArrayBuffer>;
-    blob(): Promise<__domTypes.Blob>;
+    blob(): Promise<Blob>;
     formData(): Promise<__domTypes.FormData>;
     json(): Promise<any>;
     text(): Promise<string>;
     readonly ok: boolean;
     clone(): __domTypes.Response;
+    redirect(url: URL | string, status: number): __domTypes.Response;
   }
   /** Fetch a resource from the network. */
   export function fetch(
-    input: __domTypes.Request | __url.URL | string,
+    input: __domTypes.Request | URL | string,
     init?: __domTypes.RequestInit
   ): Promise<Response>;
 }
 
-declare namespace __textEncoding {
-  // @url js/text_encoding.d.ts
+declare function atob(s: string): string;
 
-  export function atob(s: string): string;
-  /** Creates a base-64 ASCII string from the input string. */
-  export function btoa(s: string): string;
-  export interface TextDecodeOptions {
-    stream?: false;
-  }
-  export interface TextDecoderOptions {
-    fatal?: boolean;
-    ignoreBOM?: boolean;
-  }
-  export class TextDecoder {
-    private _encoding;
-    /** Returns encoding's name, lowercased. */
-    readonly encoding: string;
-    /** Returns `true` if error mode is "fatal", and `false` otherwise. */
-    readonly fatal: boolean;
-    /** Returns `true` if ignore BOM flag is set, and `false` otherwise. */
-    readonly ignoreBOM = false;
-    constructor(label?: string, options?: TextDecoderOptions);
-    /** Returns the result of running encoding's decoder. */
-    decode(
-      input?: __domTypes.BufferSource,
-      options?: TextDecodeOptions
-    ): string;
-    readonly [Symbol.toStringTag]: string;
-  }
-  interface TextEncoderEncodeIntoResult {
-    read: number;
-    written: number;
-  }
-  export class TextEncoder {
-    /** Returns "utf-8". */
-    readonly encoding = "utf-8";
-    /** Returns the result of running UTF-8's encoder. */
-    encode(input?: string): Uint8Array;
-    encodeInto(input: string, dest: Uint8Array): TextEncoderEncodeIntoResult;
-    readonly [Symbol.toStringTag]: string;
-  }
+/** Creates a base-64 ASCII string from the input string. */
+declare function btoa(s: string): string;
+
+declare class TextDecoder {
+  /** Returns encoding's name, lowercased. */
+  readonly encoding: string;
+  /** Returns `true` if error mode is "fatal", and `false` otherwise. */
+  readonly fatal: boolean;
+  /** Returns `true` if ignore BOM flag is set, and `false` otherwise. */
+  readonly ignoreBOM = false;
+  constructor(
+    label?: string,
+    options?: { fatal?: boolean; ignoreBOM?: boolean }
+  );
+  /** Returns the result of running encoding's decoder. */
+  decode(input?: BufferSource, options?: { stream?: false }): string;
+  readonly [Symbol.toStringTag]: string;
 }
 
-declare namespace __timers {
-  // @url js/timers.d.ts
-
-  export type Args = unknown[];
-  /** Sets a timer which executes a function once after the timer expires. */
-  export function setTimeout(
-    cb: (...args: Args) => void,
-    delay?: number,
-    ...args: Args
-  ): number;
-  /** Repeatedly calls a function , with a fixed time delay between each call. */
-  export function setInterval(
-    cb: (...args: Args) => void,
-    delay?: number,
-    ...args: Args
-  ): number;
-  export function clearTimeout(id?: number): void;
-  export function clearInterval(id?: number): void;
+declare class TextEncoder {
+  /** Returns "utf-8". */
+  readonly encoding = "utf-8";
+  /** Returns the result of running UTF-8's encoder. */
+  encode(input?: string): Uint8Array;
+  encodeInto(
+    input: string,
+    dest: Uint8Array
+  ): { read: number; written: number };
+  readonly [Symbol.toStringTag]: string;
 }
 
-declare namespace __urlSearchParams {
-  // @url js/url_search_params.d.ts
-
-  export class URLSearchParams {
-    private params;
-    private url;
-    constructor(init?: string | string[][] | Record<string, string>);
-    private updateSteps;
-    /** Appends a specified key/value pair as a new search parameter.
-     *
-     *       searchParams.append('name', 'first');
-     *       searchParams.append('name', 'second');
-     */
-    append(name: string, value: string): void;
-    /** Deletes the given search parameter and its associated value,
-     * from the list of all search parameters.
-     *
-     *       searchParams.delete('name');
-     */
-    delete(name: string): void;
-    /** Returns all the values associated with a given search parameter
-     * as an array.
-     *
-     *       searchParams.getAll('name');
-     */
-    getAll(name: string): string[];
-    /** Returns the first value associated to the given search parameter.
-     *
-     *       searchParams.get('name');
-     */
-    get(name: string): string | null;
-    /** Returns a Boolean that indicates whether a parameter with the
-     * specified name exists.
-     *
-     *       searchParams.has('name');
-     */
-    has(name: string): boolean;
-    /** Sets the value associated with a given search parameter to the
-     * given value. If there were several matching values, this method
-     * deletes the others. If the search parameter doesn't exist, this
-     * method creates it.
-     *
-     *       searchParams.set('name', 'value');
-     */
-    set(name: string, value: string): void;
-    /** Sort all key/value pairs contained in this object in place and
-     * return undefined. The sort order is according to Unicode code
-     * points of the keys.
-     *
-     *       searchParams.sort();
-     */
-    sort(): void;
-    /** Calls a function for each element contained in this object in
-     * place and return undefined. Optionally accepts an object to use
-     * as this when executing callback as second argument.
-     *
-     *       searchParams.forEach((value, key, parent) => {
-     *         console.log(value, key, parent);
-     *       });
-     *
-     */
-    forEach(
-      callbackfn: (value: string, key: string, parent: this) => void,
-      thisArg?: any
-    ): void;
-    /** Returns an iterator allowing to go through all keys contained
-     * in this object.
-     *
-     *       for (const key of searchParams.keys()) {
-     *         console.log(key);
-     *       }
-     */
-    keys(): IterableIterator<string>;
-    /** Returns an iterator allowing to go through all values contained
-     * in this object.
-     *
-     *       for (const value of searchParams.values()) {
-     *         console.log(value);
-     *       }
-     */
-    values(): IterableIterator<string>;
-    /** Returns an iterator allowing to go through all key/value
-     * pairs contained in this object.
-     *
-     *       for (const [key, value] of searchParams.entries()) {
-     *         console.log(key, value);
-     *       }
-     */
-    entries(): IterableIterator<[string, string]>;
-    /** Returns an iterator allowing to go through all key/value
-     * pairs contained in this object.
-     *
-     *       for (const [key, value] of searchParams[Symbol.iterator]()) {
-     *         console.log(key, value);
-     *       }
-     */
-    [Symbol.iterator](): IterableIterator<[string, string]>;
-    /** Returns a query string suitable for use in a URL.
-     *
-     *        searchParams.toString();
-     */
-    toString(): string;
-    private _handleStringInitialization;
-    private _handleArrayInitialization;
-  }
-}
-
-declare namespace __url {
-  // @url js/url.d.ts
-  export interface URL {
-    hash: string;
-    host: string;
-    hostname: string;
-    href: string;
-    readonly origin: string;
-    password: string;
-    pathname: string;
-    port: string;
-    protocol: string;
-    search: string;
-    readonly searchParams: __urlSearchParams.URLSearchParams;
-    username: string;
-    toString(): string;
-    toJSON(): string;
-  }
-
-  export const URL: {
-    prototype: URL;
-    new (url: string, base?: string | URL): URL;
-    createObjectURL(object: __domTypes.Blob): string;
-    revokeObjectURL(url: string): void;
-  };
-}
-
-declare namespace __workers {
-  // @url js/workers.d.ts
-
-  export function encodeMessage(data: any): Uint8Array;
-  export function decodeMessage(dataIntArray: Uint8Array): any;
-  export let onmessage: (e: { data: any }) => void;
-  export function postMessage(data: any): void;
-  export function getMessage(): Promise<any>;
-  export let isClosing: boolean;
-  export function workerClose(): void;
-  export function workerMain(): Promise<void>;
-  export interface Worker {
-    onerror?: (e: Event) => void;
-    onmessage?: (e: { data: any }) => void;
-    onmessageerror?: () => void;
-    postMessage(data: any): void;
-    closed: Promise<void>;
-  }
-  export interface WorkerOptions {}
-  /** Extended Deno Worker initialization options.
-   * `noDenoNamespace` hides global `window.Deno` namespace for
-   * spawned worker and nested workers spawned by it (default: false).
+interface URLSearchParams {
+  /** Appends a specified key/value pair as a new search parameter.
+   *
+   *       let searchParams = new URLSearchParams();
+   *       searchParams.append('name', 'first');
+   *       searchParams.append('name', 'second');
    */
-  export interface DenoWorkerOptions extends WorkerOptions {
-    noDenoNamespace?: boolean;
-  }
-  export class WorkerImpl implements Worker {
-    private readonly id;
-    private isClosing;
-    private readonly isClosedPromise;
-    onerror?: (e: Event) => void;
-    onmessage?: (data: any) => void;
-    onmessageerror?: () => void;
-    constructor(specifier: string, options?: DenoWorkerOptions);
-    readonly closed: Promise<void>;
-    postMessage(data: any): void;
-    private run;
-  }
+  append(name: string, value: string): void;
+
+  /** Deletes the given search parameter and its associated value,
+   * from the list of all search parameters.
+   *
+   *       let searchParams = new URLSearchParams([['name', 'value']]);
+   *       searchParams.delete('name');
+   */
+  delete(name: string): void;
+
+  /** Returns all the values associated with a given search parameter
+   * as an array.
+   *
+   *       searchParams.getAll('name');
+   */
+  getAll(name: string): string[];
+
+  /** Returns the first value associated to the given search parameter.
+   *
+   *       searchParams.get('name');
+   */
+  get(name: string): string | null;
+
+  /** Returns a Boolean that indicates whether a parameter with the
+   * specified name exists.
+   *
+   *       searchParams.has('name');
+   */
+  has(name: string): boolean;
+
+  /** Sets the value associated with a given search parameter to the
+   * given value. If there were several matching values, this method
+   * deletes the others. If the search parameter doesn't exist, this
+   * method creates it.
+   *
+   *       searchParams.set('name', 'value');
+   */
+  set(name: string, value: string): void;
+
+  /** Sort all key/value pairs contained in this object in place and
+   * return undefined. The sort order is according to Unicode code
+   * points of the keys.
+   *
+   *       searchParams.sort();
+   */
+  sort(): void;
+
+  /** Calls a function for each element contained in this object in
+   * place and return undefined. Optionally accepts an object to use
+   * as this when executing callback as second argument.
+   *
+   *       const params = new URLSearchParams([["a", "b"], ["c", "d"]]);
+   *       params.forEach((value, key, parent) => {
+   *         console.log(value, key, parent);
+   *       });
+   *
+   */
+  forEach(
+    callbackfn: (value: string, key: string, parent: this) => void,
+    thisArg?: any
+  ): void;
+
+  /** Returns an iterator allowing to go through all keys contained
+   * in this object.
+   *
+   *       const params = new URLSearchParams([["a", "b"], ["c", "d"]]);
+   *       for (const key of params.keys()) {
+   *         console.log(key);
+   *       }
+   */
+  keys(): IterableIterator<string>;
+
+  /** Returns an iterator allowing to go through all values contained
+   * in this object.
+   *
+   *       const params = new URLSearchParams([["a", "b"], ["c", "d"]]);
+   *       for (const value of params.values()) {
+   *         console.log(value);
+   *       }
+   */
+  values(): IterableIterator<string>;
+
+  /** Returns an iterator allowing to go through all key/value
+   * pairs contained in this object.
+   *
+   *       const params = new URLSearchParams([["a", "b"], ["c", "d"]]);
+   *       for (const [key, value] of params.entries()) {
+   *         console.log(key, value);
+   *       }
+   */
+  entries(): IterableIterator<[string, string]>;
+
+  /** Returns an iterator allowing to go through all key/value
+   * pairs contained in this object.
+   *
+   *       const params = new URLSearchParams([["a", "b"], ["c", "d"]]);
+   *       for (const [key, value] of params) {
+   *         console.log(key, value);
+   *       }
+   */
+  [Symbol.iterator](): IterableIterator<[string, string]>;
+
+  /** Returns a query string suitable for use in a URL.
+   *
+   *        searchParams.toString();
+   */
+  toString(): string;
 }
 
-declare namespace __performanceUtil {
-  // @url js/performance.d.ts
+declare const URLSearchParams: {
+  prototype: URLSearchParams;
+  new (
+    init?: string[][] | Record<string, string> | string | URLSearchParams
+  ): URLSearchParams;
+  toString(): string;
+};
 
-  export class Performance {
-    /** Returns a current time from Deno's start in milliseconds.
-     *
-     * Use the flag --allow-hrtime return a precise value.
-     *
-     *       const t = performance.now();
-     *       console.log(`${t} ms since start!`);
-     */
-    now(): number;
-  }
+/** The URL聽interface represents an object providing static methods used for creating object URLs. */
+interface URL {
+  hash: string;
+  host: string;
+  hostname: string;
+  href: string;
+  toString(): string;
+  readonly origin: string;
+  password: string;
+  pathname: string;
+  port: string;
+  protocol: string;
+  search: string;
+  readonly searchParams: URLSearchParams;
+  username: string;
+  toJSON(): string;
 }
 
-// @url js/lib.web_assembly.d.ts
+declare const URL: {
+  prototype: URL;
+  new (url: string, base?: string | URL): URL;
+  createObjectURL(object: any): string;
+  revokeObjectURL(url: string): void;
+};
 
-// This follows the WebIDL at: https://webassembly.github.io/spec/js-api/
-// And follow on WebIDL at: https://webassembly.github.io/spec/web-api/
-
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
-
-declare namespace WebAssembly {
-  interface WebAssemblyInstantiatedSource {
-    module: Module;
-    instance: Instance;
-  }
-
-  /** Compiles a `WebAssembly.Module` from WebAssembly binary code.  This
-   * function is useful if it is necessary to a compile a module before it can
-   * be instantiated (otherwise, the `WebAssembly.instantiate()` function
-   * should be used). */
-  function compile(bufferSource: __domTypes.BufferSource): Promise<Module>;
-
-  /** Compiles a `WebAssembly.Module` directly from a streamed underlying
-   * source. This function is useful if it is necessary to a compile a module
-   * before it can be instantiated (otherwise, the
-   * `WebAssembly.instantiateStreaming()` function should be used). */
-  function compileStreaming(
-    source: Promise<__domTypes.Response>
-  ): Promise<Module>;
-
-  /** Takes the WebAssembly binary code, in the form of a typed array or
-   * `ArrayBuffer`, and performs both compilation and instantiation in one step.
-   * The returned `Promise` resolves to both a compiled `WebAssembly.Module` and
-   * its first `WebAssembly.Instance`. */
-  function instantiate(
-    bufferSource: __domTypes.BufferSource,
-    importObject?: object
-  ): Promise<WebAssemblyInstantiatedSource>;
-
-  /** Takes an already-compiled `WebAssembly.Module` and returns a `Promise`
-   * that resolves to an `Instance` of that `Module`. This overload is useful if
-   * the `Module` has already been compiled. */
-  function instantiate(
-    module: Module,
-    importObject?: object
-  ): Promise<Instance>;
-
-  /** Compiles and instantiates a WebAssembly module directly from a streamed
-   * underlying source. This is the most efficient, optimized way to load wasm
-   * code. */
-  function instantiateStreaming(
-    source: Promise<__domTypes.Response>,
-    importObject?: object
-  ): Promise<WebAssemblyInstantiatedSource>;
-
-  /** Validates a given typed array of WebAssembly binary code, returning
-   * whether the bytes form a valid wasm module (`true`) or not (`false`). */
-  function validate(bufferSource: __domTypes.BufferSource): boolean;
-
-  type ImportExportKind = "function" | "table" | "memory" | "global";
-
-  interface ModuleExportDescriptor {
-    name: string;
-    kind: ImportExportKind;
-  }
-  interface ModuleImportDescriptor {
-    module: string;
-    name: string;
-    kind: ImportExportKind;
-  }
-
-  class Module {
-    constructor(bufferSource: __domTypes.BufferSource);
-
-    /** Given a `Module` and string, returns a copy of the contents of all
-     * custom sections in the module with the given string name. */
-    static customSections(
-      moduleObject: Module,
-      sectionName: string
-    ): ArrayBuffer;
-
-    /** Given a `Module`, returns an array containing descriptions of all the
-     * declared exports. */
-    static exports(moduleObject: Module): ModuleExportDescriptor[];
-
-    /** Given a `Module`, returns an array containing descriptions of all the
-     * declared imports. */
-    static imports(moduleObject: Module): ModuleImportDescriptor[];
-  }
-
-  class Instance<T extends object = { [key: string]: any }> {
-    constructor(module: Module, importObject?: object);
-
-    /** An object containing as its members all the functions exported from the
-     * WebAssembly module instance, to allow them to be accessed and used by
-     * JavaScript. */
-    readonly exports: T;
-  }
-
-  interface MemoryDescriptor {
-    initial: number;
-    maximum?: number;
-  }
-
-  class Memory {
-    constructor(descriptor: MemoryDescriptor);
-
-    /** An accessor property that returns the buffer contained in the memory. */
-    readonly buffer: ArrayBuffer;
-
-    /** Increases the size of the memory instance by a specified number of
-     * WebAssembly pages (each one is 64KB in size). */
-    grow(delta: number): number;
-  }
-
-  type TableKind = "anyfunc";
-
-  interface TableDescriptor {
-    element: TableKind;
-    initial: number;
-    maximum?: number;
-  }
-
-  class Table {
-    constructor(descriptor: TableDescriptor);
-
-    /** Returns the length of the table, i.e. the number of elements. */
-    readonly length: number;
-
-    /** Accessor function — gets the element stored at a given index. */
-    get(index: number): (...args: any[]) => any;
-
-    /** Increases the size of the Table instance by a specified number of
-     * elements. */
-    grow(delta: number): number;
-
-    /** Sets an element stored at a given index to a given value. */
-    set(index: number, value: (...args: any[]) => any): void;
-  }
-
-  interface GlobalDescriptor {
-    value: string;
-    mutable?: boolean;
-  }
-
-  /** Represents a global variable instance, accessible from both JavaScript and
-   * importable/exportable across one or more `WebAssembly.Module` instances.
-   * This allows dynamic linking of multiple modules. */
-  class Global {
-    constructor(descriptor: GlobalDescriptor, value?: any);
-
-    /** Old-style method that returns the value contained inside the global
-     * variable. */
-    valueOf(): any;
-
-    /** The value contained inside the global variable — this can be used to
-     * directly set and get the global's value. */
-    value: any;
-  }
-
-  /** Indicates an error during WebAssembly decoding or validation */
-  class CompileError extends Error {
-    constructor(message: string, fileName?: string, lineNumber?: string);
-  }
-
-  /** Indicates an error during module instantiation (besides traps from the
-   * start function). */
-  class LinkError extends Error {
-    constructor(message: string, fileName?: string, lineNumber?: string);
-  }
-
-  /** Is thrown whenever WebAssembly specifies a trap. */
-  class RuntimeError extends Error {
-    constructor(message: string, fileName?: string, lineNumber?: string);
-  }
+declare class Worker {
+  onerror?: (e: Event) => void;
+  onmessage?: (data: any) => void;
+  onmessageerror?: () => void;
+  constructor(
+    specifier: string,
+    options?: {
+      type?: "classic" | "module";
+      name?: string;
+    }
+  );
+  postMessage(data: any): void;
+  terminate(): void;
 }
 
-// Catch-all for JSX elements.
-// See https://www.typescriptlang.org/docs/handbook/jsx.html#intrinsic-elements
-declare namespace JSX {
-  interface IntrinsicElements {
-    [elemName: string]: any;
-  }
+declare namespace performance {
+  /** Returns a current time from Deno's start in milliseconds.
+   *
+   * Use the flag --allow-hrtime return a precise value.
+   *
+   *       const t = performance.now();
+   *       console.log(`${t} ms since start!`);
+   */
+  export function now(): number;
 }
 
+/* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+
+// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+
+/// <reference no-default-lib="true" />
+/// <reference lib="deno.ns" />
+/// <reference lib="deno.shared_globals" />
+/// <reference lib="esnext" />
+
+declare interface Window extends WindowOrWorkerGlobalScope {
+  window: Window & WindowOrWorkerGlobalScope & typeof globalThis;
+  self: Window & WindowOrWorkerGlobalScope & typeof globalThis;
+  onload: Function | undefined;
+  onunload: Function | undefined;
+  crypto: Crypto;
+  close: () => void;
+  closed: boolean;
+  Deno: typeof Deno;
+}
+
+declare const window: Window & WindowOrWorkerGlobalScope & typeof globalThis;
+declare const self: Window & WindowOrWorkerGlobalScope & typeof globalThis;
+declare const onload: Function | undefined;
+declare const onunload: Function | undefined;
+declare const crypto: Crypto;
+
+declare interface Crypto {
+  readonly subtle: null;
+  getRandomValues<
+    T extends
+      | Int8Array
+      | Int16Array
+      | Int32Array
+      | Uint8Array
+      | Uint16Array
+      | Uint32Array
+      | Uint8ClampedArray
+      | Float32Array
+      | Float64Array
+      | DataView
+      | null
+  >(
+    array: T
+  ): T;
+}
+
+/* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
