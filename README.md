@@ -33,7 +33,7 @@ yarn add -D typescript-deno-plugin typescript
 
 ### With JetBrains IDEs
 
-Prerequisite: Follow manual installation instructions as described in [VSCode install](/With-VS-Code).
+Prerequisite: Follow manual installation instructions as described in [VSCode install](#with-vs-code).
 
 1. Open TypScript preferences:
 
