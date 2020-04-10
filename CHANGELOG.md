@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0 - 2020-04-10
+
+- upgrade `execa@4.0.0`, `typescript@3.8.3`，`typescript-deno-plugin@1.3.0`
+- remove some snippets [#72](https://github.com/justjavac/vscode-deno/issues/72)
+  - benching
+  - colors
+  - media_types
+  - prettier
+  - strings
+
 ## 1.4.0 - 2019-12-07
 
 - suport vscode >= 1.14.0
