@@ -13,6 +13,64 @@ import { normalizeImportStatement } from "../../core/deno_normalize_import_state
 import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
 import { getImportModules } from "../../core/deno_deps";
 
+const ignoredCompilerOptions: readonly string[] = [
+  "allowSyntheticDefaultImports",
+  "baseUrl",
+  "build",
+  "composite",
+  "declaration",
+  "declarationDir",
+  "declarationMap",
+  "diagnostics",
+  "downlevelIteration",
+  "emitBOM",
+  "emitDeclarationOnly",
+  "esModuleInterop",
+  "extendedDiagnostics",
+  "forceConsistentCasingInFileNames",
+  "help",
+  "importHelpers",
+  "incremental",
+  "inlineSourceMap",
+  "inlineSources",
+  "init",
+  "isolatedModules",
+  "listEmittedFiles",
+  "listFiles",
+  "mapRoot",
+  "maxNodeModuleJsDepth",
+  "module",
+  "moduleResolution",
+  "newLine",
+  "noEmit",
+  "noEmitHelpers",
+  "noEmitOnError",
+  "noLib",
+  "noResolve",
+  "out",
+  "outDir",
+  "outFile",
+  "paths",
+  "preserveSymlinks",
+  "preserveWatchOutput",
+  "pretty",
+  "rootDir",
+  "rootDirs",
+  "showConfig",
+  "skipDefaultLibCheck",
+  "skipLibCheck",
+  "sourceMap",
+  "sourceRoot",
+  "stripInternal",
+  "target",
+  "traceResolution",
+  "tsBuildInfoFile",
+  "types",
+  "typeRoots",
+  "version",
+  "watch",
+];
+
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
   static readonly PLUGIN_NAME = "typescript-deno-plugin";
@@ -87,6 +145,14 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
       if (!this.configurationManager.config.enable) {
         return projectConfig;
+      }
+
+      // delete the option which ignore by Deno
+      // see https://github.com/denoland/deno/blob/bced52505f/cli/js/compiler/host.ts#L65-L121
+      for (const option in projectConfig) {
+        if (ignoredCompilerOptions.includes(option)) {
+          delete projectConfig[option];
+        }
       }
 
       const compilationSettings = merge(
