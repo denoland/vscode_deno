@@ -57,7 +57,7 @@ export async function getVersions(): Promise<DenoVersion | undefined> {
   try {
     const { stdout, stderr } = await execa("deno", [
       "eval",
-      "console.log(JSON.stringify(Deno.version))"
+      "console.log(JSON.stringify(Deno.version))",
     ]);
 
     if (stderr) {
@@ -70,7 +70,7 @@ export async function getVersions(): Promise<DenoVersion | undefined> {
       deno,
       v8,
       typescript,
-      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`
+      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`,
     };
   } catch {
     return;

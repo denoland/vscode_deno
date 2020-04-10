@@ -13,7 +13,7 @@ import {
   languages,
   TextDocument,
   Range,
-  TextEdit
+  TextEdit,
 } from "vscode";
 import * as path from "path";
 
@@ -26,7 +26,7 @@ import {
   isJavaScriptDocument,
   getVersions,
   generateDtsForDeno,
-  downloadDtsForDeno
+  downloadDtsForDeno,
 } from "./utils";
 
 const typeScriptExtensionId = "vscode.typescript-language-features";
@@ -39,7 +39,7 @@ const localize = nls.loadMessageBundle();
 enum Status {
   ok = 1,
   warn = 2,
-  error = 3
+  error = 3,
 }
 
 interface StatusParams {
@@ -52,21 +52,21 @@ interface WorkspaceFolderItem extends QuickPickItem {
 
 async function pickFolder(
   folders: WorkspaceFolder[],
-  placeHolder: string
+  placeHolder: string,
 ): Promise<WorkspaceFolder> {
   if (folders.length === 1) {
     return Promise.resolve(folders[0]);
   }
 
   const selected = await window.showQuickPick(
-    folders.map<WorkspaceFolderItem>(folder => {
+    folders.map<WorkspaceFolderItem>((folder) => {
       return {
         label: folder.name,
         description: folder.uri.fsPath,
-        folder: folder
+        folder: folder,
       };
     }),
-    { placeHolder: placeHolder }
+    { placeHolder: placeHolder },
   );
   if (!selected) {
     return undefined;
@@ -79,26 +79,26 @@ function enable() {
 
   if (!folders) {
     window.showWarningMessage(
-      "Deno can only be enabled if VS Code is opened on a workspace folder."
+      "Deno can only be enabled if VS Code is opened on a workspace folder.",
     );
     return;
   }
 
   let disabledFolders = folders.filter(
-    folder =>
+    (folder) =>
       !workspace
         .getConfiguration(configurationSection, folder.uri)
-        .get("enable", true)
+        .get("enable", true),
   );
 
   if (disabledFolders.length === 0) {
     if (folders.length === 1) {
       window.showInformationMessage(
-        "Deno is already enabled in the workspace."
+        "Deno is already enabled in the workspace.",
       );
     } else {
       window.showInformationMessage(
-        "Deno is already enabled on all workspace folders."
+        "Deno is already enabled on all workspace folders.",
       );
     }
     return;
@@ -106,8 +106,8 @@ function enable() {
 
   pickFolder(
     disabledFolders,
-    "Select a workspace folder to enable Deno for"
-  ).then(folder => {
+    "Select a workspace folder to enable Deno for",
+  ).then((folder) => {
     if (!folder) {
       return;
     }
@@ -122,12 +122,12 @@ function disable() {
 
   if (!folders) {
     window.showErrorMessage(
-      "Deno can only be disabled if VS Code is opened on a workspace folder."
+      "Deno can only be disabled if VS Code is opened on a workspace folder.",
     );
     return;
   }
 
-  let enabledFolders = folders.filter(folder =>
+  let enabledFolders = folders.filter((folder) =>
     workspace
       .getConfiguration(configurationSection, folder.uri)
       .get("enable", true)
@@ -136,11 +136,11 @@ function disable() {
   if (enabledFolders.length === 0) {
     if (folders.length === 1) {
       window.showInformationMessage(
-        "Deno is already disabled in the workspace."
+        "Deno is already disabled in the workspace.",
       );
     } else {
       window.showInformationMessage(
-        "Deno is already disabled on all workspace folders."
+        "Deno is already disabled on all workspace folders.",
       );
     }
     return;
@@ -148,8 +148,8 @@ function disable() {
 
   pickFolder(
     enabledFolders,
-    "Select a workspace folder to disable Deno for"
-  ).then(folder => {
+    "Select a workspace folder to disable Deno for",
+  ).then((folder) => {
     if (!folder) {
       return;
     }
@@ -181,14 +181,14 @@ export async function activate(context: ExtensionContext) {
   }
 
   const configurationListener = workspace.onDidChangeConfiguration(
-    e => {
+    (e) => {
       if (e.affectsConfiguration(configurationSection)) {
         synchronizeConfiguration(api);
         updateStatusBarVisibility(window.activeTextEditor);
       }
     },
     undefined,
-    context.subscriptions
+    context.subscriptions,
   );
 
   const formatter = languages.registerDocumentFormattingEditProvider(
@@ -207,17 +207,17 @@ export async function activate(context: ExtensionContext) {
             "run",
             "--allow-read",
             "https://deno.land/std/prettier/main.ts",
-            filename
+            filename,
           ],
-          { cwd }
+          { cwd },
         );
         const fullRange = new Range(
           document.positionAt(0),
-          document.positionAt(document.getText().length - 1)
+          document.positionAt(document.getText().length - 1),
         );
         return [new TextEdit(fullRange, r.stdout)];
-      }
-    }
+      },
+    },
   );
 
   synchronizeConfiguration(api);
@@ -240,10 +240,10 @@ export async function activate(context: ExtensionContext) {
         localize(
           "notfound",
           "Deno not found. Install it by using deno_install or click {0} button for more help.",
-          help
+          help,
         ),
         show,
-        help
+        help,
       );
 
       if (choice === show) {
@@ -251,10 +251,10 @@ export async function activate(context: ExtensionContext) {
       } else if (choice === help) {
         commands.executeCommand(
           "vscode.open",
-          Uri.parse("https://github.com/denoland/deno_install")
+          Uri.parse("https://github.com/denoland/deno_install"),
         );
       }
-    })
+    }),
   ];
 
   context.subscriptions.push(...disposables, outputChannel);
@@ -274,15 +274,15 @@ export async function activate(context: ExtensionContext) {
     outputChannel.appendLine("You can use one-line commands to install Deno.");
     if (process.platform === "win32") {
       outputChannel.appendLine(
-        "> iwr https://deno.land/x/install/install.ps1 | iex"
+        "> iwr https://deno.land/x/install/install.ps1 | iex",
       );
     } else {
       outputChannel.appendLine(
-        "> curl -fsSL https://deno.land/x/install/install.sh | sh"
+        "> curl -fsSL https://deno.land/x/install/install.sh | sh",
       );
     }
     outputChannel.appendLine(
-      "See https://github.com/denoland/deno_install for more installation options.\n"
+      "See https://github.com/denoland/deno_install for more installation options.\n",
     );
     downloadDtsForDeno();
   } else {
@@ -340,7 +340,7 @@ export async function activate(context: ExtensionContext) {
 
     showStatusBarItem(
       isTypeScriptDocument(editor.document) ||
-        isJavaScriptDocument(editor.document)
+        isJavaScriptDocument(editor.document),
     );
   }
 
@@ -375,7 +375,7 @@ function getConfiguration(): SynchronizedConfiguration {
 function withConfigValue<C, K extends Extract<keyof C, string>>(
   config: WorkspaceConfiguration,
   outConfig: C,
-  key: K
+  key: K,
 ): void {
   const configSetting = config.inspect<C[K]>(key);
   if (!configSetting) {
@@ -406,6 +406,6 @@ function bundledDtsPath(): string {
     "node_modules",
     "typescript-deno-plugin",
     "lib",
-    "lib.deno_runtime.d.ts"
+    "lib.deno_runtime.d.ts",
   );
 }

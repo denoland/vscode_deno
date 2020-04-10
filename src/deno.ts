@@ -53,8 +53,7 @@ export class DenoError {
   }
 
   toString(): string {
-    let result =
-      this.message +
+    let result = this.message +
       " " +
       JSON.stringify(
         {
@@ -62,14 +61,14 @@ export class DenoError {
           DenoErrorCode: this.DenoErrorCode,
           DenoCommand: this.DenoCommand,
           stdout: this.stdout,
-          stderr: this.stderr
+          stderr: this.stderr,
         },
         null,
-        2
+        2,
       );
 
     if (this.error) {
-      result += (<any>this.error).stack;
+      result += (<any> this.error).stack;
     }
 
     return result;
@@ -102,7 +101,7 @@ export const enum DenoErrorCodes {
   CantLockRef = "CantLockRef",
   CantRebaseMultipleBranches = "CantRebaseMultipleBranches",
   PatchDoesNotApply = "PatchDoesNotApply",
-  NoPathFound = "NoPathFound"
+  NoPathFound = "NoPathFound",
 }
 
 function parseVersion(raw: string): DenoVersion {
@@ -112,13 +111,13 @@ function parseVersion(raw: string): DenoVersion {
     deno: deno.substr(6),
     v8: v8.substr(4),
     typescript: typescript.substr(12),
-    raw
+    raw,
   };
 }
 
 export function findDeno(
   hint: string | undefined,
-  onLookup: onLookupFunc
+  onLookup: onLookupFunc,
 ): Promise<IDeno> {
   const first = hint
     ? findSpecificDeno(hint, onLookup)
@@ -135,8 +134,9 @@ export function findDeno(
           return findSpecificDeno("deno", onLookup);
       }
     })
-    .then(null, () =>
-      Promise.reject(new Error("Deno installation not found."))
+    .then(
+      null,
+      () => Promise.reject(new Error("Deno installation not found.")),
     );
 }
 
@@ -167,24 +167,30 @@ async function findDenoDarwin(onLookup: onLookupFunc): Promise<IDeno> {
 
 function findDenoWin32(onLookup: onLookupFunc): Promise<IDeno> {
   return findSystemDenoWin32(process.env["ProgramW6432"] as string, onLookup)
-    .then(undefined, () =>
-      findSystemDenoWin32(process.env["ProgramFiles(x86)"] as string, onLookup)
+    .then(
+      undefined,
+      () =>
+        findSystemDenoWin32(
+          process.env["ProgramFiles(x86)"] as string,
+          onLookup,
+        ),
     )
-    .then(undefined, () =>
-      findSystemDenoWin32(process.env["ProgramFiles"] as string, onLookup)
+    .then(
+      undefined,
+      () =>
+        findSystemDenoWin32(process.env["ProgramFiles"] as string, onLookup),
     )
     .then(undefined, () =>
       findSystemDenoWin32(
         path.join(process.env["LocalAppData"] as string, "Programs"),
-        onLookup
-      )
-    )
+        onLookup,
+      ))
     .then(undefined, () => findDenoWin32InPath(onLookup));
 }
 
 function findSystemDenoWin32(
   base: string,
-  onLookup: onLookupFunc
+  onLookup: onLookupFunc,
 ): Promise<IDeno> {
   if (!base) {
     return Promise.reject<IDeno>("Not found");
@@ -197,12 +203,12 @@ function findDenoWin32InPath(onLookup: onLookupFunc): Promise<IDeno> {
   const whichPromise = new Promise<string>((c, e) =>
     which("deno.exe", (err, path) => (err ? e(err) : c(path)))
   );
-  return whichPromise.then(path => findSpecificDeno(path, onLookup));
+  return whichPromise.then((path) => findSpecificDeno(path, onLookup));
 }
 
 async function findSpecificDeno(
   path: string,
-  onLookup: onLookupFunc
+  onLookup: onLookupFunc,
 ): Promise<IDeno> {
   onLookup(path);
 
@@ -214,17 +220,17 @@ async function findSpecificDeno(
 
   return {
     path,
-    version: parseVersion(ps.stdout)
+    version: parseVersion(ps.stdout),
   };
 }
 
 function cpErrorHandler(cb: (reason?: any) => void): (reason?: any) => void {
-  return err => {
+  return (err) => {
     if (/ENOENT/.test(err.message)) {
       err = new DenoError({
         error: err,
         message: "Failed to execute deno (ENOENT)",
-        DenoErrorCode: DenoErrorCodes.DenoNotFound
+        DenoErrorCode: DenoErrorCodes.DenoNotFound,
       });
     }
 
