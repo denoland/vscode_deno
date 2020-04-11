@@ -80,7 +80,7 @@ The extension supports the following ways to load external declaration files
 
 > These are all supported by Deno
 
-1. ~Compiler hint~
+1. Compiler hint
 
 ```ts
 // @deno-types="./foo.d.ts"
