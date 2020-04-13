@@ -35,6 +35,17 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
     typeRoots: [],
   };
 
+  const OPTIONS_OVERWRITE_BY_DENO: ts_module.CompilerOptions = {
+    jsx: OPTIONS.jsx,
+    module: OPTIONS.module,
+    moduleResolution: OPTIONS.moduleResolution,
+    resolveJsonModule: OPTIONS.resolveJsonModule,
+    strict: OPTIONS.strict,
+    noEmit: OPTIONS.noEmit,
+    noEmitHelpers: OPTIONS.noEmitHelpers,
+    target: typescript.ScriptTarget.ESNext,
+  };
+
   return {
     create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
       logger = Logger.forPlugin(info);
@@ -71,7 +82,7 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
 
       info.languageServiceHost.getCompilationSettings = () => {
         const projectConfig = getCompilationSettings.call(info.languageServiceHost);
-        const compilationSettings = merge(OPTIONS, projectConfig);
+        const compilationSettings = merge(merge(OPTIONS, projectConfig), OPTIONS_OVERWRITE_BY_DENO);
         logger.info(`compilationSettings:${JSON.stringify(compilationSettings)}`);
         return compilationSettings;
       };
