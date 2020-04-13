@@ -1523,10 +1523,10 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-typescript-deno-plugin@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.3.0.tgz#f82c409af6f3727a059229d17843c929e2d773a8"
-  integrity sha512-CZrkhq62YYxX6wAXYg6anjOABAz78DDJCSY2WC78rVK2ffRVVOqJEIcvnNkFUHAa2zRm+TPF0Y3XqDC24tggQg==
+typescript-deno-plugin@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.npm.taobao.org/typescript-deno-plugin/download/typescript-deno-plugin-1.4.1.tgz#c59eb48109e4cedb1006be36714056ee385b188c"
+  integrity sha1-xZ60gQnkztsQBr42cUBW7jhbGIw=
   dependencies:
     merge-deep "^3.0.2"
     mock-require "^3.0.3"
