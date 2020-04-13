@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1 - 2020-04-13
+
+- no changes
+
 ## 1.4.0 - 2020-04-13
 
 - force overwrite deno's tsconfig [#32](https://github.com/justjavac/typescript-deno-plugin/pull/32)
