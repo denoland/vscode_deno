@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0 - 2020-04-13
+
+- force overwrite deno's tsconfig [#32](https://github.com/justjavac/typescript-deno-plugin/pull/32)
+
 ## 1.3.0 - 2020-04-10
 
 - update ts compiler optins [#29](https://github.com/justjavac/typescript-deno-plugin/pull/29)
