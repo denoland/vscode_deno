@@ -75,3 +75,39 @@ test("core / import_map if imports field not an Object", async () => {
 
   expect(importMap.toJSON()).toEqual({});
 });
+
+test("core / import_map if imports field ends with a trailing slash", async () => {
+  const mockWorkspaceDir = path.join(TEST_DIR, "import_maps");
+
+  const filepath = path.join(
+    mockWorkspaceDir,
+    "import_map_with_trailing_slash.json"
+  );
+
+  const importMap = ImportMap.create(filepath);
+
+  const imports = importMap.toJSON();
+
+  // invalid entries should be filtered
+  expect(imports).toEqual({
+    "demo/": "https://example.com/demo/",
+    "hoho/": "https://example.com/hoho/",
+    haha: "https://example.com/haha",
+    hoho: "https://example.com/hoho/mod.ts",
+  });
+
+  // keys with trailing slash must be sorted at front
+  expect(Object.keys(imports)).toEqual(["demo/", "hoho/", "haha", "hoho"]);
+
+  expect(importMap.resolveModule("hoho")).toEqual(
+    "https://example.com/hoho/mod.ts"
+  );
+
+  expect(importMap.resolveModule("hoho/mod.ts")).toEqual(
+    "https://example.com/hoho/mod.ts"
+  );
+
+  expect(importMap.resolveModule("hoho/hoho.ts")).toEqual(
+    "https://example.com/hoho/hoho.ts"
+  );
+});
