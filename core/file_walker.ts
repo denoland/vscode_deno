@@ -1,18 +1,25 @@
 import { promises as fs } from "fs";
 import * as path from "path";
 
-type Expression = string | RegExp;
+type ExpressionFunc = (filepath: string) => boolean;
+type Expression = string | RegExp | ExpressionFunc;
 
 type FileWalkerOptions = {
   include?: Expression[];
   exclude?: Expression[];
 };
 
-function isMatchExpression(input: string, expressions: Expression[]): boolean {
+function isMatchExpression(
+  filepath: string,
+  expressions: Expression[]
+): boolean {
+  const filename = path.basename(filepath);
   for (const expression of expressions) {
-    if (typeof expression === "string" && expression === input) {
+    if (typeof expression === "string" && expression === filename) {
       return true;
-    } else if (expression instanceof RegExp && expression.test(input)) {
+    } else if (expression instanceof RegExp && expression.test(filename)) {
+      return true;
+    } else if (typeof expression === "function" && expression(filepath)) {
       return true;
     }
   }
@@ -31,32 +38,31 @@ export class FileWalker {
     );
 
     while (files.length) {
-      const file = files.shift() as string;
-      const filename = path.basename(file);
+      const filepath = files.shift() as string;
 
       if (this.options.exclude) {
-        if (isMatchExpression(filename, this.options.exclude)) {
+        if (isMatchExpression(filepath, this.options.exclude)) {
           continue;
         }
       }
 
-      const stat = await fs.stat(file);
+      const stat = await fs.stat(filepath);
 
       if (stat.isDirectory()) {
         files = files.concat(
-          (await fs.readdir(file)).map((v) => path.join(file, v))
+          (await fs.readdir(filepath)).map((v) => path.join(filepath, v))
         );
 
         continue;
       }
 
       if (this.options.include) {
-        if (!isMatchExpression(filename, this.options.include)) {
+        if (!isMatchExpression(filepath, this.options.include)) {
           continue;
         }
       }
 
-      yield file;
+      yield filepath;
     }
   }
 }

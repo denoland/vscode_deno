@@ -70,13 +70,16 @@ test("core / FileWalker with exclude options", async () => {
 
 test("core / FileWalker ignore hidden file", async () => {
   const walker = FileWalker.create(path.join(TEST_DIR, "file_walker"), {
-    exclude: ["exclude", /^\./],
+    exclude: [
+      "exclude",
+      /^\./,
+      (filepath: string) => {
+        return filepath.endsWith(".js");
+      },
+    ],
   });
 
-  const files = [
-    path.join(TEST_DIR, "file_walker", "a.js"),
-    path.join(TEST_DIR, "file_walker", "b.ts"),
-  ];
+  const files = [path.join(TEST_DIR, "file_walker", "b.ts")];
 
   const result = [];
 
