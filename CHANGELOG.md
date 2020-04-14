@@ -1,3 +1,15 @@
+# [3.6.0](https://github.com/axetroy/vscode-deno/compare/v3.5.1...v3.6.0) (2020-04-14)
+
+### Bug Fixes
+
+- import map with trailing slash ([#142](https://github.com/axetroy/vscode-deno/issues/142)) ([d5ecc7e](https://github.com/axetroy/vscode-deno/commit/d5ecc7e2ead8df65fcbc30d1e1d08431b91b177e))
+- **deps:** update dependency semver to v7.2.2 ([#137](https://github.com/axetroy/vscode-deno/issues/137)) ([d9bd9c8](https://github.com/axetroy/vscode-deno/commit/d9bd9c8df4ffbe0c8446909717a3ce751c43f5eb))
+- **deps:** update dependency semver to v7.3.0 ([#140](https://github.com/axetroy/vscode-deno/issues/140)) ([13e3947](https://github.com/axetroy/vscode-deno/commit/13e3947928f1999963c6e2166f5c3e57d61aa67d))
+
+### Features
+
+- ignore typescript compile options which ignore by Deno ([b48fed0](https://github.com/axetroy/vscode-deno/commit/b48fed01dcbd4d5d1bd08e6d060e5217c094b9e6))
+
 ## [3.5.1](https://github.com/axetroy/vscode-deno/compare/v3.5.0...v3.5.1) (2020-04-09)
 
 ### Bug Fixes
