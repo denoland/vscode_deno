@@ -31,7 +31,10 @@ export class FileWalker {
   static create(folder: string, options: FileWalkerOptions = {}) {
     return new FileWalker(folder, options);
   }
-  constructor(private root: string, private options: FileWalkerOptions) {}
+  private constructor(
+    private root: string,
+    private options: FileWalkerOptions
+  ) {}
   async *[Symbol.asyncIterator]() {
     let files = (await fs.readdir(this.root)).map((filename) =>
       path.join(this.root, filename)

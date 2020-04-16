@@ -18,7 +18,10 @@ type ImportFileMapContent = {
 type ImportContent = { [prefix: string]: string };
 
 export class ImportMap implements ImportMapInterface {
-  constructor(public map: ImportFileMapContent, public filepath?: string) {}
+  private constructor(
+    public map: ImportFileMapContent,
+    public filepath?: string
+  ) {}
   static create(importMapFilepath?: string): ImportMapInterface {
     let importMap: ImportFileMapContent = {
       imports: {},

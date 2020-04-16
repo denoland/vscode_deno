@@ -22,7 +22,10 @@ export class CacheMap<T> {
 
   private map = new Map<string, CacheEntry<T>>();
 
-  constructor(private timeout: number, private allowReferenceTimes?: number) {
+  private constructor(
+    private timeout: number,
+    private allowReferenceTimes?: number
+  ) {
     assert(timeout > 0, "Timeout of cache must be a positive integer");
     if (allowReferenceTimes !== undefined) {
       assert(

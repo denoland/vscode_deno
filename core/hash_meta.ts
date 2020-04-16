@@ -71,7 +71,7 @@ export class HashMeta implements HashMetaInterface {
 
     return new HashMeta(metaFilepath, new URL(metaMap.url), metaMap.headers);
   }
-  constructor(
+  private constructor(
     public filepath: string,
     public url: URL,
     public headers: HTTPHeaders

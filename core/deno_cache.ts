@@ -42,7 +42,7 @@ export class CacheModule implements DenoCacheModule {
     return new CacheModule(filepath, meta.url, meta.extension, logger);
   }
 
-  constructor(
+  private constructor(
     public filepath: string,
     public url: URL,
     public extension: Extension,

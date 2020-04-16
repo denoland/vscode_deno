@@ -30,7 +30,7 @@ export class ModuleResolver implements ModuleResolverInterface {
    * @param containingFile Absolute file path
    * @param importMapsFile Absolute file path
    */
-  constructor(
+  private constructor(
     private containingFile: string,
     private importMapsFile?: string,
     private logger?: Logger
