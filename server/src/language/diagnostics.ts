@@ -179,7 +179,8 @@ export class Diagnostics {
 
         if (
           path.isAbsolute(moduleName) ||
-          moduleName.startsWith(".") ||
+          moduleName.startsWith("./") ||
+          moduleName.startsWith("../") ||
           moduleName.startsWith("file://")
         ) {
           diagnosticsForThisDocument.push(

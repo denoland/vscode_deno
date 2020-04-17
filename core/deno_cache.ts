@@ -68,7 +68,7 @@ export class CacheModule implements DenoCacheModule {
         redirectUrl = `${meta.url.protocol}//${meta.url.host}${redirect}`;
       }
       // eg: ./path/to/redirect
-      else if (redirect.startsWith(".")) {
+      else if (redirect.startsWith("./") || redirect.startsWith("../")) {
         redirectUrl = `${meta.url.protocol}//${
           meta.url.host
         }${path.posix.resolve(meta.url.pathname, redirect)}`;
@@ -110,7 +110,7 @@ export class CacheModule implements DenoCacheModule {
       targetOriginDir = path.dirname(this.filepath);
     }
     // eg: ./path/to/redirect
-    else if (moduleName.startsWith(".")) {
+    else if (moduleName.startsWith("./") || moduleName.startsWith("../")) {
       const targetUrlPath = path.posix.resolve(
         path.posix.dirname(this.meta.url.pathname),
         moduleName
