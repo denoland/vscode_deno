@@ -1,3 +1,11 @@
+## [3.6.1](https://github.com/axetroy/vscode-deno/compare/v3.6.0...v3.6.1) (2020-04-17)
+
+### Bug Fixes
+
+- In Deno's cache module, `x-typescript-types` and redirects are not parsed correctly. close [#147](https://github.com/axetroy/vscode-deno/issues/147) ([a3a957f](https://github.com/axetroy/vscode-deno/commit/a3a957f617617e19ea69e0941f961b57589574fc))
+- **deps:** update dependency semver to v7.3.1 ([#143](https://github.com/axetroy/vscode-deno/issues/143)) ([16a112b](https://github.com/axetroy/vscode-deno/commit/16a112b69318b2ac1fd3cea6de8c4dcd75874e8e))
+- **deps:** update dependency semver to v7.3.2 ([#144](https://github.com/axetroy/vscode-deno/issues/144)) ([8496c84](https://github.com/axetroy/vscode-deno/commit/8496c845e17d44e313b9e5139d7e993a865dd956))
+
 # [3.6.0](https://github.com/axetroy/vscode-deno/compare/v3.5.1...v3.6.0) (2020-04-14)
 
 ### Bug Fixes
