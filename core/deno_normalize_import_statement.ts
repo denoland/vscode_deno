@@ -43,7 +43,9 @@ export function normalizeImportStatement(
       const cache = CacheModule.create(moduleAbsoluteFilepath);
       /* istanbul ignore else */
       if (cache) {
-        importStatement = `import ${importModuleNames} from "${cache.url}"${
+        importStatement = `import ${importModuleNames} from "${
+          cache.meta.url
+        }"${
           /* istanbul ignore next */
           rest ? rest : ""
         }`;

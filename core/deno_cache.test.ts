@@ -26,7 +26,7 @@ test("core / deno_cache", () => {
 
   expect(cacheModule).not.toBe(undefined);
 
-  expect(cacheModule.url.href).toEqual("https://example.com/demo/mod.ts");
+  expect(cacheModule.meta.url.href).toEqual("https://example.com/demo/mod.ts");
   expect(cacheModule.filepath).toEqual(cacheFilepath);
 
   // resolve sub module
@@ -35,7 +35,7 @@ test("core / deno_cache", () => {
   ) as DenoCacheModule;
 
   expect(subCacheModule).not.toBe(undefined);
-  expect(subCacheModule.url.href).toEqual(
+  expect(subCacheModule.meta.url.href).toEqual(
     "https://example.com/demo/sub/mod.ts"
   );
   expect(subCacheModule.filepath).toEqual(
@@ -51,7 +51,9 @@ test("core / deno_cache", () => {
   ) as DenoCacheModule;
 
   expect(esmCacheModule).not.toBe(undefined);
-  expect(esmCacheModule.url.href).toEqual("https://example.com/esm/mod.ts");
+  expect(esmCacheModule.meta.url.href).toEqual(
+    "https://example.com/esm/mod.ts"
+  );
   expect(esmCacheModule.filepath).toEqual(
     path.join(
       path.dirname(cacheFilepath),
@@ -65,7 +67,7 @@ test("core / deno_cache", () => {
   ) as DenoCacheModule;
 
   expect(remoteCacheModule).not.toBe(undefined);
-  expect(remoteCacheModule.url.href).toEqual(
+  expect(remoteCacheModule.meta.url.href).toEqual(
     "https://another.example.com/path/mod.ts"
   );
   expect(remoteCacheModule.filepath).toEqual(
@@ -78,7 +80,9 @@ test("core / deno_cache", () => {
 });
 
 test("core / deno_cache if filepath not exist in $DENO_DIR", () => {
-  const cacheModule = CacheModule.create(__filename);
+  const cacheModule = CacheModule.create(
+    path.join(__dirname, "not_exist_file")
+  );
 
   expect(cacheModule).toBe(undefined);
 });
@@ -118,4 +122,142 @@ test("core / deno_cache resolve a invalid module", () => {
 
   expect(cacheModule).not.toBe(undefined);
   expect(cacheModule.resolveModule("invalid:/@url(dk#!")).toBe(undefined);
+});
+
+test("core / deno_cache resolve a redirect module", () => {
+  const cacheFilepath = path.join(
+    denoDir,
+    "deps",
+    "https",
+    "redirect.com",
+    "39bce9e2269e45937f28bc4ff60fb3add9df7e0048078c06dec04c490a90bf9f"
+  );
+
+  const cacheModule = CacheModule.create(cacheFilepath) as DenoCacheModule;
+
+  expect(cacheModule).not.toBe(undefined);
+
+  {
+    const result = cacheModule.resolveModule("/redirect") as DenoCacheModule;
+    expect(result).not.toBe(undefined);
+
+    expect(result.filepath).toBe(
+      path.join(
+        denoDir,
+        "deps",
+        "https",
+        "redirect.com",
+        "6a3cfff3f701f7e3e2611e61d98e9b04ec6a12fe2a72418eb96b929d3836dfd9"
+      )
+    );
+  }
+
+  {
+    const result = cacheModule.resolveModule(
+      "https://redirect.com/redirect"
+    ) as DenoCacheModule;
+    expect(result).not.toBe(undefined);
+
+    expect(result.filepath).toBe(
+      path.join(
+        denoDir,
+        "deps",
+        "https",
+        "redirect.com",
+        "6a3cfff3f701f7e3e2611e61d98e9b04ec6a12fe2a72418eb96b929d3836dfd9"
+      )
+    );
+  }
+
+  {
+    const result = cacheModule.resolveModule("./redirect") as DenoCacheModule;
+    expect(result).not.toBe(undefined);
+
+    expect(result.filepath).toBe(
+      path.join(
+        denoDir,
+        "deps",
+        "https",
+        "redirect.com",
+        "6a3cfff3f701f7e3e2611e61d98e9b04ec6a12fe2a72418eb96b929d3836dfd9"
+      )
+    );
+  }
+
+  {
+    const result = cacheModule.resolveModule(
+      "/invalid_location"
+    ) as DenoCacheModule;
+    expect(result).not.toBe(undefined);
+  }
+
+  {
+    const result = cacheModule.resolveModule("/circle") as DenoCacheModule;
+    expect(result).toBe(undefined);
+  }
+
+  {
+    const result = cacheModule.resolveModule(
+      "/full_url_redirect"
+    ) as DenoCacheModule;
+    expect(result.filepath).toBe(
+      path.join(
+        denoDir,
+        "deps",
+        "https",
+        "redirect.com",
+        "6a3cfff3f701f7e3e2611e61d98e9b04ec6a12fe2a72418eb96b929d3836dfd9"
+      )
+    );
+    expect(result.meta.url.href).toBe("https://redirect.com/result");
+  }
+
+  {
+    const result = cacheModule.resolveModule(
+      "/redirect_to_relative"
+    ) as DenoCacheModule;
+    expect(result.filepath).toBe(
+      path.join(
+        denoDir,
+        "deps",
+        "https",
+        "redirect.com",
+        "0278046a318a368d7a8da89fdf59c60892dbf3498b996b36f11faf7d74d141c8"
+      )
+    );
+    expect(result.meta.url.href).toBe(
+      "https://redirect.com/redirect_to_relative"
+    );
+  }
+});
+
+test("core / deno_cache resolve a module which have set a x-typescript-types header", () => {
+  const cacheFilepath = path.join(
+    denoDir,
+    "deps",
+    "https",
+    "redirect.com",
+    "39bce9e2269e45937f28bc4ff60fb3add9df7e0048078c06dec04c490a90bf9f"
+  );
+
+  const cacheModule = CacheModule.create(cacheFilepath) as DenoCacheModule;
+
+  expect(cacheModule).not.toBe(undefined);
+
+  {
+    const result = cacheModule.resolveModule(
+      "/redirect-by-x-typescript-types"
+    ) as DenoCacheModule;
+    expect(result).not.toBe(undefined);
+
+    expect(result.filepath).toBe(
+      path.join(
+        denoDir,
+        "deps",
+        "https",
+        "redirect.com",
+        "6a3cfff3f701f7e3e2611e61d98e9b04ec6a12fe2a72418eb96b929d3836dfd9"
+      )
+    );
+  }
 });

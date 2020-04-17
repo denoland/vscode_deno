@@ -371,7 +371,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
                 );
 
                 if (denoCache) {
-                  source.text = denoCache.url.href;
+                  source.text = denoCache.meta.url.href;
                 }
               }
             }

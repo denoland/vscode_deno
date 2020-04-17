@@ -11,7 +11,7 @@ import { Extension } from "./extension";
 export interface DenoCacheModule {
   filepath: string;
   extension: Extension;
-  url: URL;
+  meta: HashMeta;
   resolveModule(moduleName: string): DenoCacheModule | void;
 }
 
@@ -39,12 +39,12 @@ export class CacheModule implements DenoCacheModule {
       return;
     }
 
-    return new CacheModule(filepath, meta.url, meta.extension, logger);
+    return new CacheModule(filepath, meta, meta.extension, logger);
   }
 
   private constructor(
     public filepath: string,
-    public url: URL,
+    public meta: HashMeta,
     public extension: Extension,
     private logger?: Logger
   ) {
@@ -54,75 +54,115 @@ export class CacheModule implements DenoCacheModule {
       `Deno Module filepath require absolute but got ${filepath}`
     );
   }
+  private tryRedirect(meta: HashMeta): DenoCacheModule | void | null {
+    const redirect = meta.headers["location"];
+
+    if (redirect) {
+      let redirectUrl: string;
+      // eg: https://redirect.com/path/to/redirect
+      if (isHttpURL(redirect)) {
+        redirectUrl = redirect;
+      }
+      // eg: /path/to/redirect
+      else if (redirect.startsWith("/")) {
+        redirectUrl = `${meta.url.protocol}//${meta.url.host}${redirect}`;
+      }
+      // eg: ./path/to/redirect
+      else if (redirect.startsWith(".")) {
+        redirectUrl = `${meta.url.protocol}//${
+          meta.url.host
+        }${path.posix.resolve(meta.url.pathname, redirect)}`;
+      }
+      // invalid
+      else {
+        return;
+      }
+
+      // if circle import
+      if (redirectUrl === meta.url.href) {
+        return null;
+      }
+
+      return this.resolveModule(redirectUrl);
+    }
+  }
+  private tryResolveXTypescriptTypes(meta: HashMeta): DenoCacheModule | void {
+    const typescriptTypes = meta.headers["x-typescript-types"];
+
+    if (typescriptTypes) {
+      return this.resolveModule(typescriptTypes);
+    }
+  }
   /**
    * Resolve module in this cache file
    * @param moduleName The module name is for unix style
    */
   resolveModule(moduleName: string): DenoCacheModule | void {
     /* istanbul ignore next */
-    this.logger?.info(`resolve module ${moduleName} from ${this.url}`);
-    // eg. import "/npm:tough-cookie@3?dew"
+    this.logger?.info(`resolve module ${moduleName} from ${this.meta.url}`);
+
+    let url: URL;
+    let targetOriginDir: string = path.dirname(this.filepath);
+
+    // eg: /path/to/redirect
     if (moduleName.startsWith("/")) {
-      const url = new URL(this.url.origin + moduleName);
-
-      const hash = hashURL(url);
-
-      const moduleCacheFilepath = path.join(path.dirname(this.filepath), hash);
-
-      if (!pathExistsSync(moduleCacheFilepath)) {
-        return;
-      }
-
-      const moduleMetaFilepath = moduleCacheFilepath + ".metadata.json";
-
-      const meta = HashMeta.create(moduleMetaFilepath);
-
-      if (!meta) {
-        return;
-      }
-
-      return CacheModule.create(moduleCacheFilepath);
+      url = new URL(this.meta.url.origin + moduleName);
+      targetOriginDir = path.dirname(this.filepath);
     }
-    // eg. import "./sub/mod.ts"
+    // eg: ./path/to/redirect
     else if (moduleName.startsWith(".")) {
       const targetUrlPath = path.posix.resolve(
-        path.posix.dirname(this.url.pathname),
+        path.posix.dirname(this.meta.url.pathname),
         moduleName
       );
 
-      const url = new URL(this.url.origin + targetUrlPath);
-
-      const hash = hashURL(url);
-
-      const targetFilepath = path.join(path.dirname(this.filepath), hash);
-
-      return CacheModule.create(targetFilepath);
+      url = new URL(this.meta.url.origin + targetUrlPath);
+      targetOriginDir = path.dirname(this.filepath);
     }
-    // eg import "https://example.com/demo/mod.ts"
+    // eg: https://redirect.com/path/to/redirect
     else if (isHttpURL(moduleName)) {
-      const url = new URL(moduleName);
-
-      const hash = hashURL(url);
-
-      const targetOriginDir = path.join(
+      url = new URL(moduleName);
+      targetOriginDir = path.join(
         getDenoDepsDir(),
         url.protocol.replace(/:$/, ""), // https: -> https
         url.hostname
       );
-
-      const hashMeta = HashMeta.create(
-        path.join(targetOriginDir, `${hash}.metadata.json`)
-      );
-
-      if (!hashMeta) {
-        return;
-      }
-
-      return CacheModule.create(path.join(targetOriginDir, hash));
     }
-    // invalid module
+    // invalid
     else {
       return;
     }
+
+    const hash = hashURL(url);
+
+    const moduleCacheFilepath = path.join(targetOriginDir, hash);
+
+    if (!pathExistsSync(moduleCacheFilepath)) {
+      return;
+    }
+
+    const moduleMetaFilepath = moduleCacheFilepath + ".metadata.json";
+
+    const meta = HashMeta.create(moduleMetaFilepath);
+
+    if (!meta) {
+      return;
+    }
+
+    const redirectCache = this.tryRedirect(meta);
+
+    if (redirectCache) {
+      return redirectCache;
+    } else if (redirectCache === null) {
+      return;
+    }
+
+    const typeCache = this.tryResolveXTypescriptTypes(meta);
+
+    if (typeCache) {
+      return typeCache;
+    }
+
+    return CacheModule.create(moduleCacheFilepath, this.logger);
   }
 }

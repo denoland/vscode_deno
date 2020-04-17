@@ -1,0 +1,6 @@
+{
+  "headers": {
+    "location": "bb:aa@123"
+  },
+  "url": "https://redirect.com/invalid_location"
+}
