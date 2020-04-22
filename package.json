@@ -184,7 +184,7 @@
     "execa": "4.0.0",
     "husky": "4.2.5",
     "jest": "25.4.0",
-    "prettier": "2.0.4",
+    "prettier": "2.0.5",
     "ts-jest": "25.4.0",
     "typescript": "3.8.3",
     "vscode": "1.1.36",
