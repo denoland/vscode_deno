@@ -139,7 +139,7 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 ## Configuration
 
-- `deno.enabled` - Enable extension. Default is `false`
+- `deno.enable` - Enable extension. Default is `false`
 
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 

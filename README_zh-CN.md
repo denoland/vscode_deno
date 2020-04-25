@@ -139,7 +139,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 ## 配置
 
-- `deno.enabled` - 是否启用扩展. 默认值 `false`
+- `deno.enable` - 是否启用扩展. 默认值 `false`
 
 - `deno.import_map` - Import Map 的文件路径. 默认值 `null`
 
