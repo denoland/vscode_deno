@@ -7,7 +7,7 @@ declare namespace Deno {
   /** The current process id of the runtime. */
   export let pid: number;
 
-  /** Reflects the NO_COLOR environment variable.
+  /** Reflects the `NO_COLOR` environment variable.
    *
    * See: https://no-color.org/ */
   export let noColor: boolean;
@@ -335,7 +335,7 @@ declare namespace Deno {
    * | ------- | ---------------------------------------------------- | ------------------------------ |
    * | Linux   | `$XDG_DATA_HOME`/fonts or `$HOME`/.local/share/fonts | /home/alice/.local/share/fonts |
    * | macOS   | `$HOME/Library/Fonts`                                | /Users/Alice/Library/Fonts     |
-   * | Windows | 鈥?                                                   | 鈥?                             |
+   * | Windows | –                                                    | –                              |
    *
    * `"picture"`
    *
@@ -358,7 +358,7 @@ declare namespace Deno {
    * |Platform | Value                  | Example                                                    |
    * | ------- | ---------------------- | ---------------------------------------------------------- |
    * | Linux   | `XDG_TEMPLATES_DIR`    | /home/alice/Templates                                      |
-   * | macOS   | 鈥?                     | 鈥?                                                         |
+   * | macOS   | –                      | –                                                          |
    * | Windows | `{FOLDERID_Templates}` | C:\Users\Alice\AppData\Roaming\Microsoft\Windows\Templates |
    *
    * `"tmp"`
@@ -1043,13 +1043,6 @@ declare namespace Deno {
    * Requires `allow-write` permission. */
   export function mkdirSync(path: string, options?: MkdirOptions): void;
 
-  /** @deprecated */
-  export function mkdirSync(
-    path: string,
-    recursive?: boolean,
-    mode?: number
-  ): void;
-
   /** Creates a new directory with the specified path.
    *
    *       await Deno.mkdir("new_dir");
@@ -1060,13 +1053,6 @@ declare namespace Deno {
    *
    * Requires `allow-write` permission. */
   export function mkdir(path: string, options?: MkdirOptions): Promise<void>;
-
-  /** @deprecated */
-  export function mkdir(
-    path: string,
-    recursive?: boolean,
-    mode?: number
-  ): Promise<void>;
 
   export interface MakeTempOptions {
     /** Directory where the temporary directory should be created (defaults to
@@ -1331,9 +1317,17 @@ declare namespace Deno {
   export function readFile(path: string): Promise<Uint8Array>;
 
   /** A FileInfo describes a file and is returned by `stat`, `lstat`,
-   * `statSync`, `lstatSync`. A list of FileInfo is returned by `readdir`,
-   * `readdirSync`. */
+   * `statSync`, `lstatSync`. */
   export interface FileInfo {
+    /** True if this is info for a regular file. Mutually exclusive to
+     * `FileInfo.isDirectory` and `FileInfo.isSymlink`. */
+    isFile: boolean;
+    /** True if this is info for a regular directory. Mutually exclusive to
+     * `FileInfo.isFile` and `FileInfo.isSymlink`. */
+    isDirectory: boolean;
+    /** True if this is info for a symlink. Mutually exclusive to
+     * `FileInfo.isFile` and `FileInfo.isDirectory`. */
+    isSymlink: boolean;
     /** The size of the file, in bytes. */
     size: number;
     /** The last modification time of the file. This corresponds to the `mtime`
@@ -1348,8 +1342,6 @@ declare namespace Deno {
      * field from `stat` on Mac/BSD and `ftCreationTime` on Windows. This may not
      * be available on all platforms. */
     created: number | null;
-    /** The file or directory name. */
-    name: string | null;
     /** ID of the device containing the file.
      *
      * _Linux/Mac OS only._ */
@@ -1387,15 +1379,6 @@ declare namespace Deno {
      *
      * _Linux/Mac OS only._ */
     blocks: number | null;
-    /** Returns whether this is info for a regular file. This result is mutually
-     * exclusive to `FileInfo.isDirectory` and `FileInfo.isSymlink`. */
-    isFile(): boolean;
-    /** Returns whether this is info for a regular directory. This result is
-     * mutually exclusive to `FileInfo.isFile` and `FileInfo.isSymlink`. */
-    isDirectory(): boolean;
-    /** Returns whether this is info for a symlink. This result is
-     * mutually exclusive to `FileInfo.isFile` and `FileInfo.isDirectory`. */
-    isSymlink(): boolean;
   }
 
   /** Returns absolute normalized path, with symbolic links resolved.
@@ -1422,28 +1405,33 @@ declare namespace Deno {
    * Requires `allow-read` permission. */
   export function realpath(path: string): Promise<string>;
 
-  /** UNSTABLE: This API is likely to change to return an iterable object instead
-   *
-   * Synchronously reads the directory given by `path` and returns an array of
-   * `Deno.FileInfo`.
-   *
-   *       const files = Deno.readdirSync("/");
-   *
-   * Throws error if `path` is not a directory.
-   *
-   * Requires `allow-read` permission. */
-  export function readdirSync(path: string): FileInfo[];
+  export interface DirEntry extends FileInfo {
+    name: string;
+  }
 
-  /** UNSTABLE: This API is likely to change to return an `AsyncIterable`.
+  /** Synchronously reads the directory given by `path` and returns an iterable
+   * of `Deno.DirEntry`.
    *
-   * Reads the directory given by `path` and resolves to an array of `Deno.FileInfo`.
-   *
-   *       const files = await Deno.readdir("/");
+   *       for (const dirEntry of Deno.readdirSync("/")) {
+   *         console.log(dirEntry.name);
+   *       }
    *
    * Throws error if `path` is not a directory.
    *
    * Requires `allow-read` permission. */
-  export function readdir(path: string): Promise<FileInfo[]>;
+  export function readdirSync(path: string): Iterable<DirEntry>;
+
+  /** Reads the directory given by `path` and returns an async iterable of
+   * `Deno.DirEntry`.
+   *
+   *       for await (const dirEntry of Deno.readdir("/")) {
+   *         console.log(dirEntry.name);
+   *       }
+   *
+   * Throws error if `path` is not a directory.
+   *
+   * Requires `allow-read` permission. */
+  export function readdir(path: string): AsyncIterable<DirEntry>;
 
   /** Synchronously copies the contents and permissions of one file to another
    * specified path, by default creating a new file if needed, else overwriting.
@@ -1490,7 +1478,7 @@ declare namespace Deno {
    * points to.
    *
    *       const fileInfo = await Deno.lstat("hello.txt");
-   *       assert(fileInfo.isFile());
+   *       assert(fileInfo.isFile);
    *
    * Requires `allow-read` permission. */
   export function lstat(path: string): Promise<FileInfo>;
@@ -1500,7 +1488,7 @@ declare namespace Deno {
    * what it points to..
    *
    *       const fileInfo = Deno.lstatSync("hello.txt");
-   *       assert(fileInfo.isFile());
+   *       assert(fileInfo.isFile);
    *
    * Requires `allow-read` permission. */
   export function lstatSync(path: string): FileInfo;
@@ -1509,7 +1497,7 @@ declare namespace Deno {
    * follow symlinks.
    *
    *       const fileInfo = await Deno.stat("hello.txt");
-   *       assert(fileInfo.isFile());
+   *       assert(fileInfo.isFile);
    *
    * Requires `allow-read` permission. */
   export function stat(path: string): Promise<FileInfo>;
@@ -1518,7 +1506,7 @@ declare namespace Deno {
    * always follow symlinks.
    *
    *       const fileInfo = Deno.statSync("hello.txt");
-   *       assert(fileInfo.isFile());
+   *       assert(fileInfo.isFile);
    *
    * Requires `allow-read` permission. */
   export function statSync(path: string): FileInfo;
@@ -1626,11 +1614,11 @@ declare namespace Deno {
   interface Location {
     /** The full url for the module, e.g. `file://some/file.ts` or
      * `https://some/file.ts`. */
-    filename: string;
+    fileName: string;
     /** The line number in the file. It is assumed to be 1-indexed. */
-    line: number;
+    lineNumber: number;
     /** The column number in the file. It is assumed to be 1-indexed. */
-    column: number;
+    columnNumber: number;
   }
 
   /** UNSTABLE: new API, yet to be vetted.
@@ -1650,9 +1638,9 @@ declare namespace Deno {
    * An example:
    *
    *       const orig = Deno.applySourceMap({
-   *         location: "file://my/module.ts",
-   *         line: 5,
-   *         column: 15
+   *         fileName: "file://my/module.ts",
+   *         lineNumber: 5,
+   *         columnNumber: 15
    *       });
    *       console.log(`${orig.filename}:${orig.line}:${orig.column}`);
    */
@@ -1677,6 +1665,7 @@ declare namespace Deno {
     UnexpectedEof: ErrorConstructor;
     BadResource: ErrorConstructor;
     Http: ErrorConstructor;
+    Busy: ErrorConstructor;
   };
 
   /** **UNSTABLE**: potentially want names to overlap more with browser.
@@ -1891,7 +1880,7 @@ declare namespace Deno {
     close(): void;
     /** Return the address of the `UDPConn`. */
     readonly addr: Addr;
-    [Symbol.asyncIterator](): AsyncIterator<[Uint8Array, Addr]>;
+    [Symbol.asyncIterator](): AsyncIterableIterator<[Uint8Array, Addr]>;
   }
 
   /** A generic network listener for stream-oriented protocols. */
@@ -1904,7 +1893,7 @@ declare namespace Deno {
     /** Return the address of the `Listener`. */
     readonly addr: Addr;
 
-    [Symbol.asyncIterator](): AsyncIterator<Conn>;
+    [Symbol.asyncIterator](): AsyncIterableIterator<Conn>;
   }
 
   export interface Conn extends Reader, Writer, Closer {
@@ -2069,7 +2058,22 @@ declare namespace Deno {
    * between Deno Javascript and Deno Rust.
    *
    *      > console.table(Deno.metrics())
-   *      鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?   *      鈹?        (index)         鈹?Values 鈹?   *      鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?   *      鈹?     opsDispatched      鈹?  3    鈹?   *      鈹?   opsDispatchedSync    鈹?  2    鈹?   *      鈹?  opsDispatchedAsync    鈹?  1    鈹?   *      鈹?opsDispatchedAsyncUnref 鈹?  0    鈹?   *      鈹?     opsCompleted       鈹?  3    鈹?   *      鈹?   opsCompletedSync     鈹?  2    鈹?   *      鈹?   opsCompletedAsync    鈹?  1    鈹?   *      鈹?opsCompletedAsyncUnref  鈹?  0    鈹?   *      鈹?   bytesSentControl     鈹?  73   鈹?   *      鈹?     bytesSentData      鈹?  0    鈹?   *      鈹?     bytesReceived      鈹? 375   鈹?   *      鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?   */
+   *      ┌─────────────────────────┬────────┐
+   *      │         (index)         │ Values │
+   *      ├─────────────────────────┼────────┤
+   *      │      opsDispatched      │   3    │
+   *      │    opsDispatchedSync    │   2    │
+   *      │   opsDispatchedAsync    │   1    │
+   *      │ opsDispatchedAsyncUnref │   0    │
+   *      │      opsCompleted       │   3    │
+   *      │    opsCompletedSync     │   2    │
+   *      │    opsCompletedAsync    │   1    │
+   *      │ opsCompletedAsyncUnref  │   0    │
+   *      │    bytesSentControl     │   73   │
+   *      │      bytesSentData      │   0    │
+   *      │      bytesReceived      │  375   │
+   *      └─────────────────────────┴────────┘
+   */
   export function metrics(): Metrics;
 
   /** **UNSTABLE**: reconsider representation. */
@@ -2174,11 +2178,17 @@ declare namespace Deno {
     kill(signo: number): void;
   }
 
-  export interface ProcessStatus {
-    success: boolean;
-    code?: number;
-    signal?: number;
-  }
+  export type ProcessStatus =
+    | {
+        success: true;
+        code: 0;
+        signal?: undefined;
+      }
+    | {
+        success: false;
+        code: number;
+        signal?: number;
+      };
 
   /** **UNSTABLE**: `args` has been recently renamed to `cmd` to differentiate from
    * `Deno.args`. */
@@ -2852,36 +2862,13 @@ declare namespace Deno {
 
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-var */
 
 /// <reference no-default-lib="true" />
-// TODO: we need to remove this, but Fetch::Response::Body implements Reader
-// which requires Deno.EOF, and we shouldn't be leaking that, but https_proxy
-// at the least requires the Reader interface on Body, which it shouldn't
-/// <reference lib="deno.ns" />
 /// <reference lib="esnext" />
-
-// https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope
-
-declare interface WindowOrWorkerGlobalScope {
-  // methods
-  fetch: typeof __fetch.fetch;
-  // properties
-  File: __domTypes.DomFileConstructor;
-  CustomEvent: typeof __customEvent.CustomEvent;
-  Event: typeof __event.Event;
-  EventTarget: typeof __eventTarget.EventTarget;
-  Headers: __domTypes.HeadersConstructor;
-  FormData: __domTypes.FormDataConstructor;
-  ReadableStream: __domTypes.ReadableStreamConstructor;
-  Request: __domTypes.RequestConstructor;
-  Response: typeof __fetch.Response;
-  location: __domTypes.Location;
-}
 
 // This follows the WebIDL at: https://webassembly.github.io/spec/js-api/
 // and: https://webassembly.github.io/spec/web-api/
-
 declare namespace WebAssembly {
   interface WebAssemblyInstantiatedSource {
     module: Module;
@@ -2898,9 +2885,7 @@ declare namespace WebAssembly {
    * source. This function is useful if it is necessary to a compile a module
    * before it can be instantiated (otherwise, the
    * `WebAssembly.instantiateStreaming()` function should be used). */
-  function compileStreaming(
-    source: Promise<__domTypes.Response>
-  ): Promise<Module>;
+  function compileStreaming(source: Promise<Response>): Promise<Module>;
 
   /** Takes the WebAssembly binary code, in the form of a typed array or
    * `ArrayBuffer`, and performs both compilation and instantiation in one step.
@@ -2923,7 +2908,7 @@ declare namespace WebAssembly {
    * underlying source. This is the most efficient, optimized way to load wasm
    * code. */
   function instantiateStreaming(
-    source: Promise<__domTypes.Response>,
+    source: Promise<Response>,
     importObject?: object
   ): Promise<WebAssemblyInstantiatedSource>;
 
@@ -3001,7 +2986,7 @@ declare namespace WebAssembly {
     /** Returns the length of the table, i.e. the number of elements. */
     readonly length: number;
 
-    /** Accessor function 鈥?gets the element stored at a given index. */
+    /** Accessor function — gets the element stored at a given index. */
     get(index: number): (...args: any[]) => any;
 
     /** Increases the size of the Table instance by a specified number of
@@ -3029,7 +3014,7 @@ declare namespace WebAssembly {
      * variable. */
     valueOf(): any;
 
-    /** The value contained inside the global variable 鈥?this can be used to
+    /** The value contained inside the global variable — this can be used to
      * directly set and get the global's value. */
     value: any;
   }
@@ -3051,14 +3036,13 @@ declare namespace WebAssembly {
   }
 }
 
-declare const fetch: typeof __fetch.fetch;
-
 /** Sets a timer which executes a function once after the timer expires. */
 declare function setTimeout(
   cb: (...args: unknown[]) => void,
   delay?: number,
   ...args: unknown[]
 ): number;
+
 /** Repeatedly calls a function , with a fixed time delay between each call. */
 declare function setInterval(
   cb: (...args: unknown[]) => void,
@@ -3069,647 +3053,193 @@ declare function clearTimeout(id?: number): void;
 declare function clearInterval(id?: number): void;
 declare function queueMicrotask(func: Function): void;
 
-declare const console: Console;
-declare const File: __domTypes.DomFileConstructor;
-declare const CustomEventInit: typeof __customEvent.CustomEventInit;
-declare const CustomEvent: typeof __customEvent.CustomEvent;
-declare const EventInit: typeof __event.EventInit;
-declare const Event: typeof __event.Event;
-declare const EventListener: __domTypes.EventListener;
-declare const EventTarget: typeof __eventTarget.EventTarget;
-declare const Headers: __domTypes.HeadersConstructor;
-declare const location: __domTypes.Location;
-declare const FormData: __domTypes.FormDataConstructor;
-declare const ReadableStream: __domTypes.ReadableStreamConstructor;
-declare const Request: __domTypes.RequestConstructor;
-declare const Response: typeof __fetch.Response;
+declare var console: Console;
+declare var location: Location;
 
 declare function addEventListener(
   type: string,
-  callback: __domTypes.EventListenerOrEventListenerObject | null,
-  options?: boolean | __domTypes.AddEventListenerOptions | undefined
+  callback: EventListenerOrEventListenerObject | null,
+  options?: boolean | AddEventListenerOptions | undefined
 ): void;
 
-declare function dispatchEvent(event: __domTypes.Event): boolean;
+declare function dispatchEvent(event: Event): boolean;
 
 declare function removeEventListener(
   type: string,
-  callback: __domTypes.EventListenerOrEventListenerObject | null,
-  options?: boolean | __domTypes.EventListenerOptions | undefined
+  callback: EventListenerOrEventListenerObject | null,
+  options?: boolean | EventListenerOptions | undefined
 ): void;
-
-declare type Body = __domTypes.Body;
-declare type File = __domTypes.DomFile;
-declare type CustomEventInit = __domTypes.CustomEventInit;
-declare type CustomEvent = __domTypes.CustomEvent;
-declare type EventInit = __domTypes.EventInit;
-declare type Event = __domTypes.Event;
-declare type EventListener = __domTypes.EventListener;
-declare type EventTarget = __domTypes.EventTarget;
-declare type Headers = __domTypes.Headers;
-declare type FormData = __domTypes.FormData;
-declare type ReadableStream<R = any> = __domTypes.ReadableStream<R>;
-declare type Request = __domTypes.Request;
-declare type Response = __domTypes.Response;
 
 declare interface ImportMeta {
   url: string;
   main: boolean;
 }
 
-declare namespace __domTypes {
-  export type HeadersInit =
-    | Headers
-    | Array<[string, string]>
-    | Record<string, string>;
-  type BodyInit =
-    | Blob
-    | BufferSource
-    | FormData
-    | URLSearchParams
-    | ReadableStream
-    | string;
-  export type RequestInfo = Request | string;
-  type ReferrerPolicy =
-    | ""
-    | "no-referrer"
-    | "no-referrer-when-downgrade"
-    | "origin-only"
-    | "origin-when-cross-origin"
-    | "unsafe-url";
-  export type FormDataEntryValue = DomFile | string;
-  export interface DomIterable<K, V> {
-    keys(): IterableIterator<K>;
-    values(): IterableIterator<V>;
-    entries(): IterableIterator<[K, V]>;
-    [Symbol.iterator](): IterableIterator<[K, V]>;
-    forEach(
-      callback: (value: V, key: K, parent: this) => void,
-      thisArg?: any
-    ): void;
-  }
-  interface AbortSignalEventMap {
-    abort: ProgressEvent;
-  }
-  export enum NodeType {
-    ELEMENT_NODE = 1,
-    TEXT_NODE = 3,
-    DOCUMENT_FRAGMENT_NODE = 11,
-  }
-  export interface EventListener {
-    (evt: Event): void | Promise<void>;
-  }
-  export interface EventListenerObject {
-    handleEvent(evt: Event): void | Promise<void>;
-  }
-  export type EventListenerOrEventListenerObject =
-    | EventListener
-    | EventListenerObject;
-  export interface EventTargetListener {
-    callback: EventListenerOrEventListenerObject;
-    options: AddEventListenerOptions;
-  }
-  export const eventTargetHost: unique symbol;
-  export const eventTargetListeners: unique symbol;
-  export const eventTargetMode: unique symbol;
-  export const eventTargetNodeType: unique symbol;
-  export interface EventTarget {
-    addEventListener(
-      type: string,
-      callback: EventListenerOrEventListenerObject | null,
-      options?: boolean | AddEventListenerOptions
-    ): void;
-    dispatchEvent(event: Event): boolean;
-    removeEventListener(
-      type: string,
-      callback?: EventListenerOrEventListenerObject | null,
-      options?: EventListenerOptions | boolean
-    ): void;
-  }
-  export interface ProgressEventInit extends EventInit {
-    lengthComputable?: boolean;
-    loaded?: number;
-    total?: number;
-  }
-  export interface EventInit {
-    bubbles?: boolean;
-    cancelable?: boolean;
-    composed?: boolean;
-  }
-  export interface CustomEventInit extends EventInit {
-    detail?: any;
-  }
-  export enum EventPhase {
-    NONE = 0,
-    CAPTURING_PHASE = 1,
-    AT_TARGET = 2,
-    BUBBLING_PHASE = 3,
-  }
-  export interface EventPath {
-    item: EventTarget;
-    itemInShadowTree: boolean;
-    relatedTarget: EventTarget | null;
-    rootOfClosedTree: boolean;
-    slotInClosedTree: boolean;
-    target: EventTarget | null;
-    touchTargetList: EventTarget[];
-  }
-  export interface Event {
-    readonly type: string;
-    target: EventTarget | null;
-    currentTarget: EventTarget | null;
-    composedPath(): EventPath[];
-    eventPhase: number;
-    stopPropagation(): void;
-    stopImmediatePropagation(): void;
-    readonly bubbles: boolean;
-    readonly cancelable: boolean;
-    preventDefault(): void;
-    readonly defaultPrevented: boolean;
-    readonly composed: boolean;
-    isTrusted: boolean;
-    readonly timeStamp: Date;
-    dispatched: boolean;
-    readonly initialized: boolean;
-    inPassiveListener: boolean;
-    cancelBubble: boolean;
-    cancelBubbleImmediately: boolean;
-    path: EventPath[];
-    relatedTarget: EventTarget | null;
-  }
-  export interface CustomEvent extends Event {
-    readonly detail: any;
-    initCustomEvent(
-      type: string,
-      bubbles?: boolean,
-      cancelable?: boolean,
-      detail?: any | null
-    ): void;
-  }
-  export interface DomFile extends Blob {
-    readonly lastModified: number;
-    readonly name: string;
-  }
-  export interface DomFileConstructor {
-    new (
-      bits: BlobPart[],
-      filename: string,
-      options?: FilePropertyBag
-    ): DomFile;
-    prototype: DomFile;
-  }
-  export interface FilePropertyBag extends BlobPropertyBag {
-    lastModified?: number;
-  }
-  interface ProgressEvent extends Event {
-    readonly lengthComputable: boolean;
-    readonly loaded: number;
-    readonly total: number;
-  }
-  export interface EventListenerOptions {
-    capture?: boolean;
-  }
-  export interface AddEventListenerOptions extends EventListenerOptions {
-    once?: boolean;
-    passive?: boolean;
-  }
-  interface AbortSignal extends EventTarget {
-    readonly aborted: boolean;
-    onabort: ((this: AbortSignal, ev: ProgressEvent) => any) | null;
-    addEventListener<K extends keyof AbortSignalEventMap>(
-      type: K,
-      listener: (this: AbortSignal, ev: AbortSignalEventMap[K]) => any,
-      options?: boolean | AddEventListenerOptions
-    ): void;
-    addEventListener(
-      type: string,
-      listener: EventListener,
-      options?: boolean | AddEventListenerOptions
-    ): void;
-    removeEventListener<K extends keyof AbortSignalEventMap>(
-      type: K,
-      listener: (this: AbortSignal, ev: AbortSignalEventMap[K]) => any,
-      options?: boolean | EventListenerOptions
-    ): void;
-    removeEventListener(
-      type: string,
-      listener: EventListener,
-      options?: boolean | EventListenerOptions
-    ): void;
-  }
-  export interface ReadableStreamReadDoneResult<T> {
-    done: true;
-    value?: T;
-  }
-  export interface ReadableStreamReadValueResult<T> {
-    done: false;
-    value: T;
-  }
-  export type ReadableStreamReadResult<T> =
-    | ReadableStreamReadValueResult<T>
-    | ReadableStreamReadDoneResult<T>;
-  export interface ReadableStreamDefaultReader<R = any> {
-    readonly closed: Promise<void>;
-    cancel(reason?: any): Promise<void>;
-    read(): Promise<ReadableStreamReadResult<R>>;
-    releaseLock(): void;
-  }
-  export interface PipeOptions {
-    preventAbort?: boolean;
-    preventCancel?: boolean;
-    preventClose?: boolean;
-    signal?: AbortSignal;
-  }
-  export interface UnderlyingSource<R = any> {
-    cancel?: ReadableStreamErrorCallback;
-    pull?: ReadableStreamDefaultControllerCallback<R>;
-    start?: ReadableStreamDefaultControllerCallback<R>;
-    type?: undefined;
-  }
-  export interface ReadableStreamErrorCallback {
-    (reason: any): void | PromiseLike<void>;
-  }
+interface DomIterable<K, V> {
+  keys(): IterableIterator<K>;
+  values(): IterableIterator<V>;
+  entries(): IterableIterator<[K, V]>;
+  [Symbol.iterator](): IterableIterator<[K, V]>;
+  forEach(
+    callback: (value: V, key: K, parent: this) => void,
+    thisArg?: any
+  ): void;
+}
 
-  export interface ReadableStreamDefaultControllerCallback<R> {
-    (controller: ReadableStreamDefaultController<R>): void | PromiseLike<void>;
-  }
+interface ReadableStreamReadDoneResult<T> {
+  done: true;
+  value?: T;
+}
 
-  export interface ReadableStreamDefaultController<R> {
-    readonly desiredSize: number;
-    enqueue(chunk?: R): void;
-    close(): void;
-    error(e?: any): void;
-  }
+interface ReadableStreamReadValueResult<T> {
+  done: false;
+  value: T;
+}
 
-  /** This Streams API interface represents a readable stream of byte data. The
-   * Fetch API offers a concrete instance of a ReadableStream through the body
-   * property of a Response object. */
-  export interface ReadableStream<R = any> {
-    readonly locked: boolean;
-    cancel(reason?: any): Promise<void>;
-    getReader(options: { mode: "byob" }): ReadableStreamBYOBReader;
-    getReader(): ReadableStreamDefaultReader<R>;
-    /* disabled for now
-    pipeThrough<T>(
-      {
-        writable,
-        readable
-      }: {
-        writable: WritableStream<R>;
-        readable: ReadableStream<T>;
-      },
-      options?: PipeOptions
-    ): ReadableStream<T>;
-    pipeTo(dest: WritableStream<R>, options?: PipeOptions): Promise<void>;
-    */
-    tee(): [ReadableStream<R>, ReadableStream<R>];
-  }
+type ReadableStreamReadResult<T> =
+  | ReadableStreamReadValueResult<T>
+  | ReadableStreamReadDoneResult<T>;
 
-  export interface ReadableStreamConstructor<R = any> {
-    new (src?: UnderlyingSource<R>): ReadableStream<R>;
-    prototype: ReadableStream<R>;
-  }
+interface ReadableStreamDefaultReader<R = any> {
+  readonly closed: Promise<void>;
+  cancel(reason?: any): Promise<void>;
+  read(): Promise<ReadableStreamReadResult<R>>;
+  releaseLock(): void;
+}
 
-  export interface ReadableStreamReader<R = any> {
-    cancel(reason: any): Promise<void>;
-    read(): Promise<ReadableStreamReadResult<R>>;
-    releaseLock(): void;
-  }
-  export interface ReadableStreamBYOBReader {
-    readonly closed: Promise<void>;
-    cancel(reason?: any): Promise<void>;
-    read<T extends ArrayBufferView>(
-      view: T
-    ): Promise<ReadableStreamReadResult<T>>;
-    releaseLock(): void;
-  }
-  export interface WritableStream<W = any> {
-    readonly locked: boolean;
-    abort(reason?: any): Promise<void>;
-    getWriter(): WritableStreamDefaultWriter<W>;
-  }
-  export interface WritableStreamDefaultWriter<W = any> {
-    readonly closed: Promise<void>;
-    readonly desiredSize: number | null;
-    readonly ready: Promise<void>;
-    abort(reason?: any): Promise<void>;
-    close(): Promise<void>;
-    releaseLock(): void;
-    write(chunk: W): Promise<void>;
-  }
-  export interface FormData extends DomIterable<string, FormDataEntryValue> {
-    append(name: string, value: string | Blob, fileName?: string): void;
-    delete(name: string): void;
-    get(name: string): FormDataEntryValue | null;
-    getAll(name: string): FormDataEntryValue[];
-    has(name: string): boolean;
-    set(name: string, value: string | Blob, fileName?: string): void;
-  }
-  export interface FormDataConstructor {
-    new (): FormData;
-    prototype: FormData;
-  }
-  export interface Body {
-    /** A simple getter used to expose a `ReadableStream` of the body contents. */
-    readonly body: ReadableStream<Uint8Array> | null;
-    /** Stores a `Boolean` that declares whether the body has been used in a
-     * response yet.
-     */
-    readonly bodyUsed: boolean;
-    /** Takes a `Response` stream and reads it to completion. It returns a promise
-     * that resolves with an `ArrayBuffer`.
-     */
-    arrayBuffer(): Promise<ArrayBuffer>;
-    /** Takes a `Response` stream and reads it to completion. It returns a promise
-     * that resolves with a `Blob`.
-     */
-    blob(): Promise<Blob>;
-    /** Takes a `Response` stream and reads it to completion. It returns a promise
-     * that resolves with a `FormData` object.
-     */
-    formData(): Promise<FormData>;
-    /** Takes a `Response` stream and reads it to completion. It returns a promise
-     * that resolves with the result of parsing the body text as JSON.
-     */
-    json(): Promise<any>;
-    /** Takes a `Response` stream and reads it to completion. It returns a promise
-     * that resolves with a `USVString` (text).
-     */
-    text(): Promise<string>;
-  }
-  export interface Headers extends DomIterable<string, string> {
-    /** Appends a new value onto an existing header inside a `Headers` object, or
-     * adds the header if it does not already exist.
-     */
-    append(name: string, value: string): void;
-    /** Deletes a header from a `Headers` object. */
-    delete(name: string): void;
-    /** Returns an iterator allowing to go through all key/value pairs
-     * contained in this Headers object. The both the key and value of each pairs
-     * are ByteString objects.
-     */
-    entries(): IterableIterator<[string, string]>;
-    /** Returns a `ByteString` sequence of all the values of a header within a
-     * `Headers` object with a given name.
-     */
-    get(name: string): string | null;
-    /** Returns a boolean stating whether a `Headers` object contains a certain
-     * header.
-     */
-    has(name: string): boolean;
-    /** Returns an iterator allowing to go through all keys contained in
-     * this Headers object. The keys are ByteString objects.
-     */
-    keys(): IterableIterator<string>;
-    /** Sets a new value for an existing header inside a Headers object, or adds
-     * the header if it does not already exist.
-     */
-    set(name: string, value: string): void;
-    /** Returns an iterator allowing to go through all values contained in
-     * this Headers object. The values are ByteString objects.
-     */
-    values(): IterableIterator<string>;
-    forEach(
-      callbackfn: (value: string, key: string, parent: this) => void,
-      thisArg?: any
-    ): void;
-    /** The Symbol.iterator well-known symbol specifies the default
-     * iterator for this Headers object
-     */
-    [Symbol.iterator](): IterableIterator<[string, string]>;
-  }
-  export interface HeadersConstructor {
-    new (init?: HeadersInit): Headers;
-    prototype: Headers;
-  }
-  type RequestCache =
-    | "default"
-    | "no-store"
-    | "reload"
-    | "no-cache"
-    | "force-cache"
-    | "only-if-cached";
-  type RequestCredentials = "omit" | "same-origin" | "include";
-  type RequestDestination =
-    | ""
-    | "audio"
-    | "audioworklet"
-    | "document"
-    | "embed"
-    | "font"
-    | "image"
-    | "manifest"
-    | "object"
-    | "paintworklet"
-    | "report"
-    | "script"
-    | "sharedworker"
-    | "style"
-    | "track"
-    | "video"
-    | "worker"
-    | "xslt";
-  type RequestMode = "navigate" | "same-origin" | "no-cors" | "cors";
-  type RequestRedirect = "follow" | "error" | "manual";
-  type ResponseType =
-    | "basic"
-    | "cors"
-    | "default"
-    | "error"
-    | "opaque"
-    | "opaqueredirect";
-  export interface RequestInit {
-    body?: BodyInit | null;
-    cache?: RequestCache;
-    credentials?: RequestCredentials;
-    headers?: HeadersInit;
-    integrity?: string;
-    keepalive?: boolean;
-    method?: string;
-    mode?: RequestMode;
-    redirect?: RequestRedirect;
-    referrer?: string;
-    referrerPolicy?: ReferrerPolicy;
-    signal?: AbortSignal | null;
-    window?: any;
-  }
-  export interface ResponseInit {
-    headers?: HeadersInit;
-    status?: number;
-    statusText?: string;
-  }
-  export interface RequestConstructor {
-    new (input: RequestInfo, init?: RequestInit): Request;
-    prototype: Request;
-  }
-  export interface Request extends Body {
-    /** Returns the cache mode associated with request, which is a string
-     * indicating how the the request will interact with the browser's cache when
-     * fetching.
-     */
-    readonly cache?: RequestCache;
-    /** Returns the credentials mode associated with request, which is a string
-     * indicating whether credentials will be sent with the request always, never,
-     * or only when sent to a same-origin URL.
-     */
-    readonly credentials?: RequestCredentials;
-    /** Returns the kind of resource requested by request, (e.g., `document` or
-     * `script`).
-     */
-    readonly destination?: RequestDestination;
-    /** Returns a Headers object consisting of the headers associated with
-     * request.
-     *
-     * Note that headers added in the network layer by the user agent
-     * will not be accounted for in this object, (e.g., the `Host` header).
-     */
-    readonly headers: Headers;
-    /** Returns request's subresource integrity metadata, which is a cryptographic
-     * hash of the resource being fetched. Its value consists of multiple hashes
-     * separated by whitespace. [SRI]
-     */
-    readonly integrity?: string;
-    /** Returns a boolean indicating whether or not request is for a history
-     * navigation (a.k.a. back-forward navigation).
-     */
-    readonly isHistoryNavigation?: boolean;
-    /** Returns a boolean indicating whether or not request is for a reload
-     * navigation.
-     */
-    readonly isReloadNavigation?: boolean;
-    /** Returns a boolean indicating whether or not request can outlive the global
-     * in which it was created.
-     */
-    readonly keepalive?: boolean;
-    /** Returns request's HTTP method, which is `GET` by default. */
-    readonly method: string;
-    /** Returns the mode associated with request, which is a string indicating
-     * whether the request will use CORS, or will be restricted to same-origin
-     * URLs.
-     */
-    readonly mode?: RequestMode;
-    /** Returns the redirect mode associated with request, which is a string
-     * indicating how redirects for the request will be handled during fetching.
-     *
-     * A request will follow redirects by default.
-     */
-    readonly redirect?: RequestRedirect;
-    /** Returns the referrer of request. Its value can be a same-origin URL if
-     * explicitly set in init, the empty string to indicate no referrer, and
-     * `about:client` when defaulting to the global's default.
-     *
-     * This is used during fetching to determine the value of the `Referer`
-     * header of the request being made.
-     */
-    readonly referrer?: string;
-    /** Returns the referrer policy associated with request. This is used during
-     * fetching to compute the value of the request's referrer.
-     */
-    readonly referrerPolicy?: ReferrerPolicy;
-    /** Returns the signal associated with request, which is an AbortSignal object
-     * indicating whether or not request has been aborted, and its abort event
-     * handler.
-     */
-    readonly signal?: AbortSignal;
-    /** Returns the URL of request as a string. */
-    readonly url: string;
-    clone(): Request;
-  }
-  export interface Response extends Body {
-    /** Contains the `Headers` object associated with the response. */
-    readonly headers: Headers;
-    /** Contains a boolean stating whether the response was successful (status in
-     * the range 200-299) or not.
-     */
-    readonly ok: boolean;
-    /** Indicates whether or not the response is the result of a redirect; that
-     * is, its URL list has more than one entry.
-     */
-    readonly redirected: boolean;
-    /** Contains the status code of the response (e.g., `200` for a success). */
-    readonly status: number;
-    /** Contains the status message corresponding to the status code (e.g., `OK`
-     * for `200`).
-     */
-    readonly statusText: string;
-    readonly trailer: Promise<Headers>;
-    /** Contains the type of the response (e.g., `basic`, `cors`). */
-    readonly type: ResponseType;
-    /** Contains the URL of the response. */
-    readonly url: string;
-    /** Creates a clone of a `Response` object. */
-    clone(): Response;
-  }
-  export interface DOMStringList {
-    /** Returns the number of strings in strings. */
-    readonly length: number;
-    /** Returns true if strings contains string, and false otherwise. */
-    contains(string: string): boolean;
-    /** Returns the string with index index from strings. */
-    item(index: number): string | null;
-    [index: number]: string;
-  }
-  /** The location (URL) of the object it is linked to. Changes done on it are
-   * reflected on the object it relates to. Both the Document and Window
-   * interface have such a linked Location, accessible via Document.location and
-   * Window.location respectively. */
-  export interface Location {
-    /** Returns a DOMStringList object listing the origins of the ancestor
-     * browsing contexts, from the parent browsing context to the top-level
-     * browsing context. */
-    readonly ancestorOrigins: DOMStringList;
-    /** Returns the Location object's URL's fragment (includes leading "#" if
-     * non-empty).
-     *
-     * Can be set, to navigate to the same URL with a changed fragment (ignores
-     * leading "#"). */
-    hash: string;
-    /** Returns the Location object's URL's host and port (if different from the
-     * default port for the scheme).
-     *
-     * Can be set, to navigate to the same URL with a changed host and port. */
-    host: string;
-    /** Returns the Location object's URL's host.
-     *
-     * Can be set, to navigate to the same URL with a changed host. */
-    hostname: string;
-    /** Returns the Location object's URL.
-     *
-     * Can be set, to navigate to the given URL. */
-    href: string;
-    toString(): string;
-    /** Returns the Location object's URL's origin. */
-    readonly origin: string;
-    /** Returns the Location object's URL's path.
-     *
-     * Can be set, to navigate to the same URL with a changed path. */
-    pathname: string;
-    /** Returns the Location object's URL's port.
-     *
-     * Can be set, to navigate to the same URL with a changed port. */
-    port: string;
-    /** Returns the Location object's URL's scheme.
-     *
-     * Can be set, to navigate to the same URL with a changed scheme. */
-    protocol: string;
-    /** Returns the Location object's URL's query (includes leading "?" if
-     * non-empty).
-     *
-     * Can be set, to navigate to the same URL with a changed query (ignores
-     * leading "?"). */
-    search: string;
-    /**
-     * Navigates to the given URL.
-     */
-    assign(url: string): void;
-    /**
-     * Reloads the current page.
-     */
-    reload(): void;
-    /** Removes the current page from the session history and navigates to the
-     * given URL. */
-    replace(url: string): void;
-  }
+interface UnderlyingSource<R = any> {
+  cancel?: ReadableStreamErrorCallback;
+  pull?: ReadableStreamDefaultControllerCallback<R>;
+  start?: ReadableStreamDefaultControllerCallback<R>;
+  type?: undefined;
+}
+
+interface ReadableStreamErrorCallback {
+  (reason: any): void | PromiseLike<void>;
+}
+
+interface ReadableStreamDefaultControllerCallback<R> {
+  (controller: ReadableStreamDefaultController<R>): void | PromiseLike<void>;
+}
+
+interface ReadableStreamDefaultController<R> {
+  readonly desiredSize: number;
+  enqueue(chunk?: R): void;
+  close(): void;
+  error(e?: any): void;
+}
+
+/** This Streams API interface represents a readable stream of byte data. The
+ * Fetch API offers a concrete instance of a ReadableStream through the body
+ * property of a Response object. */
+interface ReadableStream<R = any> {
+  readonly locked: boolean;
+  cancel(reason?: any): Promise<void>;
+  // TODO(ry) It doesn't seem like Chrome supports this.
+  // getReader(options: { mode: "byob" }): ReadableStreamBYOBReader;
+  getReader(): ReadableStreamDefaultReader<R>;
+  tee(): [ReadableStream<R>, ReadableStream<R>];
+}
+
+declare const ReadableStream: {
+  prototype: ReadableStream;
+  // TODO(ry) This doesn't match lib.dom.d.ts
+  new <R = any>(src?: UnderlyingSource<R>): ReadableStream<R>;
+};
+
+/** This Streams API interface provides a standard abstraction for writing streaming data to a destination, known as a sink. This object comes with built-in backpressure and queuing. */
+interface WritableStream<W = any> {
+  readonly locked: boolean;
+  abort(reason?: any): Promise<void>;
+  getWriter(): WritableStreamDefaultWriter<W>;
+}
+
+interface WritableStreamDefaultWriter<W = any> {
+  readonly closed: Promise<void>;
+  readonly desiredSize: number | null;
+  readonly ready: Promise<void>;
+  abort(reason?: any): Promise<void>;
+  close(): Promise<void>;
+  releaseLock(): void;
+  write(chunk: W): Promise<void>;
+}
+
+interface DOMStringList {
+  /** Returns the number of strings in strings. */
+  readonly length: number;
+  /** Returns true if strings contains string, and false otherwise. */
+  contains(string: string): boolean;
+  /** Returns the string with index index from strings. */
+  item(index: number): string | null;
+  [index: number]: string;
+}
+
+declare class DOMException extends Error {
+  constructor(message?: string, name?: string);
+  readonly name: string;
+  readonly message: string;
+}
+
+/** The location (URL) of the object it is linked to. Changes done on it are
+ * reflected on the object it relates to. Both the Document and Window
+ * interface have such a linked Location, accessible via Document.location and
+ * Window.location respectively. */
+declare interface Location {
+  /** Returns a DOMStringList object listing the origins of the ancestor
+   * browsing contexts, from the parent browsing context to the top-level
+   * browsing context. */
+  readonly ancestorOrigins: DOMStringList;
+  /** Returns the Location object's URL's fragment (includes leading "#" if
+   * non-empty).
+   *
+   * Can be set, to navigate to the same URL with a changed fragment (ignores
+   * leading "#"). */
+  hash: string;
+  /** Returns the Location object's URL's host and port (if different from the
+   * default port for the scheme).
+   *
+   * Can be set, to navigate to the same URL with a changed host and port. */
+  host: string;
+  /** Returns the Location object's URL's host.
+   *
+   * Can be set, to navigate to the same URL with a changed host. */
+  hostname: string;
+  /** Returns the Location object's URL.
+   *
+   * Can be set, to navigate to the given URL. */
+  href: string;
+  toString(): string;
+  /** Returns the Location object's URL's origin. */
+  readonly origin: string;
+  /** Returns the Location object's URL's path.
+   *
+   * Can be set, to navigate to the same URL with a changed path. */
+  pathname: string;
+  /** Returns the Location object's URL's port.
+   *
+   * Can be set, to navigate to the same URL with a changed port. */
+  port: string;
+  /** Returns the Location object's URL's scheme.
+   *
+   * Can be set, to navigate to the same URL with a changed scheme. */
+  protocol: string;
+  /** Returns the Location object's URL's query (includes leading "?" if
+   * non-empty).
+   *
+   * Can be set, to navigate to the same URL with a changed query (ignores
+   * leading "?"). */
+  search: string;
+  /**
+   * Navigates to the given URL.
+   */
+  assign(url: string): void;
+  /**
+   * Reloads the current page.
+   */
+  reload(): void;
+  /** Removes the current page from the session history and navigates to the
+   * given URL. */
+  replace(url: string): void;
 }
 
 type BufferSource = ArrayBufferView | ArrayBuffer;
@@ -3733,6 +3263,22 @@ interface Blob {
 declare const Blob: {
   prototype: Blob;
   new (blobParts?: BlobPart[], options?: BlobPropertyBag): Blob;
+};
+
+interface FilePropertyBag extends BlobPropertyBag {
+  lastModified?: number;
+}
+
+/** Provides information about files and allows JavaScript in a web page to
+ * access their content. */
+interface File extends Blob {
+  readonly lastModified: number;
+  readonly name: string;
+}
+
+declare const File: {
+  prototype: File;
+  new (fileBits: BlobPart[], fileName: string, options?: FilePropertyBag): File;
 };
 
 declare const isConsoleInstance: unique symbol;
@@ -3801,211 +3347,375 @@ declare class Console {
   static [Symbol.hasInstance](instance: Console): boolean;
 }
 
-declare namespace __event {
-  export const eventAttributes: WeakMap<object, any>;
-  export class EventInit implements __domTypes.EventInit {
-    bubbles: boolean;
-    cancelable: boolean;
-    composed: boolean;
-    constructor({
-      bubbles,
-      cancelable,
-      composed,
-    }?: {
-      bubbles?: boolean | undefined;
-      cancelable?: boolean | undefined;
-      composed?: boolean | undefined;
-    });
-  }
-  export class Event implements __domTypes.Event {
-    isTrusted: boolean;
-    private _canceledFlag;
-    private _dispatchedFlag;
-    private _initializedFlag;
-    private _inPassiveListenerFlag;
-    private _stopImmediatePropagationFlag;
-    private _stopPropagationFlag;
-    private _path;
-    constructor(type: string, eventInitDict?: __domTypes.EventInit);
-    readonly bubbles: boolean;
-    cancelBubble: boolean;
-    cancelBubbleImmediately: boolean;
-    readonly cancelable: boolean;
-    readonly composed: boolean;
-    currentTarget: __domTypes.EventTarget;
-    readonly defaultPrevented: boolean;
-    dispatched: boolean;
-    eventPhase: number;
-    readonly initialized: boolean;
-    inPassiveListener: boolean;
-    path: __domTypes.EventPath[];
-    relatedTarget: __domTypes.EventTarget;
-    target: __domTypes.EventTarget;
-    readonly timeStamp: Date;
-    readonly type: string;
-    /** Returns the event鈥檚 path (objects on which listeners will be
-     * invoked). This does not include nodes in shadow trees if the
-     * shadow root was created with its ShadowRoot.mode closed.
-     *
-     *      event.composedPath();
-     */
-    composedPath(): __domTypes.EventPath[];
-    /** Cancels the event (if it is cancelable).
-     * See https://dom.spec.whatwg.org/#set-the-canceled-flag
-     *
-     *      event.preventDefault();
-     */
-    preventDefault(): void;
-    /** Stops the propagation of events further along in the DOM.
-     *
-     *      event.stopPropagation();
-     */
-    stopPropagation(): void;
-    /** For this particular event, no other listener will be called.
-     * Neither those attached on the same element, nor those attached
-     * on elements which will be traversed later (in capture phase,
-     * for instance).
-     *
-     *      event.stopImmediatePropagation();
-     */
-    stopImmediatePropagation(): void;
-  }
+type FormDataEntryValue = File | string;
+
+/** Provides a way to easily construct a set of key/value pairs representing
+ * form fields and their values, which can then be easily sent using the
+ * XMLHttpRequest.send() method. It uses the same format a form would use if the
+ * encoding type were set to "multipart/form-data". */
+interface FormData extends DomIterable<string, FormDataEntryValue> {
+  append(name: string, value: string | Blob, fileName?: string): void;
+  delete(name: string): void;
+  get(name: string): FormDataEntryValue | null;
+  getAll(name: string): FormDataEntryValue[];
+  has(name: string): boolean;
+  set(name: string, value: string | Blob, fileName?: string): void;
 }
 
-declare namespace __customEvent {
-  export const customEventAttributes: WeakMap<object, any>;
-  export class CustomEventInit extends __event.EventInit
-    implements __domTypes.CustomEventInit {
-    detail: any;
-    constructor({
-      bubbles,
-      cancelable,
-      composed,
-      detail,
-    }: __domTypes.CustomEventInit);
-  }
-  export class CustomEvent extends __event.Event
-    implements __domTypes.CustomEvent {
-    constructor(type: string, customEventInitDict?: __domTypes.CustomEventInit);
-    readonly detail: any;
-    initCustomEvent(
-      type: string,
-      bubbles?: boolean,
-      cancelable?: boolean,
-      detail?: any
-    ): void;
-    readonly [Symbol.toStringTag]: string;
-  }
+declare const FormData: {
+  prototype: FormData;
+  // TODO(ry) FormData constructor is non-standard.
+  // new(form?: HTMLFormElement): FormData;
+  new (): FormData;
+};
+
+interface Body {
+  /** A simple getter used to expose a `ReadableStream` of the body contents. */
+  readonly body: ReadableStream<Uint8Array> | null;
+  /** Stores a `Boolean` that declares whether the body has been used in a
+   * response yet.
+   */
+  readonly bodyUsed: boolean;
+  /** Takes a `Response` stream and reads it to completion. It returns a promise
+   * that resolves with an `ArrayBuffer`.
+   */
+  arrayBuffer(): Promise<ArrayBuffer>;
+  /** Takes a `Response` stream and reads it to completion. It returns a promise
+   * that resolves with a `Blob`.
+   */
+  blob(): Promise<Blob>;
+  /** Takes a `Response` stream and reads it to completion. It returns a promise
+   * that resolves with a `FormData` object.
+   */
+  formData(): Promise<FormData>;
+  /** Takes a `Response` stream and reads it to completion. It returns a promise
+   * that resolves with the result of parsing the body text as JSON.
+   */
+  json(): Promise<any>;
+  /** Takes a `Response` stream and reads it to completion. It returns a promise
+   * that resolves with a `USVString` (text).
+   */
+  text(): Promise<string>;
 }
 
-declare namespace __eventTarget {
-  export class EventListenerOptions implements __domTypes.EventListenerOptions {
-    _capture: boolean;
-    constructor({ capture }?: { capture?: boolean | undefined });
-    readonly capture: boolean;
-  }
-  export class AddEventListenerOptions extends EventListenerOptions
-    implements __domTypes.AddEventListenerOptions {
-    _passive: boolean;
-    _once: boolean;
-    constructor({
-      capture,
-      passive,
-      once,
-    }?: {
-      capture?: boolean | undefined;
-      passive?: boolean | undefined;
-      once?: boolean | undefined;
-    });
-    readonly passive: boolean;
-    readonly once: boolean;
-  }
-  export const eventTargetAssignedSlot: unique symbol;
-  export const eventTargetHasActivationBehavior: unique symbol;
-  export class EventTarget implements __domTypes.EventTarget {
-    [__domTypes.eventTargetHost]: __domTypes.EventTarget | null;
-    [__domTypes.eventTargetListeners]: {
-      [type in string]: __domTypes.EventListener[];
-    };
-    [__domTypes.eventTargetMode]: string;
-    [__domTypes.eventTargetNodeType]: __domTypes.NodeType;
-    private [eventTargetAssignedSlot];
-    private [eventTargetHasActivationBehavior];
-    addEventListener(
-      type: string,
-      callback: __domTypes.EventListenerOrEventListenerObject | null,
-      options?: __domTypes.AddEventListenerOptions | boolean
-    ): void;
-    removeEventListener(
-      type: string,
-      callback: __domTypes.EventListenerOrEventListenerObject | null,
-      options?: __domTypes.EventListenerOptions | boolean
-    ): void;
-    dispatchEvent(event: __domTypes.Event): boolean;
-    readonly [Symbol.toStringTag]: string;
-  }
+type HeadersInit = Headers | string[][] | Record<string, string>;
+
+/** This Fetch API interface allows you to perform various actions on HTTP
+ * request and response headers. These actions include retrieving, setting,
+ * adding to, and removing. A Headers object has an associated header list,
+ * which is initially empty and consists of zero or more name and value pairs.
+ *  You can add to this using methods like append() (see Examples.) In all
+ * methods of this interface, header names are matched by case-insensitive byte
+ * sequence. */
+interface Headers {
+  append(name: string, value: string): void;
+  delete(name: string): void;
+  get(name: string): string | null;
+  has(name: string): boolean;
+  set(name: string, value: string): void;
+  forEach(
+    callbackfn: (value: string, key: string, parent: Headers) => void,
+    thisArg?: any
+  ): void;
 }
 
-declare namespace __fetch {
-  class Body
-    implements
-      __domTypes.Body,
-      __domTypes.ReadableStream<Uint8Array>,
-      Deno.ReadCloser {
-    readonly contentType: string;
-    bodyUsed: boolean;
-    readonly locked: boolean;
-    readonly body: __domTypes.ReadableStream<Uint8Array>;
-    constructor(rid: number, contentType: string);
-    arrayBuffer(): Promise<ArrayBuffer>;
-    blob(): Promise<Blob>;
-    formData(): Promise<__domTypes.FormData>;
-    json(): Promise<any>;
-    text(): Promise<string>;
-    read(p: Uint8Array): Promise<number | Deno.EOF>;
-    close(): void;
-    cancel(): Promise<void>;
-    getReader(options: { mode: "byob" }): __domTypes.ReadableStreamBYOBReader;
-    getReader(): __domTypes.ReadableStreamDefaultReader<Uint8Array>;
-    getReader(): __domTypes.ReadableStreamBYOBReader;
-    tee(): [__domTypes.ReadableStream, __domTypes.ReadableStream];
-    [Symbol.asyncIterator](): AsyncIterableIterator<Uint8Array>;
-  }
-  export class Response implements __domTypes.Response {
-    readonly url: string;
-    readonly status: number;
-    statusText: string;
-    readonly type: __domTypes.ResponseType;
-    readonly redirected: boolean;
-    headers: __domTypes.Headers;
-    readonly trailer: Promise<__domTypes.Headers>;
-    bodyUsed: boolean;
-    readonly body: Body;
-    constructor(
-      url: string,
-      status: number,
-      statusText: string,
-      headersList: Array<[string, string]>,
-      rid: number,
-      redirected_: boolean,
-      type_?: null | __domTypes.ResponseType,
-      body_?: null | Body
-    );
-    arrayBuffer(): Promise<ArrayBuffer>;
-    blob(): Promise<Blob>;
-    formData(): Promise<__domTypes.FormData>;
-    json(): Promise<any>;
-    text(): Promise<string>;
-    readonly ok: boolean;
-    clone(): __domTypes.Response;
-    redirect(url: URL | string, status: number): __domTypes.Response;
-  }
-  /** Fetch a resource from the network. */
-  export function fetch(
-    input: __domTypes.Request | URL | string,
-    init?: __domTypes.RequestInit
-  ): Promise<Response>;
+interface Headers extends DomIterable<string, string> {
+  /** Appends a new value onto an existing header inside a `Headers` object, or
+   * adds the header if it does not already exist.
+   */
+  append(name: string, value: string): void;
+  /** Deletes a header from a `Headers` object. */
+  delete(name: string): void;
+  /** Returns an iterator allowing to go through all key/value pairs
+   * contained in this Headers object. The both the key and value of each pairs
+   * are ByteString objects.
+   */
+  entries(): IterableIterator<[string, string]>;
+  /** Returns a `ByteString` sequence of all the values of a header within a
+   * `Headers` object with a given name.
+   */
+  get(name: string): string | null;
+  /** Returns a boolean stating whether a `Headers` object contains a certain
+   * header.
+   */
+  has(name: string): boolean;
+  /** Returns an iterator allowing to go through all keys contained in
+   * this Headers object. The keys are ByteString objects.
+   */
+  keys(): IterableIterator<string>;
+  /** Sets a new value for an existing header inside a Headers object, or adds
+   * the header if it does not already exist.
+   */
+  set(name: string, value: string): void;
+  /** Returns an iterator allowing to go through all values contained in
+   * this Headers object. The values are ByteString objects.
+   */
+  values(): IterableIterator<string>;
+  forEach(
+    callbackfn: (value: string, key: string, parent: this) => void,
+    thisArg?: any
+  ): void;
+  /** The Symbol.iterator well-known symbol specifies the default
+   * iterator for this Headers object
+   */
+  [Symbol.iterator](): IterableIterator<[string, string]>;
 }
+
+declare const Headers: {
+  prototype: Headers;
+  new (init?: HeadersInit): Headers;
+};
+
+type RequestInfo = Request | string;
+type RequestCache =
+  | "default"
+  | "force-cache"
+  | "no-cache"
+  | "no-store"
+  | "only-if-cached"
+  | "reload";
+type RequestCredentials = "include" | "omit" | "same-origin";
+type RequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
+type RequestRedirect = "error" | "follow" | "manual";
+type ReferrerPolicy =
+  | ""
+  | "no-referrer"
+  | "no-referrer-when-downgrade"
+  | "origin"
+  | "origin-when-cross-origin"
+  | "same-origin"
+  | "strict-origin"
+  | "strict-origin-when-cross-origin"
+  | "unsafe-url";
+type BodyInit =
+  | Blob
+  | BufferSource
+  | FormData
+  | URLSearchParams
+  | ReadableStream<Uint8Array>
+  | string;
+type RequestDestination =
+  | ""
+  | "audio"
+  | "audioworklet"
+  | "document"
+  | "embed"
+  | "font"
+  | "image"
+  | "manifest"
+  | "object"
+  | "paintworklet"
+  | "report"
+  | "script"
+  | "sharedworker"
+  | "style"
+  | "track"
+  | "video"
+  | "worker"
+  | "xslt";
+
+interface RequestInit {
+  /**
+   * A BodyInit object or null to set request's body.
+   */
+  body?: BodyInit | null;
+  /**
+   * A string indicating how the request will interact with the browser's cache
+   * to set request's cache.
+   */
+  cache?: RequestCache;
+  /**
+   * A string indicating whether credentials will be sent with the request
+   * always, never, or only when sent to a same-origin URL. Sets request's
+   * credentials.
+   */
+  credentials?: RequestCredentials;
+  /**
+   * A Headers object, an object literal, or an array of two-item arrays to set
+   * request's headers.
+   */
+  headers?: HeadersInit;
+  /**
+   * A cryptographic hash of the resource to be fetched by request. Sets
+   * request's integrity.
+   */
+  integrity?: string;
+  /**
+   * A boolean to set request's keepalive.
+   */
+  keepalive?: boolean;
+  /**
+   * A string to set request's method.
+   */
+  method?: string;
+  /**
+   * A string to indicate whether the request will use CORS, or will be
+   * restricted to same-origin URLs. Sets request's mode.
+   */
+  mode?: RequestMode;
+  /**
+   * A string indicating whether request follows redirects, results in an error
+   * upon encountering a redirect, or returns the redirect (in an opaque
+   * fashion). Sets request's redirect.
+   */
+  redirect?: RequestRedirect;
+  /**
+   * A string whose value is a same-origin URL, "about:client", or the empty
+   * string, to set request's referrer.
+   */
+  referrer?: string;
+  /**
+   * A referrer policy to set request's referrerPolicy.
+   */
+  referrerPolicy?: ReferrerPolicy;
+  /**
+   * An AbortSignal to set request's signal.
+   */
+  signal?: AbortSignal | null;
+  /**
+   * Can only be null. Used to disassociate request from any Window.
+   */
+  window?: any;
+}
+
+/** This Fetch API interface represents a resource request. */
+interface Request extends Body {
+  /**
+   * Returns the cache mode associated with request, which is a string
+   * indicating how the request will interact with the browser's cache when
+   * fetching.
+   */
+  readonly cache: RequestCache;
+  /**
+   * Returns the credentials mode associated with request, which is a string
+   * indicating whether credentials will be sent with the request always, never,
+   * or only when sent to a same-origin URL.
+   */
+  readonly credentials: RequestCredentials;
+  /**
+   * Returns the kind of resource requested by request, e.g., "document" or "script".
+   */
+  readonly destination: RequestDestination;
+  /**
+   * Returns a Headers object consisting of the headers associated with request.
+   * Note that headers added in the network layer by the user agent will not be
+   * accounted for in this object, e.g., the "Host" header.
+   */
+  readonly headers: Headers;
+  /**
+   * Returns request's subresource integrity metadata, which is a cryptographic
+   * hash of the resource being fetched. Its value consists of multiple hashes
+   * separated by whitespace. [SRI]
+   */
+  readonly integrity: string;
+  /**
+   * Returns a boolean indicating whether or not request is for a history
+   * navigation (a.k.a. back-foward navigation).
+   */
+  readonly isHistoryNavigation: boolean;
+  /**
+   * Returns a boolean indicating whether or not request is for a reload
+   * navigation.
+   */
+  readonly isReloadNavigation: boolean;
+  /**
+   * Returns a boolean indicating whether or not request can outlive the global
+   * in which it was created.
+   */
+  readonly keepalive: boolean;
+  /**
+   * Returns request's HTTP method, which is "GET" by default.
+   */
+  readonly method: string;
+  /**
+   * Returns the mode associated with request, which is a string indicating
+   * whether the request will use CORS, or will be restricted to same-origin
+   * URLs.
+   */
+  readonly mode: RequestMode;
+  /**
+   * Returns the redirect mode associated with request, which is a string
+   * indicating how redirects for the request will be handled during fetching. A
+   * request will follow redirects by default.
+   */
+  readonly redirect: RequestRedirect;
+  /**
+   * Returns the referrer of request. Its value can be a same-origin URL if
+   * explicitly set in init, the empty string to indicate no referrer, and
+   * "about:client" when defaulting to the global's default. This is used during
+   * fetching to determine the value of the `Referer` header of the request
+   * being made.
+   */
+  readonly referrer: string;
+  /**
+   * Returns the referrer policy associated with request. This is used during
+   * fetching to compute the value of the request's referrer.
+   */
+  readonly referrerPolicy: ReferrerPolicy;
+  /**
+   * Returns the signal associated with request, which is an AbortSignal object
+   * indicating whether or not request has been aborted, and its abort event
+   * handler.
+   */
+  readonly signal: AbortSignal;
+  /**
+   * Returns the URL of request as a string.
+   */
+  readonly url: string;
+  clone(): Request;
+}
+
+declare const Request: {
+  prototype: Request;
+  new (input: RequestInfo, init?: RequestInit): Request;
+};
+
+type ResponseType =
+  | "basic"
+  | "cors"
+  | "default"
+  | "error"
+  | "opaque"
+  | "opaqueredirect";
+
+/** This Fetch API interface represents the response to a request. */
+interface Response extends Body {
+  readonly headers: Headers;
+  readonly ok: boolean;
+  readonly redirected: boolean;
+  readonly status: number;
+  readonly statusText: string;
+  readonly trailer: Promise<Headers>;
+  readonly type: ResponseType;
+  readonly url: string;
+  clone(): Response;
+}
+
+declare const Response: {
+  prototype: Response;
+
+  // TODO(#4667) Response constructor is non-standard.
+  // new(body?: BodyInit | null, init?: ResponseInit): Response;
+  new (
+    url: string,
+    status: number,
+    statusText: string,
+    headersList: Array<[string, string]>,
+    rid: number,
+    redirected_: boolean,
+    type_?: null | ResponseType,
+    body_?: null | Body
+  ): Response;
+
+  error(): Response;
+  redirect(url: string, status?: number): Response;
+};
+
+/** Fetch a resource from the network. */
+declare function fetch(
+  input: Request | URL | string,
+  init?: RequestInit
+): Promise<Response>;
 
 declare function atob(s: string): string;
 
@@ -4164,7 +3874,7 @@ declare const URLSearchParams: {
   toString(): string;
 };
 
-/** The URL聽interface represents an object providing static methods used for creating object URLs. */
+/** The URL interface represents an object providing static methods used for creating object URLs. */
 interface URL {
   hash: string;
   host: string;
@@ -4189,10 +3899,44 @@ declare const URL: {
   revokeObjectURL(url: string): void;
 };
 
-declare class Worker {
-  onerror?: (e: Event) => void;
-  onmessage?: (data: any) => void;
-  onmessageerror?: () => void;
+interface MessageEventInit extends EventInit {
+  data?: any;
+  origin?: string;
+  lastEventId?: string;
+}
+
+declare class MessageEvent extends Event {
+  readonly data: any;
+  readonly origin: string;
+  readonly lastEventId: string;
+  constructor(type: string, eventInitDict?: MessageEventInit);
+}
+
+interface ErrorEventInit extends EventInit {
+  message?: string;
+  filename?: string;
+  lineno?: number;
+  colno?: number;
+  error?: any;
+}
+
+declare class ErrorEvent extends Event {
+  readonly message: string;
+  readonly filename: string;
+  readonly lineno: number;
+  readonly colno: number;
+  readonly error: any;
+  constructor(type: string, eventInitDict?: ErrorEventInit);
+}
+
+interface PostMessageOptions {
+  transfer?: any[];
+}
+
+declare class Worker extends EventTarget {
+  onerror?: (e: ErrorEvent) => void;
+  onmessage?: (e: MessageEvent) => void;
+  onmessageerror?: (e: MessageEvent) => void;
   constructor(
     specifier: string,
     options?: {
@@ -4200,7 +3944,8 @@ declare class Worker {
       name?: string;
     }
   );
-  postMessage(data: any): void;
+  postMessage(message: any, transfer: ArrayBuffer[]): void;
+  postMessage(message: any, options?: PostMessageOptions): void;
   terminate(): void;
 }
 
@@ -4215,32 +3960,237 @@ declare namespace performance {
   export function now(): number;
 }
 
-/* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+interface EventInit {
+  bubbles?: boolean;
+  cancelable?: boolean;
+  composed?: boolean;
+}
+
+/** An event which takes place in the DOM. */
+declare class Event {
+  constructor(type: string, eventInitDict?: EventInit);
+  /** Returns true or false depending on how event was initialized. True if
+   * event goes through its target's ancestors in reverse tree order, and
+   * false otherwise. */
+  readonly bubbles: boolean;
+  cancelBubble: boolean;
+  /** Returns true or false depending on how event was initialized. Its return
+   * value does not always carry meaning, but true can indicate that part of the
+   * operation during which event was dispatched, can be canceled by invoking
+   * the preventDefault() method. */
+  readonly cancelable: boolean;
+  /** Returns true or false depending on how event was initialized. True if
+   * event invokes listeners past a ShadowRoot node that is the root of its
+   * target, and false otherwise. */
+  readonly composed: boolean;
+  /** Returns the object whose event listener's callback is currently being
+   * invoked. */
+  readonly currentTarget: EventTarget | null;
+  /** Returns true if preventDefault() was invoked successfully to indicate
+   * cancellation, and false otherwise. */
+  readonly defaultPrevented: boolean;
+  /** Returns the event's phase, which is one of NONE, CAPTURING_PHASE,
+   * AT_TARGET, and BUBBLING_PHASE. */
+  readonly eventPhase: number;
+  /** Returns true if event was dispatched by the user agent, and false
+   * otherwise. */
+  readonly isTrusted: boolean;
+  /** Returns the object to which event is dispatched (its target). */
+  readonly target: EventTarget | null;
+  /** Returns the event's timestamp as the number of milliseconds measured
+   * relative to the time origin. */
+  readonly timeStamp: number;
+  /** Returns the type of event, e.g. "click", "hashchange", or "submit". */
+  readonly type: string;
+  /** Returns the invocation target objects of event's path (objects on which
+   * listeners will be invoked), except for any nodes in shadow trees of which
+   * the shadow root's mode is "closed" that are not reachable from event's
+   * currentTarget. */
+  composedPath(): EventTarget[];
+  /** If invoked when the cancelable attribute value is true, and while
+   * executing a listener for the event with passive set to false, signals to
+   * the operation that caused event to be dispatched that it needs to be
+   * canceled. */
+  preventDefault(): void;
+  /** Invoking this method prevents event from reaching any registered event
+   * listeners after the current one finishes running and, when dispatched in a
+   * tree, also prevents event from reaching any other objects. */
+  stopImmediatePropagation(): void;
+  /** When dispatched in a tree, invoking this method prevents event from
+   * reaching any objects other than the current object. */
+  stopPropagation(): void;
+  readonly AT_TARGET: number;
+  readonly BUBBLING_PHASE: number;
+  readonly CAPTURING_PHASE: number;
+  readonly NONE: number;
+  static readonly AT_TARGET: number;
+  static readonly BUBBLING_PHASE: number;
+  static readonly CAPTURING_PHASE: number;
+  static readonly NONE: number;
+}
+
+/**
+ * EventTarget is a DOM interface implemented by objects that can receive events
+ * and may have listeners for them.
+ */
+declare class EventTarget {
+  /** Appends an event listener for events whose type attribute value is type.
+   * The callback argument sets the callback that will be invoked when the event
+   * is dispatched.
+   *
+   * The options argument sets listener-specific options. For compatibility this
+   * can be a boolean, in which case the method behaves exactly as if the value
+   * was specified as options's capture.
+   *
+   * When set to true, options's capture prevents callback from being invoked
+   * when the event's eventPhase attribute value is BUBBLING_PHASE. When false
+   * (or not present), callback will not be invoked when event's eventPhase
+   * attribute value is CAPTURING_PHASE. Either way, callback will be invoked if
+   * event's eventPhase attribute value is AT_TARGET.
+   *
+   * When set to true, options's passive indicates that the callback will not
+   * cancel the event by invoking preventDefault(). This is used to enable
+   * performance optimizations described in § 2.8 Observing event listeners.
+   *
+   * When set to true, options's once indicates that the callback will only be
+   * invoked once after which the event listener will be removed.
+   *
+   * The event listener is appended to target's event listener list and is not
+   * appended if it has the same type, callback, and capture. */
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  /** Dispatches a synthetic event event to target and returns true if either
+   * event's cancelable attribute value is false or its preventDefault() method
+   * was not invoked, and false otherwise. */
+  dispatchEvent(event: Event): boolean;
+  /** Removes the event listener in target's event listener list with the same
+   * type, callback, and options. */
+  removeEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: EventListenerOptions | boolean
+  ): void;
+  [Symbol.toStringTag]: string;
+}
+
+interface EventListener {
+  (evt: Event): void | Promise<void>;
+}
+
+interface EventListenerObject {
+  handleEvent(evt: Event): void | Promise<void>;
+}
+
+declare type EventListenerOrEventListenerObject =
+  | EventListener
+  | EventListenerObject;
+
+interface AddEventListenerOptions extends EventListenerOptions {
+  once?: boolean;
+  passive?: boolean;
+}
+
+interface EventListenerOptions {
+  capture?: boolean;
+}
+
+/** Events measuring progress of an underlying process, like an HTTP request
+ * (for an XMLHttpRequest, or the loading of the underlying resource of an
+ * <img>, <audio>, <video>, <style> or <link>). */
+interface ProgressEvent<T extends EventTarget = EventTarget> extends Event {
+  readonly lengthComputable: boolean;
+  readonly loaded: number;
+  readonly target: T | null;
+  readonly total: number;
+}
+
+interface CustomEventInit<T = any> extends EventInit {
+  detail?: T;
+}
+
+declare class CustomEvent<T = any> extends Event {
+  constructor(typeArg: string, eventInitDict?: CustomEventInit<T>);
+  /** Returns any custom data event was created with. Typically used for
+   * synthetic events. */
+  readonly detail: T;
+}
+
+/** A controller object that allows you to abort one or more DOM requests as and
+ * when desired. */
+declare class AbortController {
+  /** Returns the AbortSignal object associated with this object. */
+  readonly signal: AbortSignal;
+  /** Invoking this method will set this object's AbortSignal's aborted flag and
+   * signal to any observers that the associated activity is to be aborted. */
+  abort(): void;
+}
+
+interface AbortSignalEventMap {
+  abort: Event;
+}
+
+/** A signal object that allows you to communicate with a DOM request (such as a
+ * Fetch) and abort it if required via an AbortController object. */
+interface AbortSignal extends EventTarget {
+  /** Returns true if this AbortSignal's AbortController has signaled to abort,
+   * and false otherwise. */
+  readonly aborted: boolean;
+  onabort: ((this: AbortSignal, ev: Event) => any) | null;
+  addEventListener<K extends keyof AbortSignalEventMap>(
+    type: K,
+    listener: (this: AbortSignal, ev: AbortSignalEventMap[K]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  removeEventListener<K extends keyof AbortSignalEventMap>(
+    type: K,
+    listener: (this: AbortSignal, ev: AbortSignalEventMap[K]) => any,
+    options?: boolean | EventListenerOptions
+  ): void;
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ): void;
+}
+
+declare const AbortSignal: {
+  prototype: AbortSignal;
+  new (): AbortSignal;
+};
 
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.shared_globals" />
 /// <reference lib="esnext" />
 
-declare interface Window extends WindowOrWorkerGlobalScope {
-  window: Window & WindowOrWorkerGlobalScope & typeof globalThis;
-  self: Window & WindowOrWorkerGlobalScope & typeof globalThis;
-  onload: Function | undefined;
-  onunload: Function | undefined;
+declare interface Window extends EventTarget {
+  readonly window: Window & typeof globalThis;
+  readonly self: Window & typeof globalThis;
+  onload: ((this: Window, ev: Event) => any) | null;
+  onunload: ((this: Window, ev: Event) => any) | null;
+  location: Location;
   crypto: Crypto;
   close: () => void;
-  closed: boolean;
+  readonly closed: boolean;
   Deno: typeof Deno;
 }
 
-declare const window: Window & WindowOrWorkerGlobalScope & typeof globalThis;
-declare const self: Window & WindowOrWorkerGlobalScope & typeof globalThis;
-declare const onload: Function | undefined;
-declare const onunload: Function | undefined;
+declare const window: Window & typeof globalThis;
+declare const self: Window & typeof globalThis;
+declare const onload: ((this: Window, ev: Event) => any) | null;
+declare const onunload: ((this: Window, ev: Event) => any) | null;
 declare const crypto: Crypto;
 
 declare interface Crypto {
@@ -4263,4 +4213,4 @@ declare interface Crypto {
   ): T;
 }
 
-/* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-interface, @typescript-eslint/no-explicit-any */
+/* eslint-enable @typescript-eslint/no-explicit-any */
