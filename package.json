@@ -1,6 +1,6 @@
 {
   "name": "typescript-deno-plugin",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Deno language service plugin for TypeScript",
   "main": "out/index.js",
   "scripts": {
