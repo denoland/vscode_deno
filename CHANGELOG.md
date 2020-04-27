@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0 - 2020-04-27
+
+- upgrade `deno@0.41.0`, `typescript-deno-plugin@1.5.0`
+
 ## 1.5.0 - 2020-04-10
 
 - upgrade `execa@4.0.0`, `typescript@3.8.3`，`typescript-deno-plugin@1.3.0`
