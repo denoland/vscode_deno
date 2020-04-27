@@ -1,4 +1,4 @@
 {
   "deno.enable": true,
-  "deno.dts_file": ["./demo.d.ts"]
+  "deno.import_map": "./import_map.json"
 }
