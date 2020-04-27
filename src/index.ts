@@ -7,7 +7,7 @@ import mockRequire from "mock-require";
 import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
-import { getDenoDir } from "./shared";
+import { getDenoDir, getGlobalDtsPath, getLocalDtsPath, getDtsPathForVscode } from "./utils";
 
 let logger: Logger;
 
@@ -19,7 +19,6 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
   const OPTIONS: ts_module.CompilerOptions = {
     allowJs: true,
     checkJs: true,
-    allowNonTsExtensions: true,
     esModuleInterop: true,
     module: typescript.ModuleKind.ESNext,
     moduleResolution: typescript.ModuleResolutionKind.NodeJs,
@@ -36,6 +35,7 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
   };
 
   const OPTIONS_OVERWRITE_BY_DENO: ts_module.CompilerOptions = {
+    allowNonTsExtensions: false,
     jsx: OPTIONS.jsx,
     module: OPTIONS.module,
     moduleResolution: OPTIONS.moduleResolution,
@@ -44,6 +44,10 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
     noEmit: OPTIONS.noEmit,
     noEmitHelpers: OPTIONS.noEmitHelpers,
     target: typescript.ScriptTarget.ESNext,
+    paths: {
+      "abc": ['./c.ts'],
+      "abc.ts": ['./c.ts'],
+    },
   };
 
   return {
@@ -66,7 +70,9 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
         redirectedReference?: ts_module.ResolvedProjectReference,
         options: ts_module.CompilerOptions = OPTIONS,
       ) => {
-        moduleNames = moduleNames.map(convertRemoteToLocalCache).map(stripExtNameDotTs);
+        moduleNames = moduleNames
+          .map(convertRemoteToLocalCache)
+          .map(stripExtNameDotTs);
 
         return resolveModuleNames.call(
           info.languageServiceHost,
@@ -83,6 +89,7 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
       info.languageServiceHost.getCompilationSettings = () => {
         const projectConfig = getCompilationSettings.call(info.languageServiceHost);
         const compilationSettings = merge(merge(OPTIONS, projectConfig), OPTIONS_OVERWRITE_BY_DENO);
+        compilationSettings.baseUrl = info.project.getCurrentDirectory();
         logger.info(`compilationSettings:${JSON.stringify(compilationSettings)}`);
         return compilationSettings;
       };
@@ -141,6 +148,46 @@ module.exports = function init({ typescript }: { typescript: typeof ts_module })
 
         return details;
       };
+
+      // const getSemanticDiagnostics = info.languageService.getSemanticDiagnostics;
+
+      // info.languageService.getSemanticDiagnostics = (filename: string) => {
+      //   const diagnostics = getSemanticDiagnostics(filename);
+
+      //   // ref: https://github.com/denoland/deno/blob/da8cb408c878aa6e90542e26173f1f14b5254d29/cli/js/compiler/util.ts#L262
+      //   const ignoredDiagnostics = [
+      //     // TS2306: File 'file:///Users/rld/src/deno/cli/tests/subdir/amd_like.js' is
+      //     // not a module.
+      //     2306,
+      //     // TS1375: 'await' expressions are only allowed at the top level of a file
+      //     // when that file is a module, but this file has no imports or exports.
+      //     // Consider adding an empty 'export {}' to make this file a module.
+      //     1375,
+      //     // TS1103: 'for-await-of' statement is only allowed within an async function
+      //     // or async generator.
+      //     1103,
+      //     // TS2691: An import path cannot end with a '.ts' extension. Consider
+      //     // importing 'bad-module' instead.
+      //     2691,
+      //     // TS5009: Cannot find the common subdirectory path for the input files.
+      //     5009,
+      //     // TS5055: Cannot write file
+      //     // 'http://localhost:4545/cli/tests/subdir/mt_application_x_javascript.j4.js'
+      //     // because it would overwrite input file.
+      //     5055,
+      //     // TypeScript is overly opinionated that only CommonJS modules kinds can
+      //     // support JSON imports.  Allegedly this was fixed in
+      //     // Microsoft/TypeScript#26825 but that doesn't seem to be working here,
+      //     // so we will ignore complaints about this compiler setting.
+      //     5070,
+      //     // TS7016: Could not find a declaration file for module '...'. '...'
+      //     // implicitly has an 'any' type.  This is due to `allowJs` being off by
+      //     // default but importing of a JavaScript module.
+      //     7016,
+      //   ];
+
+      //   return diagnostics.filter((v: ts_module.Diagnostic) => !ignoredDiagnostics.includes(v.code));
+      // };
 
       return info.languageService;
     },
@@ -212,41 +259,4 @@ function fallbackHeader(modulePath: string): string {
     return convertRemoteToLocalCache(headers.redirect_to);
   }
   return modulePath;
-}
-
-function getDtsPathForVscode(info: ts_module.server.PluginCreateInfo): string | undefined {
-  const bundledDtsPath = info.config.dtsPath;
-
-  if (bundledDtsPath && fs.existsSync(bundledDtsPath)) {
-    return bundledDtsPath;
-  }
-
-  return undefined;
-}
-
-function getGlobalDtsPath(): string | undefined {
-  const denoDir = getDenoDir();
-  const globalDtsPath = path.resolve(denoDir, "lib.deno_runtime.d.ts");
-
-  if (fs.existsSync(globalDtsPath)) {
-    return globalDtsPath;
-  }
-
-  return undefined;
-}
-
-function getLocalDtsPath(info: ts.server.PluginCreateInfo): string | undefined {
-  const localDtsPath = path.resolve(
-    info.project.getCurrentDirectory(),
-    "node_modules",
-    "typescript-deno-plugin",
-    "lib",
-    "lib.deno_runtime.d.ts",
-  );
-
-  if (fs.existsSync(localDtsPath)) {
-    return localDtsPath;
-  }
-
-  return undefined;
 }
