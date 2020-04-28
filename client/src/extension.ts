@@ -404,6 +404,12 @@ Executable ${this.denoInfo.executablePath}`;
       ) {
         const config = this.getConfiguration(document.uri);
 
+        commands.executeCommand(
+          "setContext",
+          "denoExtensionActivated",
+          !!config.enable
+        );
+
         this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
         this.updateDiagnostic(document.uri);
       }
@@ -602,9 +608,9 @@ Executable ${this.denoInfo.executablePath}`;
       window.registerTreeDataProvider("deno", treeView)
     );
 
-    const extension = extensions.getExtension(this.id);
+    this.sync(window.activeTextEditor?.document);
 
-    commands.executeCommand("setContext", "denoExtensionActivated", true);
+    const extension = extensions.getExtension(this.id);
 
     console.log(
       `Congratulations, your extension "${this.id} ${extension?.packageJSON["version"]}" is now active!`
