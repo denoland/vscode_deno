@@ -4,7 +4,6 @@
   "deno.dependency": "Deno Dependencies",
   "deno.command.restart_server": "Starte den Deno Language Server neu",
   "deno.config.enabled": "Steuert, ob Deno aktiviert ist oder nicht.\n\n**In der globalen Konfiguration nicht empfohlen**",
-  "deno.config.dts_file": "Der Dateipfad der Deno TypeScript-Deklarationsdatei (.d.ts).\n\nDies kann ein Pfad sein, der relativ zum Projektpfad ist, oder ein absoluter Pfad.\n\n**Wird in der globalen Konfiguration nicht empfohlen, ausser wenn Sie einen absoluten Pfad verwenden.**",
   "deno.config.import_map": "Der Dateipfad einer import map.\n\nDies kann ein Pfad sein, der relativ zum Projektpfad ist, oder ein absoluter Pfad.\n\n**In der globalen Konfiguration nicht empfohlen**",
   "deno.initializing": "Deno Language Server wird initialisiert ...",
   "err.not_install_deno": "Konnte `deno` in Ihrem $PATH nicht finden. Bitte installieren Sie `deno` und starten Sie die Erweiterung neu.",

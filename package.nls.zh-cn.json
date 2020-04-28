@@ -4,7 +4,6 @@
   "deno.dependency": "Deno 依赖模块",
   "deno.command.restart_server": "重启 Deno 语言服务器",
   "deno.config.enabled": "是否启用 Deno。\n\n**不推荐在全局配置中设置**",
-  "deno.config.dts_file": "Typescript 的声明文件(.d.ts)路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
   "deno.config.import_map": "Import Map 的文件路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
   "deno.initializing": "正在初始化 Deno 语言服务器...",
   "err.not_install_deno": "在 $PATH 变量中找不到 Deno。请在设置后重新启动扩展。",
