@@ -133,8 +133,7 @@ test("core / module_resolver: resolve module from local", () => {
     },
     {
       extension: ".ts",
-      origin:
-        "file:///Users/axetroy/gpm/github.com/axetroy/vscode-deno/core/cache.ts",
+      origin: `file://${path.join(__dirname, "cache.ts")}`,
       filepath: path.join(__dirname, "cache.ts"),
     },
     {
