@@ -36,12 +36,12 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
 
   await Promise.all(
     protocols.map(async (protocol) => {
-      const protocolFolderpath = path.join(depsRootDir, protocol);
-      const protocolStat = await fs.stat(protocolFolderpath);
+      const protocolFolderPath = path.join(depsRootDir, protocol);
+      const protocolStat = await fs.stat(protocolFolderPath);
 
       if (protocolStat.isDirectory()) {
-        const origins = (await fs.readdir(protocolFolderpath)).map((v) =>
-          path.join(protocolFolderpath, v)
+        const origins = (await fs.readdir(protocolFolderPath)).map((v) =>
+          path.join(protocolFolderPath, v)
         );
 
         await Promise.all(
