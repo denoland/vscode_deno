@@ -112,6 +112,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     const { project, languageService, languageServiceHost } = info;
     const projectDirectory = project.getCurrentDirectory();
 
+    function getRealPath(filepath: string): string {
+      return project.realpath ? project.realpath(filepath) : filepath;
+    }
+
     // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
     process.chdir(projectDirectory);
 
@@ -196,24 +200,15 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           );
         }
 
-        const realpath = project.realpath;
-
-        // in Windows.
-        // containingFile may be a unix-like style
-        // eg. c:/Users/admin/path/to/file.ts
-        // This is not a legal file path in Windows
-        // It will cause a series of bugs, so here we get the real file path
-        let realContainingFile = realpath
-          ? realpath(containingFile)
-          : containingFile;
-
         // containingFile may be `untitled: ^ Untitled-1`
-        if (isUntitledDocument(realContainingFile)) {
-          realContainingFile = path.join(
-            project.getCurrentDirectory(),
-            "untitled"
-          );
-        }
+        const realContainingFile = isUntitledDocument(containingFile)
+          ? path.join(project.getCurrentDirectory(), "untitled")
+          : // in Windows.
+            // containingFile may be a unix-like style
+            // eg. c:/Users/admin/path/to/file.ts
+            // This is not a legal file path in Windows
+            // It will cause a series of bugs, so here we get the real file path
+            getRealPath(containingFile);
 
         if (!this.typescript.sys.fileExists(realContainingFile)) {
           return [];
@@ -398,24 +393,15 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           return resolveModuleNames(moduleNames, containingFile, ...rest);
         }
 
-        const realpath = project.realpath;
-
-        // in Windows.
-        // containingFile may be a unix-like style
-        // eg. c:/Users/admin/path/to/file.ts
-        // This is not a legal file path in Windows
-        // It will cause a series of bugs, so here we get the real file path
-        let realContainingFile = realpath
-          ? realpath(containingFile)
-          : containingFile;
-
         // containingFile may be `untitled: ^ Untitled-1`
-        if (isUntitledDocument(realContainingFile)) {
-          realContainingFile = path.join(
-            project.getCurrentDirectory(),
-            "untitled"
-          );
-        }
+        const realContainingFile = isUntitledDocument(containingFile)
+          ? path.join(project.getCurrentDirectory(), "untitled")
+          : // in Windows.
+            // containingFile may be a unix-like style
+            // eg. c:/Users/admin/path/to/file.ts
+            // This is not a legal file path in Windows
+            // It will cause a series of bugs, so here we get the real file path
+            getRealPath(containingFile);
 
         const importMapsFilepath = this.configurationManager.config.import_map
           ? path.isAbsolute(this.configurationManager.config.import_map)
