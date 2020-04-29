@@ -136,6 +136,14 @@ export class ModuleResolver implements ModuleResolverInterface {
       return this.resolveFromRemote(moduleName, originModuleName);
     }
 
+    if (moduleName.startsWith("file://")) {
+      // file protocol is always a unix style path
+      // eg: file:///Users/deno/project/mod.ts in MacOS
+      // eg: file:///Home/deno/project/mod.ts in Linux
+      // eg: file://d:/project/mod.ts in Window
+      moduleName = moduleName.replace(/^file:\/\//, "");
+    }
+
     const moduleFilepath = path.resolve(
       path.dirname(this.containingFile),
       normalizeFilepath(moduleName)

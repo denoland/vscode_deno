@@ -76,6 +76,9 @@ test("core / module_resolver: resolve module from local", () => {
       "./module_not_exist.ts",
       "https://module.not.exist.com/mod.ts",
       "https://example.com/x-typescript-types",
+      `file://${path.join(__dirname, "cache.ts")}`,
+      `file://./cache.ts`,
+      `file://../client/src/extension.ts`,
     ])
   ).toEqual([
     {
@@ -127,6 +130,22 @@ test("core / module_resolver: resolve module from local", () => {
         "example.com",
         "7617203222d94a074bea3e57a893d74af5546f17c1f90760f37f46299faf0cb0"
       ),
+    },
+    {
+      extension: ".ts",
+      origin:
+        "file:///Users/axetroy/gpm/github.com/axetroy/vscode-deno/core/cache.ts",
+      filepath: path.join(__dirname, "cache.ts"),
+    },
+    {
+      extension: ".ts",
+      origin: "file://./cache.ts",
+      filepath: path.join(__dirname, "cache.ts"),
+    },
+    {
+      extension: ".ts",
+      origin: "file://../client/src/extension.ts",
+      filepath: path.join(__dirname, "..", "client", "src", "extension.ts"),
     },
   ] as ResolvedModule[]);
 });
