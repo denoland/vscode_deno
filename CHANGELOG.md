@@ -1,3 +1,10 @@
+## [3.6.2](https://github.com/axetroy/vscode-deno/compare/v3.6.1...v3.6.2) (2020-04-29)
+
+### Bug Fixes
+
+- file protocol import statement not work. close [#146](https://github.com/axetroy/vscode-deno/issues/146) ([67897bc](https://github.com/axetroy/vscode-deno/commit/67897bc762b1c1b2997b36292ca91eb777a3e9bf))
+- not deno project also show deno deps tree view. ([81303df](https://github.com/axetroy/vscode-deno/commit/81303df0e2cc8a942d4a5cd4a7c157b7bebeac5e))
+
 ## [3.6.1](https://github.com/axetroy/vscode-deno/compare/v3.6.0...v3.6.1) (2020-04-17)
 
 ### Bug Fixes
