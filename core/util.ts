@@ -75,3 +75,8 @@ export function isValidDenoDocument(languageID: string): boolean {
     "typescriptreact",
   ].includes(languageID);
 }
+
+export function isUntitledDocument(filename: string): boolean {
+  // In vscode, tsserver may crash because a temporary document is not saved
+  return /^untitled:/.test(filename);
+}

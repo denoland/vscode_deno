@@ -6,6 +6,7 @@ import {
   hashURL,
   normalizeFilepath,
   isValidDenoDocument,
+  isUntitledDocument,
 } from "./util";
 
 test("core / util / pathExists", async () => {
@@ -63,4 +64,11 @@ test("core / util / isValidDenoDocument", () => {
   expect(isValidDenoDocument("javascriptreact")).toBe(true);
   expect(isValidDenoDocument("typescript")).toBe(true);
   expect(isValidDenoDocument("typescriptreact")).toBe(true);
+});
+
+test("core / util / isUntitledDocument", () => {
+  expect(isUntitledDocument("foo")).toBe(false);
+  expect(isUntitledDocument("./foo")).toBe(false);
+  expect(isUntitledDocument("../bar")).toBe(false);
+  expect(isUntitledDocument("untitled: ")).toBe(true);
 });

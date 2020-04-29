@@ -8,7 +8,7 @@ import { ConfigurationManager, DenoPluginConfig } from "./configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
-import { normalizeFilepath } from "../../core/util";
+import { normalizeFilepath, isUntitledDocument } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
 import { getImportModules } from "../../core/deno_deps";
@@ -208,9 +208,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           : containingFile;
 
         // containingFile may be `untitled: ^ Untitled-1`
-        // This is not a valid file path and may cause the typescript server to crash
-        if (/^untitled:/.test(realContainingFile)) {
-          realContainingFile = project.getCurrentDirectory();
+        if (isUntitledDocument(realContainingFile)) {
+          realContainingFile = path.join(
+            project.getCurrentDirectory(),
+            "untitled"
+          );
         }
 
         if (!this.typescript.sys.fileExists(realContainingFile)) {
@@ -408,9 +410,11 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           : containingFile;
 
         // containingFile may be `untitled: ^ Untitled-1`
-        // This is not a valid file path and may cause the typescript server to crash
-        if (/^untitled:/.test(realContainingFile)) {
-          realContainingFile = project.getCurrentDirectory();
+        if (isUntitledDocument(realContainingFile)) {
+          realContainingFile = path.join(
+            project.getCurrentDirectory(),
+            "untitled"
+          );
         }
 
         const importMapsFilepath = this.configurationManager.config.import_map
