@@ -175,8 +175,6 @@ export class Diagnostics {
           return;
         }
 
-        console.log(moduleName);
-
         if (
           path.isAbsolute(moduleName) ||
           moduleName.startsWith("./") ||

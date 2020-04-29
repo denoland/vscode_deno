@@ -11,5 +11,6 @@
   "diagnostic.fix.create_module": "创建模块。",
   "diagnostic.fix.fetch_module": "拉取模块。",
   "diagnostic.report.module_not_found_locally": "找不到模块 `{0}`。",
-  "diagnostic.report.invalid_import": "导入模块 `{0}` 必须是一个相对路径或者 HTTP 的 URL"
+  "diagnostic.report.invalid_import": "导入模块 `{0}` 必须是一个相对路径或者 HTTP 的 URL",
+  "code_len.cached_module": "Deno 缓存模块 `{0}`。 点击复制到剪切板。"
 }

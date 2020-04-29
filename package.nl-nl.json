@@ -11,5 +11,6 @@
   "diagnostic.fix.create_module": "Maak de module",
   "diagnostic.fix.fetch_module": "Download de module",
   "diagnostic.report.module_not_found_locally": "Kan module `{0}` niet lokaal vinden.",
-  "diagnostic.report.invalid_import": "Import module `{0}` must be a relative path or remote HTTP URL."
+  "diagnostic.report.invalid_import": "Import module `{0}` must be a relative path or remote HTTP URL.",
+  "code_len.cached_module": "Deno cached module `{0}`. Click to copy to clipboard."
 }
