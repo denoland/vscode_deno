@@ -191,40 +191,40 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions,
   );
 
-  const formatter = languages.registerDocumentFormattingEditProvider(
-    ["typescript", "javascript", "markdown", "json"],
-    {
-      async provideDocumentFormattingEdits(document: TextDocument) {
-        if (document.isUntitled) {
-          return;
-        }
-        await document.save();
-        const filename = path.basename(document.uri.fsPath);
-        const cwd = path.dirname(document.uri.fsPath);
-        const r = await execa(
-          "deno",
-          [
-            "run",
-            "--allow-read",
-            "https://deno.land/std/prettier/main.ts",
-            filename,
-          ],
-          { cwd },
-        );
-        const fullRange = new Range(
-          document.positionAt(0),
-          document.positionAt(document.getText().length - 1),
-        );
-        return [new TextEdit(fullRange, r.stdout)];
-      },
-    },
-  );
+  // const formatter = languages.registerDocumentFormattingEditProvider(
+  //   ["typescript", "javascript", "markdown", "json"],
+  //   {
+  //     async provideDocumentFormattingEdits(document: TextDocument) {
+  //       if (document.isUntitled) {
+  //         return;
+  //       }
+  //       await document.save();
+  //       const filename = path.basename(document.uri.fsPath);
+  //       const cwd = path.dirname(document.uri.fsPath);
+  //       const r = await execa(
+  //         "deno",
+  //         [
+  //           "run",
+  //           "--allow-read",
+  //           "https://deno.land/std/prettier/main.ts",
+  //           filename,
+  //         ],
+  //         { cwd },
+  //       );
+  //       const fullRange = new Range(
+  //         document.positionAt(0),
+  //         document.positionAt(document.getText().length - 1),
+  //       );
+  //       return [new TextEdit(fullRange, r.stdout)];
+  //     },
+  //   },
+  // );
 
   synchronizeConfiguration(api);
 
   const disposables = [
     configurationListener,
-    formatter,
+    // formatter,
     commands.registerCommand("deno.enable", enable),
     commands.registerCommand("deno.disable", disable),
     commands.registerCommand("deno.showOutputChannel", async () => {
