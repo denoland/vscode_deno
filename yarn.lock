@@ -296,6 +296,11 @@ cross-spawn@^7.0.0:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+crypto@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/crypto/-/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
+  integrity sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==
+
 debug@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
@@ -1158,11 +1163,12 @@ type-fest@^0.11.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.11.0.tgz#97abf0872310fed88a5c466b25681576145e33f1"
   integrity sha512-OdjXJxnCN1AvyLSzeKIgXTXxV+99ZuXl3Hpo9XpJAv9MBcHrrJOQ5kV7ypXOuQie+AmWG25hLbiKdwYTifzcfQ==
 
-typescript-deno-plugin@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.npm.taobao.org/typescript-deno-plugin/download/typescript-deno-plugin-1.5.0.tgz?cache=0&sync_timestamp=1587970660122&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Ftypescript-deno-plugin%2Fdownload%2Ftypescript-deno-plugin-1.5.0.tgz#1684b7e3c59ad48bc95a990f69f5ff65690d7888"
-  integrity sha1-FoS348Wa1IvJWpkPafX/ZWkNeIg=
+typescript-deno-plugin@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.6.0.tgz#dbcf1a806fd47e5a97f4b1348472caef13024369"
+  integrity sha512-to6fHBi4P9saJiF91PLo2M8Wt7CVakCCSMGHJGi2zAZnZaBEM2LE53q68hn66j538BHE73roArVHRVLGcdclOA==
   dependencies:
+    crypto "^1.0.1"
     merge-deep "^3.0.2"
     mock-require "^3.0.3"
 
