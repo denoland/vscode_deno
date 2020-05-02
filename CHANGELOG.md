@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0 - 2020-05-03
+
+- rewrite module resolver [#35](https://github.com/justjavac/typescript-deno-plugin/pull/35)
+
 ## 1.4.1 - 2020-04-13
 
 - no changes
