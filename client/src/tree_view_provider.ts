@@ -31,6 +31,7 @@ enum ItemType {
 }
 
 interface Item extends TreeItem {
+  label: string;
   parentNode?: Item;
   type: ItemType;
   references?: URLDep[];
@@ -110,32 +111,34 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
 
       const deps = Object.keys(depsMap);
 
-      return deps.map((url) => {
-        const item: Item = {
-          parentNode: element,
-          iconPath: {
-            light: path.join(
-              this.extension.context.extensionPath,
-              "resource",
-              "icon",
-              "url.light.svg"
-            ),
-            dark: path.join(
-              this.extension.context.extensionPath,
-              "resource",
-              "icon",
-              "url.dark.svg"
-            ),
-          },
-          resourceUri: Uri.parse(url),
-          type: ItemType.URL,
-          label: url,
-          collapsibleState: TreeItemCollapsibleState.Collapsed,
-          references: depsMap[url],
-        };
+      return deps
+        .map((url) => {
+          const item: Item = {
+            parentNode: element,
+            iconPath: {
+              light: path.join(
+                this.extension.context.extensionPath,
+                "resource",
+                "icon",
+                "url.light.svg"
+              ),
+              dark: path.join(
+                this.extension.context.extensionPath,
+                "resource",
+                "icon",
+                "url.dark.svg"
+              ),
+            },
+            resourceUri: Uri.parse(url),
+            type: ItemType.URL,
+            label: url,
+            collapsibleState: TreeItemCollapsibleState.Collapsed,
+            references: depsMap[url],
+          };
 
-        return item;
-      });
+          return item;
+        })
+        .sort((a, b) => (a.label > b.label ? 1 : -1));
     }
 
     // Get the location of the dependency
