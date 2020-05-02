@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0 - 2020-05-03
+
+- rewrite module resolver [typescript-deno-plugin#35](https://github.com/justjavac/typescript-deno-plugin/pull/35)
+
 ## 1.7.0 - 2020-04-27
 
 - upgrade `deno@0.41.0`, `typescript-deno-plugin@1.5.0`
