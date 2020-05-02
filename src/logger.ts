@@ -11,6 +11,6 @@ export class Logger {
   private constructor(private readonly logger: ts_module.server.Logger) {}
 
   public info(message: string) {
-    this.logger.info(`[${pluginId}] ${JSON.stringify(message)}`);
+    this.logger.info(`[${pluginId}] ${message}`);
   }
 }
