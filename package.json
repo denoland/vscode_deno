@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "1.9.0",
+  "version": "1.19.0",
   "publisher": "justjavac",
   "icon": "deno.png",
   "galleryBanner": {
