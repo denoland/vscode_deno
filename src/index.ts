@@ -1,7 +1,7 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
 import merge from "merge-deep";
 import mockRequire from "mock-require";
-import ts_module, { ResolvedModuleFull } from "typescript/lib/tsserverlibrary";
+import ts_module, { ResolvedModuleFull, CompilerOptions } from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
 import {
@@ -27,7 +27,7 @@ module.exports = function init(
   mockRequire("typescript", typescript);
 
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
-  const OPTIONS: ts_module.CompilerOptions = {
+  const OPTIONS: CompilerOptions = {
     allowJs: true,
     checkJs: true,
     esModuleInterop: true,
@@ -45,7 +45,7 @@ module.exports = function init(
     typeRoots: [],
   };
 
-  const OPTIONS_OVERWRITE_BY_DENO: ts_module.CompilerOptions = {
+  const OPTIONS_OVERWRITE_BY_DENO: CompilerOptions = {
     allowNonTsExtensions: false,
     jsx: OPTIONS.jsx,
     module: OPTIONS.module,
@@ -177,9 +177,6 @@ module.exports = function init(
           OPTIONS_OVERWRITE_BY_DENO,
         );
         compilationSettings.baseUrl = projectDirectory;
-        logger.info(
-          `compilationSettings:${JSON.stringify(compilationSettings)}`,
-        );
         return compilationSettings;
       };
 
