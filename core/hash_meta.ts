@@ -16,7 +16,6 @@ export enum Type {
   JavaScriptReact = "javascriptreact",
   TypeScript = "typescript",
   TypeScriptReact = "typescriptreact",
-  JSON = "json",
   WebAssembly = "WebAssembly",
   PlainText = "plaintext",
 }
@@ -35,7 +34,6 @@ const extNameMap: { [key: string]: Type } = {
   ".js": Type.JavaScript,
   ".jsx": Type.JavaScriptReact,
   ".mjs": Type.JavaScript,
-  ".json": Type.JSON,
   ".wasm": Type.WebAssembly,
 };
 
@@ -55,7 +53,6 @@ const contentTypeMap: [string[], Type][] = [
     ],
     Type.JavaScript,
   ],
-  [["application/json"], Type.JSON],
   [["application/wasm"], Type.WebAssembly],
 ];
 
@@ -68,6 +65,10 @@ export class HashMeta implements HashMetaInterface {
     const metaMap: MetaFileContent = JSON.parse(
       fs.readFileSync(metaFilepath, { encoding: "utf8" })
     );
+
+    if (!metaMap.url || !metaMap.headers) {
+      return;
+    }
 
     return new HashMeta(metaFilepath, new URL(metaMap.url), metaMap.headers);
   }
@@ -117,8 +118,6 @@ export class HashMeta implements HashMetaInterface {
       /* istanbul ignore next */
       case Type.TypeScriptReact:
         return ".tsx";
-      case Type.JSON:
-        return ".json";
       /* istanbul ignore next */
       case Type.WebAssembly:
         return ".wasm";

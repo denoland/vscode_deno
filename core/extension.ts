@@ -6,7 +6,6 @@ export type Extension =
   | ".d.ts"
   | ".js"
   | ".jsx"
-  | ".json"
   | ".wasm"
   | "";
 
@@ -20,4 +19,12 @@ export function getExtensionFromFile(filename: string): Extension {
   }
 
   return extName as Extension;
+}
+
+export function isValidDenoModuleExtension(filename: string): boolean {
+  if (/\.(tsx?|jsx?|d\.ts|wasm)$/.test(filename)) {
+    return true;
+  }
+
+  return false;
 }

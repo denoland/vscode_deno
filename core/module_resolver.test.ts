@@ -79,6 +79,7 @@ test("core / module_resolver: resolve module from local", () => {
       `file://${path.join(__dirname, "cache.ts")}`,
       `file://./cache.ts`,
       `file://../client/src/extension.ts`,
+      `https://unknown_module.com/unknown_module_without_extension`,
     ])
   ).toEqual([
     {
@@ -86,11 +87,7 @@ test("core / module_resolver: resolve module from local", () => {
       origin: "./deno.ts",
       filepath: path.join(__dirname, "deno.ts"),
     },
-    {
-      extension: ".json",
-      origin: "../package.json",
-      filepath: path.join(__dirname, "..", "package.json"),
-    },
+    undefined,
     {
       extension: ".ts",
       origin: "https://example.com/esm/mod.ts",
@@ -146,6 +143,7 @@ test("core / module_resolver: resolve module from local", () => {
       origin: "file://../client/src/extension.ts",
       filepath: path.join(__dirname, "..", "client", "src", "extension.ts"),
     },
+    undefined,
   ] as ResolvedModule[]);
 });
 

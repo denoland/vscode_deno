@@ -8,7 +8,11 @@ import { ImportMap } from "./import_map";
 import { HashMeta } from "./hash_meta";
 import { pathExistsSync, isHttpURL, hashURL, normalizeFilepath } from "./util";
 import { Logger } from "./logger";
-import { Extension, getExtensionFromFile } from "./extension";
+import {
+  Extension,
+  getExtensionFromFile,
+  isValidDenoModuleExtension,
+} from "./extension";
 
 export type ResolvedModule = {
   origin: string;
@@ -121,6 +125,10 @@ export class ModuleResolver implements ModuleResolverInterface {
       }
     }
 
+    if (!meta.extension) {
+      return;
+    }
+
     return {
       origin: origin,
       filepath: moduleFilepath,
@@ -149,7 +157,10 @@ export class ModuleResolver implements ModuleResolverInterface {
       normalizeFilepath(moduleName)
     );
 
-    if (!pathExistsSync(moduleFilepath)) {
+    if (
+      !pathExistsSync(moduleFilepath) ||
+      !isValidDenoModuleExtension(moduleFilepath)
+    ) {
       return;
     }
 

@@ -48,24 +48,6 @@ test("core / hash_meta with javascript file", () => {
   expect(meta.destinationFilepath).toEqual(cacheFilepath);
 });
 
-test("core / hash_meta with json file", () => {
-  const cacheFilepath = path.join(
-    denoDir,
-    "deps",
-    "https",
-    "example.com",
-    "8611ea80bb4f73e9a0c1207b611d77892ac9a19f840b2d389275e6e4d22c0259"
-  );
-
-  const meta = HashMeta.create(cacheFilepath + ".metadata.json") as HashMeta;
-  expect(meta).not.toBe(undefined);
-  expect(meta.filepath).toEqual(cacheFilepath + ".metadata.json");
-  expect(meta.type).toEqual(Type.JSON);
-  expect(meta.extension).toEqual(".json");
-  expect(meta.url.href).toEqual("https://example.com/demo.json");
-  expect(meta.destinationFilepath).toEqual(cacheFilepath);
-});
-
 test("core / hash_meta without extension name", () => {
   const cacheFilepath = path.join(
     denoDir,
@@ -127,6 +109,32 @@ test("core / hash_meta: if not exist", () => {
     "https",
     "example.com",
     "933405cb905c548e870daee56d0589b7dd8e146c0cdbd5f16a959f8227c1fxxx"
+  );
+
+  const meta = HashMeta.create(notExistCache + ".metadata.json");
+  expect(meta).toBe(undefined);
+});
+
+test("core / hash_meta: if meta file missing url", () => {
+  const notExistCache = path.join(
+    denoDir,
+    "deps",
+    "https",
+    "invalid_mta.com",
+    "1d6ab9051e9ae4e3a9d501b1a4316583ae8ecd51d41d327b514abf0194c14dc4"
+  );
+
+  const meta = HashMeta.create(notExistCache + ".metadata.json");
+  expect(meta).toBe(undefined);
+});
+
+test("core / hash_meta: if meta file missing headers", () => {
+  const notExistCache = path.join(
+    denoDir,
+    "deps",
+    "https",
+    "invalid_mta.com",
+    "2f5c120425d2222c81506ea48f25c608a89272ed179233ab4fd47debb0f5d05f"
   );
 
   const meta = HashMeta.create(notExistCache + ".metadata.json");
