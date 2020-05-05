@@ -1163,10 +1163,10 @@ type-fest@^0.11.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.11.0.tgz#97abf0872310fed88a5c466b25681576145e33f1"
   integrity sha512-OdjXJxnCN1AvyLSzeKIgXTXxV+99ZuXl3Hpo9XpJAv9MBcHrrJOQ5kV7ypXOuQie+AmWG25hLbiKdwYTifzcfQ==
 
-typescript-deno-plugin@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.8.0.tgz#43d74746582d354dbead31c71e9645891d759746"
-  integrity sha512-0VQvOrDEOthkeofP6BX4mNoa6ZBu0K2C6pRkSidEEPQ+j97WGwvlKqSSTxmVEfg8dhZyyNoXzpAmBVpMGsxVIw==
+typescript-deno-plugin@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.9.0.tgz#b9acdb53b95dfea0ecc69983d5b0bdf0da483b08"
+  integrity sha512-OCkaQzFTuvag9R6txyFXOt1QZ1MCFhesuQRu7bHPXriFG9Vu9uOIx15Fu/x969UM7nIcxL/0B6g9oAs97yFfTA==
   dependencies:
     crypto "^1.0.1"
     merge-deep "^3.0.2"
