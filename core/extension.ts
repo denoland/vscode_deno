@@ -1,6 +1,13 @@
 import * as path from "path";
 
-export type Extension = ".ts" | ".tsx" | ".d.ts" | ".js" | ".jsx" | ".wasm";
+export type Extension =
+  | ".ts"
+  | ".tsx"
+  | ".d.ts"
+  | ".js"
+  | ".jsx"
+  | ".wasm"
+  | "";
 
 export function getExtensionFromFile(filename: string): Extension {
   const extName = path.extname(filename);
