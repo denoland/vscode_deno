@@ -4,13 +4,12 @@ import merge from "deepmerge";
 import ts_module from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
-import { ConfigurationManager, DenoPluginConfig } from "./configuration";
+import { Configuration, ConfigurationField } from "../../core/configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
 import { normalizeFilepath, isUntitledDocument } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
-import { readConfigurationFromVscodeSettings } from "../../core/vscode_settings";
 import { getImportModules } from "../../core/deno_deps";
 
 const ignoredCompilerOptions: readonly string[] = [
@@ -74,7 +73,7 @@ const ignoredCompilerOptions: readonly string[] = [
 export class DenoPlugin implements ts_module.server.PluginModule {
   // plugin name
   static readonly PLUGIN_NAME = "typescript-deno-plugin";
-  private readonly configurationManager = new ConfigurationManager();
+  private readonly configurationManager = new Configuration();
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
   private readonly DEFAULT_OPTIONS: ts_module.CompilerOptions = {
     allowJs: true,
@@ -175,7 +174,9 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       }
 
       // Get typescript declaration File
-      const dtsFiles = [getDenoDts(this.configurationManager.config.unstable)];
+      const dtsFiles = [
+        getDenoDts(!!this.configurationManager.config.unstable),
+      ];
 
       const iterator = new Set(dtsFiles).entries();
 
@@ -496,13 +497,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       };
     }
 
-    const vscodeSettings = readConfigurationFromVscodeSettings(
-      projectDirectory
-    );
-
-    if (vscodeSettings) {
-      this.configurationManager.update(vscodeSettings);
-    }
+    this.configurationManager.resolveFromVscode(projectDirectory);
 
     this.configurationManager.onUpdatedConfig(() => {
       project.refreshDiagnostics();
@@ -513,7 +508,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     return languageService;
   }
 
-  onConfigurationChanged(c: DenoPluginConfig) {
+  onConfigurationChanged(c: ConfigurationField) {
     this.logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     this.configurationManager.update(c);
   }

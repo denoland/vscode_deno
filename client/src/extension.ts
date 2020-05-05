@@ -38,20 +38,16 @@ import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
 import { isValidDenoDocument } from "../../core/util";
 import { Request, Notification } from "../../core/const";
+import {
+  ConfigurationField,
+  DenoPluginConfigurationField,
+} from "../../core/configuration";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
-type SynchronizedConfiguration = {
-  enable?: boolean;
-  import_map?: string;
-};
-
 type TypescriptAPI = {
-  configurePlugin(
-    pluginId: string,
-    configuration: SynchronizedConfiguration
-  ): void;
+  configurePlugin(pluginId: string, configuration: ConfigurationField): void;
 };
 
 type DenoInfo = {
@@ -119,8 +115,8 @@ export class Extension {
     executablePath: "",
   };
   // get configuration of Deno
-  public getConfiguration(uri?: Uri): SynchronizedConfiguration {
-    const config: SynchronizedConfiguration = {};
+  public getConfiguration(uri?: Uri): ConfigurationField {
+    const config: ConfigurationField = {};
     const _config = workspace.getConfiguration(this.configurationSection, uri);
 
     function withConfigValue<C, K extends Extract<keyof C, string>>(
@@ -135,18 +131,12 @@ export class Extension {
 
       outConfig[key] = (configSetting.workspaceFolderValue ??
         configSetting.workspaceValue ??
-        configSetting.globalValue) as C[K];
+        configSetting.globalValue ??
+        configSetting.defaultValue) as C[K];
     }
 
-    withConfigValue(_config, config, "enable");
-    withConfigValue(_config, config, "import_map");
-
-    if (!config.enable) {
-      config.enable = false;
-    }
-
-    if (!config.import_map) {
-      config.import_map = undefined;
+    for (const field of DenoPluginConfigurationField) {
+      withConfigValue(_config, config, field);
     }
 
     return config;

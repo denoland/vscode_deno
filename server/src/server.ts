@@ -57,6 +57,8 @@ new Hover(connection, documents);
 new Completion(connection, documents);
 new CodeLens(connection, documents);
 
+connection;
+
 connection.onInitialize(
   (): InitializeResult => {
     return {

@@ -100,6 +100,7 @@
         },
         "deno.import_map": {
           "type": "string",
+          "default": null,
           "markdownDescription": "%deno.config.import_map%",
           "scope": "resource",
           "examples": [
