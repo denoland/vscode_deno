@@ -1,8 +1,8 @@
 import * as path from "path";
 import * as fs from "fs";
-
 import merge from "deepmerge";
 import equal from "deep-equal";
+
 import json5 from "json5";
 
 import { pathExistsSync } from "./util";
