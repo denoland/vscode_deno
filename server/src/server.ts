@@ -83,31 +83,35 @@ connection.onInitialize(
   }
 );
 
+async function ensureDenoDts(unstable: boolean) {
+  const currentDenoTypesContent = await deno.getTypes(unstable);
+  const denoDtsFile = getDenoDts(unstable);
+  const isExistDtsFile = await pathExists(denoDtsFile);
+
+  // if dst file not exist. then create a new one
+  if (!isExistDtsFile) {
+    await fs.writeFile(denoDtsFile, currentDenoTypesContent, { mode: 0o444 });
+  } else {
+    // set it to writable
+    await fs.chmod(denoDtsFile, 0o666);
+
+    const typesContent = await fs.readFile(denoDtsFile, { encoding: "utf8" });
+
+    if (typesContent.toString() !== currentDenoTypesContent.toString()) {
+      await fs.writeFile(denoDtsFile, currentDenoTypesContent, {
+        mode: 0o444,
+      });
+
+      // set to readonly
+      await fs.chmod(denoDtsFile, 0o444);
+    }
+  }
+}
+
 connection.onInitialized(async () => {
   try {
     await deno.init();
-    const currentDenoTypesContent = await deno.getTypes();
-    const denoDtsFile = getDenoDts();
-    const isExistDtsFile = await pathExists(denoDtsFile);
-
-    // if dst file not exist. then create a new one
-    if (!isExistDtsFile) {
-      await fs.writeFile(denoDtsFile, currentDenoTypesContent, { mode: 0o444 });
-    } else {
-      // set it to writable
-      await fs.chmod(denoDtsFile, 0o666);
-
-      const typesContent = await fs.readFile(denoDtsFile, { encoding: "utf8" });
-
-      if (typesContent.toString() !== currentDenoTypesContent.toString()) {
-        await fs.writeFile(denoDtsFile, currentDenoTypesContent, {
-          mode: 0o444,
-        });
-
-        // set to readonly
-        await fs.chmod(denoDtsFile, 0o444);
-      }
-    }
+    await Promise.all([ensureDenoDts(false), ensureDenoDts(true)]);
   } catch (err) {
     connection.sendNotification(Notification.error, err.message);
     return;
@@ -116,7 +120,6 @@ connection.onInitialized(async () => {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
     DENO_DIR: getDenoDir(),
-    dtsFilepath: getDenoDts(),
   });
   connection.console.log("server initialized.");
 });

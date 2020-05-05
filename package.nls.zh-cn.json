@@ -5,6 +5,7 @@
   "deno.command.restart_server": "重启 Deno 语言服务器",
   "deno.config.enabled": "是否启用 Deno。\n\n**不推荐在全局配置中设置**",
   "deno.config.import_map": "Import Map 的文件路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
+  "deno.config.unstable": "Controls if Deno's unstable mode types are used instead of stable mode types.\n\n**Not recommended in global configuration**",
   "deno.initializing": "正在初始化 Deno 语言服务器...",
   "err.not_install_deno": "在 $PATH 变量中找不到 Deno。请在设置后重新启动扩展。",
   "err.below_deno_minimum_requirements": "Deno 的版本低于最小要求。 请升级至 v{0} 或以上。",

@@ -37,8 +37,11 @@ export function getDenoDepsDir(): string {
   return path.join(getDenoDir(), "deps");
 }
 
-export function getDenoDts(): string {
-  return path.join(getDenoDir(), "lib.deno_runtime.d.ts");
+export function getDenoDts(unstable: boolean): string {
+  return path.join(
+    getDenoDir(),
+    unstable ? "lib.deno.unstable.d.ts" : "lib.deno.d.ts"
+  );
 }
 
 export function isInDeno(filepath: string): boolean {

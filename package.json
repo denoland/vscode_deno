@@ -106,6 +106,16 @@
             "./import_map.json",
             "/absolute/path/to/import_map.json"
           ]
+        },
+        "deno.unstable": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%deno.config.unstable%",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
         }
       }
     },

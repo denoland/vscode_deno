@@ -4,17 +4,20 @@ import equal from "deep-equal";
 export type DenoPluginConfig = {
   enable: boolean;
   import_map: string;
+  unstable: boolean;
 };
 
 type UpdateDenoPluginConfig = {
   enable?: boolean;
   import_map?: string;
+  unstable?: boolean;
 };
 
 export class ConfigurationManager {
   private static readonly defaultConfiguration: DenoPluginConfig = {
     enable: false,
     import_map: "",
+    unstable: false,
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();

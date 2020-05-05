@@ -32,7 +32,10 @@ test("core / deno", () => {
 });
 
 test("core / deno / getDenoDts()", () => {
-  expect(getDenoDts()).toBe(path.join(getDenoDir(), "lib.deno_runtime.d.ts"));
+  expect(getDenoDts(false)).toBe(path.join(getDenoDir(), "lib.deno.d.ts"));
+  expect(getDenoDts(true)).toBe(
+    path.join(getDenoDir(), "lib.deno.unstable.d.ts")
+  );
 });
 
 test("core / deno / URL2filepath()", () => {

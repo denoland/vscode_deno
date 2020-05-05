@@ -8,6 +8,7 @@ import { pathExistsSync } from "./util";
 export type DenoPluginConfig = {
   enable: boolean;
   import_map?: string;
+  unstable: boolean;
 };
 
 export function readConfigurationFromVscodeSettings(
@@ -28,10 +29,12 @@ export function readConfigurationFromVscodeSettings(
 
       const isEnable = !!settings["deno.enable"];
       const import_map = settings["deno.import_map"] || undefined;
+      const unstable = !!settings["deno.unstable"];
 
       const configurationInProjectFolder: DenoPluginConfig = {
         enable: isEnable,
         import_map,
+        unstable,
       };
 
       return configurationInProjectFolder;

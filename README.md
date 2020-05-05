@@ -143,6 +143,8 @@ We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Den
 
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 
+- `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
+
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
 ```json5
@@ -150,6 +152,7 @@ We recommend that you do not set global configuration. It should be configured i
 {
   "deno.enable": true,
   "deno.import_map": "./path/to/import_map.json",
+  "deno.unstable": false,
 }
 ```
 

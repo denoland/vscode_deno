@@ -14,6 +14,7 @@ test("core / vscode_settings", async () => {
   expect(config).toEqual({
     enable: true,
     import_map: "./import_map.json",
+    unstable: true,
   } as DenoPluginConfig);
 
   expect(readConfigurationFromVscodeSettings("./file/not/exist")).toEqual(
@@ -28,5 +29,6 @@ test("core / vscode_settings if it empty", async () => {
   expect(config).toEqual({
     enable: false,
     import_map: undefined,
+    unstable: false,
   } as DenoPluginConfig);
 });

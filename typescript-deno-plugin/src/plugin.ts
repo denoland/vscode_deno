@@ -175,7 +175,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       }
 
       // Get typescript declaration File
-      const dtsFiles = [getDenoDts()];
+      const dtsFiles = [getDenoDts(this.configurationManager.config.unstable)];
 
       const iterator = new Set(dtsFiles).entries();
 

@@ -5,6 +5,7 @@
   "deno.command.restart_server": "Restart Deno Language Server",
   "deno.config.enabled": "Controls whether Deno is enabled or not.\n\n**Not recommended in global configuration**",
   "deno.config.import_map": "The file path of an import map.\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration**",
+  "deno.config.unstable": "Controls if Deno's unstable mode types are used instead of stable mode types.\n\n**Not recommended in global configuration**",
   "deno.initializing": "Initializing Deno Language Server...",
   "err.not_install_deno": "Could not find `deno` in your $PATH. Please install `deno`, then restart the extension.",
   "err.below_deno_minimum_requirements": "Deno's version is below minimum requirements. Please upgrade to v{0} or above.",

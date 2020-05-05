@@ -63,7 +63,6 @@ type DenoInfo = {
     raw: string;
   };
   executablePath: string;
-  dtsFilepath: string;
 };
 
 // get typescript api from build-in extension
@@ -118,7 +117,6 @@ export class Extension {
       raw: "",
     },
     executablePath: "",
-    dtsFilepath: "",
   };
   // get configuration of Deno
   public getConfiguration(uri?: Uri): SynchronizedConfiguration {
