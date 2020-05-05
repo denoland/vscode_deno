@@ -1,3 +1,10 @@
+# [3.7.0](https://github.com/axetroy/vscode-deno/compare/v3.6.2...v3.7.0) (2020-05-05)
+
+### Features
+
+- added unstable settings option ([#167](https://github.com/axetroy/vscode-deno/issues/167)) ([1a4a230](https://github.com/axetroy/vscode-deno/commit/1a4a230c57a670632c43f947305e7f5fa11d1531))
+- remove JSON import statement. Now, you cannot import JSON module. ([23ff6f3](https://github.com/axetroy/vscode-deno/commit/23ff6f3fa6a5388273f2aeaedd8029b5d18b3e7d))
+
 ## [3.6.2](https://github.com/axetroy/vscode-deno/compare/v3.6.1...v3.6.2) (2020-04-29)
 
 ### Bug Fixes
