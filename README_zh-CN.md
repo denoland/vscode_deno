@@ -143,6 +143,8 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.import_map` - Import Map 的文件路径. 默认值 `null`
 
+- `deno.unstable` - 是否启用 Deno 的不稳定模式. 默认值 `false`
+
 我们不推荐你在全局配置中配置他们。而应该在项目目录的 `.vscode/settings.json` 文件中
 
 ```json5
@@ -150,6 +152,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 {
   "deno.enable": true,
   "deno.import_map": "./path/to/import_map.json",
+  "deno.unstable": false,
 }
 ```
 
