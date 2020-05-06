@@ -146,7 +146,7 @@
   },
   "dependencies": {
     "execa": "^4.0.0",
-    "typescript-deno-plugin": "^1.9.0",
+    "typescript-deno-plugin": "^1.9.1",
     "vscode-nls": "^4.1.2",
     "which": "^2.0.2"
   }
