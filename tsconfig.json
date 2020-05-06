@@ -6,7 +6,7 @@
     "outDir": "out",
     "noImplicitAny": true,
     "noUnusedParameters": true,
-    // "noUnusedLocals": true,
+    "noUnusedLocals": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["es6"],
