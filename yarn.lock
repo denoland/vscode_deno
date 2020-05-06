@@ -57,6 +57,11 @@ get-caller-file@^1.0.2:
   resolved "https://registry.npm.taobao.org/get-caller-file/download/get-caller-file-1.0.3.tgz#f978fa4c90d1dfe7ff2d6beda2a515e713bdcf4a"
   integrity sha1-+Xj6TJDR3+f/LWvtoqUV5xO9z0o=
 
+import-maps@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.npm.taobao.org/import-maps/download/import-maps-0.2.1.tgz?cache=0&sync_timestamp=1588752776277&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fimport-maps%2Fdownload%2Fimport-maps-0.2.1.tgz#ca641bf85c21077a186df1461008b8dc8867fedb"
+  integrity sha1-ymQb+FwhB3oYbfFGEAi43Ihn/ts=
+
 is-buffer@^1.0.2, is-buffer@^1.1.5:
   version "1.1.6"
   resolved "https://registry.npm.taobao.org/is-buffer/download/is-buffer-1.1.6.tgz?cache=0&sync_timestamp=1588707106955&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fis-buffer%2Fdownload%2Fis-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"

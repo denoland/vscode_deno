@@ -1,22 +1,28 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
+import path from 'path'
 import merge from "merge-deep";
 import mockRequire from "mock-require";
 import ts_module, { ResolvedModuleFull, CompilerOptions } from "typescript/lib/tsserverlibrary";
+import { parseFromString, resolve, ImportMaps } from 'import-maps'
 
 import { Logger } from "./logger";
 import {
   getGlobalDtsPath,
   getLocalDtsPath,
   getDtsPathForVscode,
+  normalizeFilepath,
+  pathExistsSync,
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
+import { readFileSync } from 'fs';
+import { URL } from 'url';
 
 let logger: Logger;
 
 type DenoPluginConfig = {
   enable: boolean;
-  import_map?: string;
+  importmap?: string;
   dtsPath?: string;
 };
 
@@ -79,6 +85,13 @@ module.exports = function init(
       // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
       process.chdir(projectDirectory);
 
+      let parsedImportMap: ImportMaps | null = null;
+
+      if (config.importmap != null) {
+        logger.info('use import maps: ' + config.importmap);
+        parsedImportMap = parseImportMapFromFile(projectDirectory, config.importmap);
+      }
+
       const resolveTypeReferenceDirectives =
         tsLsHost.resolveTypeReferenceDirectives;
 
@@ -89,8 +102,6 @@ module.exports = function init(
           redirectedReference: ts_module.ResolvedProjectReference | undefined,
           options: ts_module.CompilerOptions,
         ): (ts_module.ResolvedTypeReferenceDirective | undefined)[] => {
-          logger.info(`typeDirectiveNames: ${typeDirectiveNames}`);
-          logger.info(`containingFile: ${containingFile}`);
           const ret = resolveTypeReferenceDirectives.call(
             tsLsHost,
             typeDirectiveNames,
@@ -98,8 +109,6 @@ module.exports = function init(
             redirectedReference,
             options,
           );
-
-          logger.info(JSON.stringify(ret, null, "  "));
 
           return ret;
         };
@@ -116,7 +125,17 @@ module.exports = function init(
           const resolvedModules: (ResolvedModuleFull | undefined)[] = [];
 
           // try resolve typeReferenceDirectives
-          for (const moduleName of moduleNames) {
+          for (let moduleName of moduleNames) {
+            if (parsedImportMap !== null) {
+              try{
+                const moduleUrl = resolve(moduleName, parsedImportMap, new URL(projectDirectory, 'file:///'))
+                moduleName = moduleUrl.protocol === 'file:' ? moduleUrl.pathname : moduleUrl.href;
+              } catch (e){
+                resolvedModules.push(undefined);
+                continue;
+              }
+            }
+
             const resolvedModule = universalModuleResolver.resolve(
               moduleName,
               containingFile,
@@ -185,8 +204,6 @@ module.exports = function init(
         const scriptFileNames = getScriptFileNames.call(
           info.languageServiceHost,
         );
-
-        logger.info(`getScriptFileNames:${JSON.stringify(scriptFileNames)}`);
 
         const denoDtsPath = getDtsPathForVscode(info) ||
           getGlobalDtsPath() ||
@@ -294,3 +311,25 @@ module.exports = function init(
     },
   };
 };
+
+function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
+  if (!path.isAbsolute(file)) {
+    file = path.resolve(cwd, file)
+  }
+
+  const fullFilePath = normalizeFilepath(file)
+
+  if (!pathExistsSync(fullFilePath)) {
+    return null;
+  }
+
+  const content = readFileSync(fullFilePath, {
+    encoding: "utf8",
+  });
+
+  try {
+    return parseFromString(content, `file://${cwd}/`);
+  } catch {
+    return null;
+  }
+}

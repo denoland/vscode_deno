@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "crypto": "^1.0.1",
+    "import-maps": "^0.2.1",
     "merge-deep": "^3.0.2",
     "mock-require": "^3.0.3"
   },
