@@ -576,6 +576,11 @@ import-fresh@^3.1.0:
     parent-module "^1.0.0"
     resolve-from "^4.0.0"
 
+import-maps@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.npm.taobao.org/import-maps/download/import-maps-0.2.1.tgz#ca641bf85c21077a186df1461008b8dc8867fedb"
+  integrity sha1-ymQb+FwhB3oYbfFGEAi43Ihn/ts=
+
 indent-string@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-4.0.0.tgz#624f8f4497d619b2d9768531d58f4122854d7251"
@@ -1163,12 +1168,13 @@ type-fest@^0.11.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.11.0.tgz#97abf0872310fed88a5c466b25681576145e33f1"
   integrity sha512-OdjXJxnCN1AvyLSzeKIgXTXxV+99ZuXl3Hpo9XpJAv9MBcHrrJOQ5kV7ypXOuQie+AmWG25hLbiKdwYTifzcfQ==
 
-typescript-deno-plugin@^1.9.1:
-  version "1.9.1"
-  resolved "https://registry.npm.taobao.org/typescript-deno-plugin/download/typescript-deno-plugin-1.9.1.tgz#f363068f6508a7eab93b15bf84f7eb7b7363c265"
-  integrity sha1-82MGj2UIp+q5OxW/hPfre3NjwmU=
+typescript-deno-plugin@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.npm.taobao.org/typescript-deno-plugin/download/typescript-deno-plugin-1.10.0.tgz#f76f519e2a6da3d6f97cd6ac48589f7fd7bb4146"
+  integrity sha1-929Rnipto9b5fNasSFiff9e7QUY=
   dependencies:
     crypto "^1.0.1"
+    import-maps "^0.2.1"
     merge-deep "^3.0.2"
     mock-require "^3.0.3"
 

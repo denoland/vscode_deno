@@ -80,6 +80,14 @@
           ],
           "default": null,
           "description": "%deno.config.dtsPath%"
+        },
+        "deno.importmap": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "%deno.config.importmap%"
         }
       }
     },
@@ -146,7 +154,7 @@
   },
   "dependencies": {
     "execa": "^4.0.0",
-    "typescript-deno-plugin": "^1.9.1",
+    "typescript-deno-plugin": "^1.10.0",
     "vscode-nls": "^4.1.2",
     "which": "^2.0.2"
   }

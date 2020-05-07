@@ -162,6 +162,7 @@ interface SynchronizedConfiguration {
   autoFmtOnSave?: boolean;
   enable?: boolean;
   dtsPath?: string;
+  importmap?: string;
 }
 
 export async function activate(context: ExtensionContext) {
@@ -368,6 +369,7 @@ function getConfiguration(): SynchronizedConfiguration {
   withConfigValue(config, outConfig, "alwaysShowStatus");
   withConfigValue(config, outConfig, "autoFmtOnSave");
   withConfigValue(config, outConfig, "dtsPath");
+  withConfigValue(config, outConfig, "importmap");
 
   return outConfig;
 }
