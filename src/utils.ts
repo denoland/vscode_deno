@@ -40,7 +40,7 @@ export function getDenoDepsDir(): string {
 
 export function getGlobalDtsPath(): string | undefined {
   const denoDir = getDenoDir();
-  const globalDtsPath = path.resolve(denoDir, "lib.deno_runtime.d.ts");
+  const globalDtsPath = path.resolve(denoDir, "lib.deno.d.ts");
 
   if (fs.existsSync(globalDtsPath)) {
     return globalDtsPath;
@@ -57,7 +57,7 @@ export function getLocalDtsPath(
     "node_modules",
     "typescript-deno-plugin",
     "lib",
-    "lib.deno_runtime.d.ts",
+    "lib.deno.d.ts",
   );
 
   if (fs.existsSync(localDtsPath)) {

@@ -81,6 +81,8 @@ module.exports = function init(
         return tsLs;
       }
 
+      logger.info('config:\n' + JSON.stringify(config, null, '  '));
+
       const projectDirectory = project.getCurrentDirectory();
       // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
       process.chdir(projectDirectory);
