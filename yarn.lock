@@ -1168,10 +1168,10 @@ type-fest@^0.11.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.11.0.tgz#97abf0872310fed88a5c466b25681576145e33f1"
   integrity sha512-OdjXJxnCN1AvyLSzeKIgXTXxV+99ZuXl3Hpo9XpJAv9MBcHrrJOQ5kV7ypXOuQie+AmWG25hLbiKdwYTifzcfQ==
 
-typescript-deno-plugin@^1.10.0:
-  version "1.10.0"
-  resolved "https://registry.npm.taobao.org/typescript-deno-plugin/download/typescript-deno-plugin-1.10.0.tgz#f76f519e2a6da3d6f97cd6ac48589f7fd7bb4146"
-  integrity sha1-929Rnipto9b5fNasSFiff9e7QUY=
+typescript-deno-plugin@^1.11.0:
+  version "1.11.0"
+  resolved "https://registry.npm.taobao.org/typescript-deno-plugin/download/typescript-deno-plugin-1.11.0.tgz?cache=0&sync_timestamp=1588831600488&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Ftypescript-deno-plugin%2Fdownload%2Ftypescript-deno-plugin-1.11.0.tgz#93e95322acc55df4ad5081d9d42b7c440599c84c"
+  integrity sha1-k+lTIqzFXfStUIHZ1Ct8RAWZyEw=
   dependencies:
     crypto "^1.0.1"
     import-maps "^0.2.1"
