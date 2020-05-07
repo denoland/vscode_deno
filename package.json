@@ -1,9 +1,9 @@
 {
-  "name": "vscode-deno",
+  "name": "vscode_deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "1.23.0",
-  "publisher": "justjavac",
+  "version": "1.24.0",
+  "publisher": "the deno authors",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -11,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/justjavac/vscode-deno"
+    "url": "https://github.com/denoland/vscode_deno"
   },
   "bugs": {
-    "url": "https://github.com/justjavac/vscode-deno/issues"
+    "url": "https://github.com/denoland/vscode_deno/issues"
   },
   "engines": {
     "vscode": "^1.40.0"

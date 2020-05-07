@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-05-07
+
+Moved from https://github.com/justjavac/vscode-deno to
+https://github.com/denoland/vscode_deno in order to have an "official" Deno
+plugin. Thank you 迷渡!
+
 ## 1.9.0 - 2020-05-03
 
 - rewrite module resolver [typescript-deno-plugin#35](https://github.com/justjavac/typescript-deno-plugin/pull/35)
