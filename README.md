@@ -40,13 +40,13 @@ This plugin can resolve remote imports as local path.
 
 ## Configuration
 
-You can configure the Deno extension using a `tsconfig` as described [here](https://github.com/justjavac/typescript-deno-plugin#configuration), or configure it with VS Code settings. This requires VS Code 1.30+ and TS 3.2+. Note the VS Code based configuration overrides the `tsconfig` configuration.
+You can configure the Deno extension using a `tsconfig` as described [here](https://github.com/justjavac/typescript-deno-plugin#configuration), or configure it with VS Code settings. This requires VS Code 1.40+ and TS 3.8+. Note the VS Code based configuration overrides the `tsconfig` configuration.
 
 - `deno.enabled` - Enable/disable this extension. Default is `true`.
 
-- `deno.packageManager` - The package manager you use to install node modules. Default is `npm`. (**Not implemented**)
-
 - `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
+
+- `deno.importmap` - The Path of import maps. Default is `null`.
 
 - `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`. (**Not implemented**)
 
