@@ -408,6 +408,6 @@ function bundledDtsPath(): string {
     "node_modules",
     "typescript-deno-plugin",
     "lib",
-    "lib.deno_runtime.d.ts",
+    "lib.deno.d.ts",
   );
 }

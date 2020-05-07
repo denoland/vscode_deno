@@ -118,7 +118,7 @@ export async function generateDtsForDeno(): Promise<void> {
       return;
     }
 
-    fs.writeFileSync(path.resolve(denoDir, "lib.deno_runtime.d.ts"), stdout);
+    fs.writeFileSync(path.resolve(denoDir, "lib.deno.d.ts"), stdout);
   } catch {
     return;
   }
