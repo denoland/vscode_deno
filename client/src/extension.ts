@@ -90,7 +90,7 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
 
 export class Extension {
   // the name of this extension
-  private id = "deno.vscode-deno";
+  private id = "The-Deno-Authors.vscode_deno";
   // extension context
   public context!: ExtensionContext;
   // typescript API
@@ -328,7 +328,7 @@ export class Extension {
       .getConfiguration(this.configurationSection, uri)
       .get("enable");
 
-    // if vscode-deno have been disable for workspace
+    // if extension have been disable for workspace
     if (!enabled) {
       this.statusBar.hide();
       return;

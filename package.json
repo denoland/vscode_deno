@@ -1,9 +1,9 @@
 {
-  "name": "vscode_deno",
+  "name": "vscode-deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
   "version": "0.1.0",
-  "publisher": "the deno authors",
+  "publisher": "The-Deno-Authors",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -173,7 +173,7 @@
     "format": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --write",
     "test": "jest --coverage",
     "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "build": "npx vsce package -o ./vscode-deno.vsix --yarn",
+    "build": "npx vsce package -o ./vscode_deno.vsix --yarn",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "husky": {
