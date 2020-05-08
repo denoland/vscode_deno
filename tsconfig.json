@@ -2,12 +2,17 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "outDir": "out",
-    "lib": ["es6"],
+    "outDir": "./out",
     "sourceMap": true,
+    "strict": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "rootDir": "src"
+    "baseUrl": "./src"
   },
-  "exclude": ["node_modules", ".vscode-test"]
+  "include": ["./src"],
+  "exclude": ["node_modules", "__test__"],
+  "references": [
+    { "path": "./client" },
+    { "path": "./server" },
+    { "path": "./typescript-deno-plugin" }
+  ]
 }

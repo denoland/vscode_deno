@@ -2,7 +2,7 @@
   "name": "vscode_deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "1.24.0",
+  "version": "0.1.0",
   "publisher": "the deno authors",
   "icon": "deno.png",
   "galleryBanner": {
@@ -17,7 +17,7 @@
     "url": "https://github.com/denoland/vscode_deno/issues"
   },
   "engines": {
-    "vscode": "^1.40.0"
+    "vscode": "^1.43.0"
   },
   "categories": [
     "Programming Languages",
@@ -27,18 +27,12 @@
     "deno"
   ],
   "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
     "onLanguage:typescript",
-    "onLanguage:typescriptreact",
-    "workspaceContains:**/.denorc",
-    "workspaceContains:**/.denoignore",
-    "onCommand:deno.init",
-    "onCommand:deno.cache",
-    "onCommand:deno.types",
-    "onCommand:deno.test",
-    "onCommand:deno.enable",
-    "onCommand:deno.disable"
+    "onLanguage:typescriptreact"
   ],
-  "main": "./out/extension.js",
+  "main": "./client/out/client/src/extension.js",
   "contributes": {
     "typescriptServerPlugins": [
       {
@@ -48,116 +42,170 @@
     ],
     "commands": [
       {
-        "command": "deno.enable",
-        "title": "%deno.command.enable%",
+        "command": "deno.restart_server",
+        "title": "%deno.command.restart_server%",
         "category": "deno"
       },
       {
-        "command": "deno.disable",
-        "title": "%deno.command.disable%",
-        "category": "deno"
+        "command": "deno._refresh_tree",
+        "title": "Refresh",
+        "category": "deno",
+        "icon": {
+          "light": "resource/icon/refresh.light.svg",
+          "dark": "resource/icon/refresh.dark.svg"
+        }
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "deno",
+          "name": "%deno.dependency%",
+          "when": "denoExtensionActivated"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "deno._refresh_tree",
+          "group": "navigation@1",
+          "when": "view == deno"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "deno._refresh_tree",
+          "when": "never"
+        },
+        {
+          "command": "deno.restart_server",
+          "when": "denoExtensionActivated"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "Deno",
       "properties": {
         "deno.enable": {
           "type": "boolean",
-          "default": true,
-          "description": "%deno.config.enabled%"
+          "default": false,
+          "markdownDescription": "%deno.config.enabled%",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
         },
-        "deno.alwaysShowStatus": {
+        "deno.import_map": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "%deno.config.import_map%",
+          "scope": "resource",
+          "examples": [
+            "./import_map.json",
+            "/absolute/path/to/import_map.json"
+          ]
+        },
+        "deno.unstable": {
           "type": "boolean",
-          "default": true,
-          "description": "%deno.config.alwaysShowStatus%",
-          "scope": "window"
-        },
-        "deno.dtsPath": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "%deno.config.dtsPath%"
-        },
-        "deno.importmap": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "%deno.config.importmap%"
+          "default": false,
+          "markdownDescription": "%deno.config.unstable%",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
         }
       }
     },
-    "languages": [
-      {
-        "id": "ignore",
-        "filenames": [
-          ".denoignore"
-        ]
-      },
-      {
-        "id": "jsonc",
-        "filenames": [
-          ".denorc"
-        ],
-        "filenamePatterns": [
-          "denorc.*.json"
-        ]
-      }
-    ],
     "jsonValidation": [
       {
-        "fileMatch": ".denorc",
-        "url": "./schemas/denorc.schema.json"
+        "fileMatch": "import_map.json",
+        "url": "./schemas/import_map.schema.json"
       },
       {
-        "fileMatch": "denorc.*.json",
-        "url": "./schemas/denorc.schema.json"
-      }
-    ],
-    "snippets": [
+        "fileMatch": "import_maps.json",
+        "url": "./schemas/import_map.schema.json"
+      },
       {
-        "language": "typescript",
-        "path": "./snippets/deno.json"
+        "fileMatch": "importmap.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "importmaps.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "import-map.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "import-maps.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "importMap.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "importMaps.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "ImportMap.json",
+        "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "ImportMaps.json",
+        "url": "./schemas/import_map.schema.json"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "yarn compile",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "watch": "tsc -watch -p ./",
-    "compile": "tsc -p ./",
-    "check": "deno fmt src schemas snippets",
-    "format": "deno fmt src schemas snippets --check",
-    "package": "vsce package --out ./vscode_deno.vsix --yarn"
+    "postinstall": "cd client && yarn && cd ../server && yarn && cd .. && npm run installvscode",
+    "installvscode": "npx vscode-install",
+    "watch": "tsc -b -w",
+    "compile": "tsc -b",
+    "check": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --check",
+    "format": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --write",
+    "test": "jest --coverage",
+    "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "build": "npx vsce package -o ./vscode-deno.vsix --yarn",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint-staged"
+      "pre-commit": "npm run check && npm run lint"
     }
   },
-  "lint-staged": {
-    "**/*.{js,ts,json,md}": [
-      "yarn format",
-      "git add"
-    ]
-  },
   "devDependencies": {
-    "@types/node": "^13.13.5",
-    "@types/which": "^1.3.1",
-    "husky": "^4.2.5",
-    "lint-staged": "^10.2.2",
-    "typescript": "^3.8.3",
-    "vsce": "^1.75.0",
-    "vscode": "^1.1.37"
+    "@types/deep-equal": "1.0.1",
+    "@types/jest": "25.2.1",
+    "@types/json5": "0.0.30",
+    "@types/node": "12.12.38",
+    "@types/which": "1.3.2",
+    "@types/semver": "7.1.0",
+    "@typescript-eslint/eslint-plugin": "2.31.0",
+    "@typescript-eslint/parser": "2.31.0",
+    "coveralls": "3.1.0",
+    "eslint": "6.8.0",
+    "execa": "4.0.0",
+    "husky": "4.2.5",
+    "jest": "26.0.1",
+    "prettier": "2.0.5",
+    "ts-jest": "25.4.0",
+    "typescript": "3.8.3",
+    "vscode": "1.1.37",
+    "which": "2.0.2"
   },
   "dependencies": {
-    "execa": "^4.0.0",
-    "typescript-deno-plugin": "^1.11.0",
-    "vscode-nls": "^4.1.2",
-    "which": "^2.0.2"
+    "deepmerge": "^4.2.2",
+    "json5": "^2.1.1",
+    "typescript-deno-plugin": "./typescript-deno-plugin",
+    "vscode-nls-i18n": "^0.2.0",
+    "semver": "7.3.2"
   }
 }

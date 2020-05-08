@@ -1,0 +1,6 @@
+{
+  "headers": {
+    "location": "./result"
+  },
+  "url": "https://redirect.com/redirect_to_relative"
+}
