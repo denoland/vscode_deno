@@ -6,11 +6,11 @@
 
 <!-- [![Coverage Status](https://coveralls.io/repos/github/deno/vscode_deno/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/deno/vscode_deno?branch=refs/heads/master) -->
 
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/The-Deno-Authors.vscode-deno)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/The-Deno-Authors.vscode-deno)
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/The-Deno-Authors.vscode-deno)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/The-Deno-Authors.vscode-deno)
-![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/The-Deno-Authors.vscode-deno)
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/the-deno-authors.vscode-deno)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/the-deno-authors.vscode-deno)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/the-deno-authors.vscode-deno)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/the-deno-authors.vscode-deno)
+![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/the-deno-authors.vscode-deno)
 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/deno/vscode_deno)
 ![GitHub repo size](https://img.shields.io/github/repo-size/deno/vscode_deno)
@@ -33,7 +33,7 @@ Features:
 
 ## Usage
 
-1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=The-Deno-Authors.vscode-deno)
+1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=the-deno-authors.vscode-deno)
 
 2. Enable Deno for your project:
 
@@ -73,10 +73,10 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 // .vscode/settings.json
 {
   "[typescript]": {
-    "editor.defaultFormatter": "The-Deno-Authors.vscode-deno",
+    "editor.defaultFormatter": "the-deno-authors.vscode-deno",
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "The-Deno-Authors.vscode-deno",
+    "editor.defaultFormatter": "the-deno-authors.vscode-deno",
   },
 }
 ```

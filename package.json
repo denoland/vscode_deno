@@ -3,7 +3,7 @@
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
   "version": "0.1.0",
-  "publisher": "The-Deno-Authors",
+  "publisher": "the-deno-authors",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
