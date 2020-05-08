@@ -131,7 +131,8 @@
     "watch": "tsc -watch -p ./",
     "compile": "tsc -p ./",
     "check": "deno fmt src schemas snippets",
-    "format": "deno fmt src schemas snippets --check"
+    "format": "deno fmt src schemas snippets --check",
+    "package": "vsce package --out ./vscode_deno.vsix --yarn"
   },
   "husky": {
     "hooks": {
@@ -150,6 +151,7 @@
     "husky": "^4.2.5",
     "lint-staged": "^10.2.2",
     "typescript": "^3.8.3",
+    "vsce": "^1.75.0",
     "vscode": "^1.1.37"
   },
   "dependencies": {
