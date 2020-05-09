@@ -19,11 +19,17 @@ import { readFileSync } from 'fs';
 import { URL } from 'url';
 
 let logger: Logger;
+let pluginInfo: ts_module.server.PluginCreateInfo;
 
 type DenoPluginConfig = {
   enable: boolean;
   importmap?: string;
+  tsconfig?: string;
   dtsPath?: string;
+};
+
+const config: DenoPluginConfig = {
+  enable: true,
 };
 
 module.exports = function init(
@@ -68,31 +74,23 @@ module.exports = function init(
       logger = Logger.forPlugin(info);
       logger.info("plugin created.");
 
+      pluginInfo = info;
       const tsLs = info.languageService;
       const tsLsHost = info.languageServiceHost;
       const project = info.project;
-      const config: DenoPluginConfig = {
-        enable: true,
-        ...info.config,
-      };
+
+      Object.assign(config, info.config);
 
       if (!config.enable) {
         logger.info("plugin disabled.");
         return tsLs;
       }
 
-      logger.info('config:\n' + JSON.stringify(config, null, '  '));
-
       const projectDirectory = project.getCurrentDirectory();
       // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
       process.chdir(projectDirectory);
 
       let parsedImportMap: ImportMaps | null = null;
-
-      if (config.importmap != null) {
-        logger.info('use import maps: ' + config.importmap);
-        parsedImportMap = parseImportMapFromFile(projectDirectory, config.importmap);
-      }
 
       const resolveTypeReferenceDirectives =
         tsLsHost.resolveTypeReferenceDirectives;
@@ -104,6 +102,7 @@ module.exports = function init(
           redirectedReference: ts_module.ResolvedProjectReference | undefined,
           options: ts_module.CompilerOptions,
         ): (ts_module.ResolvedTypeReferenceDirective | undefined)[] => {
+
           const ret = resolveTypeReferenceDirectives.call(
             tsLsHost,
             typeDirectiveNames,
@@ -112,6 +111,11 @@ module.exports = function init(
             options,
           );
 
+          if (!config.enable) {
+            logger.info("plugin disabled.");
+            return ret;
+          }
+    
           return ret;
         };
       }
@@ -123,8 +127,18 @@ module.exports = function init(
         tsLsHost.resolveModuleNames = (
           moduleNames: string[],
           containingFile: string,
+          ...rest
         ) => {
+          if (!config.enable) {
+            logger.info("plugin disabled.");
+            return resolveModuleNames.call(tsLsHost, moduleNames, containingFile, ...rest);
+          }
+    
           const resolvedModules: (ResolvedModuleFull | undefined)[] = [];
+
+          if (config.importmap != null) {
+            parsedImportMap = parseImportMapFromFile(projectDirectory, config.importmap);
+          }
 
           // try resolve typeReferenceDirectives
           for (let moduleName of moduleNames) {
@@ -190,6 +204,10 @@ module.exports = function init(
         info.languageServiceHost.getCompilationSettings;
 
       info.languageServiceHost.getCompilationSettings = () => {
+        if (!config.enable) {
+          return getCompilationSettings.call(tsLsHost);
+        }
+
         const projectConfig = getCompilationSettings.call(
           info.languageServiceHost,
         );
@@ -203,6 +221,10 @@ module.exports = function init(
 
       const getScriptFileNames = info.languageServiceHost.getScriptFileNames!;
       info.languageServiceHost.getScriptFileNames = () => {
+        if (!config.enable) {
+          return getScriptFileNames.call(tsLsHost);
+        }
+
         const scriptFileNames = getScriptFileNames.call(
           info.languageServiceHost,
         );
@@ -240,6 +262,10 @@ module.exports = function init(
           preferences,
         );
 
+        if (!config.enable) {
+          return details;
+        }
+
         if (details) {
           if (details.codeActions && details.codeActions.length) {
             for (const ca of details.codeActions) {
@@ -262,6 +288,10 @@ module.exports = function init(
 
       function getSemanticDiagnostics(filename: string) {
         const diagnostics = tsLs.getSemanticDiagnostics(filename);
+
+        if (!config.enable) {
+          return diagnostics;
+        }
 
         // ref: https://github.com/denoland/deno/blob/da8cb408c878aa6e90542e26173f1f14b5254d29/cli/js/compiler/util.ts#L262
         const ignoredDiagnostics = [
@@ -311,6 +341,13 @@ module.exports = function init(
 
       return proxy;
     },
+
+    onConfigurationChanged(c: DenoPluginConfig) {
+      Object.assign(config, c);
+      pluginInfo.project.markAsDirty();
+      pluginInfo.project.refreshDiagnostics();
+      pluginInfo.project.updateGraph();
+    }
   };
 };
 
