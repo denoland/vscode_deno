@@ -1,0 +1,11 @@
+{
+  "name": "deno-language-client",
+  "description": "Deno Language Service client",
+  "private": true,
+  "dependencies": {
+    "execa": "^4.0.1",
+    "vscode-languageclient": "^6.1.3",
+    "vscode-nls": "^4.1.2",
+    "which": "^2.0.2"
+  }
+}

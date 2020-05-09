@@ -237,3 +237,13 @@ function cpErrorHandler(cb: (reason?: any) => void): (reason?: any) => void {
     cb(err);
   };
 }
+
+export function bundledDtsPath(extensionPath: string): string {
+  return path.resolve(
+    extensionPath,
+    "node_modules",
+    "typescript-deno-plugin",
+    "lib",
+    "lib.deno.d.ts",
+  );
+}

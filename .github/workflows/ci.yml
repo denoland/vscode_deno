@@ -34,7 +34,7 @@ jobs:
         run: yarn --frozen-lockfile --non-interactive
 
       - name: Check code format
-        run: yarn check
+        run: yarn run check
 
       - name: Compile
         run: yarn compile

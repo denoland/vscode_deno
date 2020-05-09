@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2017",
     "outDir": "out",
-    "lib": ["es6"],
+    "lib": ["es2017"],
+    "resolveJsonModule": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "rootDir": "src"
   },
-  "exclude": ["node_modules", ".vscode-test"]
+  "files": [],
+  "references": [
+    { "path": "./client" },
+    { "path": "./server" }
+  ]
 }
