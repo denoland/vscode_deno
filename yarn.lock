@@ -2,14 +2,7 @@
 # yarn lockfile v1
 
 
-"@types/mock-require@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.npm.taobao.org/@types/mock-require/download/@types/mock-require-2.0.0.tgz#57a4f0db0b4b6274f610a2d2c20beb3c842181e1"
-  integrity sha1-V6Tw2wtLYnT2EKLSwgvrPIQhgeE=
-  dependencies:
-    "@types/node" "*"
-
-"@types/node@*", "@types/node@^13.13.5":
+"@types/node@^13.13.5":
   version "13.13.5"
   resolved "https://registry.npm.taobao.org/@types/node/download/@types/node-13.13.5.tgz#96ec3b0afafd64a4ccea9107b75bf8489f0e5765"
   integrity sha1-luw7Cvr9ZKTM6pEHt1v4SJ8OV2U=
@@ -51,11 +44,6 @@ for-own@^0.1.3:
   integrity sha1-UmXGgaTylNq78XyVCbZ2OqhFEM4=
   dependencies:
     for-in "^1.0.1"
-
-get-caller-file@^1.0.2:
-  version "1.0.3"
-  resolved "https://registry.npm.taobao.org/get-caller-file/download/get-caller-file-1.0.3.tgz#f978fa4c90d1dfe7ff2d6beda2a515e713bdcf4a"
-  integrity sha1-+Xj6TJDR3+f/LWvtoqUV5xO9z0o=
 
 import-maps@^0.2.1:
   version "0.2.1"
@@ -124,26 +112,6 @@ mixin-object@^2.0.1:
   dependencies:
     for-in "^0.1.3"
     is-extendable "^0.1.1"
-
-mock-require@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.npm.taobao.org/mock-require/download/mock-require-3.0.3.tgz#ccd544d9eae81dd576b3f219f69ec867318a1946"
-  integrity sha1-zNVE2eroHdV2s/IZ9p7IZzGKGUY=
-  dependencies:
-    get-caller-file "^1.0.2"
-    normalize-path "^2.1.1"
-
-normalize-path@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.npm.taobao.org/normalize-path/download/normalize-path-2.1.1.tgz#1ab28b556e198363a8c1a6f7e6fa20137fe6aed9"
-  integrity sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=
-  dependencies:
-    remove-trailing-separator "^1.0.1"
-
-remove-trailing-separator@^1.0.1:
-  version "1.1.0"
-  resolved "https://registry.npm.taobao.org/remove-trailing-separator/download/remove-trailing-separator-1.1.0.tgz#c24bce2a283adad5bc3f58e0d48249b92379d8ef"
-  integrity sha1-wkvOKig62tW8P1jg1IJJuSN52O8=
 
 shallow-clone@^0.1.2:
   version "0.1.2"

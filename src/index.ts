@@ -1,7 +1,6 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
 import path from 'path'
 import merge from "merge-deep";
-import mockRequire from "mock-require";
 import ts_module, { ResolvedModuleFull, CompilerOptions } from "typescript/lib/tsserverlibrary";
 import { parseFromString, resolve, ImportMaps } from 'import-maps'
 
@@ -35,9 +34,6 @@ const config: DenoPluginConfig = {
 module.exports = function init(
   { typescript }: { typescript: typeof ts_module },
 ) {
-  // Make sure Deno imports the correct version of TS
-  mockRequire("typescript", typescript);
-
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
   const OPTIONS: CompilerOptions = {
     allowJs: true,
