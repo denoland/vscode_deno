@@ -59,7 +59,7 @@ get-caller-file@^1.0.2:
 
 import-maps@^0.2.1:
   version "0.2.1"
-  resolved "https://registry.npm.taobao.org/import-maps/download/import-maps-0.2.1.tgz?cache=0&sync_timestamp=1588752776277&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fimport-maps%2Fdownload%2Fimport-maps-0.2.1.tgz#ca641bf85c21077a186df1461008b8dc8867fedb"
+  resolved "https://registry.npm.taobao.org/import-maps/download/import-maps-0.2.1.tgz#ca641bf85c21077a186df1461008b8dc8867fedb"
   integrity sha1-ymQb+FwhB3oYbfFGEAi43Ihn/ts=
 
 is-buffer@^1.0.2, is-buffer@^1.1.5:
