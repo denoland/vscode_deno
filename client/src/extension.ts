@@ -1,36 +1,24 @@
-import {
-  workspace,
-  window,
-  commands,
-  extensions,
-  ExtensionContext,
-  StatusBarAlignment,
-  TextEditor,
-  WorkspaceFolder,
-  QuickPickItem,
-  WorkspaceConfiguration,
-  Uri,
-  languages,
-  TextDocument,
-  Range,
-  TextEdit,
-} from "vscode";
-import * as path from "path";
-
+import * as vscode from "vscode";
 import * as nls from "vscode-nls";
-import execa from "execa";
+import * as lsp from "vscode-languageclient";
+
+import { registerCommands } from "./commands";
+import { projectLoadingNotification } from "./protocol";
 
 import { outputChannel } from "./output";
+
 import {
   isTypeScriptDocument,
   isJavaScriptDocument,
   getVersions,
   generateDtsForDeno,
-  downloadDtsForDeno,
+  getTypeScriptLanguageExtension,
+  getServerOptions,
+  restartTsServer,
 } from "./utils";
+import { bundledDtsPath } from "./deno";
 
-const typeScriptExtensionId = "vscode.typescript-language-features";
-const denoExtensionId = "justjavac.vscode-deno";
+const denoExtensionId = "denoland.deno";
 const pluginId = "typescript-deno-plugin";
 const configurationSection = "deno";
 
@@ -46,19 +34,19 @@ interface StatusParams {
   state: Status;
 }
 
-interface WorkspaceFolderItem extends QuickPickItem {
-  folder: WorkspaceFolder;
+interface WorkspaceFolderItem extends vscode.QuickPickItem {
+  folder: vscode.WorkspaceFolder;
 }
 
 async function pickFolder(
-  folders: WorkspaceFolder[],
+  folders: vscode.WorkspaceFolder[],
   placeHolder: string,
-): Promise<WorkspaceFolder> {
+): Promise<vscode.WorkspaceFolder> {
   if (folders.length === 1) {
     return Promise.resolve(folders[0]);
   }
 
-  const selected = await window.showQuickPick(
+  const selected = await vscode.window.showQuickPick(
     folders.map<WorkspaceFolderItem>((folder) => {
       return {
         label: folder.name,
@@ -75,10 +63,10 @@ async function pickFolder(
 }
 
 function enable() {
-  let folders = workspace.workspaceFolders;
+  let folders = vscode.workspace.workspaceFolders;
 
   if (!folders) {
-    window.showWarningMessage(
+    vscode.window.showWarningMessage(
       "Deno can only be enabled if VS Code is opened on a workspace folder.",
     );
     return;
@@ -86,18 +74,18 @@ function enable() {
 
   let disabledFolders = folders.filter(
     (folder) =>
-      !workspace
+      !vscode.workspace
         .getConfiguration(configurationSection, folder.uri)
         .get("enable", true),
   );
 
   if (disabledFolders.length === 0) {
     if (folders.length === 1) {
-      window.showInformationMessage(
+      vscode.window.showInformationMessage(
         "Deno is already enabled in the workspace.",
       );
     } else {
-      window.showInformationMessage(
+      vscode.window.showInformationMessage(
         "Deno is already enabled on all workspace folders.",
       );
     }
@@ -111,35 +99,36 @@ function enable() {
     if (!folder) {
       return;
     }
-    workspace
+    vscode.workspace
       .getConfiguration(configurationSection, folder.uri)
-      .update("enable", true);
+      .update("enable", true)
+      .then(restartTsServer);
   });
 }
 
 function disable() {
-  let folders = workspace.workspaceFolders;
+  let folders = vscode.workspace.workspaceFolders;
 
   if (!folders) {
-    window.showErrorMessage(
+    vscode.window.showErrorMessage(
       "Deno can only be disabled if VS Code is opened on a workspace folder.",
     );
     return;
   }
 
   let enabledFolders = folders.filter((folder) =>
-    workspace
+    vscode.workspace
       .getConfiguration(configurationSection, folder.uri)
       .get("enable", true)
   );
 
   if (enabledFolders.length === 0) {
     if (folders.length === 1) {
-      window.showInformationMessage(
+      vscode.window.showInformationMessage(
         "Deno is already disabled in the workspace.",
       );
     } else {
-      window.showInformationMessage(
+      vscode.window.showInformationMessage(
         "Deno is already disabled on all workspace folders.",
       );
     }
@@ -153,7 +142,10 @@ function disable() {
     if (!folder) {
       return;
     }
-    workspace.getConfiguration("deno", folder.uri).update("enable", false);
+    vscode.workspace.getConfiguration("deno", folder.uri).update(
+      "enable",
+      false,
+    ).then(restartTsServer);
   });
 }
 
@@ -161,74 +153,36 @@ interface SynchronizedConfiguration {
   alwaysShowStatus?: boolean;
   autoFmtOnSave?: boolean;
   enable?: boolean;
-  dtsPath?: string;
   importmap?: string;
+  tsconfig?: string;
 }
 
-export async function activate(context: ExtensionContext) {
-  const extension = extensions.getExtension(typeScriptExtensionId);
-  if (!extension) {
-    return;
-  }
+export async function activate(context: vscode.ExtensionContext) {
+  const api = await getTypeScriptLanguageExtension();
 
-  await extension.activate();
-  if (!extension.exports || !extension.exports.getAPI) {
-    return;
-  }
-
-  const api = extension.exports.getAPI(0);
   if (!api) {
     return;
   }
 
-  const configurationListener = workspace.onDidChangeConfiguration(
+  const configurationListener = vscode.workspace.onDidChangeConfiguration(
     (e) => {
       if (e.affectsConfiguration(configurationSection)) {
         synchronizeConfiguration(api);
-        updateStatusBarVisibility(window.activeTextEditor);
+        updateStatusBarVisibility(vscode.window.activeTextEditor);
       }
     },
     undefined,
     context.subscriptions,
   );
 
-  // const formatter = languages.registerDocumentFormattingEditProvider(
-  //   ["typescript", "javascript", "markdown", "json"],
-  //   {
-  //     async provideDocumentFormattingEdits(document: TextDocument) {
-  //       if (document.isUntitled) {
-  //         return;
-  //       }
-  //       await document.save();
-  //       const filename = path.basename(document.uri.fsPath);
-  //       const cwd = path.dirname(document.uri.fsPath);
-  //       const r = await execa(
-  //         "deno",
-  //         [
-  //           "run",
-  //           "--allow-read",
-  //           "https://deno.land/std/prettier/main.ts",
-  //           filename,
-  //         ],
-  //         { cwd },
-  //       );
-  //       const fullRange = new Range(
-  //         document.positionAt(0),
-  //         document.positionAt(document.getText().length - 1),
-  //       );
-  //       return [new TextEdit(fullRange, r.stdout)];
-  //     },
-  //   },
-  // );
-
   synchronizeConfiguration(api);
 
   const disposables = [
     configurationListener,
     // formatter,
-    commands.registerCommand("deno.enable", enable),
-    commands.registerCommand("deno.disable", disable),
-    commands.registerCommand("deno.showOutputChannel", async () => {
+    vscode.commands.registerCommand("deno.enable", enable),
+    vscode.commands.registerCommand("deno.disable", disable),
+    vscode.commands.registerCommand("deno.showOutputChannel", async () => {
       if (denoStatus === Status.ok) {
         outputChannel.show();
         return;
@@ -237,7 +191,7 @@ export async function activate(context: ExtensionContext) {
       const show = localize("showOutputChannel", "Show Output");
       const help = localize("getHelp", "Get Help");
 
-      const choice = await window.showWarningMessage(
+      const choice = await vscode.window.showWarningMessage(
         localize(
           "notfound",
           "Deno not found. Install it by using deno_install or click {0} button for more help.",
@@ -250,9 +204,9 @@ export async function activate(context: ExtensionContext) {
       if (choice === show) {
         outputChannel.show();
       } else if (choice === help) {
-        commands.executeCommand(
+        vscode.commands.executeCommand(
           "vscode.open",
-          Uri.parse("https://github.com/denoland/deno_install"),
+          vscode.Uri.parse("https://github.com/denoland/deno_install"),
         );
       }
     }),
@@ -260,7 +214,10 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(...disposables, outputChannel);
 
-  const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 0);
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    0,
+  );
   let denoStatus: Status = Status.ok;
 
   statusBarItem.text = "Deno";
@@ -285,7 +242,6 @@ export async function activate(context: ExtensionContext) {
     outputChannel.appendLine(
       "See https://github.com/denoland/deno_install for more installation options.\n",
     );
-    downloadDtsForDeno();
   } else {
     statusBarItem.tooltip = versions.raw;
     outputChannel.appendLine("Found deno, version:");
@@ -307,10 +263,12 @@ export async function activate(context: ExtensionContext) {
       // client.info("vscode-deno: Status is OK");
     }
     denoStatus = status;
-    updateStatusBarVisibility(window.activeTextEditor);
+    updateStatusBarVisibility(vscode.window.activeTextEditor);
   }
 
-  function updateStatusBarVisibility(editor: TextEditor | undefined): void {
+  function updateStatusBarVisibility(
+    editor: vscode.TextEditor | undefined,
+  ): void {
     switch (denoStatus) {
       case Status.ok:
         statusBarItem.text = `Deno ${versions.deno}`;
@@ -325,8 +283,8 @@ export async function activate(context: ExtensionContext) {
         statusBarItem.text = `Deno ${versions.deno}`;
     }
     let uri = editor ? editor.document.uri : undefined;
-    let enabled = workspace.getConfiguration("deno", uri)["enable"];
-    let alwaysShowStatus = workspace.getConfiguration("deno", uri)[
+    let enabled = vscode.workspace.getConfiguration("deno", uri)["enable"];
+    let alwaysShowStatus = vscode.workspace.getConfiguration("deno", uri)[
       "alwaysShowStatus"
     ];
 
@@ -345,8 +303,92 @@ export async function activate(context: ExtensionContext) {
     );
   }
 
-  window.onDidChangeActiveTextEditor(updateStatusBarVisibility);
-  updateStatusBarVisibility(window.activeTextEditor);
+  vscode.window.onDidChangeActiveTextEditor(updateStatusBarVisibility);
+  updateStatusBarVisibility(vscode.window.activeTextEditor);
+
+  // If the extension is launched in debug mode then the debug server options are used.
+  // Otherwise the run options are used.
+  const serverOptions: lsp.ServerOptions = {
+    run: getServerOptions(context, false /* debug */),
+    debug: getServerOptions(context, true /* debug */),
+  };
+
+  const config = vscode.workspace.getConfiguration();
+  const fileEvents: vscode.FileSystemWatcher[] = [];
+
+  // Notify the server about file changes to import maps contained in the workspace
+  const importmap: string | null = config.get("deno.importmap");
+  if (importmap) {
+    fileEvents.push(vscode.workspace.createFileSystemWatcher(importmap));
+  }
+
+  // Notify the server about file changes to tsconfig.json contained in the workspace
+  const tsconfig: string | null = config.get("deno.tsconfig");
+  if (tsconfig) {
+    fileEvents.push(vscode.workspace.createFileSystemWatcher(tsconfig));
+  }
+
+  // Options to control the language client
+  const clientOptions: lsp.LanguageClientOptions = {
+    // Register the server for JavaScript and TypeScript documents
+    documentSelector: [
+      // scheme: 'file' means listen to changes to files on disk only
+      // other option is 'untitled', for buffer in the editor (like a new doc)
+      // **NOTE**: REMOVE .wasm https://github.com/denoland/deno/pull/5135
+      { scheme: "file", language: "javascript" },
+      { scheme: "file", language: "javascriptreact" },
+      { scheme: "file", language: "typescript" },
+      { scheme: "file", language: "typescriptreact" },
+    ],
+
+    // Notify the server about file changes
+    synchronize: { fileEvents },
+
+    // Don't let our output console pop open
+    revealOutputChannelOn: lsp.RevealOutputChannelOn.Never,
+  };
+
+  // Create the language client and start the client.
+  const forceDebug = process.env["DENO_DEBUG"] === "true";
+  const client = new lsp.LanguageClient(
+    "Deno Language Service",
+    serverOptions,
+    clientOptions,
+    forceDebug,
+  );
+
+  // Push the disposable to the context's subscriptions so that the
+  // client can be deactivated on extension deactivation
+  context.subscriptions.push(...registerCommands(client), client.start());
+
+  client.onDidChangeState((e) => {
+    let task: { resolve: () => void } | undefined;
+    if (e.newState == lsp.State.Running) {
+      client.onNotification(projectLoadingNotification.start, () => {
+        if (task) {
+          task.resolve();
+          task = undefined;
+        }
+        vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Window,
+            title: "Initializing Deno language service",
+          },
+          () =>
+            new Promise((resolve) => {
+              task = { resolve };
+            }),
+        );
+      });
+
+      client.onNotification(projectLoadingNotification.finish, () => {
+        if (task) {
+          task.resolve();
+          task = undefined;
+        }
+      });
+    }
+  });
 }
 
 export function deactivate() {}
@@ -354,28 +396,29 @@ export function deactivate() {}
 function synchronizeConfiguration(api: any) {
   const config = getConfiguration();
 
-  if (!config.dtsPath) {
-    config.dtsPath = bundledDtsPath();
-  }
-
-  api.configurePlugin(pluginId, config);
+  api.configurePlugin(pluginId, {
+    ...config,
+    dtsPath: bundledDtsPath(
+      vscode.extensions.getExtension(denoExtensionId).extensionPath,
+    ),
+  });
 }
 
 function getConfiguration(): SynchronizedConfiguration {
-  const config = workspace.getConfiguration(configurationSection);
+  const config = vscode.workspace.getConfiguration(configurationSection);
   const outConfig: SynchronizedConfiguration = {};
 
   withConfigValue(config, outConfig, "enable");
   withConfigValue(config, outConfig, "alwaysShowStatus");
   withConfigValue(config, outConfig, "autoFmtOnSave");
-  withConfigValue(config, outConfig, "dtsPath");
+  withConfigValue(config, outConfig, "tsconfig");
   withConfigValue(config, outConfig, "importmap");
 
   return outConfig;
 }
 
 function withConfigValue<C, K extends Extract<keyof C, string>>(
-  config: WorkspaceConfiguration,
+  config: vscode.WorkspaceConfiguration,
   outConfig: C,
   key: K,
 ): void {
@@ -399,15 +442,4 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
   if (typeof value !== "undefined") {
     outConfig[key] = value;
   }
-}
-
-function bundledDtsPath(): string {
-  const { extensionPath } = extensions.getExtension(denoExtensionId);
-  return path.resolve(
-    extensionPath,
-    "node_modules",
-    "typescript-deno-plugin",
-    "lib",
-    "lib.deno.d.ts",
-  );
 }
