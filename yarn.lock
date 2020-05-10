@@ -1402,10 +1402,10 @@ typed-rest-client@1.2.0:
     tunnel "0.0.4"
     underscore "1.8.3"
 
-typescript-deno-plugin@^1.14.0:
-  version "1.14.0"
-  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.14.0.tgz#3a439c645d3a0bacf946eb7556226fcdf45884e0"
-  integrity sha512-r5sR3iL6QN7Qyj/fI1V86HUkPPGlPSB8W6NM6J8Ka51yhgtDDNnbMFGckwXlNzJDqgecRHpW4JvgR3ibGMID6w==
+typescript-deno-plugin@^1.15.0:
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.15.0.tgz#5e0ebe28be6c996241775289586ad3ddcff52d4e"
+  integrity sha512-/u0ngHsd+wduuMZN4yCoPI34I9d5O4byi8bTliY44Yqb0WcU/AXuYAdnmXl2ibFnvvrYoZ+8hj8yfvsGxExzzw==
   dependencies:
     crypto "^1.0.1"
     import-maps "^0.2.1"
