@@ -12,7 +12,8 @@ export interface DenoVersion {
   raw: string;
 }
 
-export function packageExists() {
+/** Check if the package.json file exists in the root directory. */
+export function packageJsonExists(): boolean {
   if (!vscode.workspace.rootPath) {
     return false;
   }

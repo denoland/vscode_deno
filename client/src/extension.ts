@@ -15,6 +15,7 @@ import {
   getTypeScriptLanguageExtension,
   getServerOptions,
   restartTsServer,
+  packageJsonExists,
 } from "./utils";
 import { bundledDtsPath } from "./deno";
 
@@ -163,6 +164,8 @@ export async function activate(context: vscode.ExtensionContext) {
   if (!api) {
     return;
   }
+
+  await promptForNodeJsProject();
 
   const configurationListener = vscode.workspace.onDidChangeConfiguration(
     (e) => {
@@ -441,5 +444,29 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
 
   if (typeof value !== "undefined") {
     outConfig[key] = value;
+  }
+}
+
+/** when package.json is detected in the root directory, display a prompt */
+async function promptForNodeJsProject(): Promise<void> {
+  let enabled = vscode.workspace.getConfiguration("deno").get("enable", true);
+
+  if (enabled && packageJsonExists()) {
+    const disable = localize("button.disable", "Disable");
+    const cancel = localize("button.cancel", "Cancel");
+    const choice = await vscode.window.showInformationMessage(
+      localize(
+        "message.maybe_nodejs_project",
+        "A package.json file is detected in the project. " +
+          "This project may be a Node.js project. " +
+          "Do you want to disable this extension?",
+      ),
+      disable,
+      cancel,
+    );
+
+    if (choice === disable) {
+      vscode.commands.executeCommand("deno.disable");
+    }
   }
 }
