@@ -244,6 +244,5 @@ export function bundledDtsPath(extensionPath: string): string {
     "node_modules",
     "typescript-deno-plugin",
     "lib",
-    "lib.deno.d.ts",
   );
 }

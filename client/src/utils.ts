@@ -5,6 +5,8 @@ import execa from "execa";
 import * as vscode from "vscode";
 import * as lsp from "vscode-languageclient";
 
+import { bundledDtsPath } from "./deno";
+
 export interface DenoVersion {
   deno: string;
   v8: string;
@@ -108,23 +110,45 @@ export function getDenoDir(): string {
   return denoDir;
 }
 
-// Generate Deno's .d.ts file
-export async function generateDtsForDeno(): Promise<void> {
-  try {
-    const denoDir: string = getDenoDir();
-    if (!fs.existsSync(denoDir)) {
-      fs.mkdirSync(denoDir, { recursive: true });
-    }
+/**
+ * The absolute file path of the directory containing this extension.
+ * @param extensionId 
+ */
+export function getExtensionPath(extensionId: string): string | undefined {
+  return vscode.extensions.getExtension(extensionId)?.extensionPath;
+}
 
+// Generate Deno's .d.ts file
+export async function generateDtsForDeno(extensionId: string): Promise<void> {
+  const denoDir: string = getDenoDir();
+  const extensionPath = getExtensionPath(extensionId)!;
+  const bundledPath = bundledDtsPath(extensionPath);
+
+  if (!fs.existsSync(denoDir)) {
+    fs.mkdirSync(denoDir, { recursive: true });
+  }
+
+  // copy bundled lib.webworker.d.ts to `denoDir`
+  // fix https://github.com/microsoft/TypeScript/issues/5676
+  fs.copyFileSync(
+    path.resolve(bundledPath, "lib.webworker.d.ts"),
+    path.resolve(denoDir, "lib.webworker.d.ts"),
+  );
+
+  try {
     const { stdout, stderr } = await execa("deno", ["types"]);
 
     if (stderr) {
-      return;
+      throw stderr;
     }
 
     fs.writeFileSync(path.resolve(denoDir, "lib.deno.d.ts"), stdout);
   } catch {
-    return;
+    // if `deno types` fails, just copy bundled lib.deno.d.ts to `denoDir`
+    fs.copyFileSync(
+      path.resolve(bundledPath, "lib.deno.d.ts"),
+      path.resolve(denoDir, "lib.deno.d.ts"),
+    );
   }
 }
 
