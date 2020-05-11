@@ -1,3 +1,5 @@
+// Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
+
 function parseString(args: string[], argName: string): string | undefined {
   const index = args.indexOf(argName);
   if (index < 0 || index === args.length - 1) {

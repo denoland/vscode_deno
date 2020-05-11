@@ -1,3 +1,5 @@
+// Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
+
 import { NotificationType0 } from "vscode-languageserver";
 
 export const projectLoadingNotification = {
