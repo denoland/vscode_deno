@@ -11,6 +11,7 @@ import {
   getDtsPathForVscode,
   normalizeFilepath,
   pathExistsSync,
+  getWebWorkderDtsPath,
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
@@ -233,7 +234,15 @@ module.exports = function init(
           scriptFileNames.push(denoDtsPath);
         }
 
-        logger.info(`dts path: ${denoDtsPath}`);
+        const webworkerDtsPath = getWebWorkderDtsPath(info.languageServiceHost);
+        if (webworkerDtsPath) {
+          scriptFileNames.push(webworkerDtsPath);
+        }
+
+        logger.info(`dts path:
+          deno: ${denoDtsPath}
+          webworker: ${webworkerDtsPath}
+        `);
 
         return scriptFileNames;
       };

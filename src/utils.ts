@@ -49,6 +49,18 @@ export function getGlobalDtsPath(): string | undefined {
   return undefined;
 }
 
+export function getWebWorkderDtsPath(
+  tsLsHost: ts_module.LanguageServiceHost,
+): string | undefined {
+  return path.resolve(
+    tsLsHost.getCurrentDirectory(),
+    "node_modules",
+    "typescript-deno-plugin",
+    "lib",
+    "lib.webworker.d.ts",
+  );
+}
+
 export function getLocalDtsPath(
   tsLsHost: ts_module.LanguageServiceHost,
 ): string | undefined {
