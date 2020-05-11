@@ -37,12 +37,14 @@ export const remoteModuleResolver: IModuleResolver = {
       redirect = isHttpURL(redirect) // eg: https://redirect.com/path/to/redirect
         ? redirect
         : path.posix.isAbsolute(redirect) // eg: /path/to/redirect
-          ? `${url.protocol}//${url.host}${redirect}`
-          : // eg: ./path/to/redirect
-            `${url.protocol}//${url.host}${path.posix.resolve(
+        ? `${url.protocol}//${url.host}${redirect}`
+        : // eg: ./path/to/redirect
+          `${url.protocol}//${url.host}${
+            path.posix.resolve(
               url.pathname,
               redirect,
-            )}`;
+            )
+          }`;
 
       // avoid Circular
       if (!isHttpURL(redirect) || redirect === moduleName) {

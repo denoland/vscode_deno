@@ -1,8 +1,11 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
-import path from 'path'
+import path from "path";
 import merge from "merge-deep";
-import ts_module, { ResolvedModuleFull, CompilerOptions } from "typescript/lib/tsserverlibrary";
-import { parseFromString, resolve, ImportMaps } from 'import-maps'
+import ts_module, {
+  ResolvedModuleFull,
+  CompilerOptions,
+} from "typescript/lib/tsserverlibrary";
+import { parseFromString, resolve, ImportMaps } from "import-maps";
 
 import { Logger } from "./logger";
 import {
@@ -15,8 +18,8 @@ import {
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
-import { readFileSync } from 'fs';
-import { URL } from 'url';
+import { readFileSync } from "fs";
+import { URL } from "url";
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -99,7 +102,6 @@ module.exports = function init(
           redirectedReference: ts_module.ResolvedProjectReference | undefined,
           options: ts_module.CompilerOptions,
         ): (ts_module.ResolvedTypeReferenceDirective | undefined)[] => {
-
           const ret = resolveTypeReferenceDirectives.call(
             tsLsHost,
             typeDirectiveNames,
@@ -112,7 +114,7 @@ module.exports = function init(
             logger.info("plugin disabled.");
             return ret;
           }
-    
+
           return ret;
         };
       }
@@ -128,22 +130,36 @@ module.exports = function init(
         ) => {
           if (!config.enable) {
             logger.info("plugin disabled.");
-            return resolveModuleNames.call(tsLsHost, moduleNames, containingFile, ...rest);
+            return resolveModuleNames.call(
+              tsLsHost,
+              moduleNames,
+              containingFile,
+              ...rest,
+            );
           }
-    
+
           const resolvedModules: (ResolvedModuleFull | undefined)[] = [];
 
           if (config.importmap != null) {
-            parsedImportMap = parseImportMapFromFile(projectDirectory, config.importmap);
+            parsedImportMap = parseImportMapFromFile(
+              projectDirectory,
+              config.importmap,
+            );
           }
 
           // try resolve typeReferenceDirectives
           for (let moduleName of moduleNames) {
             if (parsedImportMap !== null) {
-              try{
-                const moduleUrl = resolve(moduleName, parsedImportMap, new URL(projectDirectory, 'file:///'))
-                moduleName = moduleUrl.protocol === 'file:' ? moduleUrl.pathname : moduleUrl.href;
-              } catch (e){
+              try {
+                const moduleUrl = resolve(
+                  moduleName,
+                  parsedImportMap,
+                  new URL(projectDirectory, "file:///"),
+                );
+                moduleName = moduleUrl.protocol === "file:"
+                  ? moduleUrl.pathname
+                  : moduleUrl.href;
+              } catch (e) {
                 resolvedModules.push(undefined);
                 continue;
               }
@@ -348,21 +364,21 @@ module.exports = function init(
     },
 
     onConfigurationChanged(c: DenoPluginConfig) {
-      logger.info('config change to:\n' + JSON.stringify(c, null, '  '));
+      logger.info("config change to:\n" + JSON.stringify(c, null, "  "));
       Object.assign(config, c);
       pluginInfo.project.markAsDirty();
       pluginInfo.project.refreshDiagnostics();
       pluginInfo.project.updateGraph();
-    }
+    },
   };
 };
 
 function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
   if (!path.isAbsolute(file)) {
-    file = path.resolve(cwd, file)
+    file = path.resolve(cwd, file);
   }
 
-  const fullFilePath = normalizeFilepath(file)
+  const fullFilePath = normalizeFilepath(file);
 
   if (!pathExistsSync(fullFilePath)) {
     return null;
