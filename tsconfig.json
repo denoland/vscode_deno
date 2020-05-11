@@ -16,5 +16,6 @@
     "strictNullChecks": true,
     "baseUrl": "./src"
   },
-  "include": ["./src/**/*.ts", "types/**/*.d.ts"]
+  "include": ["./src/**/*.ts", "./types/**/*.d.ts"],
+  "exclude": ["./lib/*.d.ts"]
 }
