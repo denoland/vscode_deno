@@ -31,13 +31,41 @@ export class ProjectService {
     options.logger.info("ProjectService");
     this.tsProjSvc = new ts.server.ProjectService(options);
 
+    this.tsProjSvc.setHostConfiguration({
+      hostInfo: "Deno Service",
+      formatOptions: this.tsProjSvc.getHostFormatCodeOptions(),
+      preferences: this.tsProjSvc.getHostPreferences(),
+      extraFileExtensions: [
+        {
+          extension: ".js",
+          isMixedContent: false,
+          scriptKind: ts.ScriptKind.JS,
+        },
+        {
+          extension: ".jsx",
+          isMixedContent: false,
+          scriptKind: ts.ScriptKind.JSX,
+        },
+        {
+          extension: ".ts",
+          isMixedContent: false,
+          scriptKind: ts.ScriptKind.TS,
+        },
+        {
+          extension: ".tsx",
+          isMixedContent: false,
+          scriptKind: ts.ScriptKind.TSX,
+        },
+      ],
+    });
+
     this.tsProjSvc.configurePlugin({
       pluginName: "typescript-deno-plugin",
       configuration: {},
     });
 
     const plugins = this.tsProjSvc.globalPlugins;
-    options.logger.info(plugins.join(", "));
+    options.logger.info("enable plugins: " + plugins.join(", "));
   }
 
   /**
