@@ -9,12 +9,9 @@ import { parseFromString, resolve, ImportMaps } from "import-maps";
 
 import { Logger } from "./logger";
 import {
-  getGlobalDtsPath,
-  getLocalDtsPath,
-  getDtsPathForVscode,
+  getDenoDtsPath,
   normalizeFilepath,
   pathExistsSync,
-  getWebWorkderDtsPath,
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
@@ -28,7 +25,6 @@ type DenoPluginConfig = {
   enable: boolean;
   importmap?: string;
   tsconfig?: string;
-  dtsPath?: string;
 };
 
 const config: DenoPluginConfig = {
@@ -242,23 +238,21 @@ module.exports = function init(
           info.languageServiceHost,
         );
 
-        const denoDtsPath = getDtsPathForVscode(info) ||
-          getGlobalDtsPath() ||
-          getLocalDtsPath(info.languageServiceHost);
-
-        if (denoDtsPath) {
-          scriptFileNames.push(denoDtsPath);
+        const libDenoDts = getDenoDtsPath(tsLsHost, "lib.deno.d.ts");
+        if (!libDenoDts) {
+          logger.info(`Can not load lib.deno.d.ts from ${libDenoDts}.`);
+          return scriptFileNames;
         }
+        scriptFileNames.push(libDenoDts);
 
-        const webworkerDtsPath = getWebWorkderDtsPath(info.languageServiceHost);
-        if (webworkerDtsPath) {
-          scriptFileNames.push(webworkerDtsPath);
+        const libWebworkerDts = getDenoDtsPath(tsLsHost, "lib.webworker.d.ts");
+        if (!libWebworkerDts) {
+          logger.info(
+            `Can not load lib.webworker.d.ts from ${libWebworkerDts}.`,
+          );
+          return scriptFileNames;
         }
-
-        logger.info(`dts path:
-          deno: ${denoDtsPath}
-          webworker: ${webworkerDtsPath}
-        `);
+        scriptFileNames.push(libWebworkerDts);
 
         return scriptFileNames;
       };

@@ -4,9 +4,8 @@ import merge from "merge-deep";
 import { LanguageServiceHost } from "./language_service_host";
 import { Logger } from "./logger";
 import {
-  getGlobalDtsPath,
-  getLocalDtsPath,
-} from "utils";
+  getDenoDtsPath,
+} from "./utils";
 
 // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
 const OPTIONS: ts_module.CompilerOptions = {
@@ -100,10 +99,7 @@ export class TypeScriptServiceHost implements LanguageServiceHost {
   getScriptFileNames(): string[] {
     const scriptFileNames: string[] = this.tsLsHost.getScriptFileNames();
 
-    const denoDtsPath =
-      //   getDtsPathForVscode(this.tsLsHost) ||
-      getGlobalDtsPath() ||
-        getLocalDtsPath(this.tsLsHost);
+    const denoDtsPath = getDenoDtsPath(this.tsLsHost, "lib.deno.d.ts");
 
     if (denoDtsPath) {
       scriptFileNames.push(denoDtsPath);

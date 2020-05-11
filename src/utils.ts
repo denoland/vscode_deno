@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import crypto from "crypto";
 
-import ts_module from "typescript/lib/tsserverlibrary";
+import ts from "typescript/lib/tsserverlibrary";
 import { URL } from "url";
 import { statSync } from "fs";
 
@@ -38,54 +38,29 @@ export function getDenoDepsDir(): string {
   return path.join(getDenoDir(), "deps");
 }
 
-export function getGlobalDtsPath(): string | undefined {
-  const denoDir = getDenoDir();
-  const globalDtsPath = path.resolve(denoDir, "lib.deno.d.ts");
-
-  if (fs.existsSync(globalDtsPath)) {
-    return globalDtsPath;
-  }
-
-  return undefined;
-}
-
-export function getWebWorkderDtsPath(
-  tsLsHost: ts_module.LanguageServiceHost,
-): string | undefined {
+export function getPluginPath(
+  tsLsHost: ts.LanguageServiceHost,
+): string {
   return path.resolve(
     tsLsHost.getCurrentDirectory(),
     "node_modules",
     "typescript-deno-plugin",
-    "lib",
-    "lib.webworker.d.ts",
   );
 }
 
-export function getLocalDtsPath(
-  tsLsHost: ts_module.LanguageServiceHost,
+export function getDenoDtsPath(
+  tsLsHost: ts.LanguageServiceHost,
+  specifier: string,
 ): string | undefined {
-  const localDtsPath = path.resolve(
-    tsLsHost.getCurrentDirectory(),
-    "node_modules",
-    "typescript-deno-plugin",
-    "lib",
-    "lib.deno.d.ts",
-  );
+  let file: string = path.resolve(getDenoDir(), specifier);
 
-  if (fs.existsSync(localDtsPath)) {
-    return localDtsPath;
+  if (fs.existsSync(file)) {
+    return file;
   }
 
-  return undefined;
-}
-
-export function getDtsPathForVscode(
-  info: ts_module.server.PluginCreateInfo,
-): string | undefined {
-  const bundledDtsPath = info.config.dtsPath;
-
-  if (bundledDtsPath && fs.existsSync(bundledDtsPath)) {
-    return bundledDtsPath;
+  file = path.resolve(getPluginPath(tsLsHost), "lib", specifier);
+  if (fs.existsSync(file)) {
+    return file;
   }
 
   return undefined;
