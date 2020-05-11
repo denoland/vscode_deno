@@ -348,6 +348,7 @@ module.exports = function init(
     },
 
     onConfigurationChanged(c: DenoPluginConfig) {
+      logger.info('config change to:\n' + JSON.stringify(c, null, '  '));
       Object.assign(config, c);
       pluginInfo.project.markAsDirty();
       pluginInfo.project.refreshDiagnostics();
