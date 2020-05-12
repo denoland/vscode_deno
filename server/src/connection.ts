@@ -5,19 +5,14 @@
 
 import ts from "typescript/lib/tsserverlibrary";
 import * as lsp from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { Logger } from "./logger";
 import { ProjectService } from "./project_service";
 import { projectLoadingNotification } from "./protocol";
 import { ServerHost } from "./server_host";
-
-import {
-  filePathToUri,
-  lspPositionToTsPosition,
-  tsTextSpanToLspRange,
-  uriToFilePath,
-} from "./utils";
-import { isDenoProject } from "./utils/deno";
+import * as deno from "./utils/deno";
+import { uriToFilePath } from "./utils";
 
 export interface ConnectionOptions {
   host: ServerHost;
@@ -42,12 +37,14 @@ const EMPTY_RANGE = lsp.Range.create(0, 0, 0, 0);
 export class Connection {
   private readonly connection: lsp.IConnection;
   private readonly projectService: ProjectService;
+  private readonly documents: lsp.TextDocuments<TextDocument>;
   private diagnosticsTimeout: NodeJS.Timeout | null = null;
   private isProjectLoading = false;
 
   constructor(options: ConnectionOptions) {
     // Create a connection for the server. The connection uses Node's IPC as a transport.
     this.connection = lsp.createConnection();
+    this.documents = new lsp.TextDocuments(TextDocument);
     this.addProtocolHandlers(this.connection);
     this.projectService = new ProjectService({
       host: options.host,
@@ -70,9 +67,12 @@ export class Connection {
   }
 
   private addProtocolHandlers(conn: lsp.IConnection) {
+    conn.onInitialize((p) => this.onInitialize(p));
     conn.onDidOpenTextDocument((p) => this.onDidOpenTextDocument(p));
     conn.onDidCloseTextDocument((p) => this.onDidCloseTextDocument(p));
     conn.onDidSaveTextDocument((p) => this.onDidSaveTextDocument(p));
+    conn.onDocumentFormatting((p) => this.onDocumentFormatting(p));
+    conn.onDocumentRangeFormatting((p) => this.onDocumentRangeFormatting(p));
   }
 
   /**
@@ -104,6 +104,16 @@ export class Connection {
         break;
       }
     }
+  }
+
+  private onInitialize(params: lsp.InitializeParams): lsp.InitializeResult {
+    return {
+      capabilities: {
+        documentFormattingProvider: true,
+        documentRangeFormattingProvider: true,
+        textDocumentSync: lsp.TextDocumentSyncKind.Full,
+      },
+    };
   }
 
   private onDidOpenTextDocument(params: lsp.DidOpenTextDocumentParams) {
@@ -177,6 +187,40 @@ export class Connection {
     }
   }
 
+  private async onDocumentFormatting(params: lsp.DocumentFormattingParams) {
+    const { textDocument } = params;
+    const doc = this.documents.get(textDocument.uri);
+    if (!doc) {
+      return;
+    }
+
+    const text = doc.getText();
+    const formatted = await deno.format(text);
+
+    const start = doc.positionAt(0);
+    const end = doc.positionAt(text.length);
+    const range = lsp.Range.create(start, end);
+
+    return [lsp.TextEdit.replace(range, formatted)];
+  }
+
+  private async onDocumentRangeFormatting(
+    params: lsp.DocumentRangeFormattingParams,
+  ) {
+    const { range, textDocument } = params;
+    const doc = this.documents.get(textDocument.uri);
+    if (!doc) {
+      return;
+    }
+
+    const text = doc.getText(range);
+    const formatted = await deno.format(text);
+
+    // why trim it?
+    // Because we are just formatting some of them, we don't need to keep the trailing \n
+    return [lsp.TextEdit.replace(range, formatted.trim())];
+  }
+
   /**
    * Show an error message.
    *
@@ -217,6 +261,7 @@ export class Connection {
    * Start listening on the input stream for messages to process.
    */
   listen() {
+    this.documents.listen(this.connection);
     this.connection.listen();
   }
 
@@ -239,7 +284,7 @@ export class Connection {
       return;
     }
 
-    if (!isDenoProject(project, DENO_MOD)) {
+    if (!deno.isDenoProject(project, DENO_MOD)) {
       project.disableLanguageService();
       const msg =
         `Disabling language service for ${projectName} because it is not an Deno project ` +

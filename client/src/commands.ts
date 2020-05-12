@@ -1,3 +1,5 @@
+// Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
+
 import * as vscode from "vscode";
 import * as lsp from "vscode-languageclient";
 

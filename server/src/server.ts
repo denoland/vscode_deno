@@ -1,3 +1,5 @@
+// Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
+
 import ts from "typescript/lib/tsserverlibrary";
 import denoPkg from "typescript-deno-plugin/package.json";
 

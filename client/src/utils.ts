@@ -1,3 +1,5 @@
+// Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
+
 import * as fs from "fs";
 import * as path from "path";
 import execa from "execa";
