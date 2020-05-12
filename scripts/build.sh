@@ -19,7 +19,8 @@ rm -rf **/*.tsbuildinfo
 yarn compile
 
 # Copy files to package root
-cp package.* yarn.lock deno.png Releases.md README.md dist
+cp package.* yarn.lock deno.png README.md dist
+cp Releases.md dist/Changelog.md
 cp -r schemas dist
 # Copy files to client directory
 cp client/package.json client/yarn.lock dist/client
