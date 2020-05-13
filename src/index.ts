@@ -33,7 +33,8 @@ const config: DenoPluginConfig = {
   enable: true,
 };
 
-let parsedImportMap: ImportMaps | null = null;
+let parsedImportMap: ImportMaps;
+
 let projectDirectory: string;
 
 module.exports = function init(
@@ -140,12 +141,10 @@ module.exports = function init(
 
           const resolvedModules: (ResolvedModuleFull | undefined)[] = [];
 
-          if (config.importmap != null) {
-            parsedImportMap = parseImportMapFromFile(
-              projectDirectory,
-              config.importmap,
-            );
-          }
+          parsedImportMap = parseImportMapFromFile(
+            projectDirectory,
+            config.importmap,
+          );
 
           // try resolve typeReferenceDirectives
           for (let moduleName of moduleNames) {
@@ -157,7 +156,7 @@ module.exports = function init(
             );
 
             if (parsedModuleName == null) {
-              logger.info(`module "${moduleName}" can not parsed`)
+              logger.info(`module "${moduleName}" can not parsed`);
               resolvedModules.push(undefined);
               continue;
             }
@@ -165,7 +164,7 @@ module.exports = function init(
             const resolvedModule = resolveDenoModule(parsedModuleName);
 
             if (!resolvedModule) {
-              logger.info(`module "${moduleName}" can not resolved`)
+              logger.info(`module "${moduleName}" can not resolved`);
               resolvedModules.push(undefined);
               continue;
             }
@@ -380,7 +379,8 @@ module.exports = function init(
 
             if (isHttpURL(parsedModuleName)) {
               d.code = 10002; // RemoteModuleNotExist
-              d.messageText = `The remote module "${moduleName}" have not cached locally`;
+              d.messageText =
+                `The remote module "${moduleName}" have not cached locally`;
               return d;
             }
 
@@ -419,12 +419,10 @@ module.exports = function init(
       logger.info("config change to:\n" + JSON.stringify(c, null, "  "));
       Object.assign(config, c);
 
-      if (config.importmap != null) {
-        parsedImportMap = parseImportMapFromFile(
-          projectDirectory,
-          config.importmap,
-        );
-      }
+      parsedImportMap = parseImportMapFromFile(
+        projectDirectory,
+        config.importmap,
+      );
 
       pluginInfo.project.markAsDirty();
       pluginInfo.project.refreshDiagnostics();
@@ -434,7 +432,16 @@ module.exports = function init(
   };
 };
 
-function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
+function parseImportMapFromFile(cwd: string, file?: string): ImportMaps {
+  const importmps: ImportMaps = {
+    imports: {},
+    scopes: {},
+  };
+
+  if (file == null) {
+    return importmps;
+  }
+
   if (!path.isAbsolute(file)) {
     file = path.resolve(cwd, file);
   }
@@ -442,7 +449,7 @@ function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
   const fullFilePath = normalizeFilepath(file);
 
   if (!pathExistsSync(fullFilePath)) {
-    return null;
+    return importmps;
   }
 
   const content = fs.readFileSync(fullFilePath, {
@@ -452,7 +459,7 @@ function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
   try {
     return parseFromString(content, `file://${cwd}/`);
   } catch {
-    return null;
+    return importmps;
   }
 }
 
