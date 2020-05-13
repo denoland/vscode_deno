@@ -380,7 +380,7 @@ module.exports = function init(
             if (isHttpURL(parsedModuleName)) {
               d.code = 10002; // RemoteModuleNotExist
               d.messageText =
-                `The remote module "${moduleName}" have not cached locally`;
+                `The remote module "${moduleName}" has not been cached locally`;
               return d;
             }
 
