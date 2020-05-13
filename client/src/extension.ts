@@ -344,8 +344,38 @@ export async function activate(context: vscode.ExtensionContext) {
       { scheme: "file", language: "typescriptreact" },
     ],
 
-    // Notify the server about file changes
-    synchronize: { fileEvents },
+    // Notify the server about file changes or config change
+    synchronize: {
+      fileEvents,
+      configurationSection: configurationSection,
+    },
+
+    progressOnInitialization: true,
+
+    diagnosticCollectionName: configurationSection,
+
+    middleware: {
+      provideCodeActions(
+        document: vscode.TextDocument,
+        range: vscode.Range,
+        context: vscode.CodeActionContext,
+        token: vscode.CancellationToken,
+        next: lsp.ProvideCodeActionsSignature,
+      ) {
+        if (!config.get("deno.enable") || !context.diagnostics) {
+          return [];
+        }
+
+        // diagnostics from Deno Language Server
+        const diagnostics = context.diagnostics.filter((x) =>
+          x.source === "Deno Language Server"
+        );
+
+        Object.assign(context, { diagnostics });
+
+        return next(document, range, context, token);
+      },
+    },
 
     // Don't let our output console pop open
     revealOutputChannelOn: lsp.RevealOutputChannelOn.Never,
