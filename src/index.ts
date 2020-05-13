@@ -33,6 +33,9 @@ const config: DenoPluginConfig = {
   enable: true,
 };
 
+let parsedImportMap: ImportMaps | null = null;
+let projectDirectory: string;
+
 module.exports = function init(
   { typescript }: { typescript: typeof ts_module },
 ) {
@@ -84,11 +87,9 @@ module.exports = function init(
         return tsLs;
       }
 
-      const projectDirectory = project.getCurrentDirectory();
+      projectDirectory = project.getCurrentDirectory();
       // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
       process.chdir(projectDirectory);
-
-      let parsedImportMap: ImportMaps | null = null;
 
       const resolveTypeReferenceDirectives =
         tsLsHost.resolveTypeReferenceDirectives;
@@ -126,6 +127,7 @@ module.exports = function init(
           containingFile: string,
           ...rest
         ) => {
+          logger.info("resolveModuleNames");
           if (!config.enable) {
             logger.info("plugin disabled.");
             return resolveModuleNames.call(
@@ -155,6 +157,7 @@ module.exports = function init(
             );
 
             if (parsedModuleName == null) {
+              logger.info(`module "${moduleName}" can not parsed`)
               resolvedModules.push(undefined);
               continue;
             }
@@ -162,9 +165,12 @@ module.exports = function init(
             const resolvedModule = resolveDenoModule(parsedModuleName);
 
             if (!resolvedModule) {
+              logger.info(`module "${moduleName}" can not resolved`)
               resolvedModules.push(undefined);
               continue;
             }
+
+            logger.info(`module "${moduleName}" -> ${resolvedModule.filepath}`);
 
             resolvedModules.push({
               extension: resolvedModule.extension as ts_module.Extension,
@@ -297,6 +303,7 @@ module.exports = function init(
       }
 
       function getSemanticDiagnostics(filename: string) {
+        logger.info("getSemanticDiagnostics");
         const diagnostics = tsLs.getSemanticDiagnostics(filename);
 
         if (!config.enable) {
@@ -359,7 +366,7 @@ module.exports = function init(
             );
 
             if (parsedModuleName == null) {
-              d.code = 10001;
+              d.code = 10001; // InvalidRelativeImport
               d.messageText =
                 `relative import path "${moduleName}" not prefixed with / or ./ or ../`;
               return d;
@@ -373,7 +380,7 @@ module.exports = function init(
 
             if (isHttpURL(parsedModuleName)) {
               d.code = 10002; // RemoteModuleNotExist
-              d.messageText = `Could not find module ${moduleName} locally`;
+              d.messageText = `The remote module "${moduleName}" have not cached locally`;
               return d;
             }
 
@@ -384,11 +391,11 @@ module.exports = function init(
               parsedModuleName.startsWith("file://")
             ) {
               d.code = 10003; // LocalModuleNotExist
-              d.messageText = `Could not find module ${moduleName} locally`;
+              d.messageText = `Could not find module "${moduleName}" locally`;
               return d;
             }
 
-            d.code = 10003; // InvalidImport
+            d.code = 10004; // InvalidImport
             d.messageText =
               `Import module "${moduleName}" must be a relative path or remote HTTP URL`;
           }
@@ -411,9 +418,18 @@ module.exports = function init(
     onConfigurationChanged(c: DenoPluginConfig) {
       logger.info("config change to:\n" + JSON.stringify(c, null, "  "));
       Object.assign(config, c);
+
+      if (config.importmap != null) {
+        parsedImportMap = parseImportMapFromFile(
+          projectDirectory,
+          config.importmap,
+        );
+      }
+
       pluginInfo.project.markAsDirty();
       pluginInfo.project.refreshDiagnostics();
       pluginInfo.project.updateGraph();
+      pluginInfo.languageService.getProgram()?.emit();
     },
   };
 };
