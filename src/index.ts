@@ -1,5 +1,8 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
 import path from "path";
+import fs from "fs";
+import { URL } from "url";
+
 import merge from "merge-deep";
 import ts_module, {
   ResolvedModuleFull,
@@ -12,11 +15,10 @@ import {
   getDenoDtsPath,
   normalizeFilepath,
   pathExistsSync,
+  isHttpURL,
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
-import { readFileSync } from "fs";
-import { URL } from "url";
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -145,26 +147,19 @@ module.exports = function init(
 
           // try resolve typeReferenceDirectives
           for (let moduleName of moduleNames) {
-            if (parsedImportMap !== null) {
-              try {
-                const moduleUrl = resolve(
-                  moduleName,
-                  parsedImportMap,
-                  new URL(projectDirectory, "file:///"),
-                );
-                moduleName = moduleUrl.protocol === "file:"
-                  ? moduleUrl.pathname
-                  : moduleUrl.href;
-              } catch (e) {
-                resolvedModules.push(undefined);
-                continue;
-              }
-            }
-
-            const resolvedModule = universalModuleResolver.resolve(
+            const parsedModuleName = parseModuleName(
               moduleName,
               containingFile,
+              parsedImportMap,
+              logger,
             );
+
+            if (parsedModuleName == null) {
+              resolvedModules.push(undefined);
+              continue;
+            }
+
+            const resolvedModule = resolveDenoModule(parsedModuleName);
 
             if (!resolvedModule) {
               resolvedModules.push(undefined);
@@ -340,9 +335,65 @@ module.exports = function init(
           7016,
         ];
 
-        return diagnostics.filter((v: ts_module.Diagnostic) =>
-          !ignoredDiagnostics.includes(v.code)
-        );
+        return diagnostics.filter((d: ts_module.Diagnostic) =>
+          !ignoredDiagnostics.includes(d.code)
+        ).map((d: ts_module.Diagnostic) => {
+          if (d.code === 2691) {
+            const moduleName = d.file!.getFullText().substr(
+              d.start! + 1,
+              d.length! - 2,
+            );
+
+            if (config.importmap != null) {
+              parsedImportMap = parseImportMapFromFile(
+                projectDirectory,
+                config.importmap,
+              );
+            }
+
+            const parsedModuleName = parseModuleName(
+              moduleName,
+              d.file?.fileName!,
+              parsedImportMap,
+              logger,
+            );
+
+            if (parsedModuleName == null) {
+              d.code = 10001;
+              d.messageText =
+                `relative import path "${moduleName}" not prefixed with / or ./ or ../`;
+              return d;
+            }
+
+            const resolvedModule = resolveDenoModule(parsedModuleName);
+
+            if (resolvedModule != null) {
+              return d;
+            }
+
+            if (isHttpURL(parsedModuleName)) {
+              d.code = 10002; // RemoteModuleNotExist
+              d.messageText = `Could not find module ${moduleName} locally`;
+              return d;
+            }
+
+            if (
+              path.isAbsolute(parsedModuleName) ||
+              parsedModuleName.startsWith("./") ||
+              parsedModuleName.startsWith("../") ||
+              parsedModuleName.startsWith("file://")
+            ) {
+              d.code = 10003; // LocalModuleNotExist
+              d.messageText = `Could not find module ${moduleName} locally`;
+              return d;
+            }
+
+            d.code = 10003; // InvalidImport
+            d.messageText =
+              `Import module "${moduleName}" must be a relative path or remote HTTP URL`;
+          }
+          return d;
+        });
       }
 
       const proxy: ts_module.LanguageService = Object.assign(
@@ -378,7 +429,7 @@ function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
     return null;
   }
 
-  const content = readFileSync(fullFilePath, {
+  const content = fs.readFileSync(fullFilePath, {
     encoding: "utf8",
   });
 
@@ -387,4 +438,35 @@ function parseImportMapFromFile(cwd: string, file: string): ImportMaps | null {
   } catch {
     return null;
   }
+}
+
+function parseModuleName(
+  moduleName: string,
+  containingFile: string,
+  parsedImportMap?: ImportMaps | null,
+  logger?: Logger,
+): string | undefined {
+  if (parsedImportMap != null) {
+    try {
+      const moduleUrl = resolve(
+        moduleName,
+        parsedImportMap,
+        new URL(path.dirname(containingFile) + "/", "file:///"),
+      );
+
+      return moduleUrl.protocol === "file:"
+        ? moduleUrl.pathname
+        : moduleUrl.href;
+    } catch (e) {
+      if (logger) logger.info("moduleName: " + moduleName);
+      if (logger) logger.info("e: " + (e as Error).stack);
+      return undefined;
+    }
+  }
+}
+
+function resolveDenoModule(moduleName: string) {
+  return universalModuleResolver.resolve(
+    moduleName,
+  );
 }

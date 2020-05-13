@@ -1,10 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import crypto from "crypto";
+import { URL } from "url";
 
 import ts from "typescript/lib/tsserverlibrary";
-import { URL } from "url";
-import { statSync } from "fs";
 
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
@@ -148,7 +147,7 @@ export function isUntitledDocument(filename: string): boolean {
 
 export function pathExistsSync(filepath: string): boolean {
   try {
-    statSync(filepath);
+    fs.statSync(filepath);
     return true;
   } catch (err) {
     return false;

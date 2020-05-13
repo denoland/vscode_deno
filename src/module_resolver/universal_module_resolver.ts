@@ -7,21 +7,18 @@ import { localModuleResolver } from "./local_module_resolver";
 export const universalModuleResolver: IModuleResolver = {
   resolve(
     moduleName: string,
-    containingFile: string,
     originModuleName: string = moduleName,
-  ): (void | DenoResolvedModule) {
+  ): (undefined | DenoResolvedModule) {
     // If import from remote
     if (isHttpURL(moduleName)) {
       return remoteModuleResolver.resolve(
         moduleName,
-        containingFile,
         originModuleName,
       );
     }
 
     return localModuleResolver.resolve(
       moduleName,
-      containingFile,
       originModuleName,
     );
   },

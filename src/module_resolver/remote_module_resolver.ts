@@ -10,9 +10,8 @@ import { universalModuleResolver } from "./universal_module_resolver";
 export const remoteModuleResolver: IModuleResolver = {
   resolve(
     moduleName: string,
-    containingFile?: string,
     originModuleName: string = moduleName,
-  ): (void | DenoResolvedModule) {
+  ): (undefined | DenoResolvedModule) {
     const url = new URL(moduleName);
 
     const originDir = path.join(
@@ -51,7 +50,7 @@ export const remoteModuleResolver: IModuleResolver = {
         return;
       }
 
-      return this.resolve(redirect, containingFile, originModuleName);
+      return this.resolve(redirect, originModuleName);
     }
 
     const moduleFilepath = path.join(originDir, hash);
@@ -60,7 +59,6 @@ export const remoteModuleResolver: IModuleResolver = {
     if (typescriptTypes) {
       const typeModule = universalModuleResolver.resolve(
         moduleName,
-        containingFile,
         originModuleName,
       );
 

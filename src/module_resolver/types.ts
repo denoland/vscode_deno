@@ -17,7 +17,6 @@ export type DenoResolvedModule = {
 export interface IModuleResolver {
   resolve(
     moduleName: string,
-    containingFile?: string,
     originModuleName?: string,
-  ): DenoResolvedModule | void;
+  ): DenoResolvedModule | undefined;
 }
