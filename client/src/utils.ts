@@ -83,6 +83,16 @@ export async function getVersions(): Promise<DenoVersion | undefined> {
   }
 }
 
+export function normalizeFilepath(filepath: string): string {
+  return path.normalize(
+    filepath
+      // in Windows, filepath maybe `c:\foo\bar` tut the legal path should be `C:\foo\bar`
+      .replace(/^([a-z]):\\/, (_, $1) => $1.toUpperCase() + ":\\")
+      // There are some paths which are unix style, this style does not work on win32 systems
+      .replace(/\//gm, path.sep),
+  );
+}
+
 // TODO: duplicate
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
@@ -110,6 +120,12 @@ export function getDenoDir(): string {
   }
 
   return denoDir;
+}
+
+export function isInDenoDir(filepath: string): boolean {
+  filepath = normalizeFilepath(filepath);
+  const denoDir = getDenoDir();
+  return filepath.startsWith(denoDir);
 }
 
 /**

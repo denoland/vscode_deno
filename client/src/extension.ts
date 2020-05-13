@@ -17,6 +17,7 @@ import {
   getServerOptions,
   restartTsServer,
   packageJsonExists,
+  isInDenoDir,
 } from "./utils";
 
 const denoExtensionId = "denoland.deno";
@@ -364,6 +365,12 @@ export async function activate(context: vscode.ExtensionContext) {
   // client can be deactivated on extension deactivation
   context.subscriptions.push(...registerCommands(client), client.start());
 
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+      await setDocumentLanguage(editor?.document);
+    }),
+  );
+
   client.onDidChangeState((e) => {
     let task: { resolve: () => void } | undefined;
     if (e.newState == lsp.State.Running) {
@@ -463,5 +470,28 @@ async function promptForNodeJsProject(): Promise<void> {
     if (choice === disable) {
       vscode.commands.executeCommand("deno.disable");
     }
+  }
+}
+
+async function setDocumentLanguage(document?: vscode.TextDocument) {
+  if (!document) {
+    return;
+  }
+
+  if (
+    document.isUntitled ||
+    document.languageId.toLowerCase() !== "plaintext"
+  ) {
+    return;
+  }
+
+  const filepath = document.uri.fsPath;
+
+  if (isInDenoDir(filepath)) {
+    // TODO(justjavac): detect from .metadata.json
+    await vscode.languages.setTextDocumentLanguage(
+      document,
+      "typescriptreact",
+    );
   }
 }
