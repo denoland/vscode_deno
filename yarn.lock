@@ -355,11 +355,6 @@ cross-spawn@^7.0.0:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-crypto@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/crypto/-/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
-  integrity sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==
-
 css-select@~1.2.0:
   version "1.2.0"
   resolved "https://registry.npm.taobao.org/css-select/download/css-select-1.2.0.tgz?cache=0&sync_timestamp=1573342118933&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fcss-select%2Fdownload%2Fcss-select-1.2.0.tgz#2b3a110539c5355f1cd8d314623e870b121ec858"
@@ -1407,12 +1402,11 @@ typed-rest-client@1.2.0:
     tunnel "0.0.4"
     underscore "1.8.3"
 
-typescript-deno-plugin@^1.23.1:
-  version "1.23.1"
-  resolved "https://registry.npmjs.org/typescript-deno-plugin/-/typescript-deno-plugin-1.23.1.tgz#804617ab1a4c80e0a00156bb507e257e23e27d50"
-  integrity sha512-VG3pobx5dOYrlXseYpKfT48dczYc53jZU2k8SA6kZwPL7oSShtKpq3Ov8KKGOAVLyFavURBPxvKgYzBjwCDj+w==
+typescript-deno-plugin@^1.25.0:
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/typescript-deno-plugin/-/typescript-deno-plugin-1.25.0.tgz#07f385b49079b214c082d67c77890580acb9efc4"
+  integrity sha512-OfVdYEyh6bHHwNIU5E36A8X/NEKeph+0deudV0c0l789Zlzjrx2KBAgoxz1ZzWCnRhbPnkEviTcik5lRg+NC6w==
   dependencies:
-    crypto "^1.0.1"
     import-maps "^0.2.1"
     merge-deep "^3.0.2"
 
