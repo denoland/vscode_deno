@@ -21,7 +21,7 @@ jobs:
       - name: Setup Deno
         uses: denolib/setup-deno@master
         with:
-          deno-version: "1.0.0-rc1"
+          deno-version: "1.0.0"
 
       - name: Log versions
         run: |
