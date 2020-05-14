@@ -1,7 +1,7 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
 import path from "path";
 import fs from "fs";
-import { URL } from "url";
+import { URL, fileURLToPath } from "url";
 
 import merge from "merge-deep";
 import ts_module, {
@@ -474,12 +474,19 @@ function parseModuleName(
       const moduleUrl = resolve(
         moduleName,
         parsedImportMap,
-        new URL(path.dirname(containingFile) + "/", "file:///"),
+        new URL("file:///" + path.dirname(containingFile) + "/"),
       );
 
-      return moduleUrl.protocol === "file:"
-        ? moduleUrl.pathname
-        : moduleUrl.href;
+      if (moduleUrl.protocol === "file:") {
+        return fileURLToPath(moduleUrl.href)
+      }
+
+      if (moduleUrl.protocol === "http:" || moduleUrl.protocol === "https:") {
+        return moduleUrl.href
+      }
+
+      // just support protocol: file, http, https
+      return undefined;
     } catch (e) {
       if (logger) logger.info("moduleName: " + moduleName);
       if (logger) logger.info("e: " + (e as Error).stack);
