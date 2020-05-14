@@ -8,15 +8,22 @@ import * as lsp from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { Logger } from "./logger";
-import { ProjectService } from "./project_service";
+import { ProjectService, DenoPluginOptions } from "./project_service";
 import { projectLoadingNotification } from "./protocol";
 import { ServerHost } from "./server_host";
 import * as deno from "./utils/deno";
-import { uriToFilePath } from "./utils";
+import {
+  uriToFilePath,
+  filePathToUri,
+  tsDiagnosticToLspDiagnostic,
+} from "./utils";
+import { FixItems } from "./code_actions";
 
 export interface ConnectionOptions {
+  serverName: string;
   host: ServerHost;
   logger: Logger;
+  deno: DenoPluginOptions;
   pluginProbeLocations?: string[];
 }
 
@@ -38,6 +45,7 @@ export class Connection {
   private readonly connection: lsp.IConnection;
   private readonly projectService: ProjectService;
   private readonly documents: lsp.TextDocuments<TextDocument>;
+  private readonly serverName: string;
   private diagnosticsTimeout: NodeJS.Timeout | null = null;
   private isProjectLoading = false;
 
@@ -45,25 +53,30 @@ export class Connection {
     // Create a connection for the server. The connection uses Node's IPC as a transport.
     this.connection = lsp.createConnection();
     this.documents = new lsp.TextDocuments(TextDocument);
+    this.serverName = options.serverName;
     this.addProtocolHandlers(this.connection);
-    this.projectService = new ProjectService({
-      host: options.host,
-      logger: options.logger,
-      cancellationToken: ts.server.nullCancellationToken,
-      useSingleInferredProject: true,
-      useInferredProjectPerProjectRoot: true,
-      typingsInstaller: ts.server.nullTypingsInstaller,
-      // Not supressing diagnostic events can cause a type error to be thrown when the
-      // language server session gets an event for a file that is outside the project
-      // managed by the project service, and for which a program does not exist in the
-      // corresponding project's language service.
-      // See https://github.com/angular/vscode-ng-language-service/issues/693
-      suppressDiagnosticEvents: true,
-      eventHandler: (e) => this.handleProjectServiceEvent(e),
-      globalPlugins: ["typescript-deno-plugin"],
-      pluginProbeLocations: options.pluginProbeLocations,
-      allowLocalPluginLoads: false, // do not load plugins from tsconfig.json
-    });
+    this.addDocumentHandlers(this.documents);
+    this.projectService = new ProjectService(
+      {
+        host: options.host,
+        logger: options.logger,
+        cancellationToken: ts.server.nullCancellationToken,
+        useSingleInferredProject: true,
+        useInferredProjectPerProjectRoot: true,
+        typingsInstaller: ts.server.nullTypingsInstaller,
+        // Not supressing diagnostic events can cause a type error to be thrown when the
+        // language server session gets an event for a file that is outside the project
+        // managed by the project service, and for which a program does not exist in the
+        // corresponding project's language service.
+        // See https://github.com/angular/vscode-ng-language-service/issues/693
+        suppressDiagnosticEvents: true,
+        eventHandler: (e) => this.handleProjectServiceEvent(e),
+        globalPlugins: ["typescript-deno-plugin"],
+        pluginProbeLocations: options.pluginProbeLocations,
+        allowLocalPluginLoads: false, // do not load plugins from tsconfig.json
+      },
+      options.deno,
+    );
   }
 
   private addProtocolHandlers(conn: lsp.IConnection) {
@@ -73,6 +86,7 @@ export class Connection {
     conn.onDidSaveTextDocument((p) => this.onDidSaveTextDocument(p));
     conn.onDocumentFormatting((p) => this.onDocumentFormatting(p));
     conn.onDocumentRangeFormatting((p) => this.onDocumentRangeFormatting(p));
+    conn.onCodeAction((p) => this.onCodeAction(p));
   }
 
   /**
@@ -82,11 +96,11 @@ export class Connection {
    * @param event
    */
   private handleProjectServiceEvent(event: ts.server.ProjectServiceEvent) {
-    this.connection.console.log("handleProjectServiceEvent");
+    this.log("handleProjectServiceEvent");
     switch (event.eventName) {
       case ts.server.ProjectLoadingStartEvent:
         this.isProjectLoading = true;
-        this.connection.console.log("project loading");
+        this.log("project loading");
         this.connection.sendNotification(projectLoadingNotification.start);
         break;
       case ts.server.ProjectLoadingFinishEvent: {
@@ -97,12 +111,67 @@ export class Connection {
         } finally {
           if (this.isProjectLoading) {
             this.isProjectLoading = false;
-            this.connection.console.log("project load finish");
+            this.log("project load finish");
             this.connection.sendNotification(projectLoadingNotification.finish);
           }
         }
         break;
       }
+      case ts.server.ProjectsUpdatedInBackgroundEvent:
+        // ProjectsUpdatedInBackgroundEvent is sent whenever diagnostics are
+        // requested via project.refreshDiagnostics()
+        this.triggerDiagnostics(event.data.openFiles);
+        break;
+    }
+  }
+
+  /**
+   * Retrieve Deno diagnostics for the specified `openFiles` after a specific
+   * `delay`, or renew the request if there's already a pending one.
+   * @param openFiles
+   * @param delay time to wait before sending request (milliseconds)
+   */
+  private triggerDiagnostics(openFiles: string[], delay: number = 200) {
+    // Do not immediately send a diagnostics request. Send only after user has
+    // stopped typing after the specified delay.
+    if (this.diagnosticsTimeout) {
+      // If there's an existing timeout, cancel it
+      clearTimeout(this.diagnosticsTimeout);
+    }
+    // Set a new timeout
+    this.diagnosticsTimeout = setTimeout(() => {
+      this.diagnosticsTimeout = null; // clear the timeout
+      this.sendPendingDiagnostics(openFiles);
+      // Default delay is 200ms, consistent with TypeScript. See
+      // https://github.com/microsoft/vscode/blob/7b944a16f52843b44cede123dd43ae36c0405dfd/extensions/typescript-language-features/src/features/bufferSyncSupport.ts#L493)
+    }, delay);
+  }
+
+  /**
+   * Execute diagnostics request for each of the specified `openFiles`.
+   * @param openFiles
+   */
+  private sendPendingDiagnostics(openFiles: string[]) {
+    for (const fileName of openFiles) {
+      const scriptInfo = this.projectService.getScriptInfo(fileName);
+      if (!scriptInfo) {
+        continue;
+      }
+
+      const tsLS = this.projectService.getDefaultLanguageService(scriptInfo);
+      if (!tsLS) {
+        continue;
+      }
+
+      const diagnostics = tsLS.getSemanticDiagnostics(fileName);
+      // Need to send diagnostics even if it's empty otherwise editor state will
+      // not be updated.
+      this.connection.sendDiagnostics({
+        uri: filePathToUri(fileName),
+        diagnostics: diagnostics.map((d) =>
+          tsDiagnosticToLspDiagnostic(d, scriptInfo)
+        ),
+      });
     }
   }
 
@@ -111,14 +180,20 @@ export class Connection {
       capabilities: {
         documentFormattingProvider: true,
         documentRangeFormattingProvider: true,
-        textDocumentSync: lsp.TextDocumentSyncKind.Full,
+        textDocumentSync: {
+          openClose: true,
+          change: lsp.TextDocumentSyncKind.Full,
+        },
+        codeActionProvider: {
+          codeActionKinds: [lsp.CodeActionKind.QuickFix],
+        },
       },
     };
   }
 
   private onDidOpenTextDocument(params: lsp.DidOpenTextDocumentParams) {
     const { uri, languageId, text } = params.textDocument;
-    this.connection.console.log(`open ${uri}`);
+    this.log(`open ${uri}`);
     const filePath = uriToFilePath(uri);
     if (!filePath) {
       return;
@@ -219,6 +294,59 @@ export class Connection {
     // why trim it?
     // Because we are just formatting some of them, we don't need to keep the trailing \n
     return [lsp.TextEdit.replace(range, formatted.trim())];
+  }
+
+  private async onCodeAction(params: lsp.CodeActionParams) {
+    const { context, textDocument } = params;
+    const diagnostics = context.diagnostics;
+    if (diagnostics.length === 0) {
+      return;
+    }
+
+    const actions: lsp.CodeAction[] = [];
+    for (const diag of diagnostics) {
+      if (!diag.code) {
+        continue;
+      }
+
+      const item = FixItems[diag.code];
+      if (!item) {
+        continue;
+      }
+
+      const action = lsp.CodeAction.create(
+        `${item.title} (${this.serverName})`,
+        lsp.Command.create(
+          item.title,
+          item.command,
+          textDocument.uri,
+          {
+            start: {
+              line: diag.range.start.line,
+              character: diag.range.start.character,
+            },
+            end: {
+              line: diag.range.end.line,
+              character: diag.range.end.character,
+            },
+          },
+        ),
+        lsp.CodeActionKind.QuickFix,
+      );
+
+      actions.push(action);
+    }
+
+    return actions;
+  }
+
+  private addDocumentHandlers(docs: lsp.TextDocuments<TextDocument>): void {
+    docs.onDidOpen((e) => this.onDidOpen(e));
+  }
+
+  private onDidOpen(e: lsp.TextDocumentChangeEvent<TextDocument>) {
+    this.log("Open file: " + e.document.uri);
+    this.triggerDiagnostics([uriToFilePath(e.document.uri)]);
   }
 
   /**

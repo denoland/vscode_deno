@@ -8,6 +8,9 @@ import { createLogger } from "./logger";
 import { ServerHost } from "./server_host";
 import { Connection } from "./connection";
 
+const serverName = "Deno Language Server";
+process.title = serverName;
+
 // Parse command line arguments
 const options = parseArguments(process.argv);
 
@@ -27,8 +30,13 @@ const host = new ServerHost();
 
 // Establish a new server that encapsulates lsp connection.
 const connection = new Connection({
+  serverName,
   host,
   logger,
+  deno: {
+    tsconfig: options.config,
+    importmap: options.importmap,
+  },
   // pluginProbeLocations: resolveDenoPluginLocations(),
 });
 

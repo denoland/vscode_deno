@@ -5,6 +5,11 @@
 
 import ts from "typescript/lib/tsserverlibrary";
 
+export interface DenoPluginOptions {
+  tsconfig?: string;
+  importmap?: string;
+}
+
 /**
  * NOTE:
  * There are three types of `project`:
@@ -27,7 +32,10 @@ import ts from "typescript/lib/tsserverlibrary";
 export class ProjectService {
   private readonly tsProjSvc: ts.server.ProjectService;
 
-  constructor(options: ts.server.ProjectServiceOptions) {
+  constructor(
+    options: ts.server.ProjectServiceOptions,
+    denoPluginOptions: DenoPluginOptions,
+  ) {
     options.logger.info("ProjectService");
     this.tsProjSvc = new ts.server.ProjectService(options);
 
@@ -61,7 +69,7 @@ export class ProjectService {
 
     this.tsProjSvc.configurePlugin({
       pluginName: "typescript-deno-plugin",
-      configuration: {},
+      configuration: denoPluginOptions,
     });
 
     const plugins = this.tsProjSvc.globalPlugins;
