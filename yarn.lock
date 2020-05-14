@@ -23,11 +23,6 @@ clone-deep@^0.2.4:
     lazy-cache "^1.0.3"
     shallow-clone "^0.1.2"
 
-crypto@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npm.taobao.org/crypto/download/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
-  integrity sha1-KvG3ytgXXSTIobB3glV5SiGAMDc=
-
 for-in@^0.1.3:
   version "0.1.8"
   resolved "https://registry.npm.taobao.org/for-in/download/for-in-0.1.8.tgz#d8773908e31256109952b1fdb9b3fa867d2775e1"
