@@ -7,7 +7,7 @@
   "scripts": {
     "prepublishOnly": "tsc",
     "compile": "tsc",
-    "types": "deno types > lib/lib.deno.d.ts"
+    "types": "deno types --unstable > lib/lib.deno.d.ts"
   },
   "keywords": [
     "deno",
