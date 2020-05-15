@@ -154,7 +154,7 @@ export async function generateDtsForDeno(extensionId: string): Promise<void> {
   );
 
   try {
-    const { stdout, stderr } = await execa("deno", ["types"]);
+    const { stdout, stderr } = await execa("deno", ["types", "--unstable"]);
 
     if (stderr) {
       throw stderr;
