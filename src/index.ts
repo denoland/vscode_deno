@@ -226,7 +226,6 @@ module.exports = function init(
           merge(OPTIONS, projectConfig),
           OPTIONS_OVERWRITE_BY_DENO,
         );
-        compilationSettings.baseUrl = projectDirectory;
         return compilationSettings;
       };
 
