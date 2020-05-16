@@ -158,7 +158,6 @@ export async function generateDtsForDeno(extensionId: string): Promise<void> {
     const args = ["types"];
     const config = vscode.workspace.getConfiguration();
 
-    console.log("reloading...");
     if (config.get("deno.unstable")) args.push("--unstable");
 
     const { stdout, stderr } = await execa("deno", args);
