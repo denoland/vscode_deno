@@ -478,13 +478,13 @@ function parseModuleName(
         if (meta && meta.url) {
           scriptURL = meta.url;
         } else {
-          scriptURL = new URL("file:///" + path.dirname(containingFile) + "/")
+          scriptURL = new URL("file:///" + path.dirname(containingFile) + "/");
         }
       } else {
-        scriptURL = new URL("file:///" + path.dirname(containingFile) + "/")
+        scriptURL = new URL("file:///" + path.dirname(containingFile) + "/");
       }
 
-      logger && logger.info(`baseUrl: ${scriptURL}`)
+      logger && logger.info(`baseUrl: ${scriptURL}`);
 
       const moduleUrl = resolve(
         moduleName,
@@ -493,11 +493,11 @@ function parseModuleName(
       );
 
       if (moduleUrl.protocol === "file:") {
-        return fileURLToPath(moduleUrl.href)
+        return fileURLToPath(moduleUrl.href);
       }
 
       if (moduleUrl.protocol === "http:" || moduleUrl.protocol === "https:") {
-        return moduleUrl.href
+        return moduleUrl.href;
       }
 
       // just support protocol: file, http, https
