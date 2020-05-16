@@ -16,9 +16,11 @@ import {
   normalizeFilepath,
   pathExistsSync,
   isHttpURL,
+  isInDenoDir,
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
+import { HashMeta } from "./module_resolver/hash_meta";
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -471,10 +473,24 @@ function parseModuleName(
 ): string | undefined {
   if (parsedImportMap != null) {
     try {
+      let scriptURL: URL;
+      if (isInDenoDir(containingFile)) {
+        const meta = HashMeta.create(`${containingFile}.metadata.json`);
+        if (meta && meta.url) {
+          scriptURL = meta.url;
+        } else {
+          scriptURL = new URL("file:///" + path.dirname(containingFile) + "/")
+        }
+      } else {
+        scriptURL = new URL("file:///" + path.dirname(containingFile) + "/")
+      }
+
+      logger && logger.info(`baseUrl: ${scriptURL}`)
+
       const moduleUrl = resolve(
         moduleName,
         parsedImportMap,
-        new URL("file:///" + path.dirname(containingFile) + "/"),
+        scriptURL,
       );
 
       if (moduleUrl.protocol === "file:") {

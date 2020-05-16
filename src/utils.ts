@@ -37,6 +37,12 @@ export function getDenoDepsDir(): string {
   return path.join(getDenoDir(), "deps");
 }
 
+export function isInDenoDir(filepath: string): boolean {
+  filepath = normalizeFilepath(filepath);
+  const denoDir = getDenoDir();
+  return filepath.startsWith(denoDir);
+}
+
 export function getPluginPath(
   tsLsHost: ts.LanguageServiceHost,
 ): string {
