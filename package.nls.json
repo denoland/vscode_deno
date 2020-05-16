@@ -8,5 +8,6 @@
   "deno.config.alwaysShowStatus": "Always show the Deno status bar item.",
   "deno.config.autoFmtOnSave": "Turns auto format on save on or off.",
   "deno.config.dtsPath": "The Path of TypeScript declaration file(.d.ts).",
-  "deno.config.importmap": "The Path of import maps."
+  "deno.config.importmap": "The Path of import maps.",
+  "deno.config.unstable": "Enable Deno unstable features."
 }

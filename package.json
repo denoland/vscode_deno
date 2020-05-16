@@ -1,9 +1,9 @@
 {
-  "name": "vscode_deno",
+  "name": "deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
   "version": "1.24.0",
-  "publisher": "the deno authors",
+  "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -106,6 +106,11 @@
           ],
           "default": "terse",
           "description": "Enables logging of the Deno server to a file. This log can be used to diagnose Deno Server issues. The log may contain file paths, source code, and other potentially sensitive information from your project."
+        },
+        "deno.unstable": {
+          "type": "boolean",
+          "default": true,
+          "description": "%deno.config.unstable%"
         }
       }
     },
