@@ -52,7 +52,9 @@ After install typescript-deno-plugin, Then you can add a `plugins` section to yo
   "compilerOptions": {
     "plugins": [
       {
-        "name": "typescript-deno-plugin"
+        "name": "typescript-deno-plugin",
+        "enable": true, // default is `true`
+        "importmap": "import_map.json"
       }
     ]
   }
