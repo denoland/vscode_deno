@@ -1,9 +1,9 @@
 {
-  "name": "deno",
+  "name": "vscode_deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
   "version": "1.24.0",
-  "publisher": "denoland",
+  "publisher": "the deno authors",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
