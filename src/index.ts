@@ -7,6 +7,9 @@ import merge from "merge-deep";
 import ts_module, {
   ResolvedModuleFull,
   CompilerOptions,
+  UserPreferences,
+  FormatCodeSettings,
+  CodeFixAction,
 } from "typescript/lib/tsserverlibrary";
 import { parseFromString, resolve, ImportMaps } from "import-maps";
 
@@ -21,6 +24,8 @@ import {
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
 import { HashMeta } from "./module_resolver/hash_meta";
+import { errorCodeToFixes } from "./codefix_provider";
+import './code_fixes'
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -404,12 +409,41 @@ module.exports = function init(
         });
       }
 
+      // TODO(justjavac): maybe also `getCombinedCodeFix`
+      function getCodeFixesAtPosition(
+        fileName: string,
+        start: number,
+        end: number,
+        errorCodes: readonly number[],
+        formatOptions: FormatCodeSettings,
+        preferences: UserPreferences,
+      ): readonly CodeFixAction[] {
+        const codeFixActions = tsLs.getCodeFixesAtPosition(
+          fileName,
+          start,
+          end,
+          errorCodes,
+          formatOptions,
+          preferences,
+        );
+
+        for (const errorCode of errorCodes) {
+          const fixes = errorCodeToFixes.get(errorCode)!
+          for (const fix of fixes) {
+            fix.replaceCodeActions(codeFixActions);
+          }
+        }
+
+        return codeFixActions;
+      }
+
       const proxy: ts_module.LanguageService = Object.assign(
         Object.create(null),
         tsLs,
         {
           getCompletionEntryDetails,
           getSemanticDiagnostics,
+          getCodeFixesAtPosition,
         },
       );
 
