@@ -1,6 +1,7 @@
 {
   "deno.displayName": "Deno",
   "deno.description": "Deno support for VSCode",
+  "deno.command.restartLanguageServer": "Restart Deno Language server",
   "deno.command.enable": "启用 Deno",
   "deno.command.disable": "禁用 Deno",
   "deno.config.enabled": "是否启用 Deno。",

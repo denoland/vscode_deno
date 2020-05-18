@@ -51,7 +51,7 @@
     "commands": [
       {
         "command": "deno.restartDenoServer",
-        "title": "Restart Deno Language server",
+        "title": "%deno.command.restartLanguageServer%",
         "category": "Deno"
       },
       {
