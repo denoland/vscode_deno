@@ -1,0 +1,13 @@
+{
+  "deno.displayName": "Deno",
+  "deno.description": "Deno support for VSCode",
+  "deno.command.restartLanguageServer": "Reiniciar servidor de linguagem do Deno",
+  "deno.command.enable": "Ativar Deno",
+  "deno.command.disable": "Desativar Deno",
+  "deno.config.enabled": "Controla se o Deno está activo ou não.",
+  "deno.config.packageManager": "O gestor de pacotes que você utiliza para instalar node modules.",
+  "deno.config.alwaysShowStatus": "Mostrar sempre o Deno na barra de estados.",
+  "deno.config.autoFmtOnSave": "Ativa ou desativa a formatação automática ao salvar.",
+  "deno.config.dtsPath": "O caminho para os ficheiros de declaração do TypeScript(.d.ts).",
+  "deno.config.importmap": "O caminho para o ficheiro de importação de mapas."
+}
