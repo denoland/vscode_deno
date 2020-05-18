@@ -50,7 +50,7 @@ export const remoteModuleResolver: IModuleResolver = {
         return;
       }
 
-      return this.resolve(redirect, originModuleName);
+      return universalModuleResolver.resolve(redirect, originModuleName);
     }
 
     const moduleFilepath = path.join(originDir, hash);
@@ -58,7 +58,7 @@ export const remoteModuleResolver: IModuleResolver = {
     const typescriptTypes = meta.headers["x-typescript-types"];
     if (typescriptTypes) {
       const typeModule = universalModuleResolver.resolve(
-        moduleName,
+        typescriptTypes,
         originModuleName,
       );
 
