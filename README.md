@@ -34,7 +34,7 @@ Deno allows imports from URLs, like the browser. But TypeScript can **not** find
 
 ![ts(2307)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2307.png)
 
-### after install this plugin
+### after installing this plugin
 
 Deno caches remote imports in a special directory specified by the `$DENO_DIR`
 environmental variable. It defaults to the system's cache directory if
