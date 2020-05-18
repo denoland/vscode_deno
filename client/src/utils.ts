@@ -140,6 +140,7 @@ export function getExtensionPath(extensionId: string): string | undefined {
 export async function generateDtsForDeno(extensionId: string): Promise<void> {
   const denoDir: string = getDenoDir();
   const extensionPath = getExtensionPath(extensionId)!;
+
   const bundledPath = bundledDtsPath(extensionPath);
 
   if (!fs.existsSync(denoDir)) {
@@ -154,7 +155,12 @@ export async function generateDtsForDeno(extensionId: string): Promise<void> {
   );
 
   try {
-    const { stdout, stderr } = await execa("deno", ["types", "--unstable"]);
+    const args = ["types"];
+    const config = vscode.workspace.getConfiguration();
+
+    if (config.get("deno.unstable")) args.push("--unstable");
+
+    const { stdout, stderr } = await execa("deno", args);
 
     if (stderr) {
       throw stderr;

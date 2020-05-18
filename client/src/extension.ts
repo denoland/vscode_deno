@@ -157,6 +157,7 @@ interface SynchronizedConfiguration {
   enable?: boolean;
   importmap?: string;
   tsconfig?: string;
+  unstable?: boolean;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -448,6 +449,7 @@ function getConfiguration(): SynchronizedConfiguration {
   withConfigValue(config, outConfig, "autoFmtOnSave");
   withConfigValue(config, outConfig, "tsconfig");
   withConfigValue(config, outConfig, "importmap");
+  withConfigValue(config, outConfig, "unstable");
 
   return outConfig;
 }
