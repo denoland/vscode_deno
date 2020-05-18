@@ -1,5 +1,63 @@
 # Changelog
 
+## 1.29.0 - 2020-05-18
+
+- avoid call circular
+
+## 1.28.0 - 2020-05-18
+
+- improve auto imports [#40](https://github.com/justjavac/typescript-deno-plugin/pull/40)
+
+## 1.27.0 - 2020-05-16
+
+- fix intellisense on cached files
+
+## 1.26.0 - 2020-05-15
+
+- add unstable types
+
+## 1.25.0 - 2020-05-15
+
+- fix importmap using local files
+- remvoe crypto
+
+## 1.24.0 - 2020-05-15
+
+- bump deno@v1.0.0
+
+## 1.23.1 - 2020-05-15
+
+- fix typo
+
+## 1.23.0 - 2020-05-15
+
+- fix non-importmaps issue
+
+## 1.22.0 - 2020-05-15
+
+- bump deno@v1.0.0-rc3
+
+## 1.21.0 - 2020-05-15
+
+- fix import maps
+
+## 1.18.0 - 2020-05-15
+
+- fix ts error 2691: cannot end with `'.ts'`
+
+## 1.17.0 - 2020-05-15
+
+- remove `dtsPath` config
+
+## 1.16.0 - 2020-05-15
+
+- support for webworker
+- format using `deno fmt`
+
+## 1.15.0 - 2020-05-10
+
+- bump deno@1.0.0-rc2
+
 ## 1.6.0 - 2020-05-03
 
 - rewrite module resolver [#35](https://github.com/justjavac/typescript-deno-plugin/pull/35)
