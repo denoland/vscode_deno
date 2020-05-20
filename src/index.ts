@@ -240,9 +240,11 @@ module.exports = function init(
           return getScriptFileNames.call(tsLsHost);
         }
 
-        const scriptFileNames = getScriptFileNames.call(
+        const originalScriptFileNames = getScriptFileNames.call(
           info.languageServiceHost,
         );
+
+        const scriptFileNames = [... originalScriptFileNames];
 
         const libDenoDts = getDenoDtsPath(tsLsHost, "lib.deno.d.ts");
         if (!libDenoDts) {
@@ -429,6 +431,8 @@ module.exports = function init(
 
         for (const errorCode of errorCodes) {
           const fixes = errorCodeToFixes.get(errorCode)!
+          if (fixes == null) continue;
+
           for (const fix of fixes) {
             fix.replaceCodeActions(codeFixActions);
           }
