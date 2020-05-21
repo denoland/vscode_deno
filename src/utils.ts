@@ -3,8 +3,6 @@ import * as path from "path";
 import crypto from "crypto";
 import { URL } from "url";
 
-import ts from "typescript/lib/tsserverlibrary";
-
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
   // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
@@ -43,18 +41,11 @@ export function isInDenoDir(filepath: string): boolean {
   return filepath.startsWith(denoDir);
 }
 
-export function getPluginPath(
-  tsLsHost: ts.LanguageServiceHost,
-): string {
-  return path.resolve(
-    tsLsHost.getCurrentDirectory(),
-    "node_modules",
-    "typescript-deno-plugin",
-  );
+export function getPluginPath(): string {
+  return path.resolve(__dirname, "..");
 }
 
 export function getDenoDtsPath(
-  tsLsHost: ts.LanguageServiceHost,
   specifier: string,
 ): string | undefined {
   let file: string = path.resolve(getDenoDir(), specifier);
@@ -63,7 +54,7 @@ export function getDenoDtsPath(
     return file;
   }
 
-  file = path.resolve(getPluginPath(tsLsHost), "lib", specifier);
+  file = path.resolve(getPluginPath(), "lib", specifier);
   if (fs.existsSync(file)) {
     return file;
   }

@@ -246,14 +246,14 @@ module.exports = function init(
 
         const scriptFileNames = [... originalScriptFileNames];
 
-        const libDenoDts = getDenoDtsPath(tsLsHost, "lib.deno.d.ts");
+        const libDenoDts = getDenoDtsPath("lib.deno.d.ts");
         if (!libDenoDts) {
           logger.info(`Can not load lib.deno.d.ts from ${libDenoDts}.`);
           return scriptFileNames;
         }
         scriptFileNames.push(libDenoDts);
 
-        const libWebworkerDts = getDenoDtsPath(tsLsHost, "lib.webworker.d.ts");
+        const libWebworkerDts = getDenoDtsPath("lib.webworker.d.ts");
         if (!libWebworkerDts) {
           logger.info(
             `Can not load lib.webworker.d.ts from ${libWebworkerDts}.`,

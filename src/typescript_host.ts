@@ -99,7 +99,7 @@ export class TypeScriptServiceHost implements LanguageServiceHost {
   getScriptFileNames(): string[] {
     const scriptFileNames: string[] = this.tsLsHost.getScriptFileNames();
 
-    const denoDtsPath = getDenoDtsPath(this.tsLsHost, "lib.deno.d.ts");
+    const denoDtsPath = getDenoDtsPath("lib.deno.d.ts");
 
     if (denoDtsPath) {
       scriptFileNames.push(denoDtsPath);
