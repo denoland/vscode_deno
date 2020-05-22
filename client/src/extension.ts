@@ -11,14 +11,14 @@ import { outputChannel } from "./output";
 import {
   isTypeScriptDocument,
   isJavaScriptDocument,
-  getVersions,
-  generateDtsForDeno,
   getTypeScriptLanguageExtension,
   getServerOptions,
   restartTsServer,
   packageJsonExists,
-  isInDenoDir,
+  getExtensionPath,
 } from "./utils";
+
+import { deno } from "./deno";
 
 const denoExtensionId = "denoland.deno";
 const pluginId = "typescript-deno-plugin";
@@ -228,9 +228,9 @@ export async function activate(context: vscode.ExtensionContext) {
   statusBarItem.text = "Deno";
   statusBarItem.command = "deno.showOutputChannel";
 
-  const versions = await getVersions();
+  await deno.init();
 
-  if (versions === undefined) {
+  if (deno.versions === undefined) {
     denoStatus = Status.warn;
     statusBarItem.tooltip = "Deno is not installed";
     outputChannel.appendLine("Failed to detect Deno.");
@@ -248,10 +248,14 @@ export async function activate(context: vscode.ExtensionContext) {
       "See https://github.com/denoland/deno_install for more installation options.\n",
     );
   } else {
-    statusBarItem.tooltip = versions.raw;
+    statusBarItem.tooltip = deno.versions.raw;
     outputChannel.appendLine("Found deno, version:");
-    outputChannel.appendLine(versions.raw);
-    generateDtsForDeno(denoExtensionId);
+    outputChannel.appendLine(deno.versions.raw);
+    const config = vscode.workspace.getConfiguration();
+    deno.generateDtsForDeno(
+      getExtensionPath(denoExtensionId),
+      config.get("deno.unstable"),
+    );
   }
 
   function showStatusBarItem(show: boolean): void {
@@ -276,7 +280,7 @@ export async function activate(context: vscode.ExtensionContext) {
   ): void {
     switch (denoStatus) {
       case Status.ok:
-        statusBarItem.text = `Deno ${versions.deno}`;
+        statusBarItem.text = `Deno ${deno.versions.deno}`;
         break;
       case Status.warn:
         statusBarItem.text = "$(alert) Deno";
@@ -285,7 +289,7 @@ export async function activate(context: vscode.ExtensionContext) {
         statusBarItem.text = "$(issue-opened) Deno";
         break;
       default:
-        statusBarItem.text = `Deno ${versions.deno}`;
+        statusBarItem.text = `Deno ${deno.versions.deno}`;
     }
     let uri = editor ? editor.document.uri : undefined;
     let enabled = vscode.workspace.getConfiguration("deno", uri)["enable"];
@@ -519,7 +523,7 @@ async function setDocumentLanguage(document?: vscode.TextDocument) {
 
   const filepath = document.uri.fsPath;
 
-  if (isInDenoDir(filepath)) {
+  if (deno.isInDenoDir(filepath)) {
     // TODO(justjavac): detect from .metadata.json
     await vscode.languages.setTextDocumentLanguage(
       document,

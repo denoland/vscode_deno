@@ -1,12 +1,12 @@
 // Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
 
 import * as path from "path";
+import * as fs from "fs";
 import execa from "execa";
 import which from "which";
+import { Readable } from "stream";
 
-type onLookupFunc = (path: string) => void;
-
-export interface DenoVersion {
+export interface DenoVersions {
   deno: string;
   v8: string;
   typescript: string;
@@ -15,7 +15,7 @@ export interface DenoVersion {
 
 export interface IDeno {
   path: string;
-  version: DenoVersion;
+  version: DenoVersions;
 }
 
 export interface IDenoErrorData {
@@ -77,174 +77,185 @@ export class DenoError {
   }
 }
 
-export interface IDenoOptions {
-  denoPath: string;
-  version: string;
-  env?: any;
-}
+class Deno {
+  public versions: DenoVersions | undefined;
+  public path: string | undefined;
 
-export const enum DenoErrorCodes {
-  BadConfigFile = "BadConfigFile",
-  DenoNotFound = "DenoNotFound",
-  CantCreatePipe = "CantCreatePipe",
-  CantAccessRemote = "CantAccessRemote",
-  RepositoryNotFound = "RepositoryNotFound",
-  RepositoryIsLocked = "RepositoryIsLocked",
-  BranchNotFullyMerged = "BranchNotFullyMerged",
-  NoRemoteReference = "NoRemoteReference",
-  InvalidBranchName = "InvalidBranchName",
-  BranchAlreadyExists = "BranchAlreadyExists",
-  NoLocalChanges = "NoLocalChanges",
-  NoStashFound = "NoStashFound",
-  LocalChangesOverwritten = "LocalChangesOverwritten",
-  NoUpstreamBranch = "NoUpstreamBranch",
-  IsInSubmodule = "IsInSubmodule",
-  WrongCase = "WrongCase",
-  CantLockRef = "CantLockRef",
-  CantRebaseMultipleBranches = "CantRebaseMultipleBranches",
-  PatchDoesNotApply = "PatchDoesNotApply",
-  NoPathFound = "NoPathFound",
-}
+  public async init() {
+    this.path = await this.getExePath();
 
-function parseVersion(raw: string): DenoVersion {
-  const [deno, v8, typescript] = raw.split("\n");
-
-  return {
-    deno: deno.substr(6),
-    v8: v8.substr(4),
-    typescript: typescript.substr(12),
-    raw,
-  };
-}
-
-export function findDeno(
-  hint: string | undefined,
-  onLookup: onLookupFunc,
-): Promise<IDeno> {
-  const first = hint
-    ? findSpecificDeno(hint, onLookup)
-    : Promise.reject<IDeno>(null);
-
-  return first
-    .then(undefined, () => {
-      switch (process.platform) {
-        case "darwin":
-          return findDenoDarwin(onLookup);
-        case "win32":
-          return findDenoWin32(onLookup);
-        default:
-          return findSpecificDeno("deno", onLookup);
-      }
-    })
-    .then(
-      null,
-      () => Promise.reject(new Error("Deno installation not found.")),
-    );
-}
-
-async function findDenoDarwin(onLookup: onLookupFunc): Promise<IDeno> {
-  const { stdout: denoPath } = await execa("which", ["deno"]);
-  const path = denoPath.toString().replace(/^\s+|\s+$/g, "");
-
-  async function getVersion(path: string): Promise<DenoVersion> {
-    onLookup(path);
-
-    // make sure deno executes
-    const { stdout } = await execa("deno", ["--version"]);
-    return parseVersion(stdout.trim());
-  }
-
-  if (path !== "/usr/bin/deno") {
-    return { path, version: await getVersion(path) };
-  }
-
-  const result = await execa("xcode-select", ["-p"]);
-
-  if (result.exitCode === 2) {
-    throw new Error("Deno not found");
-  }
-
-  return { path, version: await getVersion(path) };
-}
-
-function findDenoWin32(onLookup: onLookupFunc): Promise<IDeno> {
-  return findSystemDenoWin32(process.env["ProgramW6432"] as string, onLookup)
-    .then(
-      undefined,
-      () =>
-        findSystemDenoWin32(
-          process.env["ProgramFiles(x86)"] as string,
-          onLookup,
-        ),
-    )
-    .then(
-      undefined,
-      () =>
-        findSystemDenoWin32(process.env["ProgramFiles"] as string, onLookup),
-    )
-    .then(undefined, () =>
-      findSystemDenoWin32(
-        path.join(process.env["LocalAppData"] as string, "Programs"),
-        onLookup,
-      ))
-    .then(undefined, () => findDenoWin32InPath(onLookup));
-}
-
-function findSystemDenoWin32(
-  base: string,
-  onLookup: onLookupFunc,
-): Promise<IDeno> {
-  if (!base) {
-    return Promise.reject<IDeno>("Not found");
-  }
-
-  return findSpecificDeno(path.join(base, "deno.exe"), onLookup);
-}
-
-function findDenoWin32InPath(onLookup: onLookupFunc): Promise<IDeno> {
-  const whichPromise = new Promise<string>((c, e) =>
-    which("deno.exe", (err, path) => (err ? e(err) : c(path)))
-  );
-  return whichPromise.then((path) => findSpecificDeno(path, onLookup));
-}
-
-async function findSpecificDeno(
-  path: string,
-  onLookup: onLookupFunc,
-): Promise<IDeno> {
-  onLookup(path);
-
-  const ps = await execa(path, ["version"]);
-
-  if (ps.exitCode) {
-    throw new Error("Not found");
-  }
-
-  return {
-    path,
-    version: parseVersion(ps.stdout),
-  };
-}
-
-function cpErrorHandler(cb: (reason?: any) => void): (reason?: any) => void {
-  return (err) => {
-    if (/ENOENT/.test(err.message)) {
-      err = new DenoError({
-        error: err,
-        message: "Failed to execute deno (ENOENT)",
-        DenoErrorCode: DenoErrorCodes.DenoNotFound,
-      });
+    if (!this.path) {
+      throw new Error(
+        "Could not find `deno` in your $PATH. Please install `deno`, then restart the extension.",
+      );
     }
 
-    cb(err);
-  };
+    this.versions = await this.getVersions();
+
+    if (!this.versions) {
+      return;
+    }
+  }
+
+  public getDenoDir(): string {
+    // ref https://deno.land/manual.html
+    // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
+    // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
+    // On macOS: $HOME/Library/Caches/deno
+    // If something fails, it falls back to $HOME/.deno
+    let denoDir = process.env.DENO_DIR;
+    if (denoDir === undefined) {
+      switch (process.platform) {
+        case "win32":
+          denoDir = `${process.env.LOCALAPPDATA}\\deno`;
+          break;
+        case "darwin":
+          denoDir = `${process.env.HOME}/Library/Caches/deno`;
+          break;
+        case "linux":
+          denoDir = process.env.XDG_CACHE_HOME
+            ? `${process.env.XDG_CACHE_HOME}/deno`
+            : `${process.env.HOME}/.cache/deno`;
+          break;
+        default:
+          denoDir = `${process.env.HOME}/.deno`;
+      }
+    }
+
+    return denoDir;
+  }
+
+  public isInDenoDir(filepath: string): boolean {
+    filepath = this.normalizeFilepath(filepath);
+    const denoDir = this.getDenoDir();
+    return filepath.startsWith(denoDir);
+  }
+
+  public normalizeFilepath(filepath: string): string {
+    return path.normalize(
+      filepath
+        // in Windows, filepath maybe `c:\foo\bar` tut the legal path should be `C:\foo\bar`
+        .replace(/^([a-z]):\\/, (_, $1) => $1.toUpperCase() + ":\\")
+        // There are some paths which are unix style, this style does not work on win32 systems
+        .replace(/\//gm, path.sep),
+    );
+  }
+
+  private bundledDtsPath(extensionPath: string): string {
+    return path.resolve(
+      extensionPath,
+      "node_modules",
+      "typescript-deno-plugin",
+      "lib",
+    );
+  }
+
+  // Generate Deno's .d.ts file
+  public async generateDtsForDeno(
+    extensionPath: string,
+    unstable: boolean,
+  ): Promise<void> {
+    const denoDir: string = this.getDenoDir();
+
+    const bundledPath = this.bundledDtsPath(extensionPath);
+
+    if (!fs.existsSync(denoDir)) {
+      fs.mkdirSync(denoDir, { recursive: true });
+    }
+
+    // copy bundled lib.webworker.d.ts to `denoDir`
+    // fix https://github.com/microsoft/TypeScript/issues/5676
+    fs.copyFileSync(
+      path.resolve(bundledPath, "lib.webworker.d.ts"),
+      path.resolve(denoDir, "lib.webworker.d.ts"),
+    );
+
+    try {
+      const args = ["types"];
+      if (unstable) args.push("--unstable");
+
+      const { stdout, stderr } = await execa(this.path, args);
+      if (stderr) {
+        throw stderr;
+      }
+
+      fs.writeFileSync(path.resolve(denoDir, "lib.deno.d.ts"), stdout);
+    } catch {
+      // if `deno types` fails, just copy bundled lib.deno.d.ts to `denoDir`
+      fs.copyFileSync(
+        path.resolve(bundledPath, "lib.deno.d.ts"),
+        path.resolve(denoDir, "lib.deno.d.ts"),
+      );
+    }
+  }
+
+  public format(code: string): Promise<string> {
+    const reader = Readable.from([code]);
+
+    const subprocess = execa(this.path, ["fmt", "-"], {
+      stdout: "pipe",
+      stderr: "pipe",
+      stdin: "pipe",
+    });
+
+    return new Promise((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      subprocess.on("exit", (exitCode: number) => {
+        if (exitCode !== 0) {
+          reject(new Error(stderr));
+        } else {
+          resolve(stdout);
+        }
+      });
+      subprocess.on("error", (err: Error) => {
+        reject(err);
+      });
+      subprocess.stdout.on("data", (data: Buffer) => {
+        stdout += data;
+      });
+
+      subprocess.stderr.on("data", (data: Buffer) => {
+        stderr += data;
+      });
+
+      subprocess.stdin && reader.pipe(subprocess.stdin);
+    });
+  }
+
+  private async getExePath(): Promise<string | undefined> {
+    const denoPath = await which("deno").catch(() =>
+      Promise.resolve(undefined)
+    );
+
+    return denoPath;
+  }
+
+  private async getVersions(): Promise<DenoVersions | undefined> {
+    try {
+      const { stdout, stderr } = await execa(this.path, [
+        "eval",
+        "console.log(JSON.stringify(Deno.version))",
+      ]);
+
+      if (stderr) {
+        return;
+      }
+
+      const { deno, v8, typescript } = JSON.parse(stdout);
+
+      return {
+        deno,
+        v8,
+        typescript,
+        raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`,
+      };
+    } catch {
+      return;
+    }
+  }
 }
 
-export function bundledDtsPath(extensionPath: string): string {
-  return path.resolve(
-    extensionPath,
-    "node_modules",
-    "typescript-deno-plugin",
-    "lib",
-  );
-}
+const deno = new Deno();
+
+export { deno };
