@@ -1402,10 +1402,10 @@ typed-rest-client@1.2.0:
     tunnel "0.0.4"
     underscore "1.8.3"
 
-typescript-deno-plugin@^1.28.0:
-  version "1.28.0"
-  resolved "https://registry.npmjs.org/typescript-deno-plugin/-/typescript-deno-plugin-1.28.0.tgz#ba97b990bd593fb2b1c1279a734da91faff12973"
-  integrity sha512-jeUJrFuYJ7oUHFTdTf3uEHgYxiwigtVURgEJQgrnaA4cdAHt7dGBueUvaUbgTS/J0ox7y4pTYw7h0/2Yvtgl0w==
+typescript-deno-plugin@^1.29.0:
+  version "1.29.0"
+  resolved "https://registry.npmjs.org/typescript-deno-plugin/-/typescript-deno-plugin-1.29.0.tgz#7a7d0735b53292380c07a10e89778e5e7c45a346"
+  integrity sha512-3GhWWhN0pPWWzrBLKPp2c4LNbR5urJbE3Yi7ScuyUM/wZg9n+B8H9LkEZpBskoEq4hDfN2YCMFzcmaGat56fQA==
   dependencies:
     import-maps "^0.2.1"
     merge-deep "^3.0.2"

@@ -7,15 +7,6 @@ import execa from "execa";
 import * as vscode from "vscode";
 import * as lsp from "vscode-languageclient";
 
-import { bundledDtsPath } from "./deno";
-
-export interface DenoVersion {
-  deno: string;
-  v8: string;
-  typescript: string;
-  raw: string;
-}
-
 /** Check if the package.json file exists in the root directory. */
 export function packageJsonExists(): boolean {
   if (!vscode.workspace.rootPath) {
@@ -59,121 +50,12 @@ export function isJavaScriptDocument(document: vscode.TextDocument) {
   );
 }
 
-export async function getVersions(): Promise<DenoVersion | undefined> {
-  try {
-    const { stdout, stderr } = await execa("deno", [
-      "eval",
-      "console.log(JSON.stringify(Deno.version))",
-    ]);
-
-    if (stderr) {
-      return;
-    }
-
-    const { deno, v8, typescript } = JSON.parse(stdout);
-
-    return {
-      deno,
-      v8,
-      typescript,
-      raw: `deno: ${deno}\nv8: ${v8}\ntypescript: ${typescript}`,
-    };
-  } catch {
-    return;
-  }
-}
-
-export function normalizeFilepath(filepath: string): string {
-  return path.normalize(
-    filepath
-      // in Windows, filepath maybe `c:\foo\bar` tut the legal path should be `C:\foo\bar`
-      .replace(/^([a-z]):\\/, (_, $1) => $1.toUpperCase() + ":\\")
-      // There are some paths which are unix style, this style does not work on win32 systems
-      .replace(/\//gm, path.sep),
-  );
-}
-
-// TODO: duplicate
-export function getDenoDir(): string {
-  // ref https://deno.land/manual.html
-  // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
-  // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
-  // On macOS: $HOME/Library/Caches/deno
-  // If something fails, it falls back to $HOME/.deno
-  let denoDir = process.env.DENO_DIR;
-  if (denoDir === undefined) {
-    switch (process.platform) {
-      case "win32":
-        denoDir = `${process.env.LOCALAPPDATA}\\deno`;
-        break;
-      case "darwin":
-        denoDir = `${process.env.HOME}/Library/Caches/deno`;
-        break;
-      case "linux":
-        denoDir = process.env.XDG_CACHE_HOME
-          ? `${process.env.XDG_CACHE_HOME}/deno`
-          : `${process.env.HOME}/.cache/deno`;
-        break;
-      default:
-        denoDir = `${process.env.HOME}/.deno`;
-    }
-  }
-
-  return denoDir;
-}
-
-export function isInDenoDir(filepath: string): boolean {
-  filepath = normalizeFilepath(filepath);
-  const denoDir = getDenoDir();
-  return filepath.startsWith(denoDir);
-}
-
 /**
  * The absolute file path of the directory containing this extension.
  * @param extensionId 
  */
 export function getExtensionPath(extensionId: string): string | undefined {
   return vscode.extensions.getExtension(extensionId)?.extensionPath;
-}
-
-// Generate Deno's .d.ts file
-export async function generateDtsForDeno(extensionId: string): Promise<void> {
-  const denoDir: string = getDenoDir();
-  const extensionPath = getExtensionPath(extensionId)!;
-
-  const bundledPath = bundledDtsPath(extensionPath);
-
-  if (!fs.existsSync(denoDir)) {
-    fs.mkdirSync(denoDir, { recursive: true });
-  }
-
-  // copy bundled lib.webworker.d.ts to `denoDir`
-  // fix https://github.com/microsoft/TypeScript/issues/5676
-  fs.copyFileSync(
-    path.resolve(bundledPath, "lib.webworker.d.ts"),
-    path.resolve(denoDir, "lib.webworker.d.ts"),
-  );
-
-  try {
-    const args = ["types"];
-    const config = vscode.workspace.getConfiguration();
-
-    if (config.get("deno.unstable")) args.push("--unstable");
-
-    const { stdout, stderr } = await execa("deno", args);
-
-    if (stderr) {
-      throw stderr;
-    }
-
-    fs.writeFileSync(path.resolve(denoDir, "lib.deno.d.ts"), stdout);
-  } catch {
-    // if `deno types` fails, just copy bundled lib.deno.d.ts to `denoDir`
-    fs.copyFileSync(
-      path.resolve(bundledPath, "lib.deno.d.ts"),
-      path.resolve(denoDir, "lib.deno.d.ts"),
-    );
-  }
 }
 
 export async function getTypeScriptLanguageExtension() {
