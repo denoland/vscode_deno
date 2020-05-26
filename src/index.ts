@@ -25,7 +25,7 @@ import {
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
 import { HashMeta } from "./module_resolver/hash_meta";
 import { errorCodeToFixes } from "./codefix_provider";
-import './code_fixes'
+import "./code_fixes";
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -244,7 +244,7 @@ module.exports = function init(
           info.languageServiceHost,
         );
 
-        const scriptFileNames = [... originalScriptFileNames];
+        const scriptFileNames = [...originalScriptFileNames];
 
         const libDenoDts = getDenoDtsPath("lib.deno.d.ts");
         if (!libDenoDts) {
@@ -387,8 +387,14 @@ module.exports = function init(
 
             if (isHttpURL(parsedModuleName)) {
               d.code = 10002; // RemoteModuleNotExist
-              d.messageText =
-                `The remote module "${moduleName}" has not been cached locally`;
+              if (moduleName === parsedModuleName) {
+                d.messageText =
+                  `The remote module has not been cached locally. Try \`deno cache ${parsedModuleName}\` if it exists`;
+              } else {
+                d.messageText =
+                  `The remote module "${moduleName}" has not been cached locally. Try \`deno cache ${parsedModuleName}\` if it exists`;
+              }
+
               return d;
             }
 
@@ -430,7 +436,7 @@ module.exports = function init(
         );
 
         for (const errorCode of errorCodes) {
-          const fixes = errorCodeToFixes.get(errorCode)!
+          const fixes = errorCodeToFixes.get(errorCode)!;
           if (fixes == null) continue;
 
           for (const fix of fixes) {
