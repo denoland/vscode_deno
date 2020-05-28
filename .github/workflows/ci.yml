@@ -39,5 +39,5 @@ jobs:
       - name: Compile
         run: yarn compile
 
-      # - name: Package
-      #   run: yarn package
+      - name: Package
+        run: yarn package
