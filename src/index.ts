@@ -436,7 +436,7 @@ module.exports = function init(
         );
 
         for (const errorCode of errorCodes) {
-          const fixes = errorCodeToFixes.get(errorCode)!;
+          const fixes = errorCodeToFixes.get(errorCode);
           if (fixes == null) continue;
 
           for (const fix of fixes) {
