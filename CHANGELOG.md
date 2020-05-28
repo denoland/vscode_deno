@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.30.0 - 2020-05-28
+
+- Fix collection updating and undefined error ([#42](https://github.com/justjavac/typescript-deno-plugin/pull/42))
+- bump deno v1.0.2
+
 ## 1.29.0 - 2020-05-18
 
 - avoid call circular
