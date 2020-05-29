@@ -24,6 +24,7 @@ import {
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
 import { HashMeta } from "./module_resolver/hash_meta";
+import { getImportModules } from "./deno_modules";
 import { errorCodeToFixes } from "./codefix_provider";
 import "./code_fixes";
 
@@ -152,6 +153,27 @@ module.exports = function init(
             projectDirectory,
             config.importmap,
           );
+
+          const content = typescript.sys.readFile(containingFile, "utf8");
+
+          // handle @deno-types
+          if (content && content.indexOf("// @deno-types=") >= 0) {
+            const sourceFile = typescript.createSourceFile(
+              containingFile,
+              content,
+              typescript.ScriptTarget.ESNext,
+              true,
+            );
+
+            const modules = getImportModules(sourceFile);
+
+            for (const m of modules) {
+              if (m.hint) {
+                const index = moduleNames.findIndex((v) => v === m.moduleName);
+                moduleNames[index] = m.hint.text;
+              }
+            }
+          }
 
           // try resolve typeReferenceDirectives
           for (let moduleName of moduleNames) {
