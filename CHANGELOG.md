@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.31.0 - 2020-05-29
+
+- support @deno-types ([#46](https://github.com/justjavac/typescript-deno-plugin/pull/46))
+
 ## 1.30.0 - 2020-05-28
 
 - Fix collection updating and undefined error ([#42](https://github.com/justjavac/typescript-deno-plugin/pull/42))
