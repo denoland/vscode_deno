@@ -1,6 +1,5 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
 import path from "path";
-import fs from "fs";
 import { URL, fileURLToPath } from "url";
 
 import merge from "merge-deep";
@@ -11,22 +10,23 @@ import ts_module, {
   FormatCodeSettings,
   CodeFixAction,
 } from "typescript/lib/tsserverlibrary";
-import { parseFromString, resolve, ImportMaps } from "import-maps";
+import { resolve, ImportMaps } from "import-maps";
 
 import { Logger } from "./logger";
 import {
   getDenoDtsPath,
-  normalizeFilepath,
-  pathExistsSync,
   isHttpURL,
   isInDenoDir,
+  parseImportMapFromFile,
 } from "./utils";
 
 import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
 import { HashMeta } from "./module_resolver/hash_meta";
 import { getImportModules } from "./deno_modules";
 import { errorCodeToFixes } from "./codefix_provider";
-import "./code_fixes";
+import "./code_fixes"
+import { getTsUtils } from "./ts-utils";
+import getCompletionsAtPositionWrapper from "./completions";
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -88,6 +88,8 @@ module.exports = function init(
       const tsLs = info.languageService;
       const tsLsHost = info.languageServiceHost;
       const project = info.project;
+
+      const tsUtils = getTsUtils(tsLs);
 
       Object.assign(config, info.config);
 
@@ -287,6 +289,8 @@ module.exports = function init(
         return scriptFileNames;
       };
 
+      const getCompletionsAtPosition = getCompletionsAtPositionWrapper(projectDirectory, config, tsLs, tsUtils);
+
       function getCompletionEntryDetails(
         fileName: string,
         position: number,
@@ -473,6 +477,7 @@ module.exports = function init(
         Object.create(null),
         tsLs,
         {
+          getCompletionsAtPosition,
           getCompletionEntryDetails,
           getSemanticDiagnostics,
           getCodeFixesAtPosition,
@@ -498,37 +503,6 @@ module.exports = function init(
     },
   };
 };
-
-function parseImportMapFromFile(cwd: string, file?: string): ImportMaps {
-  const importmps: ImportMaps = {
-    imports: {},
-    scopes: {},
-  };
-
-  if (file == null) {
-    return importmps;
-  }
-
-  if (!path.isAbsolute(file)) {
-    file = path.resolve(cwd, file);
-  }
-
-  const fullFilePath = normalizeFilepath(file);
-
-  if (!pathExistsSync(fullFilePath)) {
-    return importmps;
-  }
-
-  const content = fs.readFileSync(fullFilePath, {
-    encoding: "utf8",
-  });
-
-  try {
-    return parseFromString(content, `file://${cwd}/`);
-  } catch {
-    return importmps;
-  }
-}
 
 function parseModuleName(
   moduleName: string,

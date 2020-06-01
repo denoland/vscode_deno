@@ -2,6 +2,10 @@ import * as fs from "fs";
 import * as path from "path";
 import crypto from "crypto";
 import { URL } from "url";
+import {
+  ImportMaps,
+  parseFromString,
+} from "import-maps";
 
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
@@ -148,5 +152,36 @@ export function pathExistsSync(filepath: string): boolean {
     return true;
   } catch (err) {
     return false;
+  }
+}
+
+export function parseImportMapFromFile(cwd: string, file?: string): ImportMaps {
+  const importmps: ImportMaps = {
+    imports: {},
+    scopes: {},
+  };
+
+  if (file == null) {
+    return importmps;
+  }
+
+  if (!path.isAbsolute(file)) {
+    file = path.resolve(cwd, file);
+  }
+
+  const fullFilePath = normalizeFilepath(file);
+
+  if (!pathExistsSync(fullFilePath)) {
+    return importmps;
+  }
+
+  const content = fs.readFileSync(fullFilePath, {
+    encoding: "utf8",
+  });
+
+  try {
+    return parseFromString(content, `file://${cwd}/`);
+  } catch {
+    return importmps;
   }
 }
