@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+- rewrite with LSP (#5)
+- fix eol on Windows
+- display a prompt when package.json is detected (#7)
+- support webworker's .d.ts (#9)
+- implement Deno formater (#10)
+- show changelog on vscode marketplace (#11)
+- implement diagnostics (#15)
+- highlight Deno's cached files (#16)
+- add deno.unstable configuration (#28) (#35)
+- fix intellisense on cached files (#31)
+- fix auto import (#43)
+- rewrite deno finder (#55)
+- add multi-language support, italian (#33), french (#34), portuguese (#38)
+- new icon (#53)
+
 ## 2020-05-07
 
 Moved from https://github.com/justjavac/vscode-deno to
