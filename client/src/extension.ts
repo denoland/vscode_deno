@@ -20,7 +20,7 @@ import {
 
 import { deno } from "./deno";
 
-const denoExtensionId = "denoland.deno";
+const denoExtensionId = "denoland.vscode-deno";
 const pluginId = "typescript-deno-plugin";
 const configurationSection = "deno";
 
@@ -252,10 +252,16 @@ export async function activate(context: vscode.ExtensionContext) {
     outputChannel.appendLine("Found deno, version:");
     outputChannel.appendLine(deno.versions.raw);
     const config = vscode.workspace.getConfiguration();
-    deno.generateDtsForDeno(
-      getExtensionPath(denoExtensionId),
-      config.get("deno.unstable"),
-    );
+    try {
+      await deno.generateDtsForDeno(
+        getExtensionPath(denoExtensionId),
+        config.get("deno.unstable"),
+      );
+    } catch (error) {
+      outputChannel.appendLine(
+        `failed to generate Definition files for Deno: ${error}`,
+      );
+    }
   }
 
   function showStatusBarItem(show: boolean): void {
