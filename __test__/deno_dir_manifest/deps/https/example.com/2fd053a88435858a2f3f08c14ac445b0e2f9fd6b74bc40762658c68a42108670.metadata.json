@@ -1,0 +1,6 @@
+{
+  "headers": {
+    "location": "go_to_invalid"
+  },
+  "url": "https://example.com/redirect_to_invalid"
+}

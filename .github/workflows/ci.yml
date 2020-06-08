@@ -36,5 +36,8 @@ jobs:
       - name: Check code format
         run: yarn run check
 
+      - name: Test
+        run: yarn run test
+
       - name: Compile
         run: yarn compile

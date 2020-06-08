@@ -5,6 +5,7 @@
 /out/**/*.map
 /e2e
 /examples
+/coverage
 
 /.vscode
 /.github
