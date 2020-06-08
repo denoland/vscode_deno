@@ -1,11 +1,15 @@
 import * as fs from "fs";
 import * as path from "path";
 import crypto from "crypto";
-import { URL } from "url";
+import { URL, fileURLToPath } from "url";
 import {
+  resolve,
   ImportMaps,
   parseFromString,
 } from "import-maps";
+import { Logger } from "logger";
+import { HashMeta } from "./module_resolver/hash_meta";
+import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
 
 export function getDenoDir(): string {
   // ref https://deno.land/manual.html
@@ -184,4 +188,56 @@ export function parseImportMapFromFile(cwd: string, file?: string): ImportMaps {
   } catch {
     return importmps;
   }
+}
+
+export function parseModuleName(
+  moduleName: string,
+  containingFile: string,
+  parsedImportMap?: ImportMaps | null,
+  logger?: Logger,
+): string | undefined {
+  if (parsedImportMap != null) {
+    try {
+      let scriptURL: URL;
+      if (isInDenoDir(containingFile)) {
+        const meta = HashMeta.create(`${containingFile}.metadata.json`);
+        if (meta && meta.url) {
+          scriptURL = meta.url;
+        } else {
+          scriptURL = new URL("file:///" + path.dirname(containingFile) + "/");
+        }
+      } else {
+        scriptURL = new URL("file:///" + path.dirname(containingFile) + "/");
+      }
+
+      logger && logger.info(`baseUrl: ${scriptURL}`);
+
+      const moduleUrl = resolve(
+        moduleName,
+        parsedImportMap,
+        scriptURL,
+      );
+
+      if (moduleUrl.protocol === "file:") {
+        return fileURLToPath(moduleUrl.href);
+      }
+
+      if (moduleUrl.protocol === "http:" || moduleUrl.protocol === "https:") {
+        return moduleUrl.href;
+      }
+
+      // just support protocol: file, http, https
+      return undefined;
+    } catch (e) {
+      if (logger) logger.info("moduleName: " + moduleName);
+      if (logger) logger.info("e: " + (e as Error).stack);
+      return undefined;
+    }
+  }
+}
+
+export function resolveDenoModule(moduleName: string) {
+  return universalModuleResolver.resolve(
+    moduleName,
+  );
 }

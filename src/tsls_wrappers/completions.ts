@@ -4,11 +4,11 @@ import {
 	ScriptElementKind,
 	CompletionEntry,
 } from "typescript/lib/tsserverlibrary";
-import { TsUtils } from "./ts-utils";
+import { TsUtils } from "../ts-utils";
 import {
 	getDenoDir,
 	parseImportMapFromFile,
-} from "./utils";
+} from "../utils";
 import { readdirSync, statSync } from 'fs';
 import { ImportMaps } from "import-maps";
 import { join } from 'path';

@@ -1,32 +1,22 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
-import path from "path";
-import { URL, fileURLToPath } from "url";
-
-import merge from "merge-deep";
-import ts_module, {
-  ResolvedModuleFull,
+import ts_module, { 
   CompilerOptions,
-  UserPreferences,
-  FormatCodeSettings,
-  CodeFixAction,
 } from "typescript/lib/tsserverlibrary";
-import { resolve, ImportMaps } from "import-maps";
 
 import { Logger } from "./logger";
-import {
-  getDenoDtsPath,
-  isHttpURL,
-  isInDenoDir,
-  parseImportMapFromFile,
-} from "./utils";
 
-import { universalModuleResolver } from "./module_resolver/universal_module_resolver";
-import { HashMeta } from "./module_resolver/hash_meta";
-import { getImportModules } from "./deno_modules";
-import { errorCodeToFixes } from "./codefix_provider";
 import "./code_fixes"
 import { getTsUtils } from "./ts-utils";
-import getCompletionsAtPositionWrapper from "./completions";
+
+import getCompletionsAtPositionWrapper from "./tsls_wrappers/completions";
+import getCompletionEntryDetailsnWrapper from "./tsls_wrappers/completion_entry_details";
+import getSemanticDiagnosticsWrapper from "./tsls_wrappers/semantic_diagnostics";
+import getCodeFixesAtPositionWrapper from "./tsls_wrappers/code_fixes";
+
+import resolveModuleNamesWrapper from "./tsls_host_wrappers/resolve_module_names";
+import getCompilationSettingsWrapper from "./tsls_host_wrappers/compilation_settings";
+import resolveTypeReferenceDirectivesWrapper from "./tsls_host_wrappers/resolve_type_reference_directives";
+import getScriptFileNamesWrapper from "./tsls_host_wrappers/script_file_names";
 
 let logger: Logger;
 let pluginInfo: ts_module.server.PluginCreateInfo;
@@ -40,8 +30,6 @@ type DenoPluginConfig = {
 const config: DenoPluginConfig = {
   enable: true,
 };
-
-let parsedImportMap: ImportMaps;
 
 let projectDirectory: string;
 
@@ -102,387 +90,26 @@ module.exports = function init(
       // TypeScript plugins have a `cwd` of `/`, which causes issues with import resolution.
       process.chdir(projectDirectory);
 
-      const resolveTypeReferenceDirectives =
-        tsLsHost.resolveTypeReferenceDirectives;
-
-      if (resolveTypeReferenceDirectives) {
-        tsLsHost.resolveTypeReferenceDirectives = (
-          typeDirectiveNames: string[],
-          containingFile: string,
-          redirectedReference: ts_module.ResolvedProjectReference | undefined,
-          options: ts_module.CompilerOptions,
-        ): (ts_module.ResolvedTypeReferenceDirective | undefined)[] => {
-          const ret = resolveTypeReferenceDirectives.call(
-            tsLsHost,
-            typeDirectiveNames,
-            containingFile,
-            redirectedReference,
-            options,
-          );
-
-          if (!config.enable) {
-            logger.info("plugin disabled.");
-            return ret;
-          }
-
-          return ret;
-        };
-      }
-
       // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-      const resolveModuleNames = tsLsHost.resolveModuleNames;
-
-      if (resolveModuleNames) {
-        tsLsHost.resolveModuleNames = (
-          moduleNames: string[],
-          containingFile: string,
-          ...rest
-        ) => {
-          logger.info("resolveModuleNames");
-          if (!config.enable) {
-            logger.info("plugin disabled.");
-            return resolveModuleNames.call(
-              tsLsHost,
-              moduleNames,
-              containingFile,
-              ...rest,
-            );
-          }
-
-          const resolvedModules: (ResolvedModuleFull | undefined)[] = [];
-
-          parsedImportMap = parseImportMapFromFile(
-            projectDirectory,
-            config.importmap,
-          );
-
-          const content = typescript.sys.readFile(containingFile, "utf8");
-
-          // handle @deno-types
-          if (content && content.indexOf("// @deno-types=") >= 0) {
-            const sourceFile = typescript.createSourceFile(
-              containingFile,
-              content,
-              typescript.ScriptTarget.ESNext,
-              true,
-            );
-
-            const modules = getImportModules(sourceFile);
-
-            for (const m of modules) {
-              if (m.hint) {
-                const index = moduleNames.findIndex((v) => v === m.moduleName);
-                moduleNames[index] = m.hint.text;
-              }
-            }
-          }
-
-          // try resolve typeReferenceDirectives
-          for (let moduleName of moduleNames) {
-            const parsedModuleName = parseModuleName(
-              moduleName,
-              containingFile,
-              parsedImportMap,
-              logger,
-            );
-
-            if (parsedModuleName == null) {
-              logger.info(`module "${moduleName}" can not parsed`);
-              resolvedModules.push(undefined);
-              continue;
-            }
-
-            const resolvedModule = resolveDenoModule(parsedModuleName);
-
-            if (!resolvedModule) {
-              logger.info(`module "${moduleName}" can not resolved`);
-              resolvedModules.push(undefined);
-              continue;
-            }
-
-            logger.info(`module "${moduleName}" -> ${resolvedModule.filepath}`);
-
-            resolvedModules.push({
-              extension: resolvedModule.extension as ts_module.Extension,
-              isExternalLibraryImport: false,
-              resolvedFileName: resolvedModule.filepath,
-            });
-
-            const content = typescript.sys.readFile(resolvedModule.filepath);
-
-            if (!content) {
-              continue;
-            }
-
-            const { typeReferenceDirectives } = typescript.preProcessFile(
-              content,
-              true,
-              true,
-            );
-
-            if (!typeReferenceDirectives.length) {
-              continue;
-            }
-
-            for (const typeRef of typeReferenceDirectives) {
-              const module = universalModuleResolver.resolve(
-                typeRef.fileName,
-                containingFile,
-              );
-              if (module) {
-                resolvedModule.originModuleName = module.originModuleName;
-                resolvedModule.filepath = module.filepath;
-              }
-            }
-          }
-
-          return resolvedModules;
-        };
-      }
-
-      const getCompilationSettings =
-        info.languageServiceHost.getCompilationSettings;
-
-      info.languageServiceHost.getCompilationSettings = () => {
-        if (!config.enable) {
-          return getCompilationSettings.call(tsLsHost);
-        }
-
-        const projectConfig = getCompilationSettings.call(
-          info.languageServiceHost,
-        );
-        const compilationSettings = merge(
-          merge(OPTIONS, projectConfig),
-          OPTIONS_OVERWRITE_BY_DENO,
-        );
-        return compilationSettings;
-      };
-
-      const getScriptFileNames = info.languageServiceHost.getScriptFileNames!;
-      info.languageServiceHost.getScriptFileNames = () => {
-        if (!config.enable) {
-          return getScriptFileNames.call(tsLsHost);
-        }
-
-        const originalScriptFileNames = getScriptFileNames.call(
-          info.languageServiceHost,
-        );
-
-        const scriptFileNames = [...originalScriptFileNames];
-
-        const libDenoDts = getDenoDtsPath("lib.deno.d.ts");
-        if (!libDenoDts) {
-          logger.info(`Can not load lib.deno.d.ts from ${libDenoDts}.`);
-          return scriptFileNames;
-        }
-        scriptFileNames.push(libDenoDts);
-
-        const libWebworkerDts = getDenoDtsPath("lib.webworker.d.ts");
-        if (!libWebworkerDts) {
-          logger.info(
-            `Can not load lib.webworker.d.ts from ${libWebworkerDts}.`,
-          );
-          return scriptFileNames;
-        }
-        scriptFileNames.push(libWebworkerDts);
-
-        return scriptFileNames;
-      };
+      tsLsHost.resolveModuleNames = resolveModuleNamesWrapper(tsLsHost, logger, config, typescript, projectDirectory);
+      tsLsHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectivesWrapper(tsLsHost, config, logger);
+      tsLsHost.getCompilationSettings = getCompilationSettingsWrapper(tsLsHost, config, OPTIONS, OPTIONS_OVERWRITE_BY_DENO);
+      tsLsHost.getScriptFileNames = getScriptFileNamesWrapper(tsLsHost, config, logger);
 
       const getCompletionsAtPosition = getCompletionsAtPositionWrapper(projectDirectory, config, tsLs, tsUtils);
-
-      function getCompletionEntryDetails(
-        fileName: string,
-        position: number,
-        name: string,
-        formatOptions:
-          | ts_module.FormatCodeOptions
-          | ts_module.FormatCodeSettings
-          | undefined,
-        source: string | undefined,
-        preferences: ts_module.UserPreferences | undefined,
-      ): ts_module.CompletionEntryDetails | undefined {
-        const details = tsLs.getCompletionEntryDetails(
-          fileName,
-          position,
-          name,
-          formatOptions,
-          source,
-          preferences,
-        );
-
-        if (!config.enable) {
-          return details;
-        }
-
-        if (details) {
-          if (details.codeActions && details.codeActions.length) {
-            for (const ca of details.codeActions) {
-              for (const change of ca.changes) {
-                if (!change.isNewFile) {
-                  for (const tc of change.textChanges) {
-                    tc.newText = tc.newText.replace(
-                      /^(import .* from ['"])(\..*)(['"];\n)/i,
-                      "$1$2.ts$3",
-                    );
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        return details;
-      }
-
-      function getSemanticDiagnostics(filename: string) {
-        logger.info("getSemanticDiagnostics");
-        const diagnostics = tsLs.getSemanticDiagnostics(filename);
-
-        if (!config.enable) {
-          return diagnostics;
-        }
-
-        // ref: https://github.com/denoland/deno/blob/da8cb408c878aa6e90542e26173f1f14b5254d29/cli/js/compiler/util.ts#L262
-        const ignoredDiagnostics = [
-          // TS2306: File 'file:///Users/rld/src/deno/cli/tests/subdir/amd_like.js' is
-          // not a module.
-          2306,
-          // TS1375: 'await' expressions are only allowed at the top level of a file
-          // when that file is a module, but this file has no imports or exports.
-          // Consider adding an empty 'export {}' to make this file a module.
-          1375,
-          // TS1103: 'for-await-of' statement is only allowed within an async function
-          // or async generator.
-          1103,
-          // TS2691: An import path cannot end with a '.ts' extension. Consider
-          // importing 'bad-module' instead.
-          // !! 2691,
-          // TS5009: Cannot find the common subdirectory path for the input files.
-          5009,
-          // TS5055: Cannot write file
-          // 'http://localhost:4545/cli/tests/subdir/mt_application_x_javascript.j4.js'
-          // because it would overwrite input file.
-          5055,
-          // TypeScript is overly opinionated that only CommonJS modules kinds can
-          // support JSON imports.  Allegedly this was fixed in
-          // Microsoft/TypeScript#26825 but that doesn't seem to be working here,
-          // so we will ignore complaints about this compiler setting.
-          5070,
-          // TS7016: Could not find a declaration file for module '...'. '...'
-          // implicitly has an 'any' type.  This is due to `allowJs` being off by
-          // default but importing of a JavaScript module.
-          7016,
-        ];
-
-        return diagnostics.filter((d: ts_module.Diagnostic) =>
-          !ignoredDiagnostics.includes(d.code)
-        ).map((d: ts_module.Diagnostic) => {
-          if (d.code === 2691) {
-            const moduleName = d.file!.getFullText().substr(
-              d.start! + 1,
-              d.length! - 2,
-            );
-
-            if (config.importmap != null) {
-              parsedImportMap = parseImportMapFromFile(
-                projectDirectory,
-                config.importmap,
-              );
-            }
-
-            const parsedModuleName = parseModuleName(
-              moduleName,
-              d.file?.fileName!,
-              parsedImportMap,
-              logger,
-            );
-
-            if (parsedModuleName == null) {
-              d.code = 10001; // InvalidRelativeImport
-              d.messageText =
-                `relative import path "${moduleName}" not prefixed with / or ./ or ../`;
-              return d;
-            }
-
-            const resolvedModule = resolveDenoModule(parsedModuleName);
-
-            if (resolvedModule != null) {
-              return d;
-            }
-
-            if (isHttpURL(parsedModuleName)) {
-              d.code = 10002; // RemoteModuleNotExist
-              if (moduleName === parsedModuleName) {
-                d.messageText =
-                  `The remote module has not been cached locally. Try \`deno cache ${parsedModuleName}\` if it exists`;
-              } else {
-                d.messageText =
-                  `The remote module "${moduleName}" has not been cached locally. Try \`deno cache ${parsedModuleName}\` if it exists`;
-              }
-
-              return d;
-            }
-
-            if (
-              path.isAbsolute(parsedModuleName) ||
-              parsedModuleName.startsWith("./") ||
-              parsedModuleName.startsWith("../") ||
-              parsedModuleName.startsWith("file://")
-            ) {
-              d.code = 10003; // LocalModuleNotExist
-              d.messageText = `Could not find module "${moduleName}" locally`;
-              return d;
-            }
-
-            d.code = 10004; // InvalidImport
-            d.messageText =
-              `Import module "${moduleName}" must be a relative path or remote HTTP URL`;
-          }
-          return d;
-        });
-      }
-
+      const getCompletionEntryDetails = getCompletionEntryDetailsnWrapper(tsLs, config);
+      const getSemanticDiagnostics = getSemanticDiagnosticsWrapper(tsLs, config, logger, projectDirectory);
       // TODO(justjavac): maybe also `getCombinedCodeFix`
-      function getCodeFixesAtPosition(
-        fileName: string,
-        start: number,
-        end: number,
-        errorCodes: readonly number[],
-        formatOptions: FormatCodeSettings,
-        preferences: UserPreferences,
-      ): readonly CodeFixAction[] {
-        const codeFixActions = tsLs.getCodeFixesAtPosition(
-          fileName,
-          start,
-          end,
-          errorCodes,
-          formatOptions,
-          preferences,
-        );
+      const getCodeFixesAtPosition = getCodeFixesAtPositionWrapper(tsLs);
 
-        for (const errorCode of errorCodes) {
-          const fixes = errorCodeToFixes.get(errorCode);
-          if (fixes == null) continue;
-
-          for (const fix of fixes) {
-            fix.replaceCodeActions(codeFixActions);
-          }
-        }
-
-        return codeFixActions;
+      const proxy: ts_module.LanguageService = {
+        ...tsLs,
+        
+        getCompletionsAtPosition,
+        getCompletionEntryDetails,
+        getSemanticDiagnostics,
+        getCodeFixesAtPosition,
       }
-
-      const proxy: ts_module.LanguageService = Object.assign(
-        Object.create(null),
-        tsLs,
-        {
-          getCompletionsAtPosition,
-          getCompletionEntryDetails,
-          getSemanticDiagnostics,
-          getCodeFixesAtPosition,
-        },
-      );
 
       return proxy;
     },
@@ -491,11 +118,6 @@ module.exports = function init(
       logger.info("config change to:\n" + JSON.stringify(c, null, "  "));
       Object.assign(config, c);
 
-      parsedImportMap = parseImportMapFromFile(
-        projectDirectory,
-        config.importmap,
-      );
-
       pluginInfo.project.markAsDirty();
       pluginInfo.project.refreshDiagnostics();
       pluginInfo.project.updateGraph();
@@ -503,55 +125,3 @@ module.exports = function init(
     },
   };
 };
-
-function parseModuleName(
-  moduleName: string,
-  containingFile: string,
-  parsedImportMap?: ImportMaps | null,
-  logger?: Logger,
-): string | undefined {
-  if (parsedImportMap != null) {
-    try {
-      let scriptURL: URL;
-      if (isInDenoDir(containingFile)) {
-        const meta = HashMeta.create(`${containingFile}.metadata.json`);
-        if (meta && meta.url) {
-          scriptURL = meta.url;
-        } else {
-          scriptURL = new URL("file:///" + path.dirname(containingFile) + "/");
-        }
-      } else {
-        scriptURL = new URL("file:///" + path.dirname(containingFile) + "/");
-      }
-
-      logger && logger.info(`baseUrl: ${scriptURL}`);
-
-      const moduleUrl = resolve(
-        moduleName,
-        parsedImportMap,
-        scriptURL,
-      );
-
-      if (moduleUrl.protocol === "file:") {
-        return fileURLToPath(moduleUrl.href);
-      }
-
-      if (moduleUrl.protocol === "http:" || moduleUrl.protocol === "https:") {
-        return moduleUrl.href;
-      }
-
-      // just support protocol: file, http, https
-      return undefined;
-    } catch (e) {
-      if (logger) logger.info("moduleName: " + moduleName);
-      if (logger) logger.info("e: " + (e as Error).stack);
-      return undefined;
-    }
-  }
-}
-
-function resolveDenoModule(moduleName: string) {
-  return universalModuleResolver.resolve(
-    moduleName,
-  );
-}
