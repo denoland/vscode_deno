@@ -4,7 +4,7 @@ import {
   ScriptElementKind,
   CompletionEntry,
 } from "typescript/lib/tsserverlibrary";
-import { TsUtils } from "../ts-utils";
+import { TsUtils } from "../ts_utils";
 import {
   getDenoDir,
   parseImportMapFromFile,

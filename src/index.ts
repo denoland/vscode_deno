@@ -6,7 +6,7 @@ import ts_module, {
 import { Logger } from "./logger";
 
 import "./code_fixes";
-import { getTsUtils } from "./ts-utils";
+import { getTsUtils } from "./ts_utils";
 
 import getCompletionsAtPositionWrapper from "./tsls_wrappers/completions";
 import getCompletionEntryDetailsnWrapper from "./tsls_wrappers/completion_entry_details";
