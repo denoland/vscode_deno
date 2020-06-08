@@ -102,14 +102,14 @@ test("isInDenoDir", () => {
 test("getDenoDtsPath", () => {
   expect(
     [
-      path.join(getPluginPath(), "lib.deno.d.ts"),
       path.join(getDenoDir(), "lib.deno.d.ts"),
+      path.join(getPluginPath(), "lib", "lib.deno.d.ts"),
     ],
   ).toContain(getDenoDtsPath("lib.deno.d.ts"));
   expect(
     [
-      path.join(getPluginPath(), "lib.webworker.d.ts"),
       path.join(getDenoDir(), "lib.webworker.d.ts"),
+      path.join(getPluginPath(), "lib", "lib.webworker.d.ts"),
     ],
   ).toContain(getDenoDtsPath("lib.webworker.d.ts"));
 });
