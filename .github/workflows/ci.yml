@@ -1,0 +1,40 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    name: test in ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Setup Deno
+        uses: denolib/setup-deno@master
+        with:
+          deno-version: 1.x
+
+      - name: Log versions
+        run: |
+          node -v
+          npm -v
+          yarn --version
+          deno --version
+
+      - name: Install
+        run: yarn --frozen-lockfile --non-interactive
+
+      - name: Check code format
+        run: yarn run check
+
+      - name: Compile
+        run: yarn compile
