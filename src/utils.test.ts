@@ -11,6 +11,7 @@ import {
   isUntitledDocument,
   getDenoDir,
   getDenoDepsDir,
+  getPluginPath,
   getDenoDtsPath,
   isInDenoDir,
 } from "./utils";
@@ -84,6 +85,10 @@ test("getDenoDepsDir", () => {
   expect(getDenoDepsDir()).not.toBe(undefined);
 });
 
+test("getPluginPath", () => {
+  expect(getPluginPath()).not.toBe(undefined);
+});
+
 test("DenoDir includes DepsDir", () => {
   expect(getDenoDepsDir()).toContain(getDenoDir());
 });
@@ -95,10 +100,16 @@ test("isInDenoDir", () => {
 });
 
 test("getDenoDtsPath", () => {
-  expect(getDenoDtsPath("lib.deno.d.ts")).toBe(
-    path.join(getDenoDir(), "lib.deno.d.ts"),
-  );
-  expect(getDenoDtsPath("lib.webworker.d.ts")).toBe(
-    path.join(getDenoDir(), "lib.webworker.d.ts"),
-  );
+  expect(
+    [
+      path.join(getPluginPath(), "lib.deno.d.ts"),
+      path.join(getDenoDir(), "lib.deno.d.ts"),
+    ],
+  ).toContain(getDenoDtsPath("lib.deno.d.ts"));
+  expect(
+    [
+      path.join(getPluginPath(), "lib.webworker.d.ts"),
+      path.join(getDenoDir(), "lib.webworker.d.ts"),
+    ],
+  ).toContain(getDenoDtsPath("lib.webworker.d.ts"));
 });
