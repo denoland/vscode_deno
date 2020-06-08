@@ -6,7 +6,7 @@ test("core / deno_type_hint: without compile hint", async () => {
   const sourceFile = ts.createSourceFile(
     "./test.ts",
     `console.log(123)`,
-    ts.ScriptTarget.ESNext
+    ts.ScriptTarget.ESNext,
   );
   const comments = getDenoCompileHint(sourceFile);
 
@@ -21,7 +21,7 @@ import "./foo.ts"
 `,
     ts.ScriptTarget.ESNext,
     true,
-    ts.ScriptKind.TSX
+    ts.ScriptKind.TSX,
   );
   const [comment] = getDenoCompileHint(sourceFile);
 
@@ -45,7 +45,7 @@ import "./foo.ts"
 `,
     ts.ScriptTarget.ESNext,
     true,
-    ts.ScriptKind.TSX
+    ts.ScriptKind.TSX,
   );
   const [comment] = getDenoCompileHint(sourceFile);
 
@@ -66,7 +66,7 @@ import "./foo.ts"
 `,
     ts.ScriptTarget.ESNext,
     true,
-    ts.ScriptKind.TSX
+    ts.ScriptKind.TSX,
   );
   const [comment] = getDenoCompileHint(sourceFile);
 
@@ -98,7 +98,7 @@ test("core / deno_type_hint: with compile hint 2", async () => {
 `,
     ts.ScriptTarget.ESNext,
     true,
-    ts.ScriptKind.TSX
+    ts.ScriptKind.TSX,
   );
   const [comment] = getDenoCompileHint(sourceFile);
 
