@@ -1,10 +1,14 @@
 import {
-    LanguageServiceHost,
+  LanguageServiceHost,
 } from "typescript/lib/tsserverlibrary";
 import { Logger } from "logger";
 import { getDenoDtsPath } from "../utils";
 
-export default function getScriptFileNamesWrapper(tsLsHost: LanguageServiceHost, config: any, logger: Logger) {
+export default function getScriptFileNamesWrapper(
+  tsLsHost: LanguageServiceHost,
+  config: any,
+  logger: Logger,
+) {
   const originalGetScriptFileNames = tsLsHost.getScriptFileNames;
   if (!config.enable) {
     return originalGetScriptFileNames;

@@ -7,7 +7,9 @@
   "scripts": {
     "prepublishOnly": "tsc",
     "compile": "tsc",
-    "types": "deno types --unstable > lib/lib.deno.d.ts"
+    "types": "deno types --unstable > lib/lib.deno.d.ts",
+    "check": "deno fmt src --check",
+    "format": "deno fmt src"
   },
   "keywords": [
     "deno",

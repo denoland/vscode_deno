@@ -1,11 +1,11 @@
 // modified from https://github.com/Microsoft/typescript-tslint-plugin
-import ts_module, { 
+import ts_module, {
   CompilerOptions,
 } from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
 
-import "./code_fixes"
+import "./code_fixes";
 import { getTsUtils } from "./ts-utils";
 
 import getCompletionsAtPositionWrapper from "./tsls_wrappers/completions";
@@ -91,25 +91,54 @@ module.exports = function init(
       process.chdir(projectDirectory);
 
       // ref https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-      tsLsHost.resolveModuleNames = resolveModuleNamesWrapper(tsLsHost, logger, config, typescript, projectDirectory);
-      tsLsHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectivesWrapper(tsLsHost, config, logger);
-      tsLsHost.getCompilationSettings = getCompilationSettingsWrapper(tsLsHost, config, OPTIONS, OPTIONS_OVERWRITE_BY_DENO);
-      tsLsHost.getScriptFileNames = getScriptFileNamesWrapper(tsLsHost, config, logger);
+      tsLsHost.resolveModuleNames = resolveModuleNamesWrapper(
+        tsLsHost,
+        logger,
+        config,
+        typescript,
+        projectDirectory,
+      );
+      tsLsHost.resolveTypeReferenceDirectives =
+        resolveTypeReferenceDirectivesWrapper(tsLsHost, config, logger);
+      tsLsHost.getCompilationSettings = getCompilationSettingsWrapper(
+        tsLsHost,
+        config,
+        OPTIONS,
+        OPTIONS_OVERWRITE_BY_DENO,
+      );
+      tsLsHost.getScriptFileNames = getScriptFileNamesWrapper(
+        tsLsHost,
+        config,
+        logger,
+      );
 
-      const getCompletionsAtPosition = getCompletionsAtPositionWrapper(projectDirectory, config, tsLs, tsUtils);
-      const getCompletionEntryDetails = getCompletionEntryDetailsnWrapper(tsLs, config);
-      const getSemanticDiagnostics = getSemanticDiagnosticsWrapper(tsLs, config, logger, projectDirectory);
+      const getCompletionsAtPosition = getCompletionsAtPositionWrapper(
+        projectDirectory,
+        config,
+        tsLs,
+        tsUtils,
+      );
+      const getCompletionEntryDetails = getCompletionEntryDetailsnWrapper(
+        tsLs,
+        config,
+      );
+      const getSemanticDiagnostics = getSemanticDiagnosticsWrapper(
+        tsLs,
+        config,
+        logger,
+        projectDirectory,
+      );
       // TODO(justjavac): maybe also `getCombinedCodeFix`
       const getCodeFixesAtPosition = getCodeFixesAtPositionWrapper(tsLs);
 
       const proxy: ts_module.LanguageService = {
         ...tsLs,
-        
+
         getCompletionsAtPosition,
         getCompletionEntryDetails,
         getSemanticDiagnostics,
         getCodeFixesAtPosition,
-      }
+      };
 
       return proxy;
     },

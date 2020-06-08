@@ -7,24 +7,24 @@ export function getTsUtils(languageService: ts.LanguageService): TsUtils {
         return ts.forEachChild(node, find) || node;
       }
     }
-    
+
     return find(sourceFile);
   }
 
   return {
-    getSourceFile (fileName: string) {
+    getSourceFile(fileName: string) {
       const program = languageService.getProgram();
       if (!program) {
-        throw new Error('language service host does not have program!');
+        throw new Error("language service host does not have program!");
       }
-      
+
       const s = program.getSourceFile(fileName);
       if (!s) {
-        throw new Error('No source file: ' + fileName);
+        throw new Error("No source file: " + fileName);
       }
       return s;
     },
-    getNode (fileName: string, position: number) {
+    getNode(fileName: string, position: number) {
       return findNode(this.getSourceFile(fileName), position);
     },
     getNodeText(node: ts.Node, fileName: string) {
@@ -32,11 +32,11 @@ export function getTsUtils(languageService: ts.LanguageService): TsUtils {
       const sourceText = sourceFile.text;
       return sourceText.slice(node.pos, node.end);
     },
-  }
+  };
 }
 
 export interface TsUtils {
   getSourceFile(fileName: string): SourceFile;
-  getNode (fileName: string, position: number): Node | undefined;
+  getNode(fileName: string, position: number): Node | undefined;
   getNodeText(node: ts.Node, fileName: string): string;
 }
