@@ -8,6 +8,7 @@
   "deno.config.packageManager": "O gestor de pacotes que você utiliza para instalar node modules.",
   "deno.config.alwaysShowStatus": "Mostrar sempre o Deno na barra de estados.",
   "deno.config.autoFmtOnSave": "Ativa ou desativa a formatação automática ao salvar.",
+  "deno.config.enablePatterns": "As pastas ou arquivos nos quais o Deno deve estar ativado",
   "deno.config.dtsPath": "O caminho para os ficheiros de declaração do TypeScript(.d.ts).",
   "deno.config.importmap": "O caminho para o ficheiro de importação de mapas."
 }

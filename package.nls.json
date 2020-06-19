@@ -6,6 +6,7 @@
   "deno.command.disable": "Disable Deno",
   "deno.config.enabled": "Controls whether deno is enabled or not.",
   "deno.config.packageManager": "The package manager you use to install node modules.",
+  "deno.config.enablePatterns": "The folders or files that deno should be enabled in",
   "deno.config.alwaysShowStatus": "Always show the Deno status bar item.",
   "deno.config.autoFmtOnSave": "Turns auto format on save on or off.",
   "deno.config.dtsPath": "The Path of TypeScript declaration file(.d.ts).",
