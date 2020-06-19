@@ -11,12 +11,14 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "enable",
   "unstable",
   "import_map",
+  "enablePatterns"
 ];
 
 export type ConfigurationField = {
   enable?: boolean;
   unstable?: boolean;
   import_map?: string | null;
+  enablePatterns?: string[];
 };
 
 interface ConfigurationInterface {

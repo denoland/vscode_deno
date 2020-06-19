@@ -234,6 +234,20 @@ export class Extension {
               if (!context.diagnostics || context.diagnostics.length === 0) {
                 return [];
               }
+
+              // If deno.enablePatterns is specified and this file doesn't
+              // match a path, then disable Deno.
+              const paths = (config.get("deno.enablePatterns") || ["*"]) as string[];
+              if (paths && paths.length) { 
+                const localFileName = document.fileName
+                  .replace(workspace.rootPath, "");
+                const matchesPath = paths
+                  .findIndex((p) => RegExp(p).test(localFileName));
+                if (!matchesPath) {
+                  return [];
+                }
+              }
+
               const denoDiagnostics: Diagnostic[] = [];
               for (const diagnostic of context.diagnostics) {
                 if (diagnostic.source === "Deno Language Server") {

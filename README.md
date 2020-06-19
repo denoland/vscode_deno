@@ -106,6 +106,8 @@ const M = array.getMonoid<number>();
 console.log("concat Array", M.concat([1, 2], [2, 3]));
 ```
 
+- `deno.enablePatterns` - An array of regexes that matches files Deno should be enabled on. Default is `["*"]` (matches all files). Paths are relative to the workspaces directory, so for example `["packages/"']` will look for the `packages` folder in your project.
+
 </details>
 
 ## Usage
