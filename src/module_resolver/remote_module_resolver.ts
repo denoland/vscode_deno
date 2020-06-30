@@ -17,7 +17,7 @@ export const remoteModuleResolver: IModuleResolver = {
     const originDir = path.join(
       getDenoDepsDir(),
       url.protocol.replace(/:$/, ""), // https: -> https
-      url.hostname,
+      `${url.hostname}${url.port ? `_PORT${url.port}` : ""}`, // hostname.xyz:3000 -> hostname.xyz_PORT3000
     );
 
     const hash = hashURL(url);
