@@ -36,6 +36,10 @@ jobs:
       - name: Check code format
         run: yarn run check
 
+      - name: Test
+        run: |
+          yarn test:plugin
+
       - name: Compile
         run: yarn compile
 

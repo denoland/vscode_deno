@@ -147,10 +147,11 @@
     "clean": "rm -rf dist",
     "compile": "tsc -b && rollup -c",
     "watch": "tsc -b -w",
-    "postinstall": "cd client && yarn && cd ../server && yarn && cd ..",
+    "postinstall": "cd client && yarn && cd ../server && yarn && cd ../typescript-deno-plugin && yarn && cd ..",
     "package": "./scripts/build.sh",
-    "check": "deno fmt  client/src server/src schemas --check",
-    "format": "deno fmt client/src server/src schemas"
+    "check": "deno fmt  client/src server/src typescript-deno-plugin/src schemas --check",
+    "format": "deno fmt client/src server/src typescript-deno-plugin/src schemas",
+    "test:plugin": "cd typescript-deno-plugin && yarn test"
   },
   "husky": {
     "hooks": {

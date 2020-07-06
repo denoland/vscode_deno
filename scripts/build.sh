@@ -12,6 +12,7 @@ shopt -s extglob
 # Clean up from last build
 rm -rf client/out
 rm -rf server/out
+rm -rf typescript-deno-plugin/out
 rm -rf dist
 rm -rf **/*.tsbuildinfo
 
