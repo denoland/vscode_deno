@@ -1,0 +1,36 @@
+{
+  "name": "typescript-deno-plugin",
+  "version": "1.31.0",
+  "description": "Deno language service plugin for TypeScript",
+  "main": "out/index.js",
+  "types": "out/index.d.ts",
+  "scripts": {
+    "prepublishOnly": "tsc",
+    "compile": "tsc",
+    "types": "deno types --unstable > lib/lib.deno.d.ts",
+    "check": "deno fmt src --check",
+    "format": "deno fmt src",
+    "test": "jest --coverage"
+  },
+  "keywords": [
+    "deno",
+    "typescript"
+  ],
+  "author": "justjavac <justjavac@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/justjavac/typescript-deno-plugin.git"
+  },
+  "dependencies": {
+    "import-maps": "^0.2.1",
+    "merge-deep": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.3",
+    "@types/node": "^14.0.1",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^3.9.2"
+  }
+}
