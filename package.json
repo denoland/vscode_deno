@@ -140,6 +140,16 @@
         "fileMatch": "denorc.*.json",
         "url": "./schemas/denorc.schema.json"
       }
+    ],
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "snippets/snippets.json"
+      },
+      {
+        "language": "typescript",
+        "path": "snippets/snippets.json"
+      }
     ]
   },
   "main": "./client/out/extension",
