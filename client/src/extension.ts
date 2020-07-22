@@ -316,7 +316,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     showStatusBarItem(
       isTypeScriptDocument(editor.document) ||
-      isJavaScriptDocument(editor.document),
+        isJavaScriptDocument(editor.document),
     );
   }
 
@@ -446,15 +446,21 @@ export async function activate(context: vscode.ExtensionContext) {
   // activate the mod helper
   const documentSelector: vscode.DocumentSelector = [
     { language: "javascript" },
-    { language: "typescript" }
-  ]
+    { language: "typescript" },
+  ];
 
-  const triggerWord = ["@", "/"]
+  const triggerWord = ["@", "/"];
 
-  context.subscriptions.push(vscode.languages.registerCompletionItemProvider(documentSelector, new CompletionProvider(), ...triggerWord));
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      documentSelector,
+      new CompletionProvider(),
+      ...triggerWord,
+    ),
+  );
 }
 
-export function deactivate() { }
+export function deactivate() {}
 
 /** synchronize configuration with typescript-deno-plugin */
 function synchronizeConfiguration(api: any) {
@@ -514,8 +520,8 @@ async function promptForNodeJsProject(): Promise<void> {
       localize(
         "message.maybe_nodejs_project",
         "A package.json file is detected in the project. " +
-        "This project may be a Node.js project. " +
-        "Do you want to disable this extension?",
+          "This project may be a Node.js project. " +
+          "Do you want to disable this extension?",
       ),
       disable,
       cancel,
