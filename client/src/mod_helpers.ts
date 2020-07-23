@@ -130,7 +130,8 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
       if (!Array.isArray(keys)) {
         this.ext_ctx.globalState.update("keys", [key]);
       } else {
-        this.ext_ctx.globalState.update("keys", keys.push(key));
+        keys.push(key);
+        this.ext_ctx.globalState.update("keys", keys);
       }
       this.ext_ctx.globalState.update(
         key,
