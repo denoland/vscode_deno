@@ -124,12 +124,22 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
     }).json())?.entries;
 
     // cache it
-    this.ext_ctx.globalState.update(
-      `std@${ver}/${path}`,
-      result.map((it) =>
-        <GH_Entry> { name: it.name, type: it.type, url: it.url }
-      ),
-    );
+    let key = `std@${ver}/${path}`;
+    let cache_check = this.ext_ctx.globalState.get(key);
+    let keys = this.ext_ctx.globalState.get("keys");
+    if (cache_check === undefined) {
+      if (!Array.isArray(keys)) {
+        this.ext_ctx.globalState.update("keys", [key]);
+      } else {
+        this.ext_ctx.globalState.update("keys", keys.push(key));
+      }
+      this.ext_ctx.globalState.update(
+        key,
+        result.map((it) =>
+          <GH_Entry> { name: it.name, type: it.type, url: it.url }
+        ),
+      );
+    }
 
     return result as Array<GH_Entry>;
   }

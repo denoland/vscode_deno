@@ -63,6 +63,11 @@
         "command": "deno.disable",
         "title": "%deno.command.disable%",
         "category": "Deno"
+      },
+      {
+        "command": "deno.clearComplementationCache",
+        "title": "%deno.command.clearImportStdComplementationCache%",
+        "category": "Deno"
       }
     ],
     "configuration": {
