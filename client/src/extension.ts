@@ -454,7 +454,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       documentSelector,
-      new CompletionProvider(),
+      new CompletionProvider(context),
       ...triggerWord,
     ),
   );
