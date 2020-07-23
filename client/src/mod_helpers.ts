@@ -16,20 +16,8 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
     context: vscode.CompletionContext,
   ): Promise<vscode.CompletionItem[] | undefined> {
     let lineText = document.lineAt(position).text;
-
     if (/import.+?from\W+['"].*?['"]/.test(lineText)) {
       // We're at import statement line
-      let currentChar = lineText[position.character - 1];
-      if (currentChar === "@") {
-        // The user want a list of std lib versions instead of folder or file completion
-        let vers = await this.list_std_versions();
-        return vers.map((it) =>
-          new vscode.CompletionItem(it, CompletionItemKind.Value)
-        );
-      }
-
-      const gh_baseurl =
-        "https://api.github.com/repos/denoland/deno/contents/std?ref=";
       const importUrl = lineText.match(
         /.*?['"](\w+:\/\/)(?<domain>.*?)\/(?<lib>\w+)(@(?<ver>[\d.]+))?\/(?<path>.*?)['"]/,
       ).groups;
@@ -39,7 +27,18 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
         importUrl["ver"],
         importUrl["path"],
       ];
+
       if (domain === "deno.land" && lib === "std") {
+        // We're handle the completion only if the url is std module url
+        let currentChar = lineText[position.character - 1];
+        if (currentChar === "@") {
+          // The user want a list of std lib versions instead of folder or file completion
+          let vers = await this.list_std_versions();
+          return vers.map((it) =>
+            new vscode.CompletionItem(it, CompletionItemKind.Value)
+          );
+        }
+
         let entries = path?.split("/") ?? [];
         let entry = entries.splice(-1, 1)[0];
         let realPath = "";
