@@ -180,11 +180,39 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions,
   );
 
+  const formatter = vscode.languages.registerDocumentFormattingEditProvider([
+    { scheme: "file", language: "javascript" },
+    { scheme: "file", language: "javascriptreact" },
+    { scheme: "file", language: "typescript" },
+    { scheme: "file", language: "typescriptreact" },
+  ], {
+    async provideDocumentFormattingEdits(document: vscode.TextDocument) {
+      if (document.isUntitled) {
+        return;
+      }
+      await document.save();
+
+      let code: string;
+
+      try {
+        code = await deno.format(document.getText());
+      } catch (err) {
+        outputChannel.appendLine(`Deno fmt error: ${err}`);
+      }
+
+      const fullRange = new vscode.Range(
+        document.positionAt(0),
+        document.positionAt(document.getText().length - 1),
+      );
+      return [new vscode.TextEdit(fullRange, code)];
+    },
+  });
+
   synchronizeConfiguration(api);
 
   const disposables = [
     configurationListener,
-    // formatter,
+    formatter,
     vscode.commands.registerCommand("deno.enable", enable),
     vscode.commands.registerCommand("deno.disable", disable),
     vscode.commands.registerCommand("deno.showOutputChannel", async () => {
