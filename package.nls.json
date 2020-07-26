@@ -11,5 +11,5 @@
   "deno.config.dtsPath": "The Path of TypeScript declaration file(.d.ts).",
   "deno.config.importmap": "The Path of import maps.",
   "deno.config.unstable": "Enable Deno unstable features.",
-  "deno.config.formatEnable": "Enable/disable the Deno fmt document formatter."
+  "deno.config.enableFormatter": "Enable/disable the Deno fmt document formatter."
 }

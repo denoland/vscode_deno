@@ -364,7 +364,7 @@ export class Connection {
   }
 
   private async setupFormatters(settings: any) {
-    if (settings.deno.formatEnable === true) {
+    if (settings.deno.enableFormatter === true) {
       if (this.documentFormatters.length === 0) {
         const documentSelector = [
           // scheme: 'file' means listen to changes to files on disk only
