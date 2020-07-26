@@ -10,5 +10,5 @@
   "deno.config.autoFmtOnSave": "Active ou désactive le formatage automatique à la sauvegarde.",
   "deno.config.dtsPath": "Le chemin du fichier de déclarations de types TypeScript (.d.ts).",
   "deno.config.importmap": "Le chemin de votre fichier import map.",
-  "deno.config.formatEnable": "Enable deno fmt"
+  "deno.config.formatEnable": "Enable/disable the Deno fmt document formatter."
 }
