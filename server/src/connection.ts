@@ -18,6 +18,11 @@ import {
   tsDiagnosticToLspDiagnostic,
 } from "./utils";
 import { FixItems } from "./code_actions";
+import {
+  Disposable,
+  DocumentFormattingRequest,
+  DocumentRangeFormattingRequest,
+} from "vscode-languageserver";
 
 export interface ConnectionOptions {
   serverName: string;
@@ -48,6 +53,7 @@ export class Connection {
   private readonly serverName: string;
   private diagnosticsTimeout: NodeJS.Timeout | null = null;
   private isProjectLoading = false;
+  private documentFormatters: Disposable[] = [];
 
   constructor(options: ConnectionOptions) {
     // Create a connection for the server. The connection uses Node's IPC as a transport.
@@ -87,6 +93,7 @@ export class Connection {
     conn.onDocumentFormatting((p) => this.onDocumentFormatting(p));
     conn.onDocumentRangeFormatting((p) => this.onDocumentRangeFormatting(p));
     conn.onCodeAction((p) => this.onCodeAction(p));
+    conn.onDidChangeConfiguration((p) => this.onDidChangeConfiguration(p));
   }
 
   /**
@@ -178,8 +185,8 @@ export class Connection {
   private onInitialize(params: lsp.InitializeParams): lsp.InitializeResult {
     return {
       capabilities: {
-        documentFormattingProvider: true,
-        documentRangeFormattingProvider: true,
+        documentFormattingProvider: false,
+        documentRangeFormattingProvider: false,
         textDocumentSync: {
           openClose: true,
           change: lsp.TextDocumentSyncKind.Full,
@@ -347,6 +354,43 @@ export class Connection {
   private onDidOpen(e: lsp.TextDocumentChangeEvent<TextDocument>) {
     this.log("Open file: " + e.document.uri);
     this.triggerDiagnostics([uriToFilePath(e.document.uri)]);
+  }
+
+  private async onDidChangeConfiguration(
+    { settings }: lsp.DidChangeConfigurationParams,
+  ) {
+    // onDidChangeConfiguration will fire for Language Server startup
+    await this.setupFormatters(settings);
+  }
+
+  private async setupFormatters(settings: any) {
+    if (settings.deno.formatEnable === true) {
+      if (this.documentFormatters.length === 0) {
+        const documentSelector = [
+          // scheme: 'file' means listen to changes to files on disk only
+          // other option is 'untitled', for buffer in the editor (like a new doc)
+          // **NOTE**: REMOVE .wasm https://github.com/denoland/deno/pull/5135
+          { scheme: "file", language: "javascript" },
+          { scheme: "file", language: "javascriptreact" },
+          { scheme: "file", language: "typescript" },
+          { scheme: "file", language: "typescriptreact" },
+        ];
+
+        const documentFormatter = await this.connection.client.register(
+          DocumentFormattingRequest.type,
+          { documentSelector },
+        );
+        const documentRangeFormatter = await this.connection.client.register(
+          DocumentRangeFormattingRequest.type,
+          { documentSelector },
+        );
+
+        this.documentFormatters.push(documentFormatter, documentRangeFormatter);
+      }
+    } else {
+      this.documentFormatters.forEach((formatter) => formatter.dispose());
+      this.documentFormatters = [];
+    }
   }
 
   /**

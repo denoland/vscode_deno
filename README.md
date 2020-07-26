@@ -57,7 +57,7 @@ Note the VS Code based configuration overrides the `tsconfig` configuration.
 
 - `deno.importmap` - The Path of import maps. Default is `null`.
 
-- `deno.autoFmtOnSave` - Turns auto format on save on or off. Default is `false`. (**Not implemented**)
+- `deno.formatEnable` - Turns deno fmt on or off. Default is `false`.
 
 ## Commands
 

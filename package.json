@@ -80,6 +80,11 @@
           "description": "%deno.config.alwaysShowStatus%",
           "scope": "window"
         },
+        "deno.formatEnable": {
+          "type": "boolean",
+          "default": false,
+          "description": "%deno.config.formatEnable%"
+        },
         "deno.tsconfig": {
           "type": [
             "string",

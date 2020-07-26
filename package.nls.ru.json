@@ -10,5 +10,6 @@
   "deno.config.autoFmtOnSave": "Автоматически форматировать при сохранении.",
   "deno.config.dtsPath": "Путь до файла с определениями типов (.d.ts).",
   "deno.config.importmap": "Путь до import maps.",
-  "deno.config.unstable": "Включить нестабильные возможности Deno."
+  "deno.config.unstable": "Включить нестабильные возможности Deno.",
+  "deno.config.formatEnable": "Enable deno fmt"
 }

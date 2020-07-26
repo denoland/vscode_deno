@@ -9,5 +9,6 @@
   "deno.config.alwaysShowStatus": "Mostra sempre Deno sulla barra di stato.",
   "deno.config.autoFmtOnSave": "Attiva o disattiva la formattazione automatica dopo il salvataggio.",
   "deno.config.dtsPath": "Il percorso per il file TypeScript declaration (.d.ts).",
-  "deno.config.importmap": "Il percorso delle import map."
+  "deno.config.importmap": "Il percorso delle import map.",
+  "deno.config.formatEnable": "Enable deno fmt"
 }
