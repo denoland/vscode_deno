@@ -10,5 +10,5 @@
   "deno.config.autoFmtOnSave": "是否在保存时进行格式化。",
   "deno.config.dtsPath": "Deno 的类型声明文件(.d.ts)路径。",
   "deno.config.importmap": "import maps 文件的路径。",
-  "deno.config.enableFormatter": "Enable/disable the Deno fmt document formatter."
+  "deno.config.enableFormatter": "启用/禁用 Deno fmt 的格式化功能。"
 }
