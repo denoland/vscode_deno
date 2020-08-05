@@ -158,6 +158,7 @@ interface SynchronizedConfiguration {
   importmap?: string;
   tsconfig?: string;
   unstable?: boolean;
+  enablePatterns?: string[];
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -374,8 +375,20 @@ export async function activate(context: vscode.ExtensionContext) {
         token: vscode.CancellationToken,
         next: lsp.ProvideCodeActionsSignature,
       ) {
-        if (!config.get("deno.enable") || !context.diagnostics) {
-          return [];
+        if (!context.diagnostics) return [];
+        if (!config.get("deno.enable")) return [];
+
+        // If deno.enablePatterns is specified and this file doesn't
+        // match a path, then disable Deno.
+        const paths = (config.get("deno.enablePatterns") || ["*"]) as string[];
+        if (paths && paths.length) {
+          const localFileName = document.fileName
+            .replace(vscode.workspace.rootPath, "");
+          const matchesPath = paths
+            .findIndex((p) => RegExp(p).test(localFileName));
+          if (!matchesPath) {
+            return [];
+          }
         }
 
         // diagnostics from Deno Language Server
@@ -460,6 +473,7 @@ function getConfiguration(): SynchronizedConfiguration {
   withConfigValue(config, outConfig, "tsconfig");
   withConfigValue(config, outConfig, "importmap");
   withConfigValue(config, outConfig, "unstable");
+  withConfigValue(config, outConfig, "enablePatterns");
 
   return outConfig;
 }
@@ -494,8 +508,11 @@ function withConfigValue<C, K extends Extract<keyof C, string>>(
 /** when package.json is detected in the root directory, display a prompt */
 async function promptForNodeJsProject(): Promise<void> {
   let enabled = vscode.workspace.getConfiguration("deno").get("enable", true);
+  let filtered = vscode.workspace.getConfiguration("deno").get(
+    "enablePatterns",
+  );
 
-  if (enabled && packageJsonExists()) {
+  if (enabled && !filtered && packageJsonExists()) {
     const disable = localize("button.disable", "Disable");
     const cancel = localize("button.cancel", "Cancel");
     const choice = await vscode.window.showInformationMessage(

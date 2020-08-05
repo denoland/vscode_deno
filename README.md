@@ -53,6 +53,8 @@ Note the VS Code based configuration overrides the `tsconfig` configuration.
 
 - `deno.enable` - Enable/disable this extension. Default is `true`.
 
+- `deno.enablePatterns` - An array of regexes that matches files Deno should be enabled on. Default is `["*"]` (matches all files). Paths are relative to the workspaces directory, so for example `["packages/"']` will look for the `packages` folder in your project.
+
 - `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
 
 - `deno.importmap` - The Path of import maps. Default is `null`.
