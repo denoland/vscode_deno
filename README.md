@@ -51,7 +51,7 @@ You can configure the Deno extension using a `tsconfig` as described
 configure it with VS Code settings. This requires VS Code 1.40+ and TS 3.8+.
 Note the VS Code based configuration overrides the `tsconfig` configuration.
 
-- `deno.enable` - Enable/disable this extension. Default is `true`.
+- `deno.enable` - Enable/disable this extension. Default is `false`. **You must explicitly enable the extension in workspaces that are Deno projects.**
 
 - `deno.enablePatterns` - An array of regexes that matches files Deno should be enabled on. Default is `["*"]` (matches all files). Paths are relative to the workspaces directory, so for example `["packages/"']` will look for the `packages` folder in your project.
 
