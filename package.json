@@ -71,7 +71,7 @@
       "properties": {
         "deno.enable": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "%deno.config.enabled%"
         },
         "deno.alwaysShowStatus": {
