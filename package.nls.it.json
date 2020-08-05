@@ -10,5 +10,6 @@
   "deno.config.autoFmtOnSave": "Attiva o disattiva la formattazione automatica dopo il salvataggio.",
   "deno.config.enablePatterns": "Le cartelle o i file in cui Deno dovrebbe essere abilitato",
   "deno.config.dtsPath": "Il percorso per il file TypeScript declaration (.d.ts).",
-  "deno.config.importmap": "Il percorso delle import map."
+  "deno.config.importmap": "Il percorso delle import map.",
+  "deno.config.enableFormatter": "Enable/disable the Deno fmt document formatter."
 }
