@@ -1,59 +1,134 @@
-// Copyright 2019-2020 the Deno authors. All rights reserved. MIT license.
+import { init } from "vscode-nls-i18n";
 
-import ts from "typescript/lib/tsserverlibrary";
-import denoPkg from "typescript-deno-plugin/package.json";
+// init i18n
+init(process.env.VSCODE_DENO_EXTENSION_PATH + "");
 
-import { generateHelpMessage, parseArguments } from "./utils/args";
-import { createLogger } from "./logger";
-import { ServerHost } from "./server_host";
-import { Connection } from "./connection";
+import { promises as fs } from "fs";
 
-const serverName = "Deno Language Server";
-process.title = serverName;
+import {
+  IPCMessageReader,
+  IPCMessageWriter,
+  createConnection,
+  IConnection,
+  TextDocuments,
+  InitializeResult,
+  TextDocumentSyncKind,
+  CodeActionKind,
+} from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
 
-// Parse command line arguments
-const options = parseArguments(process.argv);
+import { deno } from "./deno";
+import { Bridge } from "./bridge";
+import { DependencyTree } from "./dependency_tree";
+import { Diagnostics } from "./language/diagnostics";
+import { Definition } from "./language/definition";
+import { References } from "./language/references";
+import { DocumentHighlight } from "./language/document_highlight";
+import { DocumentFormatting } from "./language/document_formatting";
+import { Hover } from "./language/hover";
+import { Completion } from "./language/completion";
+import { CodeLens } from "./language/code_lens";
 
-if (options.help) {
-  console.error(generateHelpMessage(process.argv));
-  process.exit(0);
-}
+import { getDenoDir, getDenoDts } from "../../core/deno";
+import { pathExists } from "../../core/util";
+import { Notification } from "../../core/const";
 
-// Create a logger that logs to file. OK to emit verbose entries.
-const logger = createLogger({
-  logFile: options.logFile,
-  logVerbosity: options.logVerbosity,
-});
+const SERVER_NAME = "Deno Language Server";
+process.title = SERVER_NAME;
 
-// ServerHost provides native OS functionality
-const host = new ServerHost();
-
-// Establish a new server that encapsulates lsp connection.
-const connection = new Connection({
-  serverName,
-  host,
-  logger,
-  deno: {
-    tsconfig: options.config,
-    importmap: options.importmap,
-  },
-  // pluginProbeLocations: resolveDenoPluginLocations(),
-});
-
-// Log initialization info
-connection.info(`Deno language server process ID: ${process.pid}.`);
-connection.info(`Using typescript v${ts.version} from extension bundled.`);
-connection.info(
-  `Using typescript-deno-plugin v${denoPkg.version} from extension bundled.`,
+// Create a connection for the server. The connection uses Node's IPC as a transport
+const connection: IConnection = createConnection(
+  new IPCMessageReader(process),
+  new IPCMessageWriter(process)
 );
-connection.info(`Log file: ${logger.getLogFileName()}`);
-if (process.env.Deno_DEBUG === "true") {
-  connection.info("Deno Language Service is running under DEBUG mode.");
-}
-if (process.env.TSC_NONPOLLING_WATCHER !== "true") {
-  connection.warn(
-    `Using less efficient polling watcher. Set TSC_NONPOLLING_WATCHER to true.`,
-  );
+
+// Create a simple text document manager. The text document manager
+// supports full document sync only
+const documents = new TextDocuments(TextDocument);
+
+const bridge = new Bridge(connection);
+new DependencyTree(connection, bridge);
+new Diagnostics(SERVER_NAME, connection, bridge, documents);
+new Definition(connection, documents);
+new References(connection, documents);
+new DocumentHighlight(connection, documents);
+new DocumentFormatting(connection, documents, bridge);
+new Hover(connection, documents);
+new Completion(connection, documents);
+new CodeLens(connection, documents);
+
+connection;
+
+connection.onInitialize(
+  (): InitializeResult => {
+    return {
+      capabilities: {
+        documentFormattingProvider: true,
+        documentRangeFormattingProvider: true,
+        textDocumentSync: {
+          openClose: true,
+          change: TextDocumentSyncKind.Full,
+        },
+        completionProvider: {
+          triggerCharacters: ["http", "https"],
+        },
+        codeActionProvider: {
+          codeActionKinds: [CodeActionKind.QuickFix],
+        },
+        documentHighlightProvider: true,
+        hoverProvider: true,
+        referencesProvider: true,
+        definitionProvider: true,
+        codeLensProvider: {},
+      },
+    };
+  }
+);
+
+async function ensureDenoDts(unstable: boolean) {
+  const currentDenoTypesContent = await deno.getTypes(unstable);
+  const denoDtsFile = getDenoDts(unstable);
+  const isExistDtsFile = await pathExists(denoDtsFile);
+
+  // if dst file not exist. then create a new one
+  if (!isExistDtsFile) {
+    await fs.writeFile(denoDtsFile, currentDenoTypesContent, { mode: 0o444 });
+  } else {
+    // set it to writable
+    await fs.chmod(denoDtsFile, 0o666);
+
+    const typesContent = await fs.readFile(denoDtsFile, { encoding: "utf8" });
+
+    if (typesContent.toString() !== currentDenoTypesContent.toString()) {
+      await fs.writeFile(denoDtsFile, currentDenoTypesContent, {
+        mode: 0o444,
+      });
+
+      // set to readonly
+      await fs.chmod(denoDtsFile, 0o444);
+    }
+  }
 }
 
+connection.onInitialized(async () => {
+  try {
+    await deno.init();
+    await Promise.all([ensureDenoDts(false), ensureDenoDts(true)]);
+  } catch (err) {
+    connection.sendNotification(Notification.error, err.message);
+    return;
+  }
+  connection.sendNotification(Notification.init, {
+    version: deno.version ? deno.version : undefined,
+    executablePath: deno.executablePath,
+    DENO_DIR: getDenoDir(),
+  });
+  connection.console.log("server initialized.");
+});
+
+// Make the text document manager listen on the connection
+// for open, change and close text document events
+documents.listen(connection);
+
+// Listen on the connection
 connection.listen();

@@ -1,0 +1,17 @@
+{
+  "deno.displayName": "[已棄用] Deno",
+  "deno.description": "[已棄用] Deno support for VSCode",
+  "deno.dependency": "Deno 依賴模塊",
+  "deno.command.restart_server": "重啟 Deno 語言服務器",
+  "deno.config.enabled": "是否啟用 Deno。\n\n**不推薦在全局配置中設置**",
+  "deno.config.import_map": "Import Map 的文件路徑。\n\n它可以是相對於項目目錄的相對路徑或者是絕對路徑。\n\n**不推薦在全局配置中設置**",
+  "deno.config.unstable": "是否啟用 Deno 的不穩定特性。\n\n**不推薦在全局配置中設置**",
+  "deno.initializing": "正在初始化 Deno 語言服務器...",
+  "err.not_install_deno": "在 $PATH 變量中找不到 Deno。請在設置後重新啟動擴展。",
+  "err.below_deno_minimum_requirements": "Deno 的版本低於最小要求。請升級至 v{0} 或以上。",
+  "diagnostic.fix.create_module": "创建模块。",
+  "diagnostic.fix.fetch_module": "創建模塊。",
+  "diagnostic.report.module_not_found_locally": "找不到模塊 `{0}`。",
+  "diagnostic.report.invalid_import": "導入模塊 `{0}` 必須是一個相對路徑或者 HTTP 的 URL",
+  "code_len.cached_module": "Deno 緩存模塊 `{0}`。點擊複製到剪切板。"
+}

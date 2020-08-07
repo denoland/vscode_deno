@@ -1,0 +1,17 @@
+{
+  "deno.displayName": "[Deprecated] Deno",
+  "deno.description": "[Deprecated] Deno ondersteuning voor VSCode",
+  "deno.dependency": "Deno Dependencies",
+  "deno.command.restart_server": "Start Deno Language Server opnieuw",
+  "deno.config.enabled": "Bepaalt of Deno is ingeschakeld of niet.\n\n**Niet aanbevolen in globale configuratie**",
+  "deno.config.import_map": "Het bestandspad van een 'import map'.\n\nHet kan een pad zijn dat relatief is aan het projectpad, of een absoluut pad\n\n**Niet aanbevolen in globale configuratie**",
+  "deno.config.unstable": "Controls if Deno's unstable mode types are used instead of stable mode types.\n\n**Not recommended in global configuration**",
+  "deno.initializing": "Deno Language Server initialiseren ...",
+  "err.not_install_deno": "Kon `deno` niet vinden in uw $PATH. Installeer `deno` en start de extensie opnieuw.",
+  "err.below_deno_minimum_requirements": "Deno's version is below minimum requirements. Please upgrade to v{0} or above.",
+  "diagnostic.fix.create_module": "Maak de module",
+  "diagnostic.fix.fetch_module": "Download de module",
+  "diagnostic.report.module_not_found_locally": "Kan module `{0}` niet lokaal vinden.",
+  "diagnostic.report.invalid_import": "Import module `{0}` must be a relative path or remote HTTP URL.",
+  "code_len.cached_module": "Deno cached module `{0}`. Click to copy to clipboard."
+}

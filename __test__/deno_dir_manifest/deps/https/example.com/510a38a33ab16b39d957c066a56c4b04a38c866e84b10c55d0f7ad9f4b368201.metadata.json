@@ -1,0 +1,6 @@
+{
+  "headers": {
+    "location": "/esm/mod.ts"
+  },
+  "url": "https://example.com/redirect_to_absolute"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "typescript-deno-plugin",
+  "version": "0.1.0",
+  "description": "Deno language service plugin for TypeScript",
+  "main": "./out/typescript-deno-plugin/src/index.js",
+  "dependencies": {
+    "deep-equal": "^2.0.1",
+    "deepmerge": "^4.2.2",
+    "json5": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/deep-equal": "1.0.1",
+    "@types/json5": "0.0.30",
+    "typescript": "3.8.3"
+  }
+}

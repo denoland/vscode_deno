@@ -1,0 +1,6 @@
+{
+  "headers": {
+    "location": "https://redirect.com/result"
+  },
+  "url": "https://redirect.com/full_url_redirect"
+}
