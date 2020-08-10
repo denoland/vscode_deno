@@ -1,28 +1,36 @@
 .vscode/**
 .github/**
-typings/**
-out/test/**
-test/**
+__test__
+**/*.test.*
 src/**
 **/*.map
 *.vsix
+coverage
+core/*.ts
 
-images/**/*.gif
-images/**/*.png
-
-.gitattributes
+.prettierignore
+.prettierrc.json
+jest.config.js
 .gitignore
 .gitmodules
-.appveyor.yml
-.travis.yml
-.npmrc
-.yarnrc
+.eslintignore
+.eslintrc.json
 
-tsconfig*.json
-package-lock.json
+**/tsconfig*.json
+typescript-deno-plugin
+**/yarn.lock
+**/package-lock.json
+renovate.json
 
-CODE_OF_CONDUCT.md
-CODING_STANDARDS.md
-CONTRIBUTING.md
+client/src
+client/package.json
 
-vsc-extension-quickstart.md
+server/src
+server/package.json
+
+**/node_modules/**/**.d.ts
+**/node_modules/**/**.md
+**/node_modules/typescript-deno-plugin/src
+
+screenshot/*
+examples/*

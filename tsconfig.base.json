@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "alwaysStrict": true,
+    "allowJs": false,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "ES2017",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "importsNotUsedAsValues": "remove",
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "strictBindCallApply": true
+  },
+  "exclude": ["**/*.test.ts"]
+}

@@ -1,0 +1,16 @@
+{
+  "deno.displayName": "[Deprecated] Deno",
+  "deno.description": "[Deprecated] Deno unterstützung für VSCode",
+  "deno.dependency": "Deno Dependencies",
+  "deno.command.restart_server": "Starte den Deno Language Server neu",
+  "deno.config.enabled": "Steuert, ob Deno aktiviert ist oder nicht.\n\n**In der globalen Konfiguration nicht empfohlen**",
+  "deno.config.import_map": "Der Dateipfad einer import map.\n\nDies kann ein Pfad sein, der relativ zum Projektpfad ist, oder ein absoluter Pfad.\n\n**In der globalen Konfiguration nicht empfohlen**",
+  "deno.config.unstable": "Controls if Deno's unstable mode types are used instead of stable mode types.\n\n**Not recommended in global configuration**",
+  "deno.initializing": "Deno Language Server wird initialisiert ...",
+  "err.not_install_deno": "Konnte `deno` in Ihrem $PATH nicht finden. Bitte installieren Sie `deno` und starten Sie die Erweiterung neu.",
+  "err.below_deno_minimum_requirements": "Deno's version is below minimum requirements. Please upgrade to v{0} or above.",
+  "diagnostic.fix.create_module": "Erstellen das Modul",
+  "diagnostic.fix.fetch_module": "Download das Modul",
+  "diagnostic.report.module_not_found_locally": "Modul `{0}` konnte lokal nicht gefunden werden.",
+  "diagnostic.report.invalid_import": "Import module `{0}` must be a relative path or remote HTTP URL."
+}
