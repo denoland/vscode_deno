@@ -1,24 +1,20 @@
-> The project is no longer maintained. move to [official extension](https://github.com/denoland/vscode_deno)
-
-English | [中文简体](README_zh-CN.md)
-
 <div align="center">
 
 # Visual Studio Code Deno extension
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/axetroy/vscode-deno/build)
-[![Coverage Status](https://coveralls.io/repos/github/axetroy/vscode-deno/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/axetroy/vscode-deno?branch=refs/heads/master)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode_deno/build)
+[![Coverage Status](https://coveralls.io/repos/github/denoland/vscode_deno/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/denoland/vscode_deno?branch=refs/heads/master)
 [![DeepScan grade](https://deepscan.io/api/teams/6484/projects/9924/branches/132500/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=6484&pid=9924&bid=132500)
 
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/axetroy.vscode-deno)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/axetroy.vscode-deno)
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/axetroy.vscode-deno)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/axetroy.vscode-deno)
-![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/axetroy.vscode-deno)
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/denoland.vscode_deno)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode_deno)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/denoland.vscode_deno)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/denoland.vscode_deno)
+![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/denoland.vscode_deno)
 
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/axetroy/vscode-deno)
-![GitHub repo size](https://img.shields.io/github/repo-size/axetroy/vscode-deno)
-![GitHub](https://img.shields.io/github/license/axetroy/vscode-deno)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/denoland/vscode_deno)
+![GitHub repo size](https://img.shields.io/github/repo-size/denoland/vscode_deno)
+![GitHub](https://img.shields.io/github/license/denoland/vscode_deno)
 
 Adds Deno support for the Visual Studio Code.
 
@@ -114,17 +110,9 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 </details>
 
-<details><summary>Deno version manager integration</summary>
-
-Investigating integration into the extension
-
-We recommend you using [dvm](https://github.com/axetroy/dvm) for the manager Deno version.
-
-</details>
-
 ## Usage
 
-1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=axetroy.vscode-deno)
+1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode_deno)
 
 2. Enable Deno for your project:
 
@@ -164,10 +152,10 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 // .vscode/settings.json
 {
   "[typescript]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno",
+    "editor.defaultFormatter": "denoland.vscode_deno",
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "axetroy.vscode-deno",
+    "editor.defaultFormatter": "denoland.vscode_deno",
   },
 }
 ```
@@ -181,8 +169,8 @@ Follow these steps to contribute, the community needs your strength.
 2. Clone onto your computer:
 
    ```bash
-   $ git clone https://github.com/your_github_name/vscode-deno.git
-   $ cd vscode-deno
+   $ git clone https://github.com/your_github_name/vscode_deno.git
+   $ cd vscode_deno
    $ yarn # or npm install
    ```
 
@@ -201,7 +189,8 @@ Follow these steps to contribute, the community needs your strength.
 
 ## Thanks
 
-This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno), Thanks for their contributions.
+This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno) and
+[axetroy/vscode-deno](https://github.com/axetroy/vscode-deno). Thanks for their contributions.
 
 ## License
 
