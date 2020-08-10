@@ -2,7 +2,7 @@
 
 # Visual Studio Code Deno extension
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode-deno/build)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode_deno/build)
 
 ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/denoland.vscode-deno)
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode-deno)
@@ -10,9 +10,9 @@
 ![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/denoland.vscode-deno)
 ![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/denoland.vscode-deno)
 
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/denoland/vscode-deno)
-![GitHub repo size](https://img.shields.io/github/repo-size/denoland/vscode-deno)
-![GitHub](https://img.shields.io/github/license/denoland/vscode-deno)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/denoland/vscode_deno)
+![GitHub repo size](https://img.shields.io/github/repo-size/denoland/vscode_deno)
+![GitHub](https://img.shields.io/github/license/denoland/vscode_deno)
 
 Adds Deno support for the Visual Studio Code.
 
