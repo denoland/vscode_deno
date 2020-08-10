@@ -41,15 +41,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test and Coveralls
-        if: runner.os == 'macOS' && github.event_name != 'pull_request'
-        env:
-          COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
-          COVERALLS_GIT_BRANCH: "${{ github.ref }}"
-        run: npm run test-coveralls
-
       - name: Test
-        if: github.event_name == 'pull_request'
         run: npm run test
 
       - name: Compile
@@ -64,31 +56,3 @@ jobs:
         with:
           name: package
           path: ./vscode-deno.vsix
-
-  release:
-    runs-on: ubuntu-latest
-    name: "Release to vscode market and github"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    needs: build
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: package
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "12.x"
-
-      - name: publish to vscode market
-        # require Azure DevOps Personal Access Token
-        run: npx vsce publish --packagePath ./package/vscode-deno.vsix --pat ${{ secrets.ADO_TOKEN }}
-
-      - uses: softprops/action-gh-release@v1
-        name: publish to Github
-        env:
-          # require Github Personal Access Token
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          files: |
-            ./package/vscode-deno.vsix
-          draft: false
