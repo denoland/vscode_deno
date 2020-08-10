@@ -1,6 +1,6 @@
 {
-  "deno.displayName": "[Deprecated] Deno",
-  "deno.description": "[Deprecated] Deno unterstützung für VSCode",
+  "deno.displayName": "Deno",
+  "deno.description": "Deno unterstützung für VSCode",
   "deno.dependency": "Deno Dependencies",
   "deno.command.restart_server": "Starte den Deno Language Server neu",
   "deno.config.enabled": "Steuert, ob Deno aktiviert ist oder nicht.\n\n**In der globalen Konfiguration nicht empfohlen**",
