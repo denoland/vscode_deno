@@ -74,6 +74,10 @@
           "default": false,
           "description": "%deno.config.enabled%"
         },
+        "deno.enablePatterns": {
+          "type": ["array"],
+          "description": "%deno.config.enablePatterns%"
+        },
         "deno.alwaysShowStatus": {
           "type": "boolean",
           "default": true,
