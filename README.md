@@ -2,19 +2,17 @@
 
 # Visual Studio Code Deno extension
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode_deno/build)
-[![Coverage Status](https://coveralls.io/repos/github/denoland/vscode_deno/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/denoland/vscode_deno?branch=refs/heads/master)
-[![DeepScan grade](https://deepscan.io/api/teams/6484/projects/9924/branches/132500/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=6484&pid=9924&bid=132500)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode-deno/build)
 
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/denoland.vscode_deno)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode_deno)
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/denoland.vscode_deno)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/denoland.vscode_deno)
-![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/denoland.vscode_deno)
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/denoland.vscode-deno)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode-deno)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/denoland.vscode-deno)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/denoland.vscode-deno)
+![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/denoland.vscode-deno)
 
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/denoland/vscode_deno)
-![GitHub repo size](https://img.shields.io/github/repo-size/denoland/vscode_deno)
-![GitHub](https://img.shields.io/github/license/denoland/vscode_deno)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/denoland/vscode-deno)
+![GitHub repo size](https://img.shields.io/github/repo-size/denoland/vscode-deno)
+![GitHub](https://img.shields.io/github/license/denoland/vscode-deno)
 
 Adds Deno support for the Visual Studio Code.
 
@@ -112,7 +110,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 ## Usage
 
-1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode_deno)
+1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)
 
 2. Enable Deno for your project:
 
@@ -152,10 +150,10 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 // .vscode/settings.json
 {
   "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode_deno",
+    "editor.defaultFormatter": "denoland.vscode-deno",
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "denoland.vscode_deno",
+    "editor.defaultFormatter": "denoland.vscode-deno",
   },
 }
 ```
