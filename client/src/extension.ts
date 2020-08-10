@@ -90,7 +90,7 @@ async function getTypescriptAPI(): Promise<TypescriptAPI> {
 
 export class Extension {
   // the name of this extension
-  private id = "axetroy.vscode-deno";
+  private id = "denoland.vscode-deno";
   // extension context
   public context!: ExtensionContext;
   // typescript API
