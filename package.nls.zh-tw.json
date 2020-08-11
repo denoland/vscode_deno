@@ -1,6 +1,6 @@
 {
-  "deno.displayName": "[已棄用] Deno",
-  "deno.description": "[已棄用] Deno support for VSCode",
+  "deno.displayName": "Deno",
+  "deno.description": "Deno support for VSCode",
   "deno.dependency": "Deno 依賴模塊",
   "deno.command.restart_server": "重啟 Deno 語言服務器",
   "deno.config.enabled": "是否啟用 Deno。\n\n**不推薦在全局配置中設置**",
