@@ -1,5 +1,24 @@
-out
-dist
+# dependencies
 node_modules
+
+# build
+out
 *.vsix
-**/tsconfig.tsbuildinfo
+
+# package lock
+yarn.lock
+package-json.lock
+
+# testing
+coverage
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# misc
+.DS_Store
+
+# TypeScript caches
+**/*.tsbuildinfo

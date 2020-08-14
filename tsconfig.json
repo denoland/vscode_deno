@@ -1,16 +1,18 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2017",
-    "outDir": "out",
-    "lib": ["es2017"],
-    "resolveJsonModule": true,
+    "target": "es6",
+    "outDir": "./out",
     "sourceMap": true,
+    "strict": true,
     "esModuleInterop": true,
+    "baseUrl": "./src"
   },
-  "files": [],
+  "include": ["./src"],
+  "exclude": ["node_modules", "__test__"],
   "references": [
     { "path": "./client" },
-    { "path": "./server" }
+    { "path": "./server" },
+    { "path": "./typescript-deno-plugin" }
   ]
 }

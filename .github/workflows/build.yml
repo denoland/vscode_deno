@@ -1,0 +1,58 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ["12.16.1"]
+        deno: ["0.35.0"]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    name: test in ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Setup Deno
+        uses: denolib/setup-deno@master
+        with:
+          deno-version: ${{ matrix.deno }}
+
+      - name: Environment
+        run: |
+          node -v
+          npm -v
+          yarn --version
+          deno --version
+
+      - name: Install
+        run: yarn
+
+      - name: Check code format
+        run: npm run check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Compile
+        run: |
+          npm run compile
+
+      - name: Package
+        run: npm run build
+
+      - uses: actions/upload-artifact@v1
+        if: runner.os == 'macOS'
+        with:
+          name: package
+          path: ./vscode-deno.vsix

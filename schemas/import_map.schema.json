@@ -1,0 +1,23 @@
+{
+  "title": "JSON schema for Import Maps files",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "imports": {
+      "default": {},
+      "description": "The Imports field",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "scopes": {
+      "default": {},
+      "description": "The Scopes field",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,74 +1,195 @@
+<div align="center">
+
 # Visual Studio Code Deno extension
 
-Adds Deno support for VS Code using the [TypeScript Deno language service
-plugin](https://github.com/justjavac/typescript-deno-plugin).
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode_deno/build)
+
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/denoland.vscode-deno)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode-deno)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/denoland.vscode-deno)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/denoland.vscode-deno)
+![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/denoland.vscode-deno)
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/denoland/vscode_deno)
+![GitHub repo size](https://img.shields.io/github/repo-size/denoland/vscode_deno)
+![GitHub](https://img.shields.io/github/license/denoland/vscode_deno)
+
+Adds Deno support for the Visual Studio Code.
+
+![screenshot](screenshot/screenshot.gif)
+
+</div>
+
+Features:
+
+<details><summary>Full intellisense support</summary>
+
+![Deno Support](screenshot/deno.gif)
+
+</details>
+
+<details><summary>Intelligent module import</summary>
+
+![Import](screenshot/import.gif)
+
+</details>
+
+<details><summary>Supports importing ECMAScript modules</summary>
+
+![Import](screenshot/ecma.gif)
+
+</details>
+
+<details><summary>Diagnostics and quick fixes</summary>
+
+![Diagnostics](screenshot/diagnostics.gif)
+
+</details>
+
+<details><summary>Optional use of Deno's built in formatting</summary>
+
+![Format](screenshot/format.gif)
+
+</details>
+
+<details><summary>Client/Server model with LSP</summary>
+
+The extension separates Client/Server with LSP
+
+This means that complicated problems are handled on the server-side
+
+The extension won't block your Visual Studio Code
+
+![Process](screenshot/process.png)
+
+</details>
+
+<details><summary>Supports `Import Maps` for Deno</summary>
+
+![import_map](screenshot/import_map.gif)
+
+</details>
+
+<details><summary>External type definitions</summary>
+
+The extension supports the following ways to load external declaration files
+
+> These are all supported by Deno
+
+1. Compiler hint
+
+```ts
+// @deno-types="./foo.d.ts"
+import { foo } from "./foo.js";
+```
+
+see [example](/examples/compile-hint/mod.ts)
+
+2. `Triple-slash` reference directive
+
+```ts
+/// <reference types="https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts" />
+
+import { format } from "https://deno.land/x/date_fns/index.js";
+
+format(new Date(), "yyyy/MM/DD");
+```
+
+see [example](/examples/react/mod.tsx)
+
+3. `X-TypeScript-Types` custom header
+
+```ts
+import { array } from "https://cdn.pika.dev/fp-ts";
+
+const M = array.getMonoid<number>();
+console.log("concat Array", M.concat([1, 2], [2, 3]));
+```
+
+</details>
 
 ## Usage
 
-This extension works using VS Code's **built-in version** of TypeScript. You do
-not need to configure the plugin in your `tsconfig.json` if you are using VS
-Code's version of TypeScript.
+1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)
 
-If you are using VS Code 1.40 or older and are [using a **workspace version** of
-typescript](https://code.visualstudio.com/Docs/languages/typescript#_using-newer-typescript-versions),
-you must currently configure the TS Server plugin manually by following [these
-instructions](https://github.com/justjavac/typescript-deno-plugin#configuration)
+2. Enable Deno for your project:
 
-## Preview
+   Create a file `.vscode/settings.json` in your project folder:
 
-### without this plugin
+   ```json5
+   // .vscode/settings.json
+   {
+     "deno.enable": true,
+   }
+   ```
 
-If we write `from "./hello.ts"`, the editor(VS Code) will prompt for a tilde
-error. Because the default TypeScript project does not need to write the
-extension `.ts`.
-
-> ts(2691): An import path cannot end with a '.ts' extension. Consider importing './hello' instead.
-
-![ts(2691)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2691-1.png)
-
-![ts(2691)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2691-2.png)
-
-Deno allows imports from URLs, like the browser. But TypeScript can **not** find the module from URLs.
-
-> ts(2307): Cannot find module 'https://deno.land/x/std/log/mod'.
-
-![ts(2307)](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/ts-error-2307.png)
-
-### after installing this plugin
-
-Deno caches remote imports in a special directory specified by the `$DENO_DIR`
-environmental variable. It defaults to the system's cache directory if
-`$DENO_DIR` is not specified.
-
-This plugin can resolve remote imports as local path.
-
-![with-plugin](https://raw.githubusercontent.com/justjavac/vscode-deno/master/images/with-plugin.png)
+3. Enjoy!
 
 ## Configuration
 
-You can configure the Deno extension using a `tsconfig` as described
-[here](https://github.com/justjavac/typescript-deno-plugin#configuration), or
-configure it with VS Code settings. This requires VS Code 1.40+ and TS 3.8+.
-Note the VS Code based configuration overrides the `tsconfig` configuration.
+- `deno.enable` - Enable extension. Default is `false`
 
-- `deno.enable` - Enable/disable this extension. Default is `false`. **You must explicitly enable the extension in workspaces that are Deno projects.**
+- `deno.import_map` - The file paths of Import Map. Default is `null`
 
-- `deno.enablePatterns` - An array of regexes that matches files Deno should be enabled on. Default is `["*"]` (matches all files). Paths are relative to the workspaces directory, so for example `["packages/"']` will look for the `packages` folder in your project.
+- `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
 
-- `deno.alwaysShowStatus` - Always show the Deno status bar item. Default is `true`.
+We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
-- `deno.importmap` - The Path of import maps. Default is `null`.
+```json5
+// .vscode/settings.json
+{
+  "deno.enable": true,
+  "deno.import_map": "./path/to/import_map.json",
+  "deno.unstable": false,
+}
+```
 
-- `deno.formatEnable` - Turns deno fmt on or off. Default is `false`.
+This extension also provides Deno's formatting tools, settings are in `.vscode/settings.json`:
 
-## Commands
-
-This extension contributes the following commands to the Command palette.
-
-- `Enable Deno` - Enable this extension.
-- `Disable Deno` - Disable this extension.
+```json5
+// .vscode/settings.json
+{
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno",
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "denoland.vscode-deno",
+  },
+}
+```
 
 ## Contribute
 
-Report a bug or a suggestion by posting an issue on the [git
-repository](https://github.com/denoland/vscode_deno).
+Follow these steps to contribute, the community needs your strength.
+
+1. Fork project
+
+2. Clone onto your computer:
+
+   ```bash
+   $ git clone https://github.com/your_github_name/vscode_deno.git
+   $ cd vscode_deno
+   $ yarn # or npm install
+   ```
+
+3. Disable extension in Visual Studio Code if you have extension before
+
+4. Start debug extension
+
+   Open Visual Studio Code, find the `Run` item in the sidebar
+   and then run `Launch Client` task.
+
+   Wait for Visual Studio Code debugger to open a new window
+
+5. Try updating Visual Studio Code and restart the debugger
+
+6. Finally, push to your fork and send a PR
+
+## Thanks
+
+This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno) and
+[axetroy/vscode-deno](https://github.com/axetroy/vscode-deno). Thanks for their contributions.
+
+## License
+
+The [MIT License](LICENSE)
