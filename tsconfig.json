@@ -9,7 +9,7 @@
     "baseUrl": "./src"
   },
   "include": ["./src"],
-  "exclude": ["node_modules", "__test__"],
+  "exclude": ["node_modules", "tests"],
   "references": [
     { "path": "./client" },
     { "path": "./server" },

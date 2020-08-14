@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { CacheModule, DenoCacheModule } from "./deno_cache";
 
-const TEST_DIR = path.join(__dirname, "..", "__test__");
+const TEST_DIR = path.join(__dirname, "..", "tests");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
 
 const cacheFilepath = path.join(
