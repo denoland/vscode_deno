@@ -12,7 +12,6 @@
   "exclude": ["node_modules", "tests"],
   "references": [
     { "path": "./client" },
-    { "path": "./server" },
-    { "path": "./typescript-deno-plugin" }
+    { "path": "./server" }
   ]
 }
