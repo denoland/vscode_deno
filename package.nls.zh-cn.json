@@ -1,0 +1,17 @@
+{
+  "deno.displayName": "Deno",
+  "deno.description": "Deno support for VSCode",
+  "deno.dependency": "Deno 依赖模块",
+  "deno.command.restart_server": "重启 Deno 语言服务器",
+  "deno.config.enabled": "是否启用 Deno。\n\n**不推荐在全局配置中设置**",
+  "deno.config.import_map": "Import Map 的文件路径。\n\n它可以是相对于项目目录的相对路径或者是绝对路径。\n\n**不推荐在全局配置中设置**",
+  "deno.config.unstable": "是否启用 Deno 的不稳定特性。\n\n**不推荐在全局配置中设置**",
+  "deno.initializing": "正在初始化 Deno 语言服务器...",
+  "err.not_install_deno": "在 $PATH 变量中找不到 Deno。请在设置后重新启动扩展。",
+  "err.below_deno_minimum_requirements": "Deno 的版本低于最小要求。 请升级至 v{0} 或以上。",
+  "diagnostic.fix.create_module": "创建模块。",
+  "diagnostic.fix.fetch_module": "拉取模块。",
+  "diagnostic.report.module_not_found_locally": "找不到模块 `{0}`。",
+  "diagnostic.report.invalid_import": "导入模块 `{0}` 必须是一个相对路径或者 HTTP 的 URL",
+  "code_len.cached_module": "Deno 缓存模块 `{0}`。 点击复制到剪切板。"
+}
