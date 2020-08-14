@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    if: |
+      github.event_name == 'push' ||
+      !startsWith(github.event.pull_request.head.label, 'denoland:')
     strategy:
       matrix:
         node: ["12.16.1"]
@@ -48,9 +51,3 @@ jobs:
 
       - name: Package
         run: yarn run build
-
-      - uses: actions/upload-artifact@v1
-        if: runner.os == 'macOS'
-        with:
-          name: package
-          path: ./vscode-deno.vsix
