@@ -1,8 +1,3 @@
-import { init } from "vscode-nls-i18n";
-
-// init i18n
-init(process.env.VSCODE_DENO_EXTENSION_PATH + "");
-
 import { promises as fs } from "fs";
 
 import {

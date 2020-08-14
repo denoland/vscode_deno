@@ -2,7 +2,6 @@ import { Readable } from "stream";
 
 import execa from "execa";
 import which from "which";
-import { localize } from "vscode-nls-i18n";
 import * as semver from "semver";
 
 type Version = {
@@ -23,7 +22,7 @@ class Deno {
     this.executablePath = await this.getExecutablePath();
 
     if (!this.executablePath) {
-      throw new Error(localize("err.not_install_deno"));
+      throw new Error("Could not find `deno` in your $PATH. Please install `deno`, then restart the extension.");
     }
 
     this.version = await this.getDenoVersion();
@@ -37,7 +36,7 @@ class Deno {
     const minimumDenoVersion = "0.35.0";
     if (!semver.gte(this.version.deno, minimumDenoVersion)) {
       throw new Error(
-        localize("err.below_deno_minimum_requirements", minimumDenoVersion)
+        `Please upgrade to Deno ${minimumDenoVersion} or above.`
       );
     }
   }
