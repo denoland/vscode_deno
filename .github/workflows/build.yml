@@ -28,7 +28,6 @@ jobs:
       - name: Environment
         run: |
           node -v
-          npm -v
           yarn --version
           deno --version
 
@@ -36,20 +35,19 @@ jobs:
         run: yarn
 
       - name: Check code format
-        run: npm run check
+        run: yarn run check
 
       - name: Lint
-        run: npm run lint
+        run: yarn run lint
 
       - name: Test
-        run: npm run test
+        run: yarn run test
 
       - name: Compile
-        run: |
-          npm run compile
+        run: yarn run compile
 
       - name: Package
-        run: npm run build
+        run: yarn run build
 
       - uses: actions/upload-artifact@v1
         if: runner.os == 'macOS'
