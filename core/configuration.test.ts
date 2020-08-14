@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { Configuration, ConfigurationField } from "./configuration";
 
-const TEST_DIR = path.join(__dirname, "..", "__test__");
+const TEST_DIR = path.join(__dirname, "testdata");
 
 test("core / configuration / resolveFromVscode if it is a valid file", async () => {
   const vscodeDir = path.join(TEST_DIR, "vscode_settings_valid");

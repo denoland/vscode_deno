@@ -7,7 +7,7 @@ import {
   ImportModule,
 } from "./deno_deps";
 
-const TEST_DIR = path.join(__dirname, "..", "__test__");
+const TEST_DIR = path.join(__dirname, "testdata");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
 const denoDepsDir = path.join(denoDir, "deps");
 

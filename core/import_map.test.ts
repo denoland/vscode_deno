@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { ImportMap } from "./import_map";
 
-const TEST_DIR = path.join(__dirname, "..", "__test__");
+const TEST_DIR = path.join(__dirname, "testdata");
 
 test("core / import_map", async () => {
   const mockWorkspaceDir = path.join(TEST_DIR, "import_maps");

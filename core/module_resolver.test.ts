@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { ModuleResolver, ResolvedModule } from "./module_resolver";
 
-const TEST_DIR = path.join(__dirname, "..", "__test__");
+const TEST_DIR = path.join(__dirname, "testdata");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
 const cacheFilepath = path.join(
   denoDir,

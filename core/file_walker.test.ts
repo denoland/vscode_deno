@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { FileWalker } from "./file_walker";
 
-const TEST_DIR = path.join(__dirname, "..", "__test__");
+const TEST_DIR = path.join(__dirname, "testdata");
 
 test("core / FileWalker", async () => {
   const walker = FileWalker.create(path.join(TEST_DIR, "file_walker"));
