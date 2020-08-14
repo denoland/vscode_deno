@@ -59,4 +59,4 @@ jobs:
         env:
           # https://dev.azure.com/propelml/_usersSettings/tokens
           AZURE_PAT: ${{ secrets.AZURE_PAT }}
-        run: vsce publish --pat $AZURE_PAT
+        run: npx vsce publish --pat $AZURE_PAT
