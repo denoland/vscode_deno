@@ -37,7 +37,7 @@ export class CodeLens {
         {
           range: Range.create(Position.create(0, 0), Position.create(0, 0)),
           command: {
-            title: `Deno cached module `${cache.meta.url.href}`. Click to copy to clipboard.`,
+            title: `Deno cached module "${cache.meta.url.href}". Click to copy to clipboard.`,
             command: "deno._copy_text",
             arguments: [cache.meta.url.href],
           },

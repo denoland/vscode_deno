@@ -162,7 +162,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               location,
-              `Could not find module `${moduleName}` locally.`
+              `Could not find module "${moduleName}" locally.`,
               DiagnosticSeverity.Error,
               DiagnosticCode.RemoteModuleNotExist,
               this.name
@@ -180,7 +180,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               location,
-              `Could not find module `${moduleName}` locally.`
+              `Could not find module "${moduleName}" locally.`,
               DiagnosticSeverity.Error,
               DiagnosticCode.LocalModuleNotExist,
               this.name
@@ -193,7 +193,7 @@ export class Diagnostics {
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             location,
-            `Import module `${moduleName}` must be a relative path or remote HTTP URL.`
+            `Import module "${moduleName}" must be a relative path or remote HTTP URL.`,
             DiagnosticSeverity.Error,
             DiagnosticCode.InvalidImport,
             this.name

@@ -22,7 +22,9 @@ class Deno {
     this.executablePath = await this.getExecutablePath();
 
     if (!this.executablePath) {
-      throw new Error("Could not find `deno` in your $PATH. Please install `deno`, then restart the extension.");
+      throw new Error(
+        "Could not find `deno` in your $PATH. Please install `deno`, then restart the extension."
+      );
     }
 
     this.version = await this.getDenoVersion();
@@ -35,9 +37,7 @@ class Deno {
     // We will give an warning to upgrade.
     const minimumDenoVersion = "0.35.0";
     if (!semver.gte(this.version.deno, minimumDenoVersion)) {
-      throw new Error(
-        `Please upgrade to Deno ${minimumDenoVersion} or above.`
-      );
+      throw new Error(`Please upgrade to Deno ${minimumDenoVersion} or above.`);
     }
   }
   public async getTypes(unstable: boolean): Promise<Buffer> {
