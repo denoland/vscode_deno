@@ -51,3 +51,12 @@ jobs:
 
       - name: Package
         run: yarn run build
+
+      - name: Publish
+        if: |
+          github.repository == 'denoland/vscode_deno' &&
+          startsWith(github.ref, 'refs/tags/')
+        env:
+          # https://dev.azure.com/propelml/_usersSettings/tokens
+          AZURE_PAT: ${{ secrets.AZURE_PAT }}
+        run: vsce publish --pat $AZURE_PAT
