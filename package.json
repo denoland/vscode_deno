@@ -1,8 +1,8 @@
 {
   "name": "vscode-deno",
-  "displayName": "%deno.displayName%",
-  "description": "%deno.description%",
-  "version": "2.0.9",
+  "displayName": "Deno",
+  "description": "Deno support for VSCode",
+  "version": "2.0.10",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
@@ -43,7 +43,7 @@
     "commands": [
       {
         "command": "deno.restart_server",
-        "title": "%deno.command.restart_server%",
+        "title": "Restart Deno Language Server",
         "category": "deno"
       },
       {
@@ -60,7 +60,7 @@
       "explorer": [
         {
           "id": "deno",
-          "name": "%deno.dependency%",
+          "name": "Deno Dependencies",
           "when": "denoExtensionActivated"
         }
       ]
@@ -91,7 +91,7 @@
         "deno.enable": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "%deno.config.enabled%",
+          "markdownDescription": "Controls whether Deno is enabled or not.\n\n**Not recommended in global configuration**",
           "scope": "resource",
           "examples": [
             true,
@@ -101,7 +101,7 @@
         "deno.import_map": {
           "type": "string",
           "default": null,
-          "markdownDescription": "%deno.config.import_map%",
+          "markdownDescription": "The file path of an import map.\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration**",
           "scope": "resource",
           "examples": [
             "./import_map.json",
@@ -111,7 +111,7 @@
         "deno.unstable": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "%deno.config.unstable%",
+          "markdownDescription": "Controls if Deno's unstable mode types are used instead of stable mode types.\n\n**Not recommended in global configuration**",
           "scope": "resource",
           "examples": [
             true,
