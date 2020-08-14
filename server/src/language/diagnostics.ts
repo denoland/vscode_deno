@@ -12,7 +12,6 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
 import { URI } from "vscode-uri";
-import { localize } from "vscode-nls-i18n";
 
 import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
@@ -34,11 +33,11 @@ enum DiagnosticCode {
 
 const FixItems: { [code: number]: Fix } = {
   [DiagnosticCode.LocalModuleNotExist]: {
-    title: localize("diagnostic.fix.create_module"),
+    title: "Create the module",
     command: "deno._create_local_module",
   },
   [DiagnosticCode.RemoteModuleNotExist]: {
-    title: localize("diagnostic.fix.fetch_module"),
+    title: "Fetch the module",
     command: "deno._fetch_remote_module",
   },
 };
@@ -163,10 +162,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               location,
-              localize(
-                "diagnostic.report.module_not_found_locally",
-                moduleName
-              ),
+              `Could not find module "${moduleName}" locally.`,
               DiagnosticSeverity.Error,
               DiagnosticCode.RemoteModuleNotExist,
               this.name
@@ -184,10 +180,7 @@ export class Diagnostics {
           diagnosticsForThisDocument.push(
             Diagnostic.create(
               location,
-              localize(
-                "diagnostic.report.module_not_found_locally",
-                moduleName
-              ),
+              `Could not find module "${moduleName}" locally.`,
               DiagnosticSeverity.Error,
               DiagnosticCode.LocalModuleNotExist,
               this.name
@@ -200,7 +193,7 @@ export class Diagnostics {
         diagnosticsForThisDocument.push(
           Diagnostic.create(
             location,
-            localize("diagnostic.report.invalid_import", moduleName),
+            `Import module "${moduleName}" must be a relative path or remote HTTP URL.`,
             DiagnosticSeverity.Error,
             DiagnosticCode.InvalidImport,
             this.name

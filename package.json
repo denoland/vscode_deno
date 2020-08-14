@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "%deno.displayName%",
   "description": "%deno.description%",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
@@ -200,7 +200,6 @@
     "deepmerge": "^4.2.2",
     "json5": "^2.1.1",
     "typescript-deno-plugin": "1.31.0",
-    "vscode-nls-i18n": "^0.2.0",
     "semver": "7.3.2"
   }
 }

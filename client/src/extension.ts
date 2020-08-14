@@ -29,7 +29,6 @@ import {
 } from "vscode-languageclient";
 import getport from "get-port";
 import execa from "execa";
-import { init, localize } from "vscode-nls-i18n";
 import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
@@ -168,7 +167,7 @@ export class Extension {
     await window.withProgress(
       {
         location: ProgressLocation.Window,
-        title: localize("deno.initializing"),
+        title: "Initializing Deno Language Server...",
       },
       async () => {
         if (this.client) {
@@ -429,7 +428,6 @@ Executable ${this.denoInfo.executablePath}`;
   }
   // activate function for vscode
   public async activate(context: ExtensionContext) {
-    init(context.extensionPath);
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
