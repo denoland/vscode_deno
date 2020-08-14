@@ -3,7 +3,7 @@ import * as path from "path";
 import { normalizeImportStatement } from "./deno_normalize_import_statement";
 import { escapeRegExp } from "./util";
 
-const TEST_DIR = path.join(__dirname, "..", "tests");
+const TEST_DIR = path.join(__dirname, "testdata");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
 
 const cacheFilepath = path.join(

@@ -2,7 +2,7 @@ import * as path from "path";
 
 import { HashMeta, Type } from "./hash_meta";
 
-const TEST_DIR = path.join(__dirname, "..", "tests");
+const TEST_DIR = path.join(__dirname, "testdata");
 const denoDir = path.join(TEST_DIR, "deno_dir_manifest");
 
 beforeAll(() => {
