@@ -196,6 +196,7 @@
     "which": "2.0.2"
   },
   "dependencies": {
+    "deep-equal": "2.0.3",
     "deepmerge": "^4.2.2",
     "json5": "^2.1.1",
     "typescript-deno-plugin": "1.31.0",
