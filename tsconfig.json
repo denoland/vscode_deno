@@ -10,8 +10,5 @@
   },
   "include": ["./src"],
   "exclude": ["node_modules", "tests"],
-  "references": [
-    { "path": "./client" },
-    { "path": "./server" }
-  ]
+  "references": [{ "path": "./client" }, { "path": "./server" }]
 }
