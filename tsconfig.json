@@ -9,6 +9,10 @@
     "baseUrl": "./src"
   },
   "include": ["./src"],
-  "exclude": ["node_modules", "tests"],
-  "references": [{ "path": "./client" }, { "path": "./server" }]
+  "exclude": ["node_modules", "core/testdata"],
+  "references": [
+    { "path": "./client" },	
+    { "path": "./server" },	
+    { "path": "./typescript-deno-plugin" }
+  ]
 }
