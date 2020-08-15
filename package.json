@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "Deno",
   "description": "Deno support for VSCode",
-  "version": "2.0.12",
+  "version": "2.0.13",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
@@ -165,7 +165,7 @@
   },
   "scripts": {
     "vscode:prepublish": "yarn compile",
-    "postinstall": "cd client && yarn && cd ../server && yarn && cd .. && npm run installvscode",
+    "postinstall": "cd client && yarn && cd ../server && yarn && cd ../typescript-deno-plugin && yarn && cd .. && npm run installvscode",
     "installvscode": "npx vscode-install",
     "watch": "tsc -b -w",
     "compile": "tsc -b",

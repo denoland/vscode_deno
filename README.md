@@ -169,21 +169,27 @@ Follow these steps to contribute, the community needs your strength.
    ```bash
    $ git clone https://github.com/your_github_name/vscode_deno.git
    $ cd vscode_deno
-   $ yarn # or npm install
+   $ yarn
    ```
 
 3. Disable extension in Visual Studio Code if you have extension before
 
-4. Start debug extension
+4. Compile the extension:
+
+   ```bash
+   $ yarn compile # or `yarn watch` to automatically recompile on changes
+   ```
+
+5. Start debug extension
 
    Open Visual Studio Code, find the `Run` item in the sidebar
-   and then run `Launch Client` task.
+   and then run `Client + Server` task. If you see the error `Errors exist after running preLaunchTask 'undefined'.`, press `Continue anyway`.
 
    Wait for Visual Studio Code debugger to open a new window
 
-5. Try updating Visual Studio Code and restart the debugger
+6. Try updating Visual Studio Code and restart the debugger
 
-6. Finally, push to your fork and send a PR
+7. Finally, push to your fork and send a PR
 
 ## Thanks
 
