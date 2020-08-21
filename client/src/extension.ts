@@ -236,9 +236,9 @@ export class Extension {
                 return [];
               }
 
-              // If deno.enablePatterns is specified and this file doesn't
-              // match a path, then disable Deno.
-              if (enablePatterns) { 
+              // If we're in a workspace with enablePatterns, check that
+              // the document matches a pattern.
+              if (workspace.rootPath && enablePatterns) { 
                 const localFileName = document.fileName
                   .replace(workspace.rootPath, "");
                 const matchesPath = enablePatterns
