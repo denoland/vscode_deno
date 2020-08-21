@@ -256,7 +256,7 @@ export class Extension {
               token,
               next
             ) => {
-              if (!this.getConfiguration(document.uri).enable) {
+              if (!this.enabledFor(document)) {
                 return [];
               }
 
