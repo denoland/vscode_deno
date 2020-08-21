@@ -238,12 +238,14 @@ export class Extension {
 
               // If we're in a workspace with enablePatterns, check that
               // the document matches a pattern.
-              if (workspace.rootPath && enablePatterns) { 
+              const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
+              if (workspaceFolder && enablePatterns) { 
+                const rootPath = workspaceFolder.uri.fsPath;
                 const localFileName = document.fileName
-                  .replace(workspace.rootPath, "");
-                const matchesPath = enablePatterns
-                  .findIndex((p) => RegExp(p).test(localFileName));
-                if (!matchesPath) {
+                  .replace(rootPath, "");
+                const isMatching = enablePatterns
+                  .some((p) => RegExp(p).test(localFileName));
+                if (!isMatching) {
                   return [];
                 }
               }
