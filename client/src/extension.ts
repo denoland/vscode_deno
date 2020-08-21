@@ -383,16 +383,13 @@ Executable ${this.denoInfo.executablePath}`;
     if (!config.enable) return false;
     if (!config.enablePatterns) return true;
 
-    // If the file isn't part of a workspace, ignore enablePatterns
-    const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
-    if (!workspaceFolder) return true;
-
     // Check that document matches an enablePattern
-    const rootPath = workspaceFolder.uri.fsPath;
-    const localFileName = document.fileName
-      .replace(rootPath, "");
+    const relativeFilepath = workspace.asRelativePath(
+      document.uri.fsPath,
+      false
+    );
     const isMatching = config.enablePatterns
-      .some((p) => RegExp(p).test(localFileName));
+      .some((p) => RegExp(p).test(relativeFilepath));
 
     return isMatching;
   }
