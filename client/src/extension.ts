@@ -227,27 +227,12 @@ export class Extension {
           progressOnInitialization: true,
           middleware: {
             provideCodeActions: (document, range, context, token, next) => {
-              const {enable, enablePatterns} = this.getConfiguration(document.uri);
-              if (!enable) {
+              if (!this.enabledFor(document)) {
                 return [];
               }
               // do not ask server for code action when the diagnostic isn't from deno
               if (!context.diagnostics || context.diagnostics.length === 0) {
                 return [];
-              }
-
-              // If we're in a workspace with enablePatterns, check that
-              // the document matches a pattern.
-              const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
-              if (workspaceFolder && enablePatterns) { 
-                const rootPath = workspaceFolder.uri.fsPath;
-                const localFileName = document.fileName
-                  .replace(rootPath, "");
-                const isMatching = enablePatterns
-                  .some((p) => RegExp(p).test(localFileName));
-                if (!isMatching) {
-                  return [];
-                }
               }
 
               const denoDiagnostics: Diagnostic[] = [];
@@ -338,10 +323,7 @@ export class Extension {
       return;
     }
 
-    const uri = document.uri;
-    const enabled = workspace
-      .getConfiguration(this.configurationSection, uri)
-      .get("enable");
+    const enabled = this.enabledFor(document);
 
     // if vscode-deno have been disable for workspace
     if (!enabled) {
@@ -395,6 +377,26 @@ Executable ${this.denoInfo.executablePath}`;
       this.client.sendNotification(Notification.diagnostic, uri.toString());
     }
   }
+
+  private enabledFor(document: TextDocument): boolean {
+    const config = this.getConfiguration(document.uri);
+    if (!config.enable) return false;
+    if (!config.enablePatterns) return true;
+
+    // If the file isn't part of a workspace, ignore enablePatterns
+    const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
+    if (!workspaceFolder) return true;
+
+    // Check that document matches an enablePattern
+    const rootPath = workspaceFolder.uri.fsPath;
+    const localFileName = document.fileName
+      .replace(rootPath, "");
+    const isMatching = config.enablePatterns
+      .some((p) => RegExp(p).test(localFileName));
+
+    return isMatching;
+  }
+
   private sync(document?: TextDocument) {
     if (document) {
       const relativeFilepath = workspace.asRelativePath(
@@ -410,7 +412,7 @@ Executable ${this.denoInfo.executablePath}`;
         commands.executeCommand(
           "setContext",
           "denoExtensionActivated",
-          !!config.enable
+          this.enabledFor(document)
         );
 
         this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
