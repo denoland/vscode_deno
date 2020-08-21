@@ -227,7 +227,8 @@ export class Extension {
           progressOnInitialization: true,
           middleware: {
             provideCodeActions: (document, range, context, token, next) => {
-              if (!this.getConfiguration(document.uri).enable) {
+              const {enable, enablePatterns} = this.getConfiguration(document.uri);
+              if (!enable) {
                 return [];
               }
               // do not ask server for code action when the diagnostic isn't from deno
@@ -237,11 +238,10 @@ export class Extension {
 
               // If deno.enablePatterns is specified and this file doesn't
               // match a path, then disable Deno.
-              const paths = (config.get("deno.enablePatterns") || ["*"]) as string[];
-              if (paths && paths.length) { 
+              if (enablePatterns) { 
                 const localFileName = document.fileName
                   .replace(workspace.rootPath, "");
-                const matchesPath = paths
+                const matchesPath = enablePatterns
                   .findIndex((p) => RegExp(p).test(localFileName));
                 if (!matchesPath) {
                   return [];
