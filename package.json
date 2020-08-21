@@ -98,6 +98,15 @@
             false
           ]
         },
+        "deno.enablePatterns": {
+          "type": ["array"],
+          "markdownDescription": "Array of RegEx patterns for workspace files in which to enable Deno.",
+          "scope": "resource",
+          "examples": [
+            ["\\.deno\\.ts$"],
+            ["cli\/", "build\/"]
+          ]          
+        },
         "deno.import_map": {
           "type": "string",
           "default": null,
