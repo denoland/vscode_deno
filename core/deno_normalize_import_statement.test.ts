@@ -33,6 +33,13 @@ test("core / deno_normalize_import_statement", () => {
   expect(
     normalizeImportStatement(
       __filename,
+      `import * as demo from "${cacheFilepath}";\n\n`
+    )
+  ).toEqual(`import * as demo from "https://example.com/demo/mod.ts";\n\n`);
+
+  expect(
+    normalizeImportStatement(
+      __filename,
       `import { example } from "${path
         .relative(__dirname, cacheFilepath)
         .replace(new RegExp(escapeRegExp(path.sep), "g"), path.posix.sep)}"`
