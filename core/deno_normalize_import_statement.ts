@@ -16,7 +16,7 @@ export function normalizeImportStatement(
   logger?: Logger
 ): string {
   filename = normalizeFilepath(filename);
-  const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"](.*)$/gim;
+  const regexp = /^import\s(.*)\s*from\s*['"]([^'"]+)['"]([;\s\S]*)$/gim;
 
   const matcher = regexp.exec(importStatement);
 
