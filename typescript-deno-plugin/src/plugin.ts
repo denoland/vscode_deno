@@ -1,7 +1,11 @@
 import * as path from "path";
 
 import merge from "deepmerge";
-import ts_module from "typescript/lib/tsserverlibrary";
+import ts_module, {
+  CodeFixAction,
+  FormatCodeSettings,
+  UserPreferences,
+} from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
 import { Configuration, ConfigurationField } from "../../core/configuration";
@@ -140,6 +144,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     );
 
     const getCompletionEntryDetails = languageService.getCompletionEntryDetails.bind(
+      languageService
+    );
+
+    const originGetCodeFixesAtPosition = languageService.getCodeFixesAtPosition.bind(
       languageService
     );
 
@@ -302,6 +310,44 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       ];
 
       return diagnostics.filter((v) => !ignoredDiagnostics.includes(v.code));
+    };
+
+    languageService.getCodeFixesAtPosition = (
+      fileName: string,
+      start: number,
+      end: number,
+      errorCodes: readonly number[],
+      formatOptions: FormatCodeSettings,
+      preferences: UserPreferences
+    ): readonly CodeFixAction[] => {
+      const fixActions = originGetCodeFixesAtPosition(
+        fileName,
+        start,
+        end,
+        errorCodes,
+        formatOptions,
+        preferences
+      );
+
+      if (!this.configurationManager.config.enable) {
+        return fixActions;
+      }
+
+      for (const action of fixActions) {
+        if (action.fixName === "import") {
+          for (const change of action.changes) {
+            for (const tc of change.textChanges) {
+              tc.newText = normalizeImportStatement(
+                fileName,
+                tc.newText,
+                this.logger
+              );
+            }
+          }
+        }
+      }
+
+      return fixActions;
     };
 
     languageService.getCompletionEntryDetails = (
