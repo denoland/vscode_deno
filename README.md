@@ -169,7 +169,7 @@ Follow these steps to contribute, the community needs your strength.
    ```bash
    $ git clone https://github.com/your_github_name/vscode_deno.git
    $ cd vscode_deno
-   $ yarn
+   $ npm
    ```
 
 3. Disable extension in Visual Studio Code if you have extension before
@@ -177,7 +177,7 @@ Follow these steps to contribute, the community needs your strength.
 4. Compile the extension:
 
    ```bash
-   $ yarn compile # or `yarn watch` to automatically recompile on changes
+   $ npm run compile # or `npm run watch` to automatically recompile on changes
    ```
 
 5. Start debug extension
