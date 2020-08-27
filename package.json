@@ -165,7 +165,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "postinstall": "cd client && npm i && cd ../server && npm i && cd ../typescript-deno-plugin && npm i && cd .. && npm run installvscode",
+    "postinstall": "cd client && npm i && cd ../server && npm i && cd .. && npm run installvscode",
     "installvscode": "npx vscode-install",
     "watch": "tsc -b -w",
     "compile": "tsc -b",
