@@ -1,3 +1,4 @@
+import path from "path";
 import {
   pathExists,
   pathExistsSync,
@@ -7,6 +8,7 @@ import {
   normalizeFilepath,
   isValidDenoDocument,
   isUntitledDocument,
+  findNonExtensionModule,
 } from "./util";
 
 test("core / util / pathExists", async () => {
@@ -71,4 +73,13 @@ test("core / util / isUntitledDocument", () => {
   expect(isUntitledDocument("./foo")).toBe(false);
   expect(isUntitledDocument("../bar")).toBe(false);
   expect(isUntitledDocument("untitled: ")).toBe(true);
+});
+
+test("core / util / findNonExtensionModule", () => {
+  expect(findNonExtensionModule(__filename, "./deno")).toBe("./deno.ts");
+  expect(findNonExtensionModule(__filename, "./logger")).toBe("./logger.ts");
+  expect(findNonExtensionModule(__filename, "./testdata/file_walker/a")).toBe(
+    "./testdata/file_walker/a.js"
+  );
+  expect(findNonExtensionModule(__filename, "./none")).toBe("./none");
 });

@@ -1,6 +1,6 @@
 import { promises as fs, statSync } from "fs";
 import crypto from "crypto";
-import * as path from "path";
+import path from "path";
 
 export function pathExistsSync(filepath: string): boolean {
   try {
@@ -79,4 +79,38 @@ export function isValidDenoDocument(languageID: string): boolean {
 export function isUntitledDocument(filename: string): boolean {
   // In vscode, tsserver may crash because a temporary document is not saved
   return /^untitled:/.test(filename);
+}
+
+/**
+ * find module which has no extension name
+ * We hope it can find the module correctly in Deno's way
+ * eg. `import { foo } from "./bar"` should be `import { foo } from "./bar.ts"`
+ * @param filepath
+ * @param moduleName
+ */
+export function findNonExtensionModule(
+  filepath: string,
+  moduleName: string
+): string {
+  function resolveModule(modulePath: string): string | void {
+    if (pathExistsSync(path.resolve(path.dirname(filepath), modulePath))) {
+      return modulePath;
+    }
+
+    return;
+  }
+
+  const denoSupportedExtensions = [".ts", ".d.ts", ".js", ".wasm"];
+
+  while (denoSupportedExtensions.length) {
+    const extension = denoSupportedExtensions.shift();
+
+    const modulePath = resolveModule(moduleName + extension);
+
+    if (modulePath) {
+      return modulePath;
+    }
+  }
+
+  return moduleName;
 }
