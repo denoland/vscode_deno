@@ -100,7 +100,15 @@ export function findNonExtensionModule(
     return;
   }
 
-  const denoSupportedExtensions = [".ts", ".d.ts", ".js", ".wasm"];
+  const denoSupportedExtensions = [
+    ".ts",
+    ".tsx",
+    ".d.ts",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".wasm",
+  ];
 
   while (denoSupportedExtensions.length) {
     const extension = denoSupportedExtensions.shift();
