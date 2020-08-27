@@ -8,6 +8,7 @@ out
 # package lock
 yarn.lock
 package-json.lock
+**/package-lock.json
 
 # testing
 coverage
