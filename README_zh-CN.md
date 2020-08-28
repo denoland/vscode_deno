@@ -183,7 +183,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
    ```bash
    $ git clone https://github.com/your_github_name/vscode-deno.git
    $ cd vscode-deno
-   $ yarn # or npm install
+   $ npm i
    ```
 
 3. 如果你之前已经安装并启用了扩展，请先禁用
