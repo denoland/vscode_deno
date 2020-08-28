@@ -60,4 +60,19 @@ test("core / deno_normalize_import_statement", () => {
       `import { example } from "https://example.com/foo/bar.ts";`
     )
   ).toEqual(`import { example } from "https://example.com/foo/bar.ts";`);
+
+  expect(
+    normalizeImportStatement(__filename, `import { example } from "./deno";`)
+  ).toEqual(`import { example } from "./deno.ts";`);
+
+  expect(
+    normalizeImportStatement(
+      __filename,
+      `import { example } from "./testdata/file_walker/a";`
+    )
+  ).toEqual(`import { example } from "./testdata/file_walker/a.js";`);
+
+  expect(
+    normalizeImportStatement(__filename, `import { example } from "./none";`)
+  ).toEqual(`import { example } from "./none";`);
 });
