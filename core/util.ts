@@ -107,7 +107,6 @@ export function findNonExtensionModule(
     ".js",
     ".jsx",
     ".mjs",
-    ".wasm",
   ];
 
   while (denoSupportedExtensions.length) {
