@@ -19,6 +19,7 @@ import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
 import { getImportModules, Range } from "../../../core/deno_deps";
 import { Notification } from "../../../core/const";
+import { deno } from "../deno";
 
 type Fix = {
   title: string;
@@ -108,6 +109,42 @@ export class Diagnostics {
     documents.onDidOpen((params) => this.diagnosis(params.document));
     documents.onDidChangeContent((params) => this.diagnosis(params.document));
   }
+  /**
+   * lint document
+   * @param document
+   */
+  async lint(document: TextDocument): Promise<Diagnostic[]> {
+    const uri = URI.parse(document.uri);
+
+    const lintOutput = await deno.lintFile(uri.fsPath);
+
+    this.connection.console.log(JSON.stringify(lintOutput));
+
+    return lintOutput.diagnostics.map((v) => {
+      const location: Range = {
+        start: {
+          line: v.location.line - 1,
+          character: v.location.col,
+        },
+        end: {
+          line: v.location.line - 1,
+          character: v.location.col + v.snippet_length,
+        },
+      };
+
+      return Diagnostic.create(
+        location,
+        v.message,
+        DiagnosticSeverity.Error,
+        v.code,
+        this.name
+      );
+    });
+  }
+  /**
+   * generate diagnostic for a document
+   * @param document
+   */
   async generate(document: TextDocument): Promise<Diagnostic[]> {
     if (!isValidDenoDocument(document.languageId)) {
       return [];
@@ -121,6 +158,16 @@ export class Diagnostics {
 
     if (!config.enable || !workspaceDir) {
       return [];
+    }
+
+    const diagnosticsForThisDocument: Diagnostic[] = [];
+
+    if (config.unstable && config.lint) {
+      const denoLinterResult = await this.lint(document);
+
+      for (const v of denoLinterResult) {
+        diagnosticsForThisDocument.push(v);
+      }
     }
 
     const importMapFilepath = config.import_map
@@ -142,7 +189,6 @@ export class Diagnostics {
 
     const importModules = getImportModules(ts)(sourceFile);
 
-    const diagnosticsForThisDocument: Diagnostic[] = [];
     const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
 
     const handle = async (originModuleName: string, location: Range) => {

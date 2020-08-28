@@ -117,6 +117,16 @@
             true,
             false
           ]
+        },
+        "deno.lint": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Controls if enabled `deno lint`. It is currently experimental, make sure `deno.unstable: true` to enabled. \n\n**Not recommended in global configuration**",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
         }
       }
     },

@@ -15,6 +15,28 @@ type FormatOptions = {
   cwd: string;
 };
 
+interface LintDiagnostic {
+  location: {
+    filename: string;
+    line: number;
+    col: number;
+  };
+  message: string;
+  code: string;
+  line_src: string;
+  snippet_length: number;
+}
+
+interface LintError {
+  file_path: string;
+  message: string;
+}
+
+interface LintOutput {
+  diagnostics: LintDiagnostic[];
+  errors: LintError[];
+}
+
 class Deno {
   public version!: Version | void;
   public executablePath!: string | void;
@@ -88,6 +110,43 @@ class Deno {
 
     return formattedCode;
   }
+
+  // TODO: We should read the file content from stdin
+  public async lintFile(filepath: string): Promise<LintOutput> {
+    const subprocess = execa(
+      this.executablePath as string,
+      ["lint", "--unstable", "--json", filepath],
+      {
+        stdout: "pipe",
+        stderr: "pipe",
+      }
+    );
+
+    const output = await new Promise<string>((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      subprocess.on("exit", (exitCode: number) => {
+        if (exitCode !== 0) {
+          resolve(stderr);
+        } else {
+          resolve(stdout);
+        }
+      });
+      subprocess.on("error", (err: Error) => {
+        reject(err);
+      });
+      subprocess.stdout?.on("data", (data: Buffer) => {
+        stdout += data;
+      });
+
+      subprocess.stderr?.on("data", (data: Buffer) => {
+        stderr += data;
+      });
+    });
+
+    return JSON.parse(output) as LintOutput;
+  }
+
   private async getExecutablePath(): Promise<string | undefined> {
     const denoPath = await which("deno").catch(() =>
       Promise.resolve(undefined)
