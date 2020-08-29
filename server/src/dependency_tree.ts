@@ -1,5 +1,4 @@
 import { promises as fs } from "fs";
-import * as path from "path";
 
 import { IConnection, Position } from "vscode-languageserver";
 import * as ts from "typescript";
@@ -34,11 +33,7 @@ export class DependencyTree {
 
     const config = await this.bridge.getWorkspaceConfig(uriStr);
 
-    const importMapFilepath = config.import_map
-      ? path.isAbsolute(config.import_map)
-        ? config.import_map
-        : path.resolve(folder, config.import_map)
-      : undefined;
+    const importMapFilepath = config.import_map ? config.import_map : undefined;
 
     const importMap = ImportMap.create(importMapFilepath);
 

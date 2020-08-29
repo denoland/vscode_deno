@@ -1,6 +1,7 @@
 import {
   pathExists,
   pathExistsSync,
+  toAbsolutePath,
   escapeRegExp,
   isHttpURL,
   hashURL,
@@ -20,6 +21,29 @@ test("core / util / pathExistsSync", () => {
   expect(pathExistsSync("./path_not_exist")).toBe(false);
 
   expect(pathExistsSync(__filename)).toBe(true);
+});
+
+test("core / util / toAbsolutePath", () => {
+  if (process.platform === "win32") {
+    expect(normalizeFilepath("d:\\path\\to\\file")).toEqual(
+      "D:\\path\\to\\file"
+    );
+    expect(toAbsolutePath("./any/file", "d:\\any\\absolute\\path")).toEqual(
+      "d:\\any\\absolute\\path\\any\\file"
+    );
+
+    expect(
+      toAbsolutePath("d:\\any\\absolute\\path", "d:\\any\\other\\path")
+    ).toEqual("d:\\any\\absolute\\path");
+  } else {
+    expect(toAbsolutePath("./any/file", "/any/absolute/path")).toEqual(
+      "/any/absolute/path/any/file"
+    );
+
+    expect(toAbsolutePath("/any/absolute/path", "/any/other/path")).toEqual(
+      "/any/absolute/path"
+    );
+  }
 });
 
 test("core / util / escapeRegExp", () => {

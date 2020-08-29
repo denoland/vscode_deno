@@ -35,11 +35,12 @@ import { TreeViewProvider } from "./tree_view_provider";
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
-import { isValidDenoDocument } from "../../core/util";
+import { isValidDenoDocument, toAbsolutePath } from "../../core/util";
 import { Request, Notification } from "../../core/const";
 import {
   ConfigurationField,
   DenoPluginConfigurationField,
+  DenoPluginPathConfigurationField,
 } from "../../core/configuration";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
@@ -58,6 +59,10 @@ type DenoInfo = {
     raw: string;
   };
   executablePath: string;
+};
+
+type ProcessEnv = {
+  [key: string]: string | undefined;
 };
 
 // get typescript api from build-in extension
@@ -116,6 +121,7 @@ export class Extension {
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
     const config: ConfigurationField = {};
+
     const _config = workspace.getConfiguration(this.configurationSection, uri);
 
     function withConfigValue<C, K extends Extract<keyof C, string>>(
@@ -136,6 +142,21 @@ export class Extension {
 
     for (const field of DenoPluginConfigurationField) {
       withConfigValue(_config, config, field);
+    }
+
+    if (uri !== undefined) {
+      let rootPath = workspace.getWorkspaceFolder(uri)?.uri.fsPath;
+      if (rootPath === undefined) {
+        rootPath = uri.fsPath;
+      }
+
+      for (const field of DenoPluginPathConfigurationField) {
+        if (!config[field]) {
+          continue;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        config[field] = toAbsolutePath(config[field]!, rootPath);
+      }
     }
 
     return config;
@@ -163,7 +184,7 @@ export class Extension {
     );
   }
   // start Deno Language Server
-  private async StartDenoLanguageServer() {
+  private async StartDenoLanguageServer(config: ConfigurationField) {
     await window.withProgress(
       {
         location: ProgressLocation.Window,
@@ -186,16 +207,23 @@ export class Extension {
 
         // If the extension is launched in debug mode then the debug server options are used
         // Otherwise the run options are used
+        const env: ProcessEnv = {
+          VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
+          VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG,
+        };
+        if (config.custom_deno_dir) {
+          env.VSCODE_CUSTOM_DENO_DIR = config.custom_deno_dir;
+        }
+        if (config.executable_path) {
+          env.VSCODE_DENO_EXECUTABLE_PATH = config.executable_path;
+        }
         const serverOptions: ServerOptions = {
           run: {
             module: serverModule,
             transport: TransportKind.ipc,
             options: {
               cwd: this.context.extensionPath,
-              env: {
-                VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
-                VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG,
-              },
+              env,
             },
           },
           debug: {
@@ -204,10 +232,7 @@ export class Extension {
             options: {
               cwd: this.context.extensionPath,
               execArgv: ["--nolazy", `--inspect=${port}`],
-              env: {
-                VSCODE_DENO_EXTENSION_PATH: this.context.extensionPath,
-                VSCODE_NLS_CONFIG: process.env.VSCODE_NLS_CONFIG,
-              },
+              env,
             },
           },
         };
@@ -338,7 +363,9 @@ export class Extension {
       this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
 TypeScript ${this.denoInfo.version.typescript}
 V8 ${this.denoInfo.version.v8}
-Executable ${this.denoInfo.executablePath}`;
+Executable ${this.denoInfo.executablePath}
+DENO_DIR ${this.denoInfo.DENO_DIR}
+`;
 
       this.statusBar.show();
     }
@@ -399,6 +426,7 @@ Executable ${this.denoInfo.executablePath}`;
 
         this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
         this.updateDiagnostic(document.uri);
+        this.StartDenoLanguageServer(config);
       }
     }
     this.updateStatusBarVisibility(window.activeTextEditor?.document);
@@ -431,10 +459,11 @@ Executable ${this.denoInfo.executablePath}`;
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
-    this.tsAPI.configurePlugin(
-      TYPESCRIPT_DENO_PLUGIN_ID,
-      this.getConfiguration(window.activeTextEditor?.document.uri)
+    const initConfig = this.getConfiguration(
+      window.activeTextEditor?.document.uri
     );
+
+    this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, initConfig);
 
     this.statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 0);
 
@@ -457,7 +486,10 @@ Executable ${this.denoInfo.executablePath}`;
     );
 
     this.registerCommand("restart_server", async () => {
-      this.StartDenoLanguageServer();
+      const config = this.getConfiguration(
+        window.activeTextEditor?.document.uri
+      );
+      this.StartDenoLanguageServer(config);
     });
 
     this.registerCommand("_copy_text", async (text: string) => {
@@ -477,9 +509,7 @@ Executable ${this.denoInfo.executablePath}`;
         }
 
         const importMapFilepath = config.import_map
-          ? path.isAbsolute(config.import_map)
-            ? config.import_map
-            : path.resolve(workspaceFolder.uri.fsPath, config.import_map)
+          ? toAbsolutePath(config.import_map, workspaceFolder.uri.fsPath)
           : undefined;
 
         const importMap = ImportMap.create(importMapFilepath);
@@ -586,7 +616,7 @@ Executable ${this.denoInfo.executablePath}`;
       this.sync(window.activeTextEditor?.document);
     });
 
-    await this.StartDenoLanguageServer();
+    await this.StartDenoLanguageServer(initConfig);
 
     const treeView = new TreeViewProvider(this);
     this.context.subscriptions.push(treeView);

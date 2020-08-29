@@ -30,6 +30,11 @@ export function normalizeFilepath(filepath: string): string {
   );
 }
 
+// convert any path to absolute path
+export function toAbsolutePath(anyPath: string, rootPath: string): string {
+  return path.isAbsolute(anyPath) ? anyPath : path.resolve(rootPath, anyPath);
+}
+
 // ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
 // cover filepath string to regexp string
 // Because the `\` string is included in the path to Windows

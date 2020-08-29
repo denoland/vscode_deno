@@ -1,3 +1,4 @@
+import path from "path";
 import { Readable } from "stream";
 
 import execa from "execa";
@@ -89,9 +90,18 @@ class Deno {
     return formattedCode;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    const denoPath = await which("deno").catch(() =>
-      Promise.resolve(undefined)
-    );
+    let denoPath: string | undefined;
+
+    const denoRoot = process.env.DENO_INSTALL_ROOT || process.env.DENO_INSTALL;
+    if (denoRoot === undefined) {
+      denoPath = process.env.VSCODE_DENO_EXECUTABLE_PATH;
+    } else {
+      denoPath = path.join(denoRoot, "deno");
+    }
+
+    if (denoPath === undefined) {
+      denoPath = await which("deno").catch(() => Promise.resolve(undefined));
+    }
 
     return denoPath;
   }

@@ -108,6 +108,26 @@
             "/absolute/path/to/import_map.json"
           ]
         },
+        "deno.executable_path": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "Location to Deno executable.\n\nIt can be a path that is relative to the project root, or an absolute path.",
+          "scope": "resource",
+          "examples": [
+            "./deno",
+            "/absolute/path/to/deno"
+          ]
+        },
+        "deno.custom_deno_dir": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "Custom DENO_DIR (Deno remote imports cache directory)\n\nIt can be a path that is relative to the project root, or an absolute path.",
+          "scope": "resource",
+          "examples": [
+            "./vendor/",
+            "/absolute/path/to/vendor/"
+          ]
+        },
         "deno.unstable": {
           "type": "boolean",
           "default": false,

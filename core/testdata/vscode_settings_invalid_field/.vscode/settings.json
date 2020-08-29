@@ -1,5 +1,7 @@
 {
   "deno.enable": "this should be a boolean",
   "deno.unstable": [],
-  "deno.import_map": [1, 2, 3]
+  "deno.import_map": [1, 2, 3],
+  "deno.executable_path": [1, 2, 3],
+  "deno.custom_deno_dir": [1, 2, 3]
 }

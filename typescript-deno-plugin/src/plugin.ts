@@ -224,12 +224,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
         }
 
         const importMapsFilepath = this.configurationManager.config.import_map
-          ? path.isAbsolute(this.configurationManager.config.import_map)
-            ? this.configurationManager.config.import_map
-            : path.resolve(
-                project.getCurrentDirectory(),
-                this.configurationManager.config.import_map
-              )
+          ? this.configurationManager.config.import_map
           : undefined;
 
         const resolver = ModuleResolver.create(
@@ -451,12 +446,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
             getRealPath(containingFile);
 
         const importMapsFilepath = this.configurationManager.config.import_map
-          ? path.isAbsolute(this.configurationManager.config.import_map)
-            ? this.configurationManager.config.import_map
-            : path.resolve(
-                project.getCurrentDirectory(),
-                this.configurationManager.config.import_map
-              )
+          ? this.configurationManager.config.import_map
           : undefined;
 
         const resolver = ModuleResolver.create(

@@ -11,12 +11,23 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "enable",
   "unstable",
   "import_map",
+  "executable_path",
+  "custom_deno_dir",
+];
+export const DenoPluginPathConfigurationField: (keyof PathConfigurationField)[] = [
+  "import_map",
+  "executable_path",
+  "custom_deno_dir",
 ];
 
 export type ConfigurationField = {
   enable?: boolean;
   unstable?: boolean;
+} & PathConfigurationField;
+export type PathConfigurationField = {
   import_map?: string | null;
+  executable_path?: string | null;
+  custom_deno_dir?: string | null;
 };
 
 interface ConfigurationInterface {
@@ -31,6 +42,8 @@ export class Configuration implements ConfigurationInterface {
     enable: false,
     unstable: false,
     import_map: null,
+    executable_path: null,
+    custom_deno_dir: null,
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();
@@ -78,6 +91,14 @@ export class Configuration implements ConfigurationInterface {
         this._configuration.unstable = !!this._configuration.unstable;
         this._configuration.import_map = this._configuration.import_map
           ? this._configuration.import_map + ""
+          : null;
+        this._configuration.executable_path = this._configuration
+          .executable_path
+          ? this._configuration.executable_path + ""
+          : null;
+        this._configuration.custom_deno_dir = this._configuration
+          .custom_deno_dir
+          ? this._configuration.custom_deno_dir + ""
           : null;
       } catch {
         // ignore error

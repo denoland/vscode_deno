@@ -123,11 +123,7 @@ export class Diagnostics {
       return [];
     }
 
-    const importMapFilepath = config.import_map
-      ? path.isAbsolute(config.import_map)
-        ? config.import_map
-        : path.resolve(workspaceDir.uri.fsPath, config.import_map)
-      : undefined;
+    const importMapFilepath = config.import_map ? config.import_map : undefined;
 
     const uri = URI.parse(document.uri);
 

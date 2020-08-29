@@ -7,7 +7,7 @@ export function getDenoDir(): string {
   // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
   // On macOS: $HOME/Library/Caches/deno
   // If something fails, it falls back to $HOME/.deno
-  let denoDir = process.env.DENO_DIR;
+  let denoDir = process.env.DENO_DIR || process.env.VSCODE_CUSTOM_DENO_DIR;
   if (denoDir === undefined) {
     switch (process.platform) {
       /* istanbul ignore next */

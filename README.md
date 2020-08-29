@@ -131,6 +131,10 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.import_map` - The file paths of Import Map. Default is `null`
 
+- `deno.executable_path` - The path to Deno executable. Default is `null` and will try to locate in the PATH.
+
+- `deno.custom_deno_dir` - Custom DENO_DIR (Directory to store deno remote imports cache). Default is `null` and will use Deno default directory searching mechanism.
+
 - `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
 
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
@@ -140,6 +144,8 @@ We recommend that you do not set global configuration. It should be configured i
 {
   "deno.enable": true,
   "deno.import_map": "./path/to/import_map.json",
+  "deno.executable_path": "/.deno/bin/deno",
+  "deno.custom_deno_dir": "./vendor",
   "deno.unstable": false,
 }
 ```

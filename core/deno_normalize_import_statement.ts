@@ -2,7 +2,11 @@ import * as path from "path";
 
 import { getDenoDepsDir } from "./deno";
 import { CacheModule } from "./deno_cache";
-import { normalizeFilepath, findNonExtensionModule } from "./util";
+import {
+  normalizeFilepath,
+  findNonExtensionModule,
+  toAbsolutePath,
+} from "./util";
 import { Logger } from "./logger";
 
 /**
@@ -31,9 +35,7 @@ export function normalizeImportStatement(
     const moduleName = matcher[2];
     const moduleFilepath = normalizeFilepath(moduleName);
     const moduleAbsoluteFilepath = normalizeFilepath(
-      path.isAbsolute(moduleFilepath)
-        ? moduleFilepath
-        : path.resolve(path.dirname(filename), moduleFilepath)
+      toAbsolutePath(moduleFilepath, path.dirname(filename))
     );
     const rest = matcher[3] || "";
 
