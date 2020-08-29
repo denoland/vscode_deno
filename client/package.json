@@ -3,7 +3,7 @@
     "vscode": "^1.43.0"
   },
   "dependencies": {
-    "execa": "4.0.1",
+    "execa": "4.0.3",
     "get-port": "5.1.1",
     "vscode-languageclient": "6.1.3"
   }
