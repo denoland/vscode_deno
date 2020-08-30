@@ -475,8 +475,6 @@ export class DenoPlugin implements typescript.server.PluginModule {
             true
           );
 
-          /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-          // @ts-expect-error
           const modules = getImportModules(this.ts)(sourceFile);
 
           for (const m of modules) {

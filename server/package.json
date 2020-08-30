@@ -4,7 +4,6 @@
   },
   "dependencies": {
     "execa": "4.0.3",
-    "typescript": "4.0.2",
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1",
     "vscode-uri": "2.1.2",
