@@ -27,7 +27,7 @@ export const Range = {
   },
 };
 
-export type compileHint = {
+export type CompileHint = {
   text: string;
   range: Range;
   contentRange: Range;
@@ -36,7 +36,7 @@ export type compileHint = {
 export function parseCompileHint(
   sourceFile: typescript.SourceFile,
   comment: typescript.CommentRange
-): compileHint | undefined {
+): CompileHint | undefined {
   const text = sourceFile.getFullText().substring(comment.pos, comment.end);
   const regexp = /@deno-types=['"]([^'"]+)['"]/;
 
@@ -69,8 +69,8 @@ export function parseCompileHint(
  * @param ts
  */
 export function getDenoCompileHint(ts: typeof typescript) {
-  return function (sourceFile: typescript.SourceFile, pos = 0): compileHint[] {
-    const denoTypesComments: compileHint[] = [];
+  return function (sourceFile: typescript.SourceFile, pos = 0): CompileHint[] {
+    const denoTypesComments: CompileHint[] = [];
 
     const comments =
       ts.getLeadingCommentRanges(sourceFile.getFullText(), pos) || [];

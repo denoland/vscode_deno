@@ -28,14 +28,14 @@ function isMatchExpression(
 }
 
 export class FileWalker {
-  static create(folder: string, options: FileWalkerOptions = {}) {
+  static create(folder: string, options: FileWalkerOptions = {}): FileWalker {
     return new FileWalker(folder, options);
   }
   private constructor(
     private root: string,
     private options: FileWalkerOptions
   ) {}
-  async *[Symbol.asyncIterator]() {
+  async *[Symbol.asyncIterator](): AsyncIterator<string> {
     let files = (await fs.readdir(this.root)).map((filename) =>
       path.join(this.root, filename)
     );

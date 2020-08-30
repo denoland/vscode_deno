@@ -16,7 +16,7 @@ export class CacheMap<T> {
    * @param timeout How long will this data expire. If expired, return undefined. eg 1000ms
    * @param allowReferenceTimes How many times the data can be referenced.If 0, no restrictions
    */
-  static create<T>(timeout: number, allowReferenceTimes?: number) {
+  static create<T>(timeout: number, allowReferenceTimes?: number): CacheMap<T> {
     return new CacheMap<T>(timeout, allowReferenceTimes);
   }
 
