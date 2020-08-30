@@ -5,6 +5,8 @@ import execa from "execa";
 import which from "which";
 import * as semver from "semver";
 
+import { pathExists } from "../../core/util";
+
 type Version = {
   deno: string;
   v8: string;
@@ -24,7 +26,7 @@ class Deno {
 
     if (!this.executablePath) {
       throw new Error(
-        "Could not find `deno` in your $PATH. Please install `deno`, then restart the extension."
+        "Could not find `deno` in your path setting or $PATH. Please install `deno`, then restart the extension."
       );
     }
 
@@ -90,19 +92,48 @@ class Deno {
     return formattedCode;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    const denoPath = process.env.VSCODE_DENO_EXECUTABLE_PATH;
-    if (denoPath !== undefined) {
-      return denoPath;
+    let denoPath = process.env.VSCODE_DENO_EXECUTABLE_PATH;
+    if (denoPath === undefined) {
+      const denoRoot =
+        process.env.DENO_INSTALL_ROOT || process.env.DENO_INSTALL;
+      if (denoRoot !== undefined) {
+        denoPath = path.join(denoRoot, "deno");
+      }
     }
 
-    const denoRoot = process.env.DENO_INSTALL_ROOT || process.env.DENO_INSTALL;
-    if (denoRoot !== undefined) {
-      return path.join(denoRoot, "deno");
+    if (denoPath === undefined) {
+      denoPath = await which("deno").catch(() => Promise.resolve(undefined));
     }
 
-    return which("deno").catch(() => Promise.resolve(undefined));
+    if (denoPath === undefined) {
+      return undefined;
+    }
+
+    this.isValidDenoPath(denoPath);
+    return (await this.isValidDenoPath(denoPath)) ? denoPath : undefined;
+  }
+  private async isValidDenoPath(denoPath: string): Promise<boolean> {
+    if (!(await pathExists(denoPath))) {
+      return false;
+    }
+
+    try {
+      const { stdout, stderr } = await execa(denoPath, [
+        "eval",
+        "console.log(JSON.stringify(Deno.version))",
+      ]);
+
+      if (stderr) {
+        return false;
+      }
+
+      return !!JSON.parse(stdout).deno;
+    } catch (err) {
+      return false;
+    }
   }
   private async getDenoVersion(): Promise<Version | undefined> {
+    console.log;
     const { stdout, stderr } = await execa(this.executablePath as string, [
       "eval",
       "console.log(JSON.stringify(Deno.version))",
