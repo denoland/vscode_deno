@@ -90,20 +90,17 @@ class Deno {
     return formattedCode;
   }
   private async getExecutablePath(): Promise<string | undefined> {
-    let denoPath: string | undefined;
+    const denoPath = process.env.VSCODE_DENO_EXECUTABLE_PATH;
+    if (denoPath !== undefined) {
+      return denoPath;
+    }
 
     const denoRoot = process.env.DENO_INSTALL_ROOT || process.env.DENO_INSTALL;
-    if (denoRoot === undefined) {
-      denoPath = process.env.VSCODE_DENO_EXECUTABLE_PATH;
-    } else {
-      denoPath = path.join(denoRoot, "deno");
+    if (denoRoot !== undefined) {
+      return path.join(denoRoot, "deno");
     }
 
-    if (denoPath === undefined) {
-      denoPath = await which("deno").catch(() => Promise.resolve(undefined));
-    }
-
-    return denoPath;
+    return which("deno").catch(() => Promise.resolve(undefined));
   }
   private async getDenoVersion(): Promise<Version | undefined> {
     const { stdout, stderr } = await execa(this.executablePath as string, [
