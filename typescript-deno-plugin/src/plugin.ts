@@ -1,7 +1,7 @@
 import * as path from "path";
 
 import merge from "deepmerge";
-import ts_module, {
+import typescript, {
   CodeFixAction,
   FormatCodeSettings,
   UserPreferences,
@@ -74,30 +74,30 @@ const ignoredCompilerOptions: readonly string[] = [
   "watch",
 ];
 
-export class DenoPlugin implements ts_module.server.PluginModule {
+export class DenoPlugin implements typescript.server.PluginModule {
   // plugin name
   static readonly PLUGIN_NAME = "typescript-deno-plugin";
   private readonly configurationManager = new Configuration();
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
-  private readonly DEFAULT_OPTIONS: ts_module.CompilerOptions = {
+  private readonly DEFAULT_OPTIONS: typescript.CompilerOptions = {
     allowJs: true,
     checkJs: false,
     strict: true,
     esModuleInterop: true,
-    jsx: this.typescript.JsxEmit.React,
-    module: this.typescript.ModuleKind.ESNext,
-    moduleResolution: this.typescript.ModuleResolutionKind.NodeJs,
+    jsx: this.ts.JsxEmit.React,
+    module: this.ts.ModuleKind.ESNext,
+    moduleResolution: this.ts.ModuleResolutionKind.NodeJs,
     outDir: "$deno$",
     resolveJsonModule: true,
     sourceMap: true,
     stripComments: true,
-    target: this.typescript.ScriptTarget.ESNext,
+    target: this.ts.ScriptTarget.ESNext,
     noEmit: true,
     noEmitHelpers: true,
   };
   // No matter how tsconfig.json is set in the working directory
   // It will always overwrite the configuration
-  private readonly MUST_OVERWRITE_OPTIONS: ts_module.CompilerOptions = {
+  private readonly MUST_OVERWRITE_OPTIONS: typescript.CompilerOptions = {
     jsx: this.DEFAULT_OPTIONS.jsx,
     module: this.DEFAULT_OPTIONS.module,
     moduleResolution: this.DEFAULT_OPTIONS.moduleResolution,
@@ -105,13 +105,13 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     strict: this.DEFAULT_OPTIONS.strict,
     noEmit: this.DEFAULT_OPTIONS.noEmit,
     noEmitHelpers: this.DEFAULT_OPTIONS.noEmitHelpers,
-    target: this.typescript.ScriptTarget.ESNext,
+    target: this.ts.ScriptTarget.ESNext,
   };
   private logger!: Logger;
 
-  constructor(private readonly typescript: typeof ts_module) {}
+  constructor(private readonly ts: typeof typescript) {}
 
-  create(info: ts_module.server.PluginCreateInfo): ts_module.LanguageService {
+  create(info: typescript.server.PluginCreateInfo): typescript.LanguageService {
     const { project, languageService, languageServiceHost } = info;
     const projectDirectory = project.getCurrentDirectory();
 
@@ -219,7 +219,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             // It will cause a series of bugs, so here we get the real file path
             getRealPath(containingFile);
 
-        if (!this.typescript.sys.fileExists(realContainingFile)) {
+        if (!this.ts.sys.fileExists(realContainingFile)) {
           return [];
         }
 
@@ -238,7 +238,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         );
 
         const result: (
-          | ts_module.ResolvedTypeReferenceDirective
+          | typescript.ResolvedTypeReferenceDirective
           | undefined
         )[] = [];
 
@@ -247,7 +247,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
 
           // if module found. then return the module file
           if (resolvedModule) {
-            const target: ts_module.ResolvedTypeReferenceDirective = {
+            const target: typescript.ResolvedTypeReferenceDirective = {
               primary: false,
               resolvedFileName: resolvedModule.filepath,
             };
@@ -355,10 +355,10 @@ export class DenoPlugin implements ts_module.server.PluginModule {
       position: number,
       name: string,
       formatOptions?:
-        | ts_module.FormatCodeOptions
-        | ts_module.FormatCodeSettings,
+        | typescript.FormatCodeOptions
+        | typescript.FormatCodeSettings,
       source?: string,
-      preferences?: ts_module.UserPreferences
+      preferences?: typescript.UserPreferences
     ) => {
       const details = getCompletionEntryDetails(
         fileName,
@@ -432,8 +432,8 @@ export class DenoPlugin implements ts_module.server.PluginModule {
         containingFile: string,
         ...rest
       ): (
-        | ts_module.ResolvedModule
-        | ts_module.ResolvedModuleFull
+        | typescript.ResolvedModule
+        | typescript.ResolvedModuleFull
         | undefined
       )[] => {
         if (!this.configurationManager.config.enable) {
@@ -464,18 +464,18 @@ export class DenoPlugin implements ts_module.server.PluginModule {
           importMapsFilepath
         );
 
-        const content = this.typescript.sys.readFile(containingFile, "utf8");
+        const content = this.ts.sys.readFile(containingFile, "utf8");
 
         // handle @deno-types
         if (content && content.indexOf("// @deno-types=") >= 0) {
-          const sourceFile = this.typescript.createSourceFile(
+          const sourceFile = this.ts.createSourceFile(
             containingFile,
             content,
-            this.typescript.ScriptTarget.ESNext,
+            this.ts.ScriptTarget.ESNext,
             true
           );
 
-          const modules = getImportModules(this.typescript)(sourceFile);
+          const modules = getImportModules(this.ts)(sourceFile);
 
           for (const m of modules) {
             if (m.hint) {
@@ -494,13 +494,13 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             continue;
           }
 
-          const content = this.typescript.sys.readFile(resolvedModule.filepath);
+          const content = this.ts.sys.readFile(resolvedModule.filepath);
 
           if (!content) {
             continue;
           }
 
-          const { typeReferenceDirectives } = this.typescript.preProcessFile(
+          const { typeReferenceDirectives } = this.ts.preProcessFile(
             content,
             true,
             true
@@ -532,8 +532,8 @@ export class DenoPlugin implements ts_module.server.PluginModule {
             return v;
           }
 
-          const result: ts_module.ResolvedModuleFull = {
-            extension: v.extension as ts_module.Extension,
+          const result: typescript.ResolvedModuleFull = {
+            extension: v.extension as typescript.Extension,
             isExternalLibraryImport: false,
             resolvedFileName: v.filepath,
           };
@@ -554,7 +554,7 @@ export class DenoPlugin implements ts_module.server.PluginModule {
     return languageService;
   }
 
-  onConfigurationChanged(c: ConfigurationField) {
+  onConfigurationChanged(c: ConfigurationField): void {
     this.logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     this.configurationManager.update(c);
   }
