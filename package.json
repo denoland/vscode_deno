@@ -122,43 +122,16 @@
     },
     "jsonValidation": [
       {
-        "fileMatch": "import_map.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "import_maps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "importmap.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "importmaps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "import-map.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "import-maps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "importMap.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "importMaps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "ImportMap.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "ImportMaps.json",
+        "fileMatch": [
+          "import_map.json",
+          "import_maps.json",
+          "importmap.json",
+          "importmaps.json",
+          "import-map.json",
+          "import-maps.json",
+          "importMap.json",
+          "importMaps.json"
+        ],
         "url": "./schemas/import_map.schema.json"
       }
     ]
