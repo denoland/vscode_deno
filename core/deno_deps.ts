@@ -1,7 +1,6 @@
 import * as path from "path";
 import { promises as fs } from "fs";
-
-import typescript = require("typescript");
+import typescript from "typescript";
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";

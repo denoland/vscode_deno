@@ -427,7 +427,7 @@ Executable ${this.denoInfo.executablePath}`;
     }
   }
   // activate function for vscode
-  public async activate(context: ExtensionContext) {
+  public async activate(context: ExtensionContext): Promise<void> {
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
@@ -504,7 +504,7 @@ Executable ${this.denoInfo.executablePath}`;
               timeout: 1000 * 60 * 2,
             });
 
-            const updateProgress = (buf: Buffer) => {
+            const updateProgress: (buf: Buffer) => void = (buf: Buffer) => {
               const raw = buf.toString();
 
               const messages = raw.split("\n");
@@ -604,7 +604,7 @@ Executable ${this.denoInfo.executablePath}`;
     );
   }
   // deactivate function for vscode
-  public async deactivate(context: ExtensionContext) {
+  public async deactivate(context: ExtensionContext): Promise<void> {
     this.context = context;
 
     if (this.client) {
