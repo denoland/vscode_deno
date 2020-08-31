@@ -38,7 +38,7 @@ export async function getAllDenoCachedDeps(): Promise<Deps[]> {
     protocols = await fs.readdir(depsRootDir);
   } catch (error) {
     //deno/deps directory does not exists
-    if (error.code === 'ENOENT') {
+    if (error.code === "ENOENT") {
       return deps;
     }
   }
