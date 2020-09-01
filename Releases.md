@@ -1,108 +1,29 @@
-# Changelog
+# Releases
 
-## [Unreleased]
+Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-- rewrite with LSP (#5)
-- fix eol on Windows
-- display a prompt when package.json is detected (#7)
-- support webworker's .d.ts (#9)
-- implement Deno formater (#10)
-- show changelog on vscode marketplace (#11)
-- implement diagnostics (#15)
-- highlight Deno's cached files (#16)
-- add deno.unstable configuration (#28) (#35)
-- fix intellisense on cached files (#31)
-- fix auto import (#43)
-- rewrite deno finder (#55)
-- add multi-language support, italian (#33), french (#34), portuguese (#38)
-- new icon (#53)
+### [v2.0.16](https://github.com/denoland/vscode_deno/compare/v2.0.15...v2.0.16) / 2020.08.29
 
-## 2020-05-07
+- fix: autocomplete supports adding extensions (#156)
+- docs: fix readme install description (#160)
 
-Moved from https://github.com/justjavac/vscode-deno to
-https://github.com/denoland/vscode_deno in order to have an "official" Deno
-plugin. Thank you 迷渡!
+### [v2.0.15](https://github.com/denoland/vscode_deno/compare/v2.0.14...v2.0.15) / 2020.08.28
 
-## 1.9.0 - 2020-05-03
+- build: fix releasing extension to Visual Studio Marketplace from CI (#159)
 
-- rewrite module resolver [typescript-deno-plugin#35](https://github.com/justjavac/typescript-deno-plugin/pull/35)
+### [v2.0.14](https://github.com/denoland/vscode_deno/compare/v2.0.13...v2.0.14) / 2020.08.25
 
-## 1.7.0 - 2020-04-27
+- fix: fixActions not import Deno module URL correctly (#154)
 
-- upgrade `deno@0.41.0`, `typescript-deno-plugin@1.5.0`
+### [v2.0.11-v2.0.13](https://github.com/denoland/vscode_deno/compare/v2.0.10...v2.0.13) / 2020.08.14
 
-## 1.5.0 - 2020-04-10
+- fix: use the correct `typescript-deno-plugin` (#144)
+- docs: update contributing instructions (#146)
 
-- upgrade `execa@4.0.0`, `typescript@3.8.3`，`typescript-deno-plugin@1.3.0`
-- remove some snippets [#72](https://github.com/justjavac/vscode-deno/issues/72)
-  - benching
-  - colors
-  - media_types
-  - prettier
-  - strings
+### v2.0.0-v2.0.10 / 2020.08.13
 
-## 1.4.0 - 2019-12-07
+Replacement of extension by the one written by @axetroy.
 
-- suport vscode >= 1.14.0
-- upgrade `execa@3.4.0`, `which@2.0.2`
-- fix deno finder [#58](https://github.com/justjavac/vscode-deno/issues/58)
+### v1.x / June 2020 - July 2020
 
-## 1.3.3 - 2019-08-29
-
-- fix deno version for ci [#52](https://github.com/justjavac/vscode-deno/issues/51)
-- upgrade typescript-deno-plugin@1.2.7 [#51](https://github.com/justjavac/vscode-deno/issues/51)
-- Bump lodash from 4.17.11 to 4.17.14 [#45](https://github.com/justjavac/vscode-deno/issues/51)
-
-## 1.3.2 - 2019-06-06
-
-- deep merge `compilerOptions` [#34](https://github.com/justjavac/vscode-deno/issues/34)
-
-## 1.3.1 - [YANKED]
-
-## 1.3.0 - 2019-04-28
-
-- Upgrade deno v0.3.9 check [#28](https://github.com/justjavac/vscode-deno/pull/28)
-
-## 1.2.1 - 2019-04-19
-
-- fix 'can not found module `typescript/lib/tsserverlibrary`' bug
-
-## 1.2.0 - 2019-04-19 [YANKED]
-
-- use deno formater for ci
-- add i18n(zh-cn)
-- use `configurationSection` instead of literal string [#14](https://github.com/justjavac/vscode-deno/pull/14)
-- add badge for travis [#17](https://github.com/justjavac/vscode-deno/pull/17)
-- remove unnecessary activationevents [#18](https://github.com/justjavac/vscode-deno/pull/18)
-- Generate Deno's .d.ts file [#21](https://github.com/justjavac/vscode-deno/pull/21)
-- upgrade `typescript-deno-plugin` from `1.1.0` to [`v1.2.1`](https://github.com/justjavac/typescript-deno-plugin/blob/master/CHANGELOG.md#121---2019-04-19)
-  - add headers fallback when module is not found [#3](https://github.com/justjavac/typescript-deno-plugin/pull/3)
-  - set default compilation options [#4](https://github.com/justjavac/typescript-deno-plugin/pull/4)
-  - add deno declaration files [#5](https://github.com/justjavac/typescript-deno-plugin/pull/5) [#7](https://github.com/justjavac/typescript-deno-plugin/pull/7)
-
-## 1.0.7 - 2019-03-11
-
-- use `execa` instead of `child_process.exec` #6
-- refactor: improve performance #7 #9
-- add import snippets for deno std #8
-
-## 1.0.4 - 2019-03-07
-
-- Fix warning on found #3
-
-## 1.0.3 - 2019-03-07
-
-- fix bug
-
-## 1.0.2 - 2019-03-07
-
-- add screenshots
-- add some ignores
-
-## 1.0.1 - 2019-03-07
-
-- Change `displayName`
-
-## 1.0.0 - 2019-03-07
-
-- Initial release
+Initial release of the extension originally written by @justjavac.
