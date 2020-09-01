@@ -1,0 +1,14 @@
+{
+  "Import Std": {
+    "scope": "javascript,typescript",
+    "prefix": "impstd",
+    "body": "import {$3} from 'https://deno.land/std@$1/$2';$0",
+    "description": "This snippet code is for deno only, it is for import std module conveniently"
+  },
+  "Import X": {
+    "scope": "javascript,typescript",
+    "prefix": "impx",
+    "body": "import {$4} from 'https://deno.land/x/$1@$2/$3';$0",
+    "description": "This snippet code is for deno only, it is for import std module conveniently"
+  }
+}

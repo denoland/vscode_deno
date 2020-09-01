@@ -134,6 +134,16 @@
         ],
         "url": "./schemas/import_map.schema.json"
       }
+    ],
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "snippets/import_enhancement.json"
+      },
+      {
+        "language": "typescript",
+        "path": "snippets/import_enhancement.json"
+      }
     ]
   },
   "scripts": {
