@@ -25,7 +25,7 @@ import { Completion } from "./language/completion";
 import { CodeLens } from "./language/code_lens";
 
 import { getDenoDir, getDenoDts } from "../../core/deno";
-import { pathExists } from "../../core/util";
+import { pathExists, isSetAndNotEmptyString } from "../../core/util";
 import { Notification } from "../../core/const";
 
 const SERVER_NAME = "Deno Language Server";
@@ -105,7 +105,7 @@ async function ensureDenoDts(unstable: boolean) {
   }
 }
 
-connection.onInitialized(async () => {
+async function init() {
   try {
     await deno.init();
     await Promise.all([ensureDenoDts(false), ensureDenoDts(true)]);
@@ -119,6 +119,32 @@ connection.onInitialized(async () => {
     DENO_DIR: getDenoDir(),
   });
   connection.console.log("server initialized.");
+}
+
+connection.onInitialized(init);
+
+connection.onDidChangeConfiguration(async (handler) => {
+  connection.console.log(
+    `server received updated settings ${JSON.stringify(
+      handler.settings.deno,
+      null,
+      "  "
+    )}`
+  );
+
+  if (isSetAndNotEmptyString(handler.settings.deno.executable_path)) {
+    process.env.VSCODE_DENO_EXECUTABLE_PATH =
+      handler.settings.deno.executable_path;
+  } else {
+    delete process.env.VSCODE_DENO_EXECUTABLE_PATH;
+  }
+  if (isSetAndNotEmptyString(handler.settings.deno.custom_deno_dir)) {
+    process.env.VSCODE_CUSTOM_DENO_DIR = handler.settings.deno.custom_deno_dir;
+  } else {
+    delete process.env.VSCODE_CUSTOM_DENO_DIR;
+  }
+
+  init();
 });
 
 // Make the text document manager listen on the connection

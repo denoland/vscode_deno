@@ -14,11 +14,6 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "executable_path",
   "custom_deno_dir",
 ];
-export const DenoPluginPathConfigurationField: (keyof PathConfigurationField)[] = [
-  "import_map",
-  "executable_path",
-  "custom_deno_dir",
-];
 
 export type ConfigurationField = {
   enable?: boolean;

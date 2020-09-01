@@ -15,8 +15,8 @@ test("core / configuration / resolveFromVscode if it is a valid file", async () 
     enable: true,
     unstable: true,
     import_map: "./import_map.json",
-    executable_path: "/.deno/bin/deno",
-    custom_deno_dir: "/.cache/deno",
+    executable_path: "/bin/deno",
+    custom_deno_dir: "/cache/deno",
   } as ConfigurationField);
 });
 

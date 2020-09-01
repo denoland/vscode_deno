@@ -133,7 +133,6 @@ class Deno {
     }
   }
   private async getDenoVersion(): Promise<Version | undefined> {
-    console.log;
     const { stdout, stderr } = await execa(this.executablePath as string, [
       "eval",
       "console.log(JSON.stringify(Deno.version))",

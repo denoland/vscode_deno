@@ -6,6 +6,7 @@ import { Request } from "../../core/const";
 type Configuration = {
   enable: boolean;
   import_map?: string;
+  executable_path?: string;
   custom_deno_dir?: string;
 };
 

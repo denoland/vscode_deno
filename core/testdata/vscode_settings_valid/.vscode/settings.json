@@ -2,6 +2,6 @@
   "deno.enable": true,
   "deno.import_map": "./import_map.json",
   "deno.unstable": true,
-  "deno.executable_path": "/.deno/bin/deno",
-  "deno.custom_deno_dir": "/.cache/deno"
+  "deno.executable_path": "/bin/deno",
+  "deno.custom_deno_dir": "/cache/deno"
 }

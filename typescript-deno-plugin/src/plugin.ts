@@ -12,7 +12,11 @@ import { Configuration, ConfigurationField } from "../../core/configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
-import { normalizeFilepath, isUntitledDocument } from "../../core/util";
+import {
+  normalizeFilepath,
+  isUntitledDocument,
+  isSetAndNotEmptyString,
+} from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { getImportModules } from "../../core/deno_deps";
 
@@ -182,6 +186,22 @@ export class DenoPlugin implements typescript.server.PluginModule {
       }
 
       // Get typescript declaration File
+      if (
+        isSetAndNotEmptyString(this.configurationManager.config.executable_path)
+      ) {
+        process.env.VSCODE_DENO_EXECUTABLE_PATH = this.configurationManager
+          .config.executable_path as string;
+      } else {
+        delete process.env.VSCODE_DENO_EXECUTABLE_PATH;
+      }
+      if (
+        isSetAndNotEmptyString(this.configurationManager.config.custom_deno_dir)
+      ) {
+        process.env.VSCODE_CUSTOM_DENO_DIR = this.configurationManager.config
+          .custom_deno_dir as string;
+      } else {
+        delete process.env.VSCODE_CUSTOM_DENO_DIR;
+      }
       const dtsFiles = [
         getDenoDts(!!this.configurationManager.config.unstable),
       ];

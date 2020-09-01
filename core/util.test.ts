@@ -9,6 +9,7 @@ import {
   isValidDenoDocument,
   isUntitledDocument,
   findNonExtensionModule,
+  isSetAndNotEmptyString,
 } from "./util";
 
 test("core / util / pathExists", async () => {
@@ -105,4 +106,12 @@ test("core / util / findNonExtensionModule", () => {
     "./testdata/file_walker/a.js"
   );
   expect(findNonExtensionModule(__filename, "./none")).toBe("./none");
+});
+
+test("core / util / isSetAndNotEmptyString", () => {
+  expect(isSetAndNotEmptyString(null)).toBe(false);
+  expect(isSetAndNotEmptyString(undefined)).toBe(false);
+  expect(isSetAndNotEmptyString("")).toBe(false);
+
+  expect(isSetAndNotEmptyString("hello world")).toBe(true);
 });

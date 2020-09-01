@@ -40,7 +40,6 @@ import { Request, Notification } from "../../core/const";
 import {
   ConfigurationField,
   DenoPluginConfigurationField,
-  DenoPluginPathConfigurationField,
 } from "../../core/configuration";
 
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
@@ -64,6 +63,15 @@ type DenoInfo = {
 type ProcessEnv = {
   [key: string]: string | undefined;
 };
+
+type ConfigsValidity =
+  | {
+      result: true;
+    }
+  | {
+      result: false;
+      errorMsgs: string[];
+    };
 
 // get typescript api from build-in extension
 // https://github.com/microsoft/vscode/blob/master/extensions/typescript-language-features/src/api.ts
@@ -150,12 +158,8 @@ export class Extension {
         rootPath = uri.fsPath;
       }
 
-      for (const field of DenoPluginPathConfigurationField) {
-        if (!config[field]) {
-          continue;
-        }
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        config[field] = toAbsolutePath(config[field]!, rootPath);
+      if (config.import_map) {
+        config.import_map = toAbsolutePath(config.import_map, rootPath);
       }
     }
 
@@ -426,10 +430,38 @@ DENO_DIR ${this.denoInfo.DENO_DIR}
 
         this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
         this.updateDiagnostic(document.uri);
-        this.StartDenoLanguageServer(config);
       }
     }
     this.updateStatusBarVisibility(window.activeTextEditor?.document);
+  }
+  private isValidConfiguration(document?: TextDocument): ConfigsValidity {
+    let result = true;
+    const errorMsgs: string[] = [];
+    if (!document) {
+      return {
+        result: true,
+      };
+    }
+
+    const config = this.getConfiguration(document.uri);
+
+    if (config.executable_path && !path.isAbsolute(config.executable_path)) {
+      result = false;
+      errorMsgs.push("Executable Path must be absolute path");
+    }
+    if (config.custom_deno_dir && !path.isAbsolute(config.custom_deno_dir)) {
+      result = false;
+      errorMsgs.push("Custom DENO_DIR must be absolute path");
+    }
+
+    return result
+      ? {
+          result: true,
+        }
+      : {
+          result: false,
+          errorMsgs,
+        };
   }
   private async setDocumentLanguage(document?: TextDocument) {
     if (!document) {
@@ -458,6 +490,16 @@ DENO_DIR ${this.denoInfo.DENO_DIR}
   public async activate(context: ExtensionContext): Promise<void> {
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
+
+    const configValidity = this.isValidConfiguration(
+      window.activeTextEditor?.document
+    );
+    if (!configValidity.result) {
+      configValidity.errorMsgs.forEach((errorMsg) => {
+        window.showErrorMessage(errorMsg);
+      });
+      // continue to activate the extension
+    }
 
     const initConfig = this.getConfiguration(
       window.activeTextEditor?.document.uri
@@ -613,7 +655,17 @@ DENO_DIR ${this.denoInfo.DENO_DIR}
     });
 
     this.watchConfiguration(() => {
-      this.sync(window.activeTextEditor?.document);
+      const configValidity = this.isValidConfiguration(
+        window.activeTextEditor?.document
+      );
+
+      if (configValidity.result) {
+        this.sync(window.activeTextEditor?.document);
+      } else {
+        configValidity.errorMsgs.forEach((errorMsg) => {
+          window.showErrorMessage(errorMsg);
+        });
+      }
     });
 
     await this.StartDenoLanguageServer(initConfig);

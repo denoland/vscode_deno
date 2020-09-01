@@ -126,3 +126,11 @@ export function findNonExtensionModule(
 
   return moduleName;
 }
+
+/**
+ * Returns true when value is set (not null nor undefined) and is not empty
+ * @param [value] {string | null}
+ */
+export function isSetAndNotEmptyString(value?: string | null): boolean {
+  return value ? value !== "" : false;
+}
