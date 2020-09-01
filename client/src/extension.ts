@@ -20,6 +20,7 @@ import {
   TextDocument,
   languages,
   env,
+  DocumentSelector,
 } from "vscode";
 import {
   LanguageClient,
@@ -32,6 +33,8 @@ import execa from "execa";
 import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
+import { ImportEnhancementCompletionProvider } from "./import_enhancement_provider";
+
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
@@ -593,6 +596,21 @@ Executable ${this.denoInfo.executablePath}`;
 
     this.context.subscriptions.push(
       window.registerTreeDataProvider("deno", treeView)
+    );
+
+    // CGQAQ: activate import enhance feature
+    const document_selector = <DocumentSelector>[
+      { language: "javascript" },
+      { language: "typescript" },
+    ];
+    const trigger_word = ["@", "/"];
+    const import_enhance = new ImportEnhancementCompletionProvider();
+    this.context.subscriptions.push(
+      languages.registerCompletionItemProvider(
+        document_selector,
+        import_enhance,
+        ...trigger_word
+      )
     );
 
     this.sync(window.activeTextEditor?.document);
