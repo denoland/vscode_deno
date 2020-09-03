@@ -20,7 +20,6 @@ import {
   TextDocument,
   languages,
   env,
-  DocumentSelector,
 } from "vscode";
 import {
   LanguageClient,
@@ -599,19 +598,8 @@ Executable ${this.denoInfo.executablePath}`;
     );
 
     // CGQAQ: activate import enhance feature
-    const document_selector = <DocumentSelector>[
-      { language: "javascript" },
-      { language: "typescript" },
-    ];
-    const trigger_word = ["@", "/"];
     const import_enhance = new ImportEnhancementCompletionProvider();
-    this.context.subscriptions.push(
-      languages.registerCompletionItemProvider(
-        document_selector,
-        import_enhance,
-        ...trigger_word
-      )
-    );
+    import_enhance.activate(this.context);
 
     this.sync(window.activeTextEditor?.document);
 

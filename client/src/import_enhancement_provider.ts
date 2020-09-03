@@ -6,6 +6,11 @@ import {
   Disposable,
   CompletionItemKind,
   CompletionList,
+  DocumentSelector,
+  languages,
+  ExtensionContext,
+  Range,
+  Command,
 } from "vscode";
 
 import {
@@ -57,16 +62,25 @@ export class ImportEnhancementCompletionProvider
             const ci = new CompletionItem(it, CompletionItemKind.Value);
             ci.sortText = `a${String.fromCharCode(i) + 1}`;
             ci.filterText = "a";
+            // https://github.com/microsoft/vscode-extension-samples/blob/bb4a0c3a5dd9460a5cd64290b4d5c4f6bd79bdc4/completions-sample/src/extension.ts#L37
+            ci.command = <Command>{
+              command: "editor.action.triggerSuggest",
+              title: "Re-trigger completions...",
+            };
             return ci;
           });
         return new CompletionList(result);
       }
 
       const result = await modTreeOf(imp_info.module, imp_info.version);
+      const arr_path = imp_info.path.split("/");
+      const path = arr_path.slice(0, arr_path.length - 1).join("/") + "/";
+
       const r = result.directory_listing
-        .filter((it) => it.path.startsWith(imp_info.path))
+        .filter((it) => it.path.startsWith(path))
         .map((it) => ({
-          path: it.path.replace(imp_info.path, ""),
+          path:
+            path.length > 1 ? it.path.replace(path, "") : it.path.substring(1),
           size: it.size,
           type: it.type,
         }))
@@ -81,8 +95,11 @@ export class ImportEnhancementCompletionProvider
               it.type !== "file") &&
             // exclude privates
             !it.path.startsWith("_") &&
+            // exclude hidden file/folder
+            !it.path.startsWith(".") &&
             // exclude testdata dir
-            (it.path !== "testdata" || it.type !== "dir")
+            (it.path !== "testdata" || it.type !== "dir") &&
+            it.path.length !== 0
         )
         // .sort((a, b) => a.path.length - b.path.length)
         .map((it) => {
@@ -94,10 +111,39 @@ export class ImportEnhancementCompletionProvider
           );
           r.sortText = it.type === "dir" ? "a" : "b";
           r.insertText = it.type === "dir" ? it.path + "/" : it.path;
+          r.range = new Range(
+            position.line,
+            line_text.substring(0, position.character).lastIndexOf("/") + 1,
+            position.line,
+            position.character
+          );
+          if (it.type === "dir") {
+            // https://github.com/microsoft/vscode-extension-samples/blob/bb4a0c3a5dd9460a5cd64290b4d5c4f6bd79bdc4/completions-sample/src/extension.ts#L37
+            r.command = <Command>{
+              command: "editor.action.triggerSuggest",
+              title: "Re-trigger completions...",
+            };
+          }
           return r;
         });
-      return new CompletionList(r, true);
+      return new CompletionList(r, false);
     }
+  }
+
+  activate(ctx: ExtensionContext): void {
+    const document_selector = <DocumentSelector>[
+      { language: "javascript" },
+      { language: "typescript" },
+    ];
+    const trigger_word = ["@", "/"];
+    const import_enhance = new ImportEnhancementCompletionProvider();
+    ctx.subscriptions.push(
+      languages.registerCompletionItemProvider(
+        document_selector,
+        import_enhance,
+        ...trigger_word
+      )
+    );
   }
 
   dispose(): void {
