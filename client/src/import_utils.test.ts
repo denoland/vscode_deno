@@ -17,12 +17,7 @@ test("import-enhance modTreeOf", async () => {
 });
 
 test("import-enhance parseImportStatement", async () => {
-  const test_cases = <
-    {
-      imp: string;
-      expect: { domain: string; module: string; version: string; path: string };
-    }[]
-  >[
+  const test_cases = [
     {
       imp: "import * from 'http://a.c/xx/a.ts'",
       expect: {
@@ -96,7 +91,10 @@ test("import-enhance parseImportStatement", async () => {
         path: "/",
       },
     },
-  ];
+  ] as {
+    imp: string;
+    expect: { domain: string; module: string; version: string; path: string };
+  }[];
 
   for (const test_case of test_cases) {
     const result = parseImportStatement(test_case.imp);

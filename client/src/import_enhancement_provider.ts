@@ -52,7 +52,6 @@ export class ImportEnhancementCompletionProvider
       }
       // We'll handle the completion only if the domain is `deno.land` and mod name is not empty
       const at_index = line_text.indexOf("@");
-      // if (current_char === "@") {
       if (
         /.*?deno.land\/(x\/)?\w+@[\w.-]*$/.test(
           line_text.substring(0, position.character)
@@ -232,7 +231,7 @@ export class ImportEnhancementCompletionProvider
   }
 
   activate(ctx: ExtensionContext): void {
-    this.vc = new VC(ctx, "import-enhenced");
+    this.vc = new VC(ctx, "import-enhanced");
 
     const document_selector = <DocumentSelector>[
       { language: "javascript" },
