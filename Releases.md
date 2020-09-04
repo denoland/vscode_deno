@@ -2,9 +2,9 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-### [v2.1.2](https://github.com/denoland/vscode_deno/compare/v2.1.0...v2.1.2) / 2020.09.04
+### [v2.1.2](https://github.com/denoland/vscode_deno/compare/v2.1.1...v2.1.2) / 2020.09.04
 
-- fix: another typescript not found error (#177)
+- fix: another typescript not found error (#178)
 
 ### [v2.1.1](https://github.com/denoland/vscode_deno/compare/v2.1.0...v2.1.1) / 2020.09.04
 
