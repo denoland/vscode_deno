@@ -1,14 +1,14 @@
 {
-  "Import Std": {
+  "Import deno.land/std": {
     "scope": "javascript,typescript",
-    "prefix": "impstd",
+    "prefix": ["impstd", "importstd"],
     "body": "import {$3} from 'https://deno.land/std@$1/$2';$0",
-    "description": "This snippet code is for deno only, it is for import std module conveniently"
+    "description": "Use this snippet to import a deno.land/std module."
   },
-  "Import X": {
+  "Import deno.land/x module": {
     "scope": "javascript,typescript",
-    "prefix": "impx",
+    "prefix": ["impx", "importx"],
     "body": "import {$4} from 'https://deno.land/x/$1@$2/$3';$0",
-    "description": "This snippet code is for deno only, it is for import std module conveniently"
+    "description": "Use this snippet to import a deno.land/x module."
   }
 }
