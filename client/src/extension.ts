@@ -619,10 +619,10 @@ Executable ${this.denoInfo.executablePath}`;
       .cacheModList()
       .then((state) => {
         if (state === CACHE_STATE.CACHE_SUCCESS) {
-          window.showInformationMessage("Module list cache successfully!");
+          window.showInformationMessage("deno.land/x module list cached successfully!");
         }
       })
-      .catch(() => window.showErrorMessage("Module list cache failed!"));
+      .catch(() => window.showErrorMessage("deno.land/x module list failed to cache!"));
 
     this.sync(window.activeTextEditor?.document);
 

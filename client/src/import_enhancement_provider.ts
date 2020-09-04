@@ -196,7 +196,7 @@ export class ImportEnhancementCompletionProvider
     return window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: "Fetching module list...",
+        title: "Fetching deno.land/x module list...",
       },
       async (progress) => {
         const mod_list_key = "mod_list";
