@@ -2,6 +2,15 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [v2.1.0](https://github.com/denoland/vscode_deno/compare/v2.0.16...v2.1.0) / 2020.09.04
+
+- feat: IntelliSense support for std and deno.land/x imports (#172)
+- fix: add support for URLs with non default ports (#173)
+- fix: correctly handle non existing \$DENO_DIR/deps (#169)
+- refactor: simplify import map json validation (#167)
+- chore: update dependencies (#164)
+- docs: remove non english readme (#164)
+
 ### [v2.0.16](https://github.com/denoland/vscode_deno/compare/v2.0.15...v2.0.16) / 2020.08.29
 
 - fix: autocomplete supports adding extensions (#156)
