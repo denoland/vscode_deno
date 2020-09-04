@@ -13,6 +13,8 @@ import {
   Command,
 } from "vscode";
 
+import Semver from "semver";
+
 import VC = require("vscode-cache");
 
 import {
@@ -44,32 +46,42 @@ export class ImportEnhancementCompletionProvider
         return undefined;
       }
       // We'll handle the completion only if the domain is `deno.land` and mod name is not empty
-      const current_char = line_text[position.character - 1];
-      if (current_char === "@") {
+      const at_index = line_text.indexOf("@");
+      // if (current_char === "@") {
+      if (
+        /.*?deno.land\/(x\/)?\w+@[\w.-]*$/.test(
+          line_text.substring(0, position.character)
+        ) &&
+        position.character > at_index
+      ) {
         // Version completion
         const vers = await listVersionsOfMod(imp_info.module);
 
         const result = vers.versions
           .sort((a, b) => {
-            const arr_a = a.split(".").map((it) => Number.parseInt(it));
-            const arr_b = b.split(".").map((it) => Number.parseInt(it));
-            for (const i in arr_a) {
-              const diff = arr_b[i] - arr_a[i];
-              if (diff !== 0) {
-                return diff;
-              }
+            const av = Semver.clean(a);
+            const bv = Semver.clean(b);
+            if (
+              av === null ||
+              bv === null ||
+              !Semver.valid(av) ||
+              !Semver.valid(bv)
+            ) {
+              return 0;
             }
-            return 0;
+            return Semver.gt(av, bv) ? -1 : 1;
           })
           .map((it, i) => {
             // let latest version on top
             const ci = new CompletionItem(it, CompletionItemKind.Value);
             ci.sortText = `a${String.fromCharCode(i) + 1}`;
-            // https://github.com/microsoft/vscode-extension-samples/blob/bb4a0c3a5dd9460a5cd64290b4d5c4f6bd79bdc4/completions-sample/src/extension.ts#L37
-            ci.command = <Command>{
-              command: "editor.action.triggerSuggest",
-              title: "Re-trigger completions...",
-            };
+            ci.filterText = it;
+            ci.range = new Range(
+              position.line,
+              at_index + 1,
+              position.line,
+              position.character
+            );
             return ci;
           });
         return new CompletionList(result);
@@ -92,6 +104,14 @@ export class ImportEnhancementCompletionProvider
           return ci;
         });
         return r;
+      }
+
+      if (
+        !/.*?deno\.land\/(x\/)?\w+@[\w.-]*\//.test(
+          line_text.substring(0, position.character)
+        )
+      ) {
+        return [];
       }
 
       const result = await modTreeOf(
