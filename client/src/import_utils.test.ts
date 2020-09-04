@@ -17,7 +17,7 @@ test("import-enhance listVersionsOfMod", async () => {
 });
 
 test("import-enhance modTreeOf", async () => {
-  const result = await modTreeOf("std");
+  const result = await modTreeOf(undefined, "std");
   expect(result.uploaded_at).toBeTruthy();
   expect(result.directory_listing.length).not.toEqual(0);
 });
@@ -62,6 +62,25 @@ test("import-enhance parseImportStatement", async () => {
         domain: "deno.land",
         module: "std",
         version: "latest",
+        path: "/",
+      },
+    },
+    // non semver verions
+    {
+      imp: "import {} from 'https://deno.land/std@1.0.0-alpha/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "1.0.0-alpha",
+        path: "/",
+      },
+    },
+    {
+      imp: "import {} from 'https://deno.land/std@v1/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "v1",
         path: "/",
       },
     },

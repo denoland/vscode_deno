@@ -2,7 +2,8 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./src",
-    "outDir": "./out"
+    "outDir": "./out",
+    "typeRoots": ["./types"]
   },
   "include": ["./src", "../core"]
 }

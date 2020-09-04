@@ -54,6 +54,11 @@
           "light": "resource/icon/refresh.light.svg",
           "dark": "resource/icon/refresh.dark.svg"
         }
+      },
+      {
+        "command": "deno._clear_import_enhencement_cache",
+        "title": "Clear import enhencement cache",
+        "category": "deno"
       }
     ],
     "views": {

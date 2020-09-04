@@ -115,6 +115,9 @@ export class Extension {
     },
     executablePath: "",
   };
+  // CGQAQ: ImportEnhancementCompletionProvider instance
+  private import_enhancement_completion_provider = new ImportEnhancementCompletionProvider();
+
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
     const config: ConfigurationField = {};
@@ -467,6 +470,11 @@ Executable ${this.denoInfo.executablePath}`;
       await window.showInformationMessage(`Copied to clipboard.`);
     });
 
+    // CGQAQ: deno._clear_import_enhencement_cache
+    this.registerCommand("_clear_import_enhencement_cache", async () => {
+      await this.import_enhancement_completion_provider.clearCache();
+    });
+
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
         const config = this.getConfiguration(editor.document.uri);
@@ -598,8 +606,7 @@ Executable ${this.denoInfo.executablePath}`;
     );
 
     // CGQAQ: activate import enhance feature
-    const import_enhance = new ImportEnhancementCompletionProvider();
-    import_enhance.activate(this.context);
+    this.import_enhancement_completion_provider.activate(this.context);
 
     this.sync(window.activeTextEditor?.document);
 
@@ -612,6 +619,8 @@ Executable ${this.denoInfo.executablePath}`;
   // deactivate function for vscode
   public async deactivate(context: ExtensionContext): Promise<void> {
     this.context = context;
+
+    this.import_enhancement_completion_provider.dispose();
 
     if (this.client) {
       await this.client.stop();

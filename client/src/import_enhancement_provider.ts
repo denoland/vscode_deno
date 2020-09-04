@@ -13,14 +13,18 @@ import {
   Command,
 } from "vscode";
 
+import VC = require("vscode-cache");
+
 import {
   listVersionsOfMod,
   modTreeOf,
   parseImportStatement,
+  searchX,
 } from "./import_utils";
 
 export class ImportEnhancementCompletionProvider
   implements CompletionItemProvider, Disposable {
+  vc?: VC;
   async provideCompletionItems(
     document: TextDocument,
     position: Position
@@ -61,7 +65,6 @@ export class ImportEnhancementCompletionProvider
             // let latest version on top
             const ci = new CompletionItem(it, CompletionItemKind.Value);
             ci.sortText = `a${String.fromCharCode(i) + 1}`;
-            ci.filterText = "a";
             // https://github.com/microsoft/vscode-extension-samples/blob/bb4a0c3a5dd9460a5cd64290b4d5c4f6bd79bdc4/completions-sample/src/extension.ts#L37
             ci.command = <Command>{
               command: "editor.action.triggerSuggest",
@@ -72,7 +75,30 @@ export class ImportEnhancementCompletionProvider
         return new CompletionList(result);
       }
 
-      const result = await modTreeOf(imp_info.module, imp_info.version);
+      if (
+        /.*?deno\.land\/x\/\w*$/.test(
+          line_text.substring(line_text.indexOf("'") + 1, position.character)
+        )
+      ) {
+        // x module name completion
+        const result: { name: string; description: string }[] = await searchX(
+          imp_info.module
+        );
+        const r = result.map((it) => {
+          const ci = new CompletionItem(it.name, CompletionItemKind.Module);
+          ci.detail = it.description;
+          ci.sortText = String.fromCharCode(1);
+          ci.filterText = it.name;
+          return ci;
+        });
+        return r;
+      }
+
+      const result = await modTreeOf(
+        this.vc,
+        imp_info.module,
+        imp_info.version
+      );
       const arr_path = imp_info.path.split("/");
       const path = arr_path.slice(0, arr_path.length - 1).join("/") + "/";
 
@@ -130,17 +156,22 @@ export class ImportEnhancementCompletionProvider
     }
   }
 
+  async clearCache(): Promise<void> {
+    await this.vc?.flush();
+  }
+
   activate(ctx: ExtensionContext): void {
+    this.vc = new VC(ctx, "import-enhenced");
+
     const document_selector = <DocumentSelector>[
       { language: "javascript" },
       { language: "typescript" },
     ];
     const trigger_word = ["@", "/"];
-    const import_enhance = new ImportEnhancementCompletionProvider();
     ctx.subscriptions.push(
       languages.registerCompletionItemProvider(
         document_selector,
-        import_enhance,
+        this,
         ...trigger_word
       )
     );
