@@ -28,6 +28,8 @@ test("core / module_resolver: resolve module from Deno cache", () => {
       "./sub/mod.ts",
       "/esm/mod.ts",
       "https://example.com/esm/mod.ts",
+      "https://example.com:443/esm/mod.ts",
+      "http://localhost:3000/mod.ts",
       "./module_not_exist.ts",
       "https://module.not.exist.com/mod.ts",
     ])
@@ -54,6 +56,25 @@ test("core / module_resolver: resolve module from Deno cache", () => {
       filepath: path.join(
         path.dirname(cacheFilepath),
         "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
+      ),
+    },
+    {
+      extension: ".ts",
+      origin: "https://example.com:443/esm/mod.ts",
+      filepath: path.join(
+        path.dirname(cacheFilepath),
+        "8afd52da760dab7f2deda4b7453197f50421f310372c5da3f3847ffd062fa1cf"
+      ),
+    },
+    {
+      extension: ".ts",
+      origin: "http://localhost:3000/mod.ts",
+      filepath: path.join(
+        denoDir,
+        "deps",
+        "http",
+        "localhost_PORT3000",
+        "51a61f14fdad404fd2c9187363be7846d6d3b84a2b8697b9bd50c60d4509ab60"
       ),
     },
     undefined,
