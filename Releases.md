@@ -8,7 +8,7 @@ Releases of the extension can be downloaded from [Visual Studio Marketplace](htt
 - fix: add support for URLs with non default ports (#173)
 - fix: correctly handle non existing \$DENO_DIR/deps (#169)
 - refactor: simplify import map json validation (#167)
-- chore: update dependencies (#164)
+- chore: update dependencies (#165)
 - docs: remove non english readme (#164)
 
 ### [v2.0.16](https://github.com/denoland/vscode_deno/compare/v2.0.15...v2.0.16) / 2020.08.29
