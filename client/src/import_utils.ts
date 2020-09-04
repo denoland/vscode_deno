@@ -49,13 +49,9 @@ export async function searchX(
 ): Promise<ModuleInfo[]> {
   if (cache.has("mod_list")) {
     const buff = cache.get("mod_list") as ModuleInfo[];
-    const r = buff
+    return buff
       .filter((it) => it.name.startsWith(keyword))
       .sort((a, b) => b.search_score - a.search_score);
-    if (r.length < 50) {
-      return r;
-    }
-    return r.splice(0, 50);
   } else {
     return [];
   }
