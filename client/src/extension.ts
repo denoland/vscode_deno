@@ -472,7 +472,10 @@ Executable ${this.denoInfo.executablePath}`;
 
     // CGQAQ: deno._clear_import_enhencement_cache
     this.registerCommand("_clear_import_enhencement_cache", async () => {
-      await this.import_enhancement_completion_provider.clearCache();
+      this.import_enhancement_completion_provider
+        .clearCache()
+        .then(() => window.showInformationMessage("Clear success!"))
+        .catch(() => window.showErrorMessage("Clear failed!"));
     });
 
     this.registerQuickFix({
