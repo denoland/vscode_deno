@@ -1,14 +1,8 @@
 import {
-  searchX,
   listVersionsOfMod,
   modTreeOf,
   parseImportStatement,
 } from "./import_utils";
-
-test("import-enhance searchX", async () => {
-  const result = await searchX("std");
-  expect(result.length).not.toEqual(0);
-});
 
 test("import-enhance listVersionsOfMod", async () => {
   const result = await listVersionsOfMod("std");
@@ -30,10 +24,10 @@ test("import-enhance parseImportStatement", async () => {
     }[]
   >[
     {
-      imp: "import * from 'http://a.c/x/a.ts'",
+      imp: "import * from 'http://a.c/xx/a.ts'",
       expect: {
         domain: "a.c",
-        module: "x",
+        module: "xx",
         version: "latest",
         path: "/a.ts",
       },
@@ -81,6 +75,24 @@ test("import-enhance parseImportStatement", async () => {
         domain: "deno.land",
         module: "std",
         version: "v1",
+        path: "/",
+      },
+    },
+    {
+      imp: "import {} from 'https://deno.land/x/@/';",
+      expect: {
+        domain: "deno.land",
+        module: "",
+        version: "latest",
+        path: "/",
+      },
+    },
+    {
+      imp: "import { } from 'https://deno.land/x/sq'",
+      expect: {
+        domain: "deno.land",
+        module: "sq",
+        version: "latest",
         path: "/",
       },
     },

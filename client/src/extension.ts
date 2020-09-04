@@ -32,7 +32,10 @@ import execa from "execa";
 import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
-import { ImportEnhancementCompletionProvider } from "./import_enhancement_provider";
+import {
+  ImportEnhancementCompletionProvider,
+  CACHE_STATE,
+} from "./import_enhancement_provider";
 
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
@@ -610,6 +613,16 @@ Executable ${this.denoInfo.executablePath}`;
 
     // CGQAQ: activate import enhance feature
     this.import_enhancement_completion_provider.activate(this.context);
+
+    // CGQAQ: Start caching full module list
+    this.import_enhancement_completion_provider
+      .cacheModList()
+      .then((state) => {
+        if (state === CACHE_STATE.CACHE_SUCCESS) {
+          window.showInformationMessage("Module list cache successfully!");
+        }
+      })
+      .catch(() => window.showErrorMessage("Module list cache failed!"));
 
     this.sync(window.activeTextEditor?.document);
 

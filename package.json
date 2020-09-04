@@ -148,6 +148,14 @@
       {
         "language": "typescript",
         "path": "snippets/import_enhancement.json"
+      },
+      {
+        "language": "javascriptreact",
+        "path": "snippets/import_enhancement.json"
+      },
+      {
+        "language": "typescriptreact",
+        "path": "snippets/import_enhancement.json"
       }
     ]
   },

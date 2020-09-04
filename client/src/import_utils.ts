@@ -5,32 +5,57 @@
 import got from "got";
 import VC from "vscode-cache";
 
-interface ModuleInfo {
+export interface ModuleInfo {
   name: string;
   description: string;
   star_count: string;
   search_score: number;
 }
 
-export async function searchX(keyword: string): Promise<ModuleInfo[]> {
-  // https://api.deno.land/modules?limit=10&query=$QUERY
-  const response: {
+export async function* fetchModList(): AsyncGenerator<{
+  current: number;
+  total: number;
+  data: ModuleInfo[];
+}> {
+  // https://api.deno.land/modules?limit=100&query=$QUERY
+
+  let response: {
     success: boolean;
     data: {
       total_count: number;
       results: ModuleInfo[];
     };
-  } = await got(
-    `https://api.deno.land/modules?limit=20&query=${keyword}`
-  ).json();
-  if (response.success) {
-    const arr = response.data.results.sort(
-      (a, b) => b.search_score - a.search_score
-    );
-    if (arr.length < 20) {
-      return arr;
+  };
+  let page = 1;
+  do {
+    response = await got(
+      `https://api.deno.land/modules?limit=100&page=${page}`
+    ).json();
+    if (Array.isArray(response.data.results)) {
+      yield {
+        current: page,
+        total: Math.ceil(response.data.total_count / 100),
+        data: response.data.results,
+      };
     }
-    return arr.splice(0, 20);
+    page++;
+  } while (response.success && response.data.results.length > 0);
+}
+
+// this function now is search from cache only
+export async function searchX(
+  cache: VC,
+  keyword: string
+): Promise<ModuleInfo[]> {
+  if (cache.has("mod_list")) {
+    const buff = cache.get("mod_list") as ModuleInfo[];
+    const r = buff
+      .filter((it) => it.name.startsWith(keyword))
+      .sort((a, b) => b.search_score - a.search_score);
+    if (r.length < 50) {
+      return r;
+    }
+    return r.splice(0, 50);
   } else {
     return [];
   }
@@ -45,7 +70,9 @@ export async function listVersionsOfMod(
 ): Promise<ModVersions> {
   // https://cdn.deno.land/$MODULE/meta/versions.json
   const response: ModVersions = await got(
-    `https://cdn.deno.land/${module_name}/meta/versions.json`
+    `https://cdn.deno.land/${encodeURIComponent(
+      module_name
+    )}/meta/versions.json`
   ).json();
   return response;
 }
@@ -79,7 +106,9 @@ export async function modTreeOf(
   }
 
   const response: ModTree = await got(
-    `https://cdn.deno.land/${module_name}/versions/${ver}/meta/meta.json`
+    `https://cdn.deno.land/${encodeURIComponent(
+      module_name
+    )}/versions/${ver}/meta/meta.json`
   ).json();
 
   // cache it
@@ -96,24 +125,47 @@ interface ImportUrlInfo {
 }
 
 export function parseImportStatement(text: string): ImportUrlInfo | undefined {
-  const importUrl = text.match(
-    /.*?['"](\w+:\/\/)(?<domain>.*?)\/(?<lib>\w+\/?)(?<xlib>\w+)?(@(?<ver>.*?))?(?<path>\/.*?)['"]/
-  )?.groups;
-  if (!importUrl) {
+  const reg_groups = text.match(/.*?['"](?<url>.*?)['"]/)?.groups;
+  if (!reg_groups) {
     return undefined;
   }
-  const [domain, module, version, path] = [
-    importUrl["domain"],
-    importUrl["xlib"] ?? importUrl["lib"],
-    importUrl["ver"] === "" || importUrl["ver"] === undefined
-      ? "latest"
-      : importUrl["ver"],
-    importUrl["path"] ?? "/",
-  ];
-  return {
-    domain,
-    module,
-    version,
-    path,
-  } as ImportUrlInfo;
+  const import_url = reg_groups["url"] ?? "";
+  try {
+    const url = new URL(import_url);
+    const components = url.pathname.split("/");
+    const parse = (components: string[]) => {
+      const module_info = components[0].split("@");
+      if (module_info.length > 1) {
+        const module = module_info[0];
+        const version = module_info[1].length === 0 ? "latest" : module_info[1];
+        const path = "/" + components.slice(1, components.length).join("/");
+        return {
+          domain: url.hostname,
+          module,
+          version,
+          path,
+        };
+      } else {
+        const module = module_info[0];
+        const version = "latest";
+        const path = "/" + components.slice(1, components.length).join("/");
+        return {
+          domain: url.hostname,
+          module,
+          version,
+          path,
+        };
+      }
+    };
+    if (components.length > 2) {
+      const m = components[1];
+      if (m === "x") {
+        return parse(components.slice(2, components.length));
+      } else {
+        return parse(components.slice(1, components.length));
+      }
+    }
+  } catch {
+    return undefined;
+  }
 }

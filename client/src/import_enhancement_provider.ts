@@ -11,6 +11,8 @@ import {
   ExtensionContext,
   Range,
   Command,
+  window,
+  ProgressLocation,
 } from "vscode";
 
 import Semver from "semver";
@@ -22,7 +24,14 @@ import {
   modTreeOf,
   parseImportStatement,
   searchX,
+  fetchModList,
+  ModuleInfo,
 } from "./import_utils";
+
+export enum CACHE_STATE {
+  ALREADY_CACHED,
+  CACHE_SUCCESS,
+}
 
 export class ImportEnhancementCompletionProvider
   implements CompletionItemProvider, Disposable {
@@ -38,11 +47,7 @@ export class ImportEnhancementCompletionProvider
     if (/import.+?from\W+['"].*?['"]/.test(line_text)) {
       // We're at import statement line
       const imp_info = parseImportStatement(line_text);
-      if (
-        imp_info?.domain !== "deno.land" ||
-        imp_info.module === undefined ||
-        imp_info.module.length === 0
-      ) {
+      if (imp_info?.domain !== "deno.land") {
         return undefined;
       }
       // We'll handle the completion only if the domain is `deno.land` and mod name is not empty
@@ -93,21 +98,26 @@ export class ImportEnhancementCompletionProvider
         )
       ) {
         // x module name completion
-        const result: { name: string; description: string }[] = await searchX(
-          imp_info.module
-        );
-        const r = result.map((it) => {
-          const ci = new CompletionItem(it.name, CompletionItemKind.Module);
-          ci.detail = it.description;
-          ci.sortText = String.fromCharCode(1);
-          ci.filterText = it.name;
-          return ci;
-        });
-        return r;
+        if (this.vc !== undefined) {
+          const result: { name: string; description: string }[] = await searchX(
+            this.vc,
+            imp_info.module
+          );
+          const r = result.map((it) => {
+            const ci = new CompletionItem(it.name, CompletionItemKind.Module);
+            ci.detail = it.description;
+            ci.sortText = String.fromCharCode(1);
+            ci.filterText = it.name;
+            return ci;
+          });
+          return r;
+        } else {
+          return [];
+        }
       }
 
       if (
-        !/.*?deno\.land\/(x\/)?\w+@[\w.-]*\//.test(
+        !/.*?deno\.land\/(x\/)?\w+(@[\w.-]*)?\//.test(
           line_text.substring(0, position.character)
         )
       ) {
@@ -138,6 +148,9 @@ export class ImportEnhancementCompletionProvider
             //  include only js and ts
             (it.path.endsWith(".ts") ||
               it.path.endsWith(".js") ||
+              it.path.endsWith(".tsx") ||
+              it.path.endsWith(".jsx") ||
+              it.path.endsWith(".mjs") ||
               it.type !== "file") &&
             // exclude privates
             !it.path.startsWith("_") &&
@@ -180,12 +193,52 @@ export class ImportEnhancementCompletionProvider
     await this.vc?.flush();
   }
 
+  async cacheModList(): Promise<CACHE_STATE> {
+    return window.withProgress(
+      {
+        location: ProgressLocation.Notification,
+        title: "Fetching module list...",
+      },
+      async (progress) => {
+        const mod_list_key = "mod_list";
+        if (this.vc?.isExpired(mod_list_key) || !this.vc?.has(mod_list_key)) {
+          this.vc?.forget(mod_list_key);
+          progress.report({ increment: 0 });
+          for await (const modules of fetchModList()) {
+            if (this.vc?.has(mod_list_key)) {
+              const list_in_cache = this.vc?.get(mod_list_key) as ModuleInfo[];
+              list_in_cache.push(...modules.data);
+              await this.vc?.put(
+                mod_list_key,
+                list_in_cache,
+                60 * 60 * 24 * 7 /* expiration in a week */
+              );
+            } else {
+              this.vc?.put(
+                mod_list_key,
+                modules.data,
+                60 * 60 * 24 * 7 /* expiration in a week */
+              );
+            }
+            progress.report({
+              increment: (1 / modules.total) * 100,
+            });
+          }
+          return CACHE_STATE.CACHE_SUCCESS;
+        }
+        return CACHE_STATE.ALREADY_CACHED;
+      }
+    );
+  }
+
   activate(ctx: ExtensionContext): void {
     this.vc = new VC(ctx, "import-enhenced");
 
     const document_selector = <DocumentSelector>[
       { language: "javascript" },
       { language: "typescript" },
+      { language: "javascriptreact" },
+      { language: "typescriptreact" },
     ];
     const trigger_word = ["@", "/"];
     ctx.subscriptions.push(
