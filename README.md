@@ -34,6 +34,12 @@ Features:
 
 </details>
 
+<details><summary>Intelligent module import enhanced</summary>
+
+![Import enhanced](screenshot/import_enhancement.gif)
+
+</details>
+
 <details><summary>Supports importing ECMAScript modules</summary>
 
 ![Import](screenshot/ecma.gif)
