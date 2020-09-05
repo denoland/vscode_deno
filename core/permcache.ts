@@ -63,7 +63,7 @@ export class PermCache<T> {
     const expiring_date =
       timeout === undefined ? undefined : new Date().getTime() + timeout * 1000; // to millis
     if (!fs.existsSync(vscode_deno_path)) {
-      await fsp.mkdir(vscode_deno_path, {recursive: true});
+      await fsp.mkdir(vscode_deno_path, { recursive: true });
     }
 
     let cache_file: fsp.FileHandle;
