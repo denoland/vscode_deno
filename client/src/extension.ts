@@ -594,17 +594,24 @@ Executable ${this.denoInfo.executablePath}`;
       _ignore_text_line_lint: async (editor, _, range, rule: unknown) => {
         editor.edit((edit) => {
           const currentLineText = editor.document.lineAt(range.start.line);
-          const lastLineText = editor.document.lineAt(range.start.line - 1);
+          const previousLineText = editor.document.lineAt(range.start.line - 1);
 
-          const offsetEmpty =
+          const offset =
             currentLineText.text.length - currentLineText.text.trim().length;
 
-          edit.replace(
-            lastLineText.range,
-            lastLineText.text +
-              "\n" +
-              `${" ".repeat(offsetEmpty)}// deno-lint-ignore-next-line ${rule}`
-          );
+          if (/^\s*\/\/\s+deno-lint-ignore\s*/.test(previousLineText.text)) {
+            edit.replace(
+              previousLineText.range,
+              previousLineText.text + " " + rule
+            );
+          } else {
+            edit.replace(
+              previousLineText.range,
+              previousLineText.text +
+                "\n" +
+                `${" ".repeat(offset)}// deno-lint-ignore ${rule}`
+            );
+          }
         });
         return;
       },
