@@ -591,7 +591,7 @@ Executable ${this.denoInfo.executablePath}`;
 
         this.updateDiagnostic(editor.document.uri);
       },
-      _ignore_text_line_lint: async (editor, _, range, rule: unknown) => {
+      _ignore_next_line_lint: async (editor, _, range, rule: unknown) => {
         editor.edit((edit) => {
           const currentLineText = editor.document.lineAt(range.start.line);
           const previousLineText = editor.document.lineAt(range.start.line - 1);
