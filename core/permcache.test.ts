@@ -8,7 +8,7 @@ test("core / permcache", async () => {
   // test expired
   await sleep(500);
   expect(cache.expired()).toBeFalsy();
-  await sleep(500);
+  await sleep(600);
   expect(cache.expired()).toBeTruthy();
 
   expect(cache.get()).toEqual(undefined);
