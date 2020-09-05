@@ -82,7 +82,7 @@ export interface ModTree {
   directory_listing: ModTreeItem[];
 }
 export async function modTreeOf(
-  cache: PermCache<Map<string, ModTree>>,
+  cache: PermCache<Record<string, ModTree>>,
   module_name: string,
   version = "latest"
 ): Promise<ModTree> {
@@ -95,9 +95,9 @@ export async function modTreeOf(
 
   const cache_key = `${module_name}@${ver}`;
   const cache_content = cache.get();
-  if (cache_content?.has(cache_key)) {
+  if (cache_content?.hasOwnProperty(cache_key)) {
     // use cache
-    return cache_content.get(cache_key) as ModTree;
+    return cache_content[cache_key] as ModTree;
   }
 
   const response: ModTree = await got(
@@ -108,12 +108,12 @@ export async function modTreeOf(
 
   // cache it
   if (cache_content !== undefined) {
-    cache_content.set(cache_key, response);
+    cache_content[cache_key] = response;
     await cache.set(cache_content);
   } else {
-    const map = new Map<string, ModTree>();
-    map.set(cache_key, response);
-    await cache.set(map);
+    const obj: Record<string, ModTree> = {};
+    obj[cache_key] = response;
+    await cache.set(obj);
   }
 
   return response;

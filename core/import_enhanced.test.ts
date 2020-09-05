@@ -14,11 +14,15 @@ test("core / import_enhance: listVersionsOfMod", async () => {
 });
 
 test("core / import_enhance: modTreeOf", async () => {
-  const cache = await PermCache.create<Map<string, ModTree>>("test", undefined);
-  cache.destroy_cache();
+  const cache = await PermCache.create<Record<string, ModTree>>(
+    "import_enhance-test",
+    undefined
+  );
+  await cache.destroy_cache();
   const result = await modTreeOf(cache, "std");
   expect(result.uploaded_at).toBeTruthy();
   expect(result.directory_listing.length).not.toEqual(0);
+  await cache.destroy_cache();
 });
 
 test("core / import_enhance: parseImportStatement", async () => {

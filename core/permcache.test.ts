@@ -3,7 +3,7 @@ import { sleep } from "./util";
 
 test("core / permcache", async () => {
   const data = [1, 2];
-  const cache = await PermCache.create("test", 1);
+  const cache = await PermCache.create("permcache-test", 1);
 
   // test expired
   await sleep(500);
