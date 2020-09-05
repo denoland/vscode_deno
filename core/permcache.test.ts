@@ -1,9 +1,15 @@
 import { PermCache, TRANSACTION_STATE } from "./permcache";
+import { sleep } from "./util";
 
 test("core / permcache", async () => {
   const data = [1, 2];
-  const cache = await PermCache.create("test", undefined);
-  await cache.destroy_cache();
+  const cache = await PermCache.create("test", 1);
+
+  // test expired
+  await sleep(500);
+  expect(cache.expired()).toBeFalsy();
+  await sleep(500);
+  expect(cache.expired()).toBeTruthy();
 
   expect(cache.get()).toEqual(undefined);
   await cache.set(data);

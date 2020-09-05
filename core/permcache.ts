@@ -1,5 +1,5 @@
 // Permanent version of the Cache from cache.ts in the same folder
-import fsp from "fs/promises";
+import { promises as fsp } from "fs";
 import fs from "fs";
 import path from "path";
 
@@ -72,7 +72,7 @@ export class PermCache<T> {
       cache_file = await fsp.open(cache_file_path, "w");
 
       const cache = { expiring_date, data: undefined } as CacheFormat<T>;
-      cache_file.writeFile(JSON.stringify(cache));
+      await cache_file.writeFile(JSON.stringify(cache));
       await cache_file.close();
 
       return new PermCache<T>(cache_file_path, cache);
@@ -111,21 +111,41 @@ export class PermCache<T> {
     this.inner_data = cache;
   }
 
-  get(): T | undefined {
-    return this.inner_data?.data;
-  }
-
-  async reload_get(): Promise<T | undefined> {
+  async reload(): Promise<void> {
     if (fs.existsSync(this.cache_file_path)) {
       const cache_file_content = await fsp.readFile(
         this.cache_file_path,
         "utf-8"
       );
       this.inner_data = JSON.parse(cache_file_content) as CacheFormat<T>;
-      return this.inner_data.data;
+      return;
     }
     this.inner_data = undefined;
-    return undefined;
+  }
+
+  get(): T | undefined {
+    return this.inner_data?.data;
+  }
+
+  expired(): boolean {
+    const now = new Date().getTime();
+    if (
+      this.inner_data !== undefined &&
+      this.inner_data.expiring_date !== undefined
+    ) {
+      return now >= this.inner_data.expiring_date;
+    }
+    return false;
+  }
+
+  async reload_expired(): Promise<boolean> {
+    await this.reload();
+    return this.expired();
+  }
+
+  async reload_get(): Promise<T | undefined> {
+    await this.reload();
+    return this.inner_data?.data;
   }
 
   async set(data: T | undefined): Promise<void> {
