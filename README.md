@@ -133,6 +133,8 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
 
+- `deno.lint` - If Deno's lint is enabled. `deno.unstable = true` is required. Default is `false`
+
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
 ```json5
@@ -155,6 +157,19 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
   "[typescriptreact]": {
     "editor.defaultFormatter": "denoland.vscode-deno",
   },
+}
+```
+
+This extension also provides Deno's lint tools, settings are in `.vscode/settings.json`:
+
+NOTE: Since Lint is still an experimental feature, So you need to set `deno.unstable = true`. And this function may change in the future.
+
+```json5
+// .vscode/settings.json
+{
+  "deno.enable": true,
+  "deno.unstable": true,
+  "deno.lint": true,
 }
 ```
 

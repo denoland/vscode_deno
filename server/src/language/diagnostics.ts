@@ -8,6 +8,8 @@ import {
   CodeActionKind,
   Command,
   TextDocuments,
+  Range,
+  Position,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
@@ -17,7 +19,7 @@ import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
 import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
-import { getImportModules, Range } from "../../../core/deno_deps";
+import { getImportModules } from "../../../core/deno_deps";
 import { Notification } from "../../../core/const";
 import { deno } from "../deno";
 
@@ -59,19 +61,14 @@ export class Diagnostics {
         return;
       }
 
-      const actions: CodeAction[] = denoDiagnostics
+      const rules = await deno.getLintRules();
+
+      const actions: CodeAction[] = [];
+
+      const documentAction = denoDiagnostics
+        .filter((v) => v.code && FixItems[+v.code])
         .map((v) => {
-          const code = v.code;
-
-          if (!code) {
-            return;
-          }
-
-          const fixItem: Fix = FixItems[+code];
-
-          if (!fixItem) {
-            return;
-          }
+          const fixItem: Fix = FixItems[+(v.code as string)];
 
           const action = CodeAction.create(
             `${fixItem.title} (${this.name})`,
@@ -80,25 +77,51 @@ export class Diagnostics {
               fixItem.command,
               // argument
               textDocument.uri,
-              {
-                start: {
-                  line: v.range.start.line,
-                  character: v.range.start.character,
-                },
-                end: {
-                  line: v.range.end.line,
-                  character: v.range.end.character,
-                },
-              }
+              v.range
             ),
             CodeActionKind.QuickFix
           );
 
           return action;
-        })
-        .filter((v) => v) as CodeAction[];
+        });
 
-      return actions;
+      const denoLintAction = denoDiagnostics
+        .filter((v) => v.code && rules.includes(v.code as string))
+        .map((v) => {
+          const action = CodeAction.create(
+            `ignore next line rule \`${v.code}\` (${this.name})`,
+            Command.create(
+              "Fix lint",
+              `deno._ignore_text_line_lint`,
+              // argument
+              textDocument.uri,
+              v.range,
+              v.code
+            ),
+            CodeActionKind.QuickFix
+          );
+
+          return action;
+        });
+
+      if (denoLintAction.length) {
+        denoLintAction.push(
+          CodeAction.create(
+            `ignore entry file (${this.name})`,
+            Command.create(
+              "Fix lint",
+              `deno._ignore_entry_file`,
+              // argument
+              textDocument.uri,
+              Range.create(Position.create(0, 0), Position.create(0, 0)),
+              "deno_lint"
+            ),
+            CodeActionKind.QuickFix
+          )
+        );
+      }
+
+      return actions.concat(documentAction).concat(denoLintAction);
     });
 
     connection.onNotification(Notification.diagnostic, (uri: string) => {
@@ -114,26 +137,15 @@ export class Diagnostics {
    * @param document
    */
   async lint(document: TextDocument): Promise<Diagnostic[]> {
-    const uri = URI.parse(document.uri);
-
-    const lintOutput = await deno.lintFile(uri.fsPath);
-
-    this.connection.console.log(JSON.stringify(lintOutput));
+    const lintOutput = await deno.lint(document.getText());
 
     return lintOutput.diagnostics.map((v) => {
-      const location: Range = {
-        start: {
-          line: v.location.line - 1,
-          character: v.location.col,
-        },
-        end: {
-          line: v.location.line - 1,
-          character: v.location.col + v.snippet_length,
-        },
-      };
+      const start = Position.create(v.range.start.line - 1, v.range.start.col);
+      const end = Position.create(v.range.end.line - 1, v.range.end.col);
+      const range = Range.create(start, end);
 
       return Diagnostic.create(
-        location,
+        range,
         v.message,
         DiagnosticSeverity.Error,
         v.code,
