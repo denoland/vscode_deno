@@ -32,11 +32,6 @@ import execa from "execa";
 import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
-import {
-  ImportEnhancementCompletionProvider,
-  CACHE_STATE,
-} from "./import_enhancement_provider";
-
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
@@ -118,9 +113,6 @@ export class Extension {
     },
     executablePath: "",
   };
-  // CGQAQ: ImportEnhancementCompletionProvider instance
-  private import_enhancement_completion_provider = new ImportEnhancementCompletionProvider();
-
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
     const config: ConfigurationField = {};
@@ -473,14 +465,6 @@ Executable ${this.denoInfo.executablePath}`;
       await window.showInformationMessage(`Copied to clipboard.`);
     });
 
-    // CGQAQ: deno._clear_import_enhencement_cache
-    this.registerCommand("_clear_import_enhencement_cache", async () => {
-      this.import_enhancement_completion_provider
-        .clearCache()
-        .then(() => window.showInformationMessage("Clear success!"))
-        .catch(() => window.showErrorMessage("Clear failed!"));
-    });
-
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
         const config = this.getConfiguration(editor.document.uri);
@@ -611,23 +595,6 @@ Executable ${this.denoInfo.executablePath}`;
       window.registerTreeDataProvider("deno", treeView)
     );
 
-    // CGQAQ: activate import enhance feature
-    this.import_enhancement_completion_provider.activate(this.context);
-
-    // CGQAQ: Start caching full module list
-    this.import_enhancement_completion_provider
-      .cacheModList()
-      .then((state) => {
-        if (state === CACHE_STATE.CACHE_SUCCESS) {
-          window.showInformationMessage(
-            "deno.land/x module list cached successfully!"
-          );
-        }
-      })
-      .catch(() =>
-        window.showErrorMessage("deno.land/x module list failed to cache!")
-      );
-
     this.sync(window.activeTextEditor?.document);
 
     const extension = extensions.getExtension(this.id);
@@ -639,8 +606,6 @@ Executable ${this.denoInfo.executablePath}`;
   // deactivate function for vscode
   public async deactivate(context: ExtensionContext): Promise<void> {
     this.context = context;
-
-    this.import_enhancement_completion_provider.dispose();
 
     if (this.client) {
       await this.client.stop();
