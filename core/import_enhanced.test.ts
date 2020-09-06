@@ -2,21 +2,48 @@ import {
   listVersionsOfMod,
   modTreeOf,
   parseImportStatement,
-} from "./import_utils";
+  ModTree,
+  VERSION_REG,
+} from "./import_enhanced";
 
-test("import-enhance listVersionsOfMod", async () => {
+import { PermCache } from "./permcache";
+
+test("core / import_enhance: test VERSION_REG", async () => {
+  const test_cases: { text: string; result: boolean }[] = [
+    { text: "1.0.0", result: true },
+    { text: "1.0.0@", result: false },
+    { text: "1.0.0嗯？", result: false },
+    { text: "1.0.0-alpha", result: true },
+    { text: "1.0.0-beta_1", result: true },
+    { text: "v1", result: true },
+    { text: "v1/", result: false },
+    { text: "/v1", result: false },
+  ];
+
+  for (const test_case of test_cases) {
+    expect(VERSION_REG.test(test_case.text)).toEqual(test_case.result);
+  }
+});
+
+test("core / import_enhance: listVersionsOfMod", async () => {
   const result = await listVersionsOfMod("std");
   expect(result.latest).toBeTruthy();
   expect(result.versions.length).not.toEqual(0);
 });
 
-test("import-enhance modTreeOf", async () => {
-  const result = await modTreeOf(undefined, "std");
+test("core / import_enhance: modTreeOf", async () => {
+  const cache = await PermCache.create<Record<string, ModTree>>(
+    "import_enhance-test",
+    undefined
+  );
+  await cache.destroy_cache();
+  const result = await modTreeOf("std", undefined, cache);
   expect(result.uploaded_at).toBeTruthy();
   expect(result.directory_listing.length).not.toEqual(0);
+  await cache.destroy_cache();
 });
 
-test("import-enhance parseImportStatement", async () => {
+test("core / import_enhance: parseImportStatement", async () => {
   const test_cases = [
     {
       imp: "import * from 'http://a.c/xx/a.ts'",
