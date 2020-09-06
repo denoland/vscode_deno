@@ -56,7 +56,7 @@ export class PermCache<T> {
 
   static async create<T>(
     namespace: string,
-    timeout: number | undefined
+    timeout?: number
   ): Promise<PermCache<T>> {
     const vscode_deno_path = getVSCodeDenoDir();
     const cache_file_path = path.join(vscode_deno_path, `${namespace}.json`);

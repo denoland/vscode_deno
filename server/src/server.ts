@@ -23,6 +23,10 @@ import { DocumentFormatting } from "./language/document_formatting";
 import { Hover } from "./language/hover";
 import { Completion } from "./language/completion";
 import { CodeLens } from "./language/code_lens";
+import {
+  ImportCompletionEnhanced,
+  CACHE_STATE,
+} from "./language/import_completion_enhanced";
 
 import { getDenoDir, getDenoDts } from "../../core/deno";
 import { pathExists } from "../../core/util";
@@ -42,6 +46,7 @@ const connection: IConnection = createConnection(
 const documents = new TextDocuments(TextDocument);
 
 const bridge = new Bridge(connection);
+const import_enhanced = new ImportCompletionEnhanced(connection, documents);
 new DependencyTree(connection, bridge);
 new Diagnostics(SERVER_NAME, connection, bridge, documents);
 new Definition(connection, documents);
@@ -49,7 +54,7 @@ new References(connection, documents);
 new DocumentHighlight(connection, documents);
 new DocumentFormatting(connection, documents, bridge);
 new Hover(connection, documents);
-new Completion(connection, documents);
+new Completion(connection, documents, import_enhanced);
 new CodeLens(connection, documents);
 
 connection.onInitialize(
@@ -63,7 +68,7 @@ connection.onInitialize(
           change: TextDocumentSyncKind.Full,
         },
         completionProvider: {
-          triggerCharacters: ["http", "https"],
+          triggerCharacters: ["http", "https", "@", '"', "'"],
         },
         codeActionProvider: {
           codeActionKinds: [CodeActionKind.QuickFix],
@@ -116,6 +121,20 @@ connection.onInitialized(async () => {
     executablePath: deno.executablePath,
     DENO_DIR: getDenoDir(),
   });
+  import_enhanced
+    .cacheModList()
+    .then((it) => {
+      if (it === CACHE_STATE.CACHE_SUCCESS) {
+        connection.window.showInformationMessage(
+          "deno.land/x module list cached successfully!"
+        );
+      }
+    })
+    .catch(() =>
+      connection.window.showErrorMessage(
+        "deno.land/x module list failed to cache!"
+      )
+    );
   connection.console.log("server initialized.");
 });
 

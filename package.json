@@ -169,7 +169,6 @@
     "format": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --write",
     "test": "jest --coverage",
     "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "test.import-enhance": "jest -t 'import-enhance'",
     "build": "npx vsce package -o ./vscode-deno.vsix",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },

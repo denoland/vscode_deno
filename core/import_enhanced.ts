@@ -3,6 +3,8 @@ import { PermCache } from "./permcache";
 
 export type ModList = ModuleInfo[];
 
+export type ModListCache = PermCache<ModList>;
+
 export interface ModuleInfo {
   name: string;
   description: string;
@@ -81,10 +83,14 @@ export interface ModTree {
   uploaded_at: string; // Use this to update cache
   directory_listing: ModTreeItem[];
 }
+
+export type ModTreeCacheItem = Record<string, ModTree>;
+export type ModTreeCache = PermCache<ModTreeCacheItem>;
+
 export async function modTreeOf(
-  cache: PermCache<Record<string, ModTree>>,
   module_name: string,
-  version = "latest"
+  version = "latest",
+  cache?: PermCache<Record<string, ModTree>>
 ): Promise<ModTree> {
   // https://cdn.deno.land/$MODULE/versions/$VERSION/meta/meta.json
   let ver = version;
@@ -94,7 +100,7 @@ export async function modTreeOf(
   }
 
   const cache_key = `${module_name}@${ver}`;
-  const cache_content = cache.get();
+  const cache_content = cache?.get();
   if (cache_content?.hasOwnProperty(cache_key)) {
     // use cache
     return cache_content[cache_key] as ModTree;
@@ -109,11 +115,11 @@ export async function modTreeOf(
   // cache it
   if (cache_content !== undefined) {
     cache_content[cache_key] = response;
-    await cache.set(cache_content);
+    await cache?.set(cache_content);
   } else {
     const obj: Record<string, ModTree> = {};
     obj[cache_key] = response;
-    await cache.set(obj);
+    await cache?.set(obj);
   }
 
   return response;
@@ -126,8 +132,12 @@ interface ImportUrlInfo {
   path: string;
 }
 
+export const IMP_REG = /^.*?import.+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
+export const VERSION_REG = /^([\w.\-_]+)$/;
+export const MOD_NAME_REG = /^[\w-_]+$/;
+
 export function parseImportStatement(text: string): ImportUrlInfo | undefined {
-  const reg_groups = text.match(/.*?['"](?<url>.*?)['"]/)?.groups;
+  const reg_groups = text.match(IMP_REG)?.groups;
   if (!reg_groups) {
     return undefined;
   }
@@ -159,7 +169,7 @@ export function parseImportStatement(text: string): ImportUrlInfo | undefined {
         };
       }
     };
-    if (components.length > 2) {
+    if (components.length > 1) {
       const m = components[1];
       if (m === "x") {
         return parse(components.slice(2, components.length));

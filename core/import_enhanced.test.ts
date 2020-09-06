@@ -3,9 +3,27 @@ import {
   modTreeOf,
   parseImportStatement,
   ModTree,
+  VERSION_REG,
 } from "./import_enhanced";
 
 import { PermCache } from "./permcache";
+
+test("core / import_enhance: test VERSION_REG", async () => {
+  const test_cases: { text: string; result: boolean }[] = [
+    { text: "1.0.0", result: true },
+    { text: "1.0.0@", result: false },
+    { text: "1.0.0嗯？", result: false },
+    { text: "1.0.0-alpha", result: true },
+    { text: "1.0.0-beta_1", result: true },
+    { text: "v1", result: true },
+    { text: "v1/", result: false },
+    { text: "/v1", result: false },
+  ];
+
+  for (const test_case of test_cases) {
+    expect(VERSION_REG.test(test_case.text)).toEqual(test_case.result);
+  }
+});
 
 test("core / import_enhance: listVersionsOfMod", async () => {
   const result = await listVersionsOfMod("std");
@@ -19,7 +37,7 @@ test("core / import_enhance: modTreeOf", async () => {
     undefined
   );
   await cache.destroy_cache();
-  const result = await modTreeOf(cache, "std");
+  const result = await modTreeOf("std", undefined, cache);
   expect(result.uploaded_at).toBeTruthy();
   expect(result.directory_listing.length).not.toEqual(0);
   await cache.destroy_cache();
