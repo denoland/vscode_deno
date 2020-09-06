@@ -92,7 +92,7 @@ export class Diagnostics {
             `ignore \`${v.code}\` for this line (${this.name})`,
             Command.create(
               "Fix lint",
-              `deno._ignore_text_line_lint`,
+              `deno._ignore_next_line_lint`,
               // argument
               textDocument.uri,
               v.range,
