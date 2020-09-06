@@ -77,10 +77,18 @@ export class Completion {
           const url = new URL(it.url);
           return {
             filepath: it.filepath,
-            url: url.hostname === "deno.land" ? `${url.origin}` : url,
+            url: url.hostname === "deno.land" ? `${url.origin}` : it.url,
           } as Deps;
         });
-        deps = [...new Set(deps)];
+        const dedup_arr: string[] = [];
+        deps = deps.filter((it) => {
+          if (dedup_arr.includes(it.url)) {
+            return false;
+          } else {
+            dedup_arr.push(it.url);
+            return true;
+          }
+        });
       }
 
       const completes: CompletionItem[] = deps.map((dep) => {
@@ -88,7 +96,10 @@ export class Completion {
           label: dep.url,
           detail: dep.url,
           sortText: dep.url,
-          documentation: dep.filepath.replace(getDenoDir(), "$DENO_DIR"),
+          documentation:
+            dep.url === "https://deno.land"
+              ? ""
+              : dep.filepath.replace(getDenoDir(), "$DENO_DIR"),
           kind: CompletionItemKind.File,
           insertText: dep.url,
           cancel: partialResultToken,
