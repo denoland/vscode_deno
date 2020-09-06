@@ -3,6 +3,7 @@ import { Readable } from "stream";
 import execa from "execa";
 import which from "which";
 import * as semver from "semver";
+import { Cache } from "../../core/cache";
 
 type Version = {
   deno: string;
@@ -14,6 +15,34 @@ type Version = {
 type FormatOptions = {
   cwd: string;
 };
+
+interface LintLocation {
+  line: number; // one base number
+  col: number; // zero base number
+}
+
+interface LintDiagnostic {
+  code: string;
+  filename: string;
+  message: string;
+  range: {
+    start: LintLocation;
+    end: LintLocation;
+  };
+}
+
+interface LintError {
+  file_path: string;
+  message: string;
+}
+
+interface LintOutput {
+  diagnostics: LintDiagnostic[];
+  errors: LintError[];
+}
+
+// caching Deno lint's rules for 120s or 100 referenced times
+const denoLintRulesCache = Cache.create<string[]>(1000 * 120, 100);
 
 class Deno {
   public version!: Version | void;
@@ -33,9 +62,9 @@ class Deno {
       return;
     }
 
-    // If the currently used Deno is less than 0.33.0
+    // If the currently used Deno is less than 1.3.3
     // We will give an warning to upgrade.
-    const minimumDenoVersion = "0.35.0";
+    const minimumDenoVersion = "1.3.3";
     if (!semver.gte(this.version.deno, minimumDenoVersion)) {
       throw new Error(`Please upgrade to Deno ${minimumDenoVersion} or above.`);
     }
@@ -43,15 +72,13 @@ class Deno {
   public async getTypes(unstable: boolean): Promise<Buffer> {
     const { stdout } = await execa(this.executablePath as string, [
       "types",
-      ...(unstable && this.version && semver.gte(this.version.deno, "0.43.0")
-        ? ["--unstable"]
-        : []),
+      ...(unstable ? ["--unstable"] : []),
     ]);
 
     return Buffer.from(stdout, "utf8");
   }
   // format code
-  // echo "console.log(123)" | deno fmt --stdin
+  // echo "console.log(123)" | deno fmt -
   public async format(code: string, options: FormatOptions): Promise<string> {
     const reader = Readable.from([code]);
 
@@ -72,22 +99,71 @@ class Deno {
           resolve(stdout);
         }
       });
-      subprocess.on("error", (err: Error) => {
-        reject(err);
-      });
-      subprocess.stdout?.on("data", (data: Buffer) => {
-        stdout += data;
-      });
-
-      subprocess.stderr?.on("data", (data: Buffer) => {
-        stderr += data;
-      });
-
+      subprocess.on("error", (err: Error) => reject(err));
+      subprocess.stdout?.on("data", (data: Buffer) => (stdout += data));
+      subprocess.stderr?.on("data", (data: Buffer) => (stderr += data));
       subprocess.stdin && reader.pipe(subprocess.stdin);
     })) as string;
 
     return formattedCode;
   }
+
+  public async getLintRules(): Promise<string[]> {
+    const cachedRules = denoLintRulesCache.get();
+    if (cachedRules) {
+      return cachedRules;
+    }
+    const subprocess = execa(
+      this.executablePath as string,
+      ["lint", "--unstable", "--rules"],
+      {
+        stdout: "pipe",
+      }
+    );
+
+    const output = await new Promise<string>((resolve, reject) => {
+      let stdout = "";
+      subprocess.on("exit", () => resolve(stdout));
+      subprocess.on("error", (err: Error) => reject(err));
+      subprocess.stdout?.on("data", (data: Buffer) => (stdout += data));
+    });
+
+    const rules = output
+      .split("\n")
+      .map((v) => v.trim())
+      .filter((v) => v.startsWith("-"))
+      .map((v) => v.replace(/^-\s+/, ""));
+
+    denoLintRulesCache.set(rules);
+
+    return rules;
+  }
+
+  // lint code
+  // echo "console.log(123)" | deno lint --unstable --json -
+  public async lint(code: string): Promise<LintOutput> {
+    const reader = Readable.from([code]);
+
+    const subprocess = execa(
+      this.executablePath as string,
+      ["lint", "--unstable", "--json", "-"],
+      {
+        stdin: "pipe",
+        stderr: "pipe",
+      }
+    );
+
+    const output = await new Promise<string>((resolve, reject) => {
+      let stderr = "";
+      subprocess.on("exit", () => resolve(stderr));
+      subprocess.on("error", (err: Error) => reject(err));
+      subprocess.stderr?.on("data", (data: Buffer) => (stderr += data));
+      subprocess.stdin && reader.pipe(subprocess.stdin);
+    });
+
+    return JSON.parse(output) as LintOutput;
+  }
+
   private async getExecutablePath(): Promise<string | undefined> {
     const denoPath = await which("deno").catch(() =>
       Promise.resolve(undefined)

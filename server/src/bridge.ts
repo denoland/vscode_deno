@@ -6,6 +6,8 @@ import { Request } from "../../core/const";
 type Configuration = {
   enable: boolean;
   import_map?: string;
+  unstable?: boolean;
+  lint?: boolean;
 };
 
 /**
