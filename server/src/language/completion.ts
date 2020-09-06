@@ -45,7 +45,7 @@ export class Completion {
       );
 
       const IMPORT_REG = /import\s['"][a-zA-Z._-]$/;
-      const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z._-]$/;
+      const IMPORT_FROM_REG = /import\s(([^\s]*)|(\*\sas\s[^\s]*))\sfrom\s['"][a-zA-Z._-]?$/;
       const DYNAMIC_REG = /import\s*\(['"][a-zA-Z._-]['"]?$/;
 
       const isImport =
@@ -71,6 +71,17 @@ export class Completion {
         Position.create(position.line, position.character),
         position
       );
+
+      if (/.*?import[^'"]*?'$/.test(currentLine)) {
+        deps = deps.map((it) => {
+          const url = new URL(it.url);
+          return {
+            filepath: it.filepath,
+            url: url.hostname === "deno.land" ? `${url.origin}` : url,
+          } as Deps;
+        });
+        deps = [...new Set(deps)];
+      }
 
       const completes: CompletionItem[] = deps.map((dep) => {
         return {

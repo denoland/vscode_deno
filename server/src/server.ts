@@ -69,7 +69,7 @@ connection.onInitialize(
           change: TextDocumentSyncKind.Full,
         },
         completionProvider: {
-          triggerCharacters: ["http", "https", "@", '"', "'"],
+          triggerCharacters: ["http", "https", "@", '"', "'", "/"],
         },
         codeActionProvider: {
           codeActionKinds: [CodeActionKind.QuickFix],
