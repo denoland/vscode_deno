@@ -196,10 +196,8 @@ export class ImportCompletionEnhanced {
               })
           );
         }
-        this.connection.console.log("x modules: " + current_line_text);
         return CompletionList.create();
       }
-      this.connection.console.log("completion complete");
     }
     return CompletionList.create();
   }
