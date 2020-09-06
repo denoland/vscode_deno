@@ -127,6 +127,7 @@ export class ImportCompletionEnhanced {
               const ci = CompletionItem.create(it.name);
               ci.kind = CompletionItemKind.Module;
               ci.detail = it.description;
+              ci.insertText = `${it.name}@`;
               ci.sortText = String.fromCharCode(1);
               ci.filterText = it.name;
               ci.command = {
