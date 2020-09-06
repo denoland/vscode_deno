@@ -9,7 +9,10 @@ export function getVSCodeDenoDir(): string {
   // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
   // On macOS: $HOME/Library/Caches/deno
   // If something fails, it falls back to $HOME/.deno
-  let vscodeDenoDir = process.env.VSCODE_DENO_DIR;
+  let vscodeDenoDir =
+    process.env.VSCODE_DENO_EXTENSION_PATH !== undefined
+      ? path.join(process.env.VSCODE_DENO_EXTENSION_PATH, "cache")
+      : undefined;
   if (vscodeDenoDir === undefined) {
     switch (process.platform) {
       /* istanbul ignore next */
