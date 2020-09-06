@@ -139,7 +139,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
 
-- `deno.lint` - If Deno's lint is enabled. `deno.unstable = true` is required. Default is `false`
+- `deno.lint` - If inline `deno lint` diagnostics are enabled. Because this is experimental, `deno.unstable = true` is required. Default is `false`
 
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
