@@ -149,7 +149,7 @@ export class Diagnostics {
         v.message,
         DiagnosticSeverity.Error,
         v.code,
-        this.name
+        "deno_lint"
       );
     });
   }
