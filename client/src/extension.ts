@@ -20,6 +20,7 @@ import {
   TextDocument,
   languages,
   env,
+  Position,
 } from "vscode";
 import {
   LanguageClient,
@@ -236,7 +237,10 @@ export class Extension {
               }
               const denoDiagnostics: Diagnostic[] = [];
               for (const diagnostic of context.diagnostics) {
-                if (diagnostic.source === "Deno Language Server") {
+                if (
+                  diagnostic.source === "Deno Language Server" ||
+                  diagnostic.source === "deno_lint"
+                ) {
                   denoDiagnostics.push(diagnostic);
                 }
               }
@@ -348,29 +352,39 @@ Executable ${this.denoInfo.executablePath}`;
     [command: string]: (
       editor: TextEditor,
       text: string,
-      range: Range
+      range: Range,
+      ...args: unknown[]
     ) => void | Promise<void>;
   }) {
     for (const command in map) {
       const handler = map[command];
-      this.registerCommand(command, async (uri: string, range: Range) => {
-        const textEditor = window.activeTextEditor;
+      this.registerCommand(
+        command,
+        async (uri: string, range: Range, ...args: unknown[]) => {
+          const textEditor = window.activeTextEditor;
 
-        if (!textEditor || textEditor.document.uri.toString() !== uri) {
-          return;
+          if (!textEditor || textEditor.document.uri.toString() !== uri) {
+            return;
+          }
+
+          range = new Range(
+            range.start.line,
+            range.start.character,
+            range.end.line,
+            range.end.character
+          );
+
+          const rangeText = textEditor.document.getText(range);
+
+          return await handler.call(
+            this,
+            textEditor,
+            rangeText,
+            range,
+            ...args
+          );
         }
-
-        range = new Range(
-          range.start.line,
-          range.start.character,
-          range.end.line,
-          range.end.character
-        );
-
-        const rangeText = textEditor.document.getText(range);
-
-        return await handler.call(this, textEditor, rangeText, range);
-      });
+      );
     }
   }
   // update diagnostic for a Document
@@ -579,6 +593,40 @@ Executable ${this.denoInfo.executablePath}`;
         await fs.writeFile(absModuleFilepath, defaultTextContent);
 
         this.updateDiagnostic(editor.document.uri);
+      },
+      _ignore_next_line_lint: async (editor, _, range, rule: unknown) => {
+        editor.edit((edit) => {
+          const currentLineText = editor.document.lineAt(range.start.line);
+          const previousLineText = editor.document.lineAt(range.start.line - 1);
+
+          const offset =
+            currentLineText.text.length - currentLineText.text.trim().length;
+
+          if (/^\s*\/\/\s+deno-lint-ignore\s*/.test(previousLineText.text)) {
+            edit.replace(
+              previousLineText.range,
+              previousLineText.text + " " + rule
+            );
+          } else {
+            edit.replace(
+              previousLineText.range,
+              previousLineText.text +
+                "\n" +
+                `${" ".repeat(offset)}// deno-lint-ignore ${rule}`
+            );
+          }
+        });
+        return;
+      },
+      _ignore_entry_file: async (editor) => {
+        editor.edit((edit) => {
+          const firstLineText = editor.document.lineAt(0);
+          edit.insert(
+            new Position(0, 0),
+            "// deno-lint-ignore-file" + (firstLineText.text ? "\n" : "")
+          );
+        });
+        return;
       },
     });
 
