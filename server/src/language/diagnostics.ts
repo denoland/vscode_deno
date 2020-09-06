@@ -89,7 +89,7 @@ export class Diagnostics {
         .filter((v) => v.code && rules.includes(v.code as string))
         .map((v) => {
           const action = CodeAction.create(
-            `ignore next line rule \`${v.code}\` (${this.name})`,
+            `ignore \`${v.code}\` for this line (${this.name})`,
             Command.create(
               "Fix lint",
               `deno._ignore_text_line_lint`,
@@ -107,7 +107,7 @@ export class Diagnostics {
       if (denoLintAction.length) {
         denoLintAction.push(
           CodeAction.create(
-            `ignore entry file (${this.name})`,
+            `ignore entire file (${this.name})`,
             Command.create(
               "Fix lint",
               `deno._ignore_entry_file`,

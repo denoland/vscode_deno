@@ -166,9 +166,9 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
 }
 ```
 
-This extension also provides Deno's lint tools, settings are in `.vscode/settings.json`:
+This extension also provides inline `deno lint` diagnostics. You can enable this in `.vscode/settings.json`:
 
-NOTE: Since Lint is still an experimental feature, So you need to set `deno.unstable = true`. And this function may change in the future.
+NOTE: Since `deno lint` is still an experimental feature, you need to set `deno.unstable = true` in your VS Code settings. This function may change in the future.
 
 ```json5
 // .vscode/settings.json
