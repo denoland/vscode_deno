@@ -245,7 +245,10 @@ export class Extension {
               }
               const denoDiagnostics: Diagnostic[] = [];
               for (const diagnostic of context.diagnostics) {
-                if (diagnostic.source === "Deno Language Server") {
+                if (
+                  diagnostic.source === "Deno Language Server" ||
+                  diagnostic.source === "deno_lint"
+                ) {
                   denoDiagnostics.push(diagnostic);
                 }
               }

@@ -45,6 +45,8 @@ const FixItems: { [code: number]: Fix } = {
   },
 };
 
+const DENO_LINT = "deno_lint";
+
 export class Diagnostics {
   constructor(
     private name: string,
@@ -55,7 +57,9 @@ export class Diagnostics {
     connection.onCodeAction(async (params) => {
       const { context, textDocument } = params;
       const { diagnostics } = context;
-      const denoDiagnostics = diagnostics.filter((v) => v.source === this.name);
+      const denoDiagnostics = diagnostics.filter(
+        (v) => v.source === this.name || v.source === DENO_LINT
+      );
 
       if (!denoDiagnostics.length) {
         return;
@@ -89,7 +93,7 @@ export class Diagnostics {
         .filter((v) => v.code && rules.includes(v.code as string))
         .map((v) => {
           const action = CodeAction.create(
-            `ignore \`${v.code}\` for this line (${this.name})`,
+            `ignore \`${v.code}\` for this line (${DENO_LINT})`,
             Command.create(
               "Fix lint",
               `deno._ignore_next_line_lint`,
@@ -107,14 +111,13 @@ export class Diagnostics {
       if (denoLintAction.length) {
         denoLintAction.push(
           CodeAction.create(
-            `ignore entire file (${this.name})`,
+            `ignore entire file (${DENO_LINT})`,
             Command.create(
-              "Fix lint",
+              "Fix lint for entry file",
               `deno._ignore_entry_file`,
               // argument
               textDocument.uri,
-              Range.create(Position.create(0, 0), Position.create(0, 0)),
-              "deno_lint"
+              Range.create(Position.create(0, 0), Position.create(0, 0))
             ),
             CodeActionKind.QuickFix
           )
@@ -149,7 +152,7 @@ export class Diagnostics {
         v.message,
         DiagnosticSeverity.Error,
         v.code,
-        "deno_lint"
+        DENO_LINT
       );
     });
   }
