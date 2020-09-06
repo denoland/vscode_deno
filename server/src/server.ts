@@ -9,6 +9,7 @@ import {
   InitializeResult,
   TextDocumentSyncKind,
   CodeActionKind,
+  ExecuteCommandParams,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -78,6 +79,9 @@ connection.onInitialize(
         referencesProvider: true,
         definitionProvider: true,
         codeLensProvider: {},
+        executeCommandProvider: {
+          commands: ["deno._clear_import_enhencement_cache"],
+        },
       },
     };
   }
@@ -120,6 +124,14 @@ connection.onInitialized(async () => {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,
     DENO_DIR: getDenoDir(),
+  });
+  connection.onExecuteCommand(async (params: ExecuteCommandParams) => {
+    if (params.command === "deno._clear_import_enhencement_cache") {
+      import_enhanced
+        .clearCache()
+        .then(() => connection.window.showInformationMessage("Clear success!"))
+        .catch(() => connection.window.showErrorMessage("Clear failed!"));
+    }
   });
   import_enhanced
     .cacheModList()
