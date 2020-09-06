@@ -112,7 +112,7 @@ export class ImportCompletionEnhanced {
           return CompletionList.create([
             {
               label: "std",
-              insertText: "std/",
+              insertText: "std",
               kind: CompletionItemKind.Module,
             },
             { label: "x", insertText: "x/", kind: CompletionItemKind.Module },
