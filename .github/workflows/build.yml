@@ -23,10 +23,17 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+
       - uses: actions/cache@v2
         with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Setup Deno
         uses: denolib/setup-deno@master
@@ -36,26 +43,26 @@ jobs:
       - name: Environment
         run: |
           node -v
-          yarn --version
+          npm -v
           deno --version
 
       - name: Install
-        run: yarn
+        run: npm i
 
       - name: Check code format
-        run: yarn run check
+        run: npm run check
 
       - name: Lint
-        run: yarn run lint
+        run: npm run lint
 
       - name: Test
-        run: yarn run test
+        run: npm run test
 
       - name: Compile
-        run: yarn run compile
+        run: npm run compile
 
       - name: Package
-        run: yarn run build
+        run: npm run build
 
       - name: Publish
         if: |

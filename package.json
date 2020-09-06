@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "Deno",
   "description": "Deno support for VSCode",
-  "version": "2.0.14",
+  "version": "2.1.2",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
@@ -54,6 +54,11 @@
           "light": "resource/icon/refresh.light.svg",
           "dark": "resource/icon/refresh.dark.svg"
         }
+      },
+      {
+        "command": "deno._clear_import_enhencement_cache",
+        "title": "Clear import enhencement cache",
+        "category": "deno"
       }
     ],
     "views": {
@@ -132,50 +137,41 @@
     },
     "jsonValidation": [
       {
-        "fileMatch": "import_map.json",
+        "fileMatch": [
+          "import_map.json",
+          "import_maps.json",
+          "importmap.json",
+          "importmaps.json",
+          "import-map.json",
+          "import-maps.json",
+          "importMap.json",
+          "importMaps.json"
+        ],
         "url": "./schemas/import_map.schema.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "snippets/import_enhancement.json"
       },
       {
-        "fileMatch": "import_maps.json",
-        "url": "./schemas/import_map.schema.json"
+        "language": "typescript",
+        "path": "snippets/import_enhancement.json"
       },
       {
-        "fileMatch": "importmap.json",
-        "url": "./schemas/import_map.schema.json"
+        "language": "javascriptreact",
+        "path": "snippets/import_enhancement.json"
       },
       {
-        "fileMatch": "importmaps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "import-map.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "import-maps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "importMap.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "importMaps.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "ImportMap.json",
-        "url": "./schemas/import_map.schema.json"
-      },
-      {
-        "fileMatch": "ImportMaps.json",
-        "url": "./schemas/import_map.schema.json"
+        "language": "typescriptreact",
+        "path": "snippets/import_enhancement.json"
       }
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn compile",
-    "postinstall": "cd client && yarn && cd ../server && yarn && cd ../typescript-deno-plugin && yarn && cd .. && npm run installvscode",
+    "vscode:prepublish": "npm run compile",
+    "postinstall": "cd client && npm i && cd ../server && npm i && cd .. && npm run installvscode",
     "installvscode": "npx vscode-install",
     "watch": "tsc -b -w",
     "compile": "tsc -b",
@@ -183,33 +179,36 @@
     "format": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --write",
     "test": "jest --coverage",
     "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "build": "npx vsce package -o ./vscode-deno.vsix --yarn",
+    "test.import-enhance": "jest -t 'import-enhance'",
+    "build": "npx vsce package -o ./vscode-deno.vsix",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
-    "@types/jest": "25.2.1",
+    "@types/jest": "26.0.10",
     "@types/json5": "0.0.30",
-    "@types/node": "12.12.38",
+    "@types/node": "14.6.2",
     "@types/which": "1.3.2",
-    "@types/semver": "7.1.0",
-    "@typescript-eslint/eslint-plugin": "2.31.0",
-    "@typescript-eslint/parser": "2.31.0",
+    "@types/semver": "7.3.3",
+    "@typescript-eslint/eslint-plugin": "3.10.1",
+    "@typescript-eslint/parser": "3.10.1",
     "coveralls": "3.1.0",
-    "eslint": "7.0.0",
-    "execa": "4.0.1",
-    "jest": "26.0.1",
-    "prettier": "2.0.5",
-    "ts-jest": "25.4.0",
-    "typescript": "3.8.3",
+    "eslint": "7.7.0",
+    "execa": "4.0.3",
+    "jest": "26.4.2",
+    "prettier": "2.1.1",
+    "ts-jest": "26.3.0",
+    "typescript": "4.0.2",
     "vscode": "1.1.37",
     "which": "2.0.2"
   },
   "dependencies": {
     "deep-equal": "2.0.3",
     "deepmerge": "^4.2.2",
-    "json5": "^2.1.1",
+    "got": "^11.5.2",
+    "json5": "^2.1.3",
+    "semver": "7.3.2",
     "typescript-deno-plugin": "./typescript-deno-plugin",
-    "semver": "7.3.2"
+    "vscode-cache": "^0.3.0"
   }
 }

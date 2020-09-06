@@ -78,7 +78,7 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
       )
     );
   }
-  async getTreeItem(element: Item) {
+  async getTreeItem(element: Item): Promise<Item> {
     return element;
   }
   async getChildren(element?: Item): Promise<Item[]> {

@@ -70,7 +70,7 @@ export class ImportMap implements ImportMapInterface {
 
     return new ImportMap(importMap, importMapFilepath);
   }
-  toJSON() {
+  toJSON(): ImportContent {
     return this.map.imports;
   }
   resolveModule(moduleName: string): string {

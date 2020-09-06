@@ -125,7 +125,7 @@ export class CacheModule implements DenoCacheModule {
       targetOriginDir = path.join(
         getDenoDepsDir(),
         url.protocol.replace(/:$/, ""), // https: -> https
-        url.hostname
+        `${url.hostname}${url.port ? `_PORT${url.port}` : ""}`
       );
     }
     // invalid

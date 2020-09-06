@@ -1,7 +1,6 @@
 import * as path from "path";
 import { promises as fs } from "fs";
-
-import typescript = require("typescript");
+import typescript from "typescript";
 
 import { getDenoDepsDir } from "./deno";
 import { HashMeta } from "./hash_meta";
@@ -32,7 +31,16 @@ export type Range = {
 export async function getAllDenoCachedDeps(): Promise<Deps[]> {
   const depsRootDir = getDenoDepsDir();
   const deps: Deps[] = [];
-  const protocols = await fs.readdir(depsRootDir);
+  let protocols: string[] = [];
+
+  try {
+    protocols = await fs.readdir(depsRootDir);
+  } catch (error) {
+    //deno/deps directory does not exists
+    if (error.code === "ENOENT") {
+      return deps;
+    }
+  }
 
   await Promise.all(
     protocols.map(async (protocol) => {

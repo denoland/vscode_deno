@@ -2,13 +2,17 @@ import * as path from "path";
 
 import { getDenoDepsDir } from "./deno";
 import { CacheModule } from "./deno_cache";
-import { normalizeFilepath } from "./util";
+import { normalizeFilepath, findNonExtensionModule } from "./util";
 import { Logger } from "./logger";
 
 /**
  * Normalize import statement
- * @param importStatement eg. `import { path } from "../../../../Library/Caches/deno/deps/https/example.com/da88efaa8b70cda7903ddc29b8d4c6ea3015de65329ea393289f4104ae2da941"`
- * @returns string eg. `https://example.com/demo/sub/mod.ts`
+ * eg. `import { path } from "../../../../Library/Caches/deno/deps/https/example.com/da88efaa8b70cda7903ddc29b8d4c6ea3015de65329ea393289f4104ae2da941"`
+ * eg. `import { foo } from "./bar"`
+ * @param importStatement
+ * eg. `import { path } from "https://example.com/demo/sub/mod.ts"`
+ * eg. `import { foo } from "./bar.ts"`
+ * @returns string
  */
 export function normalizeImportStatement(
   filename: string,
@@ -31,25 +35,27 @@ export function normalizeImportStatement(
         ? moduleFilepath
         : path.resolve(path.dirname(filename), moduleFilepath)
     );
-    const rest = matcher[3];
+    const rest = matcher[3] || "";
 
     /* istanbul ignore next */
     logger?.info(
       `normalize import \`${importStatement}\` in file \`${filename}\` with module \`${moduleAbsoluteFilepath}\``
     );
 
-    /* istanbul ignore else */
     if (moduleAbsoluteFilepath.startsWith(getDenoDepsDir())) {
       const cache = CacheModule.create(moduleAbsoluteFilepath);
       /* istanbul ignore else */
       if (cache) {
-        importStatement = `import ${importModuleNames} from "${
-          cache.meta.url
-        }"${
-          /* istanbul ignore next */
-          rest ? rest : ""
-        }`;
+        importStatement = `import ${importModuleNames} from "${cache.meta.url}"${rest}`;
       }
+    }
+    // if cache not found. then it should be relative path
+    // eg. `import { foo } from "./bar"`
+    else if (moduleName.startsWith(".")) {
+      importStatement = `import ${importModuleNames} from "${findNonExtensionModule(
+        filename,
+        moduleName
+      )}"${rest}`;
     }
   }
 

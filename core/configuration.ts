@@ -89,7 +89,7 @@ export class Configuration implements ConfigurationInterface {
     }
   }
 
-  public update(c: ConfigurationField) {
+  public update(c: ConfigurationField): void {
     const oldConfig = JSON.parse(JSON.stringify(this._configuration));
     this._configuration = merge(this._configuration, c);
 
@@ -102,7 +102,7 @@ export class Configuration implements ConfigurationInterface {
     }
   }
 
-  public onUpdatedConfig(listener: () => void) {
+  public onUpdatedConfig(listener: () => void): void {
     this._configUpdatedListeners.add(listener);
   }
 }
