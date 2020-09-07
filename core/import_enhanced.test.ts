@@ -81,6 +81,15 @@ test("core / import_enhance: parseImportStatement", async () => {
         path: "/",
       },
     },
+    {
+      imp: "import type {} from 'https://deno.land/std@/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "latest",
+        path: "/",
+      },
+    },
     // non semver verions
     {
       imp: "import {} from 'https://deno.land/std@1.0.0-alpha/';",
@@ -111,6 +120,89 @@ test("core / import_enhance: parseImportStatement", async () => {
     },
     {
       imp: "import { } from 'https://deno.land/x/sq'",
+      expect: {
+        domain: "deno.land",
+        module: "sq",
+        version: "latest",
+        path: "/",
+      },
+    },
+
+    {
+      imp: "export * from 'http://a.c/xx/a.ts'",
+      expect: {
+        domain: "a.c",
+        module: "xx",
+        version: "latest",
+        path: "/a.ts",
+      },
+    },
+    {
+      imp: "export * from 'http://deno.land/std@0.66.0/fs/copy.ts'",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "0.66.0",
+        path: "/fs/copy.ts",
+      },
+    },
+    {
+      imp: "export * from 'https://deno.land/x/sha2@1.0.0/mod/sha224.ts'",
+      expect: {
+        domain: "deno.land",
+        module: "sha2",
+        version: "1.0.0",
+        path: "/mod/sha224.ts",
+      },
+    },
+    {
+      imp: "export type {} from 'https://deno.land/std@/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "latest",
+        path: "/",
+      },
+    },
+    {
+      imp: "export {} from 'https://deno.land/std@/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "latest",
+        path: "/",
+      },
+    },
+    // non semver verions
+    {
+      imp: "export {} from 'https://deno.land/std@1.0.0-alpha/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "1.0.0-alpha",
+        path: "/",
+      },
+    },
+    {
+      imp: "export {} from 'https://deno.land/std@v1/';",
+      expect: {
+        domain: "deno.land",
+        module: "std",
+        version: "v1",
+        path: "/",
+      },
+    },
+    {
+      imp: "export {} from 'https://deno.land/x/@/';",
+      expect: {
+        domain: "deno.land",
+        module: "",
+        version: "latest",
+        path: "/",
+      },
+    },
+    {
+      imp: "export { } from 'https://deno.land/x/sq'",
       expect: {
         domain: "deno.land",
         module: "sq",
