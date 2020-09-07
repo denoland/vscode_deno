@@ -80,7 +80,8 @@ test("core / import_enhance: parseImportStatement", async () => {
         version: "latest",
         path: "/",
       },
-    }, {
+    },
+    {
       imp: "import type {} from 'https://deno.land/std@/';",
       expect: {
         domain: "deno.land",
