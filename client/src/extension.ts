@@ -30,7 +30,6 @@ import {
 } from "vscode-languageclient";
 import getport from "get-port";
 import execa from "execa";
-import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
 import { ImportMap } from "../../core/import_map";
@@ -509,14 +508,17 @@ Executable ${this.denoInfo.executablePath}`;
             cancellable: true,
           },
           (process, cancelToken) => {
-            // `deno fetch xxx` has been renamed to `deno cache xxx` since Deno v0.40.0
-            const cmd = semver.gte(this.denoInfo.version.deno, "0.40.0")
-              ? "cache"
-              : "fetch";
-            const ps = execa(this.denoInfo.executablePath, [cmd, moduleName], {
-              // timeout of 2 minute
-              timeout: 1000 * 60 * 2,
-            });
+            const ps = execa(
+              this.denoInfo.executablePath,
+              ["cache", moduleName],
+              {
+                // timeout of 2 minute
+                timeout: 1000 * 60 * 2,
+                env: {
+                  NO_COLOR: "1",
+                },
+              }
+            );
 
             const updateProgress: (buf: Buffer) => void = (buf: Buffer) => {
               const raw = buf.toString();
@@ -524,7 +526,7 @@ Executable ${this.denoInfo.executablePath}`;
               const messages = raw.split("\n");
 
               for (let message of messages) {
-                message = message.replace("[0m[38;5;10mDownload[0m", "").trim();
+                message = message.replace("Download", "").trim();
                 if (message) {
                   process.report({ message });
                   this.output.appendLine(message);
