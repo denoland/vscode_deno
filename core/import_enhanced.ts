@@ -132,7 +132,7 @@ interface ImportUrlInfo {
   path: string;
 }
 
-export const IMP_REG = /^.*?import.+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
+export const IMP_REG = /^.*?[import|export].+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 export const VERSION_REG = /^([\w.\-_]+)$/;
 export const MOD_NAME_REG = /^[\w-_]+$/;
 
