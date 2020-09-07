@@ -87,6 +87,9 @@ class Deno {
       stdout: "pipe",
       stderr: "pipe",
       stdin: "pipe",
+      env: {
+        NO_COLOR: "1",
+      },
     });
 
     const formattedCode = (await new Promise((resolve, reject) => {
@@ -118,6 +121,10 @@ class Deno {
       ["lint", "--unstable", "--rules"],
       {
         stdout: "pipe",
+
+        env: {
+          NO_COLOR: "1",
+        },
       }
     );
 
@@ -150,6 +157,9 @@ class Deno {
       {
         stdin: "pipe",
         stderr: "pipe",
+        env: {
+          NO_COLOR: "1",
+        },
       }
     );
 
@@ -172,10 +182,15 @@ class Deno {
     return denoPath;
   }
   private async getDenoVersion(): Promise<Version | undefined> {
-    const { stdout, stderr } = await execa(this.executablePath as string, [
-      "eval",
-      "console.log(JSON.stringify(Deno.version))",
-    ]);
+    const { stdout, stderr } = await execa(
+      this.executablePath as string,
+      ["eval", "console.log(JSON.stringify(Deno.version))"],
+      {
+        env: {
+          NO_COLOR: "1",
+        },
+      }
+    );
 
     if (stderr) {
       return;
