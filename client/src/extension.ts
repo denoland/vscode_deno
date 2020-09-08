@@ -605,7 +605,7 @@ Executable ${this.denoInfo.executablePath}`;
               : editor.document.lineAt(range.start.line - 1);
 
           const offset =
-            currentLineText.text.length - currentLineText.text.trim().length;
+            currentLineText.text.length - currentLineText.text.trimLeft().length;
 
           if (previousLineText === undefined) {
             edit.replace(
