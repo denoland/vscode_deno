@@ -223,7 +223,12 @@ export class ImportCompletionEnhanced {
       !this.mod_list_cache.get() ||
       this.mod_list_cache.get()?.length === 0
     ) {
-      await this.mod_list_cache.set([]);
+      await this.mod_list_cache.destroy_cache();
+      this.mod_list_cache = await PermCache.create<ModList>(
+        "mod_list",
+        60 * 60 * 24 /* expiring in a day */
+      );
+      this.mod_list_cache.set([]);
       progress.report(0);
       if (
         this.mod_list_cache.transaction_begin() === TRANSACTION_STATE.SUCCESS
