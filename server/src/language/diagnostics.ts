@@ -8,6 +8,8 @@ import {
   CodeActionKind,
   Command,
   TextDocuments,
+  Range,
+  Position,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
@@ -17,8 +19,9 @@ import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
 import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
-import { getImportModules, Range } from "../../../core/deno_deps";
+import { getImportModules } from "../../../core/deno_deps";
 import { Notification } from "../../../core/const";
+import { deno } from "../deno";
 
 type Fix = {
   title: string;
@@ -42,6 +45,8 @@ const FixItems: { [code: number]: Fix } = {
   },
 };
 
+const DENO_LINT = "deno_lint";
+
 export class Diagnostics {
   constructor(
     private name: string,
@@ -52,25 +57,22 @@ export class Diagnostics {
     connection.onCodeAction(async (params) => {
       const { context, textDocument } = params;
       const { diagnostics } = context;
-      const denoDiagnostics = diagnostics.filter((v) => v.source === this.name);
+      const denoDiagnostics = diagnostics.filter(
+        (v) => v.source === this.name || v.source === DENO_LINT
+      );
 
       if (!denoDiagnostics.length) {
         return;
       }
 
-      const actions: CodeAction[] = denoDiagnostics
+      const rules = await deno.getLintRules();
+
+      const actions: CodeAction[] = [];
+
+      const documentAction = denoDiagnostics
+        .filter((v) => v.code && FixItems[+v.code])
         .map((v) => {
-          const code = v.code;
-
-          if (!code) {
-            return;
-          }
-
-          const fixItem: Fix = FixItems[+code];
-
-          if (!fixItem) {
-            return;
-          }
+          const fixItem: Fix = FixItems[+(v.code as string)];
 
           const action = CodeAction.create(
             `${fixItem.title} (${this.name})`,
@@ -79,25 +81,50 @@ export class Diagnostics {
               fixItem.command,
               // argument
               textDocument.uri,
-              {
-                start: {
-                  line: v.range.start.line,
-                  character: v.range.start.character,
-                },
-                end: {
-                  line: v.range.end.line,
-                  character: v.range.end.character,
-                },
-              }
+              v.range
             ),
             CodeActionKind.QuickFix
           );
 
           return action;
-        })
-        .filter((v) => v) as CodeAction[];
+        });
 
-      return actions;
+      const denoLintAction = denoDiagnostics
+        .filter((v) => v.code && rules.includes(v.code as string))
+        .map((v) => {
+          const action = CodeAction.create(
+            `ignore \`${v.code}\` for this line (${DENO_LINT})`,
+            Command.create(
+              "Fix lint",
+              `deno._ignore_next_line_lint`,
+              // argument
+              textDocument.uri,
+              v.range,
+              v.code
+            ),
+            CodeActionKind.QuickFix
+          );
+
+          return action;
+        });
+
+      if (denoLintAction.length) {
+        denoLintAction.push(
+          CodeAction.create(
+            `ignore entire file (${DENO_LINT})`,
+            Command.create(
+              "Fix lint for entry file",
+              `deno._ignore_entry_file`,
+              // argument
+              textDocument.uri,
+              Range.create(Position.create(0, 0), Position.create(0, 0))
+            ),
+            CodeActionKind.QuickFix
+          )
+        );
+      }
+
+      return actions.concat(documentAction).concat(denoLintAction);
     });
 
     connection.onNotification(Notification.diagnostic, (uri: string) => {
@@ -108,6 +135,31 @@ export class Diagnostics {
     documents.onDidOpen((params) => this.diagnosis(params.document));
     documents.onDidChangeContent((params) => this.diagnosis(params.document));
   }
+  /**
+   * lint document
+   * @param document
+   */
+  async lint(document: TextDocument): Promise<Diagnostic[]> {
+    const lintOutput = await deno.lint(document.getText());
+
+    return lintOutput.diagnostics.map((v) => {
+      const start = Position.create(v.range.start.line - 1, v.range.start.col);
+      const end = Position.create(v.range.end.line - 1, v.range.end.col);
+      const range = Range.create(start, end);
+
+      return Diagnostic.create(
+        range,
+        v.message,
+        DiagnosticSeverity.Error,
+        v.code,
+        DENO_LINT
+      );
+    });
+  }
+  /**
+   * generate diagnostic for a document
+   * @param document
+   */
   async generate(document: TextDocument): Promise<Diagnostic[]> {
     if (!isValidDenoDocument(document.languageId)) {
       return [];
@@ -121,6 +173,16 @@ export class Diagnostics {
 
     if (!config.enable || !workspaceDir) {
       return [];
+    }
+
+    const diagnosticsForThisDocument: Diagnostic[] = [];
+
+    if (config.unstable && config.lint) {
+      const denoLinterResult = await this.lint(document);
+
+      for (const v of denoLinterResult) {
+        diagnosticsForThisDocument.push(v);
+      }
     }
 
     const importMapFilepath = config.import_map
@@ -142,7 +204,6 @@ export class Diagnostics {
 
     const importModules = getImportModules(ts)(sourceFile);
 
-    const diagnosticsForThisDocument: Diagnostic[] = [];
     const resolver = ModuleResolver.create(uri.fsPath, importMapFilepath);
 
     const handle = async (originModuleName: string, location: Range) => {

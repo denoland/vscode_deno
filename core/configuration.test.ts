@@ -15,6 +15,7 @@ test("core / configuration / resolveFromVscode if it is a valid file", async () 
     enable: true,
     unstable: true,
     import_map: "./import_map.json",
+    lint: false,
   } as ConfigurationField);
 });
 
@@ -29,6 +30,7 @@ test("core / configuration / resolveFromVscode if valid section", async () => {
     enable: true,
     unstable: false,
     import_map: null,
+    lint: false,
   } as ConfigurationField);
 });
 
@@ -51,6 +53,7 @@ test("core / configuration / resolveFromVscode if config file is empty", async (
     enable: false,
     unstable: false,
     import_map: null,
+    lint: false,
   } as ConfigurationField);
 });
 
@@ -65,6 +68,7 @@ test("core / configuration / resolveFromVscode if field is invalid", async () =>
     enable: true,
     unstable: true,
     import_map: "1,2,3",
+    lint: false,
   } as ConfigurationField);
 });
 
@@ -87,5 +91,6 @@ test("core / configuration / update", async () => {
     enable: true,
     unstable: false,
     import_map: null,
+    lint: false,
   } as ConfigurationField);
 });

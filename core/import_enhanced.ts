@@ -1,9 +1,9 @@
-/* eslint @typescript-eslint/triple-slash-reference: "off" */
-// CGQAQ: Without next line the test will fail, using import won't work
-/// <reference path="./types/vscode-cache.d.ts" />
-
 import got from "got";
-import VC from "vscode-cache";
+import { PermCache } from "./permcache";
+
+export type ModList = ModuleInfo[];
+
+export type ModListCache = PermCache<ModList>;
 
 export interface ModuleInfo {
   name: string;
@@ -44,12 +44,12 @@ export async function* fetchModList(): AsyncGenerator<{
 
 // this function now is search from cache only
 export async function searchX(
-  cache: VC,
+  cache: PermCache<ModList>,
   keyword: string
-): Promise<ModuleInfo[]> {
-  if (cache.has("mod_list")) {
-    const buff = cache.get("mod_list") as ModuleInfo[];
-    return buff
+): Promise<ModList> {
+  const arr = cache.get();
+  if (arr !== undefined) {
+    return arr
       .filter((it) => it.name.startsWith(keyword))
       .sort((a, b) => b.search_score - a.search_score);
   } else {
@@ -79,14 +79,18 @@ interface ModTreeItem {
   type: string;
 }
 
-interface ModTree {
+export interface ModTree {
   uploaded_at: string; // Use this to update cache
   directory_listing: ModTreeItem[];
 }
+
+export type ModTreeCacheItem = Record<string, ModTree>;
+export type ModTreeCache = PermCache<ModTreeCacheItem>;
+
 export async function modTreeOf(
-  vc: VC | undefined,
   module_name: string,
-  version = "latest"
+  version = "latest",
+  cache?: PermCache<Record<string, ModTree>>
 ): Promise<ModTree> {
   // https://cdn.deno.land/$MODULE/versions/$VERSION/meta/meta.json
   let ver = version;
@@ -95,10 +99,11 @@ export async function modTreeOf(
     ver = vers.latest;
   }
 
-  const cache_key = `mod_tree:${module_name}@${ver}`;
-  if (vc?.has(cache_key)) {
+  const cache_key = `${module_name}@${ver}`;
+  const cache_content = cache?.get();
+  if (cache_content?.hasOwnProperty(cache_key)) {
     // use cache
-    return vc.get(cache_key) as ModTree;
+    return cache_content[cache_key] as ModTree;
   }
 
   const response: ModTree = await got(
@@ -108,7 +113,14 @@ export async function modTreeOf(
   ).json();
 
   // cache it
-  vc?.put(cache_key, response);
+  if (cache_content !== undefined) {
+    cache_content[cache_key] = response;
+    await cache?.set(cache_content);
+  } else {
+    const obj: Record<string, ModTree> = {};
+    obj[cache_key] = response;
+    await cache?.set(obj);
+  }
 
   return response;
 }
@@ -120,8 +132,12 @@ interface ImportUrlInfo {
   path: string;
 }
 
+export const IMP_REG = /^.*?[import|export].+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
+export const VERSION_REG = /^([\w.\-_]+)$/;
+export const MOD_NAME_REG = /^[\w-_]+$/;
+
 export function parseImportStatement(text: string): ImportUrlInfo | undefined {
-  const reg_groups = text.match(/.*?['"](?<url>.*?)['"]/)?.groups;
+  const reg_groups = text.match(IMP_REG)?.groups;
   if (!reg_groups) {
     return undefined;
   }
@@ -153,7 +169,7 @@ export function parseImportStatement(text: string): ImportUrlInfo | undefined {
         };
       }
     };
-    if (components.length > 2) {
+    if (components.length > 1) {
       const m = components[1];
       if (m === "x") {
         return parse(components.slice(2, components.length));

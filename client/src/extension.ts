@@ -20,6 +20,7 @@ import {
   TextDocument,
   languages,
   env,
+  Position,
 } from "vscode";
 import {
   LanguageClient,
@@ -29,14 +30,8 @@ import {
 } from "vscode-languageclient";
 import getport from "get-port";
 import execa from "execa";
-import * as semver from "semver";
 
 import { TreeViewProvider } from "./tree_view_provider";
-import {
-  ImportEnhancementCompletionProvider,
-  CACHE_STATE,
-} from "./import_enhancement_provider";
-
 import { ImportMap } from "../../core/import_map";
 import { HashMeta } from "../../core/hash_meta";
 import { isInDeno } from "../../core/deno";
@@ -118,9 +113,6 @@ export class Extension {
     },
     executablePath: "",
   };
-  // CGQAQ: ImportEnhancementCompletionProvider instance
-  private import_enhancement_completion_provider = new ImportEnhancementCompletionProvider();
-
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
     const config: ConfigurationField = {};
@@ -244,7 +236,10 @@ export class Extension {
               }
               const denoDiagnostics: Diagnostic[] = [];
               for (const diagnostic of context.diagnostics) {
-                if (diagnostic.source === "Deno Language Server") {
+                if (
+                  diagnostic.source === "Deno Language Server" ||
+                  diagnostic.source === "deno_lint"
+                ) {
                   denoDiagnostics.push(diagnostic);
                 }
               }
@@ -356,29 +351,39 @@ Executable ${this.denoInfo.executablePath}`;
     [command: string]: (
       editor: TextEditor,
       text: string,
-      range: Range
+      range: Range,
+      ...args: unknown[]
     ) => void | Promise<void>;
   }) {
     for (const command in map) {
       const handler = map[command];
-      this.registerCommand(command, async (uri: string, range: Range) => {
-        const textEditor = window.activeTextEditor;
+      this.registerCommand(
+        command,
+        async (uri: string, range: Range, ...args: unknown[]) => {
+          const textEditor = window.activeTextEditor;
 
-        if (!textEditor || textEditor.document.uri.toString() !== uri) {
-          return;
+          if (!textEditor || textEditor.document.uri.toString() !== uri) {
+            return;
+          }
+
+          range = new Range(
+            range.start.line,
+            range.start.character,
+            range.end.line,
+            range.end.character
+          );
+
+          const rangeText = textEditor.document.getText(range);
+
+          return await handler.call(
+            this,
+            textEditor,
+            rangeText,
+            range,
+            ...args
+          );
         }
-
-        range = new Range(
-          range.start.line,
-          range.start.character,
-          range.end.line,
-          range.end.character
-        );
-
-        const rangeText = textEditor.document.getText(range);
-
-        return await handler.call(this, textEditor, rangeText, range);
-      });
+      );
     }
   }
   // update diagnostic for a Document
@@ -473,14 +478,6 @@ Executable ${this.denoInfo.executablePath}`;
       await window.showInformationMessage(`Copied to clipboard.`);
     });
 
-    // CGQAQ: deno._clear_import_enhencement_cache
-    this.registerCommand("_clear_import_enhencement_cache", async () => {
-      this.import_enhancement_completion_provider
-        .clearCache()
-        .then(() => window.showInformationMessage("Clear success!"))
-        .catch(() => window.showErrorMessage("Clear failed!"));
-    });
-
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
         const config = this.getConfiguration(editor.document.uri);
@@ -511,14 +508,17 @@ Executable ${this.denoInfo.executablePath}`;
             cancellable: true,
           },
           (process, cancelToken) => {
-            // `deno fetch xxx` has been renamed to `deno cache xxx` since Deno v0.40.0
-            const cmd = semver.gte(this.denoInfo.version.deno, "0.40.0")
-              ? "cache"
-              : "fetch";
-            const ps = execa(this.denoInfo.executablePath, [cmd, moduleName], {
-              // timeout of 2 minute
-              timeout: 1000 * 60 * 2,
-            });
+            const ps = execa(
+              this.denoInfo.executablePath,
+              ["cache", moduleName],
+              {
+                // timeout of 2 minute
+                timeout: 1000 * 60 * 2,
+                env: {
+                  NO_COLOR: "1",
+                },
+              }
+            );
 
             const updateProgress: (buf: Buffer) => void = (buf: Buffer) => {
               const raw = buf.toString();
@@ -526,7 +526,7 @@ Executable ${this.denoInfo.executablePath}`;
               const messages = raw.split("\n");
 
               for (let message of messages) {
-                message = message.replace("[0m[38;5;10mDownload[0m", "").trim();
+                message = message.replace("Download", "").trim();
                 if (message) {
                   process.report({ message });
                   this.output.appendLine(message);
@@ -596,6 +596,40 @@ Executable ${this.denoInfo.executablePath}`;
 
         this.updateDiagnostic(editor.document.uri);
       },
+      _ignore_next_line_lint: async (editor, _, range, rule: unknown) => {
+        editor.edit((edit) => {
+          const currentLineText = editor.document.lineAt(range.start.line);
+          const previousLineText = editor.document.lineAt(range.start.line - 1);
+
+          const offset =
+            currentLineText.text.length - currentLineText.text.trim().length;
+
+          if (/^\s*\/\/\s+deno-lint-ignore\s*/.test(previousLineText.text)) {
+            edit.replace(
+              previousLineText.range,
+              previousLineText.text + " " + rule
+            );
+          } else {
+            edit.replace(
+              previousLineText.range,
+              previousLineText.text +
+                "\n" +
+                `${" ".repeat(offset)}// deno-lint-ignore ${rule}`
+            );
+          }
+        });
+        return;
+      },
+      _ignore_entry_file: async (editor) => {
+        editor.edit((edit) => {
+          const firstLineText = editor.document.lineAt(0);
+          edit.insert(
+            new Position(0, 0),
+            "// deno-lint-ignore-file" + (firstLineText.text ? "\n" : "")
+          );
+        });
+        return;
+      },
     });
 
     this.watchConfiguration(() => {
@@ -611,23 +645,6 @@ Executable ${this.denoInfo.executablePath}`;
       window.registerTreeDataProvider("deno", treeView)
     );
 
-    // CGQAQ: activate import enhance feature
-    this.import_enhancement_completion_provider.activate(this.context);
-
-    // CGQAQ: Start caching full module list
-    this.import_enhancement_completion_provider
-      .cacheModList()
-      .then((state) => {
-        if (state === CACHE_STATE.CACHE_SUCCESS) {
-          window.showInformationMessage(
-            "deno.land/x module list cached successfully!"
-          );
-        }
-      })
-      .catch(() =>
-        window.showErrorMessage("deno.land/x module list failed to cache!")
-      );
-
     this.sync(window.activeTextEditor?.document);
 
     const extension = extensions.getExtension(this.id);
@@ -639,8 +656,6 @@ Executable ${this.denoInfo.executablePath}`;
   // deactivate function for vscode
   public async deactivate(context: ExtensionContext): Promise<void> {
     this.context = context;
-
-    this.import_enhancement_completion_provider.dispose();
 
     if (this.client) {
       await this.client.stop();

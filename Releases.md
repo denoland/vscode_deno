@@ -2,6 +2,12 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [v2.2.0](https://github.com/denoland/vscode_deno/compare/v2.1.2...v2.2.0) / 2020.09.07
+
+- feat: add inline `deno lint` diagnostics (#162)
+- fix: add IntelliSense support for `export` (#184)
+- refactor: move imports IntelliSense logic to server (#181)
+
 ### [v2.1.2](https://github.com/denoland/vscode_deno/compare/v2.1.1...v2.1.2) / 2020.09.04
 
 - fix: another typescript not found error (#178)

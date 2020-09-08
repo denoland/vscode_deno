@@ -11,12 +11,14 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "enable",
   "unstable",
   "import_map",
+  "lint",
 ];
 
 export type ConfigurationField = {
   enable?: boolean;
   unstable?: boolean;
   import_map?: string | null;
+  lint?: boolean;
 };
 
 interface ConfigurationInterface {
@@ -31,6 +33,7 @@ export class Configuration implements ConfigurationInterface {
     enable: false,
     unstable: false,
     import_map: null,
+    lint: false,
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();
@@ -76,6 +79,7 @@ export class Configuration implements ConfigurationInterface {
         // Make sure the type of each configuration item is correct
         this._configuration.enable = !!this._configuration.enable;
         this._configuration.unstable = !!this._configuration.unstable;
+        this._configuration.lint = !!this._configuration.lint;
         this._configuration.import_map = this._configuration.import_map
           ? this._configuration.import_map + ""
           : null;

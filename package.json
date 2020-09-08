@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "Deno",
   "description": "Deno support for VSCode",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
@@ -122,6 +122,16 @@
             true,
             false
           ]
+        },
+        "deno.lint": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Controls if `deno lint` is enabled. It is currently experimental, so make sure `deno.unstable: true` is enabled. \n\n**Not recommended in global configuration**",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
         }
       }
     },
@@ -169,7 +179,6 @@
     "format": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --write",
     "test": "jest --coverage",
     "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "test.import-enhance": "jest -t 'import-enhance'",
     "build": "npx vsce package -o ./vscode-deno.vsix",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
@@ -198,7 +207,6 @@
     "got": "^11.5.2",
     "json5": "^2.1.3",
     "semver": "7.3.2",
-    "typescript-deno-plugin": "./typescript-deno-plugin",
-    "vscode-cache": "^0.3.0"
+    "typescript-deno-plugin": "./typescript-deno-plugin"
   }
 }

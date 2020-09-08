@@ -34,6 +34,12 @@ Features:
 
 </details>
 
+<details><summary>Intelligent module import enhanced</summary>
+
+![Import enhanced](screenshot/import_enhancement.gif)
+
+</details>
+
 <details><summary>Supports importing ECMAScript modules</summary>
 
 ![Import](screenshot/ecma.gif)
@@ -133,6 +139,8 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
 
+- `deno.lint` - If inline `deno lint` diagnostics are enabled. Because this is experimental, `deno.unstable = true` is required. Default is `false`
+
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
 ```json5
@@ -155,6 +163,19 @@ This extension also provides Deno's formatting tools, settings are in `.vscode/s
   "[typescriptreact]": {
     "editor.defaultFormatter": "denoland.vscode-deno",
   },
+}
+```
+
+This extension also provides inline `deno lint` diagnostics. You can enable this in `.vscode/settings.json`:
+
+NOTE: Since `deno lint` is still an experimental feature, you need to set `deno.unstable = true` in your VS Code settings. This function may change in the future.
+
+```json5
+// .vscode/settings.json
+{
+  "deno.enable": true,
+  "deno.unstable": true,
+  "deno.lint": true,
 }
 ```
 
