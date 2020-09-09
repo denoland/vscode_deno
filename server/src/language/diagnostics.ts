@@ -23,6 +23,8 @@ import { getImportModules } from "../../../core/deno_deps";
 import { Notification } from "../../../core/const";
 import { deno } from "../deno";
 
+import Plugable from "../Plugable";
+
 type Fix = {
   title: string;
   command: string;
@@ -47,14 +49,20 @@ const FixItems: { [code: number]: Fix } = {
 
 const DENO_LINT = "deno_lint";
 
-export class Diagnostics {
+export class Diagnostics implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
   constructor(
+    private enabled: boolean,
     private name: string,
     private connection: IConnection,
     private bridge: Bridge,
     private documents: TextDocuments<TextDocument>
   ) {
     connection.onCodeAction(async (params) => {
+      if (!this.enabled) return;
       const { context, textDocument } = params;
       const { diagnostics } = context;
       const denoDiagnostics = diagnostics.filter(

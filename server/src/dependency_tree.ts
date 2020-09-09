@@ -12,6 +12,8 @@ import { ImportMap } from "../../core/import_map";
 import { isHttpURL } from "../../core/util";
 import { Request } from "../../core/const";
 
+import Plugable from "./Plugable";
+
 interface URLDep {
   filepath: string;
   location: { start: Position; end: Position };
@@ -19,14 +21,24 @@ interface URLDep {
 
 type DependencyTreeMap = { [key: string]: URLDep[] };
 
-export class DependencyTree {
-  constructor(connection: IConnection, private bridge: Bridge) {
+export class DependencyTree implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
+  constructor(
+    private enabled: boolean,
+    connection: IConnection,
+    private bridge: Bridge
+  ) {
+    this.enabled = enabled;
     connection.onRequest(
       Request.analysisDependency,
       this.getDependencyTreeOfProject.bind(this)
     );
   }
   async getDependencyTreeOfProject(uriStr: string): Promise<DependencyTreeMap> {
+    if (!this.enabled) return {};
     const folderUir = URI.parse(uriStr);
     const folder = folderUir.fsPath;
 

@@ -10,9 +10,20 @@ import { URI } from "vscode-uri";
 import { CacheModule } from "../../../core/deno_cache";
 import { isInDeno } from "../../../core/deno";
 
-export class CodeLens {
-  constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
+import Plugable from "../Plugable";
+
+export class CodeLens implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
+  constructor(
+    private enabled: boolean,
+    connection: IConnection,
+    documents: TextDocuments<TextDocument>
+  ) {
     connection.onCodeLens((params) => {
+      if (!this.enabled) return;
       const { textDocument } = params;
 
       const document = documents.get(textDocument.uri);

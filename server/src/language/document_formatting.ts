@@ -9,13 +9,21 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { deno } from "../deno";
 import { Bridge } from "../bridge";
 
-export class DocumentFormatting {
+import Plugable from "../Plugable";
+
+export class DocumentFormatting implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
   constructor(
+    private enabled: boolean,
     connection: IConnection,
     documents: TextDocuments<TextDocument>,
     bridge: Bridge
   ) {
     connection.onDocumentFormatting(async (params) => {
+      if (!this.enabled) return;
       const uri = params.textDocument.uri;
       const doc = documents.get(uri);
 

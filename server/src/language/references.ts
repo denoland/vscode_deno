@@ -10,9 +10,20 @@ import { URI } from "vscode-uri";
 import { getDenoTypesHintsFromDocument } from "../deno_types";
 import { ModuleResolver } from "../../../core/module_resolver";
 
-export class References {
-  constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
+import Plugable from "../Plugable";
+
+export class References implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
+  constructor(
+    private enabled: boolean,
+    connection: IConnection,
+    documents: TextDocuments<TextDocument>
+  ) {
     connection.onReferences(async (params) => {
+      if (!this.enabled) return;
       const { textDocument, position } = params;
       const document = documents.get(textDocument.uri);
 

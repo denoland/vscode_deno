@@ -14,6 +14,8 @@ import { Cache } from "../../../core/cache";
 
 import { ImportCompletionEnhanced } from "./import_completion_enhanced";
 
+import Plugable from "../Plugable";
+
 // Cache for 30 second or 30 references
 const cache = Cache.create<Deps[]>(1000 * 30, 30);
 
@@ -25,13 +27,19 @@ getAllDenoCachedDeps()
     // do nothing
   });
 
-export class Completion {
+export class Completion implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
   constructor(
+    private enabled: boolean,
     connection: IConnection,
     documents: TextDocuments<TextDocument>,
     import_enhanced: ImportCompletionEnhanced
   ) {
     connection.onCompletion(async (params) => {
+      if (this.enabled) return;
       const { position, partialResultToken, textDocument } = params;
 
       const doc = documents.get(textDocument.uri);

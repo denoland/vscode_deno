@@ -12,6 +12,8 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "unstable",
   "import_map",
   "lint",
+  "include",
+  "exclude",
 ];
 
 export type ConfigurationField = {
@@ -19,6 +21,8 @@ export type ConfigurationField = {
   unstable?: boolean;
   import_map?: string | null;
   lint?: boolean;
+  include?: string[];
+  exclude?: string[];
 };
 
 interface ConfigurationInterface {
@@ -34,6 +38,8 @@ export class Configuration implements ConfigurationInterface {
     unstable: false,
     import_map: null,
     lint: false,
+    include: ["**/*.ts", "**/*.js", "**/*.tsx", "**/*.jsx", "**/*.mjs"],
+    exclude: [],
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();

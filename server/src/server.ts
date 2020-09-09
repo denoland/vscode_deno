@@ -32,6 +32,7 @@ import {
 import { getDenoDir, getDenoDts } from "../../core/deno";
 import { pathExists } from "../../core/util";
 import { Notification } from "../../core/const";
+import Plugable from "Plugable";
 
 const SERVER_NAME = "Deno Language Server";
 process.title = SERVER_NAME;
@@ -42,21 +43,25 @@ const connection: IConnection = createConnection(
   new IPCMessageWriter(process)
 );
 
+const g_plugables: Plugable[] = [];
+
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 const documents = new TextDocuments(TextDocument);
 
 const bridge = new Bridge(connection);
 const import_enhanced = new ImportCompletionEnhanced(connection, documents);
-new DependencyTree(connection, bridge);
-new Diagnostics(SERVER_NAME, connection, bridge, documents);
-new Definition(connection, documents);
-new References(connection, documents);
-new DocumentHighlight(connection, documents);
-new DocumentFormatting(connection, documents, bridge);
-new Hover(connection, documents);
-new Completion(connection, documents, import_enhanced);
-new CodeLens(connection, documents);
+g_plugables.push(new DependencyTree(false, connection, bridge));
+g_plugables.push(
+  new Diagnostics(false, SERVER_NAME, connection, bridge, documents)
+);
+g_plugables.push(new Definition(false, connection, documents));
+g_plugables.push(new References(false, connection, documents));
+g_plugables.push(new DocumentHighlight(false, connection, documents));
+g_plugables.push(new DocumentFormatting(false, connection, documents, bridge));
+g_plugables.push(new Hover(false, connection, documents));
+g_plugables.push(new Completion(false, connection, documents, import_enhanced));
+g_plugables.push(new CodeLens(false, connection, documents));
 
 connection.onInitialize(
   (): InitializeResult => {
@@ -120,6 +125,12 @@ connection.onInitialized(async () => {
     connection.sendNotification(Notification.error, err.message);
     return;
   }
+
+  connection.onNotification("_setEnable", (enabled: boolean) => {
+    g_plugables.forEach((it) => it.setEnabled(enabled));
+    connection.console.log(`Deno-LSP ${enabled ? "enabled" : "disabled"}`);
+  });
+
   connection.sendNotification(Notification.init, {
     version: deno.version ? deno.version : undefined,
     executablePath: deno.executablePath,

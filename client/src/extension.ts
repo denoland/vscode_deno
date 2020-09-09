@@ -1,5 +1,6 @@
 import * as path from "path";
 import { promises as fs } from "fs";
+import glob from "glob";
 
 import {
   workspace,
@@ -113,6 +114,9 @@ export class Extension {
     },
     executablePath: "",
   };
+
+  private enable = false;
+
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
     const config: ConfigurationField = {};
@@ -324,14 +328,8 @@ export class Extension {
       this.statusBar.hide();
       return;
     }
-
-    const uri = document.uri;
-    const enabled = workspace
-      .getConfiguration(this.configurationSection, uri)
-      .get("enable");
-
     // if vscode-deno have been disable for workspace
-    if (!enabled) {
+    if (!this.enable) {
       this.statusBar.hide();
       return;
     }
@@ -392,6 +390,34 @@ Executable ${this.denoInfo.executablePath}`;
       this.client.sendNotification(Notification.diagnostic, uri.toString());
     }
   }
+
+  private isPartOfProject(
+    config: ConfigurationField,
+    entry_path: string,
+    workspace_path?: string
+  ): boolean {
+    if (workspace_path === undefined) {
+      return false;
+    }
+
+    const includes =
+      config.include?.some((it) =>
+        glob
+          .sync(path.join(workspace_path, it))
+          .map((it) => path.normalize(it))
+          .includes(entry_path)
+      ) ?? true;
+
+    const excludes = !config.exclude?.some((it) =>
+      glob
+        .sync(path.join(workspace_path, it))
+        .map((it) => path.normalize(it))
+        .includes(entry_path)
+    );
+
+    return includes && excludes;
+  }
+
   private sync(document?: TextDocument) {
     if (document) {
       const relativeFilepath = workspace.asRelativePath(
@@ -404,17 +430,32 @@ Executable ${this.denoInfo.executablePath}`;
       ) {
         const config = this.getConfiguration(document.uri);
 
+        this.enable =
+          !!config.enable &&
+          this.isPartOfProject(
+            config,
+            document.uri.fsPath,
+            workspace.getWorkspaceFolder(document.uri)?.uri?.fsPath
+          );
+
         commands.executeCommand(
           "setContext",
           "denoExtensionActivated",
-          !!config.enable
+          this.enable
         );
+
+        if (!this.enable) {
+          this.updateStatusBarVisibility(window.activeTextEditor?.document);
+          this.client?.sendNotification("_setEnable", false);
+          return;
+        }
 
         this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
         this.updateDiagnostic(document.uri);
       }
     }
     this.updateStatusBarVisibility(window.activeTextEditor?.document);
+    this.client?.sendNotification("_setEnable", true);
   }
   private async setDocumentLanguage(document?: TextDocument) {
     if (!document) {

@@ -8,9 +8,20 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { getDenoTypesHintsFromDocument } from "../deno_types";
 
-export class DocumentHighlight {
-  constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
+import Plugable from "../Plugable";
+
+export class DocumentHighlight implements Plugable {
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
+  constructor(
+    private enabled: boolean,
+    connection: IConnection,
+    documents: TextDocuments<TextDocument>
+  ) {
     connection.onDocumentHighlight(async (params) => {
+      if (!this.enabled) return;
       const { textDocument, position } = params;
       const document = documents.get(textDocument.uri);
 
