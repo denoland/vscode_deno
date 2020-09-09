@@ -649,10 +649,24 @@ Executable ${this.denoInfo.executablePath}`;
       _ignore_next_line_lint: async (editor, _, range, rule: unknown) => {
         editor.edit((edit) => {
           const currentLineText = editor.document.lineAt(range.start.line);
-          const previousLineText = editor.document.lineAt(range.start.line - 1);
+          const previousLineText =
+            currentLineText.lineNumber === 0
+              ? undefined
+              : editor.document.lineAt(range.start.line - 1);
 
           const offset =
-            currentLineText.text.length - currentLineText.text.trim().length;
+            currentLineText.text.length -
+            currentLineText.text.trimLeft().length;
+
+          if (previousLineText === undefined) {
+            edit.replace(
+              currentLineText.range,
+              `${" ".repeat(offset)}// deno-lint-ignore ${rule}` +
+                "\n" +
+                currentLineText.text
+            );
+            return;
+          }
 
           if (/^\s*\/\/\s+deno-lint-ignore\s*/.test(previousLineText.text)) {
             edit.replace(
