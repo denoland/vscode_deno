@@ -12,10 +12,10 @@ test("core / configuration / resolveFromVscode if it is a valid file", async () 
   configManager.resolveFromVscode(vscodeDir);
 
   expect(configManager.config).toEqual({
+    ...Configuration.defaultConfiguration,
     enable: true,
     unstable: true,
     import_map: "./import_map.json",
-    lint: false,
   } as ConfigurationField);
 });
 
@@ -27,10 +27,8 @@ test("core / configuration / resolveFromVscode if valid section", async () => {
   configManager.resolveFromVscode(vscodeDir);
 
   expect(configManager.config).toEqual({
+    ...Configuration.defaultConfiguration,
     enable: true,
-    unstable: false,
-    import_map: null,
-    lint: false,
   } as ConfigurationField);
 });
 
@@ -49,12 +47,7 @@ test("core / configuration / resolveFromVscode if config file is empty", async (
 
   configManager.resolveFromVscode(vscodeDir);
 
-  expect(configManager.config).toEqual({
-    enable: false,
-    unstable: false,
-    import_map: null,
-    lint: false,
-  } as ConfigurationField);
+  expect(configManager.config).toEqual(Configuration.defaultConfiguration);
 });
 
 test("core / configuration / resolveFromVscode if field is invalid", async () => {
@@ -65,10 +58,10 @@ test("core / configuration / resolveFromVscode if field is invalid", async () =>
   configManager.resolveFromVscode(vscodeDir);
 
   expect(configManager.config).toEqual({
+    ...Configuration.defaultConfiguration,
     enable: true,
     unstable: true,
     import_map: "1,2,3",
-    lint: false,
   } as ConfigurationField);
 });
 
@@ -88,9 +81,7 @@ test("core / configuration / update", async () => {
   expect(hasTriggerListener).toBe(true);
 
   expect(configManager.config).toEqual({
+    ...Configuration.defaultConfiguration,
     enable: true,
-    unstable: false,
-    import_map: null,
-    lint: false,
   } as ConfigurationField);
 });
