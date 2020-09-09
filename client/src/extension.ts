@@ -514,6 +514,20 @@ Executable ${this.denoInfo.executablePath}`;
       await window.showInformationMessage(`Copied to clipboard.`);
     });
 
+    this.registerCommand("_enable_vscode_deno", async() => {
+      this.enable = true;
+      const config = workspace.getConfiguration(this.configurationSection);
+      await config.update("enable", true);
+      this.sync(window.activeTextEditor?.document)
+    });
+
+    this.registerCommand("_disable_vscode_deno", async() => {
+      this.enable = false;
+      const config = workspace.getConfiguration(this.configurationSection);
+      await config.update("enable", false);
+      this.sync(window.activeTextEditor?.document)
+    });
+
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
         const config = this.getConfiguration(editor.document.uri);

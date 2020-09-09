@@ -59,6 +59,16 @@
         "command": "deno._clear_import_enhencement_cache",
         "title": "Clear import enhencement cache",
         "category": "deno"
+      },
+      {
+        "command": "deno._enable_vscode_deno",
+        "title": "Enable VSCode-Deno",
+        "category": "deno"
+      },
+      {
+        "command": "deno._disable_vscode_deno",
+        "title": "Disable VSCode-Deno",
+        "category": "deno"
       }
     ],
     "views": {
@@ -85,6 +95,14 @@
         },
         {
           "command": "deno.restart_server",
+          "when": "denoExtensionActivated"
+        },
+        {
+          "command": "deno._enable_vscode_deno",
+          "when": "!denoExtensionActivated"
+        },
+        {
+          "command": "deno._disable_vscode_deno",
           "when": "denoExtensionActivated"
         }
       ]
