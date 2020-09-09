@@ -32,7 +32,7 @@ import {
 import { getDenoDir, getDenoDts } from "../../core/deno";
 import { pathExists } from "../../core/util";
 import { Notification } from "../../core/const";
-import Plugable from "Plugable";
+import Plugable from "./plugable";
 
 const SERVER_NAME = "Deno Language Server";
 process.title = SERVER_NAME;
