@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "Deno",
   "description": "Deno support for VSCode",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
