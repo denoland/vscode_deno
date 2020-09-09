@@ -169,6 +169,7 @@ export class Diagnostics implements Plugable {
    * @param document
    */
   async generate(document: TextDocument): Promise<Diagnostic[]> {
+    if (!this.enabled) return [];
     if (!isValidDenoDocument(document.languageId)) {
       return [];
     }

@@ -444,18 +444,13 @@ Executable ${this.denoInfo.executablePath}`;
           this.enable
         );
 
-        if (!this.enable) {
-          this.updateStatusBarVisibility(window.activeTextEditor?.document);
-          this.client?.sendNotification("_setEnable", false);
-          return;
-        }
+        this.client?.sendNotification("_setEnable", this.enable);
 
         this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
         this.updateDiagnostic(document.uri);
       }
     }
     this.updateStatusBarVisibility(window.activeTextEditor?.document);
-    this.client?.sendNotification("_setEnable", true);
   }
   private async setDocumentLanguage(document?: TextDocument) {
     if (!document) {
