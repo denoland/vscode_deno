@@ -75,7 +75,6 @@ jobs:
         with:
           files: |
             vscode-deno.vsix
-          draft: true
 
       - name: Publish
         if: |
