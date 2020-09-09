@@ -9,7 +9,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { deno } from "../deno";
 import { Bridge } from "../bridge";
 
-import Plugable from "../Plugable";
+import Plugable from "../plugable";
 
 export class DocumentFormatting implements Plugable {
   setEnabled(enabled: boolean): void {

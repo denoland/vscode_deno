@@ -10,7 +10,7 @@ import { URI } from "vscode-uri";
 import { getDenoTypesHintsFromDocument } from "../deno_types";
 import { ModuleResolver } from "../../../core/module_resolver";
 
-import Plugable from "../Plugable";
+import Plugable from "../plugable";
 
 export class Definition implements Plugable {
   setEnabled(enabled: boolean): void {

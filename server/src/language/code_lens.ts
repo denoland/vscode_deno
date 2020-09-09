@@ -10,7 +10,7 @@ import { URI } from "vscode-uri";
 import { CacheModule } from "../../../core/deno_cache";
 import { isInDeno } from "../../../core/deno";
 
-import Plugable from "../Plugable";
+import Plugable from "../plugable";
 
 export class CodeLens implements Plugable {
   setEnabled(enabled: boolean): void {

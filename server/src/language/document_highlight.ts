@@ -8,7 +8,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { getDenoTypesHintsFromDocument } from "../deno_types";
 
-import Plugable from "../Plugable";
+import Plugable from "../plugable";
 
 export class DocumentHighlight implements Plugable {
   setEnabled(enabled: boolean): void {

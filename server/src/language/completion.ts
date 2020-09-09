@@ -14,7 +14,7 @@ import { Cache } from "../../../core/cache";
 
 import { ImportCompletionEnhanced } from "./import_completion_enhanced";
 
-import Plugable from "../Plugable";
+import Plugable from "../plugable";
 
 // Cache for 30 second or 30 references
 const cache = Cache.create<Deps[]>(1000 * 30, 30);

@@ -23,7 +23,7 @@ import { getImportModules } from "../../../core/deno_deps";
 import { Notification } from "../../../core/const";
 import { deno } from "../deno";
 
-import Plugable from "../Plugable";
+import Plugable from "../plugable";
 
 type Fix = {
   title: string;

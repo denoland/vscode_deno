@@ -12,7 +12,7 @@ import { ImportMap } from "../../core/import_map";
 import { isHttpURL } from "../../core/util";
 import { Request } from "../../core/const";
 
-import Plugable from "./Plugable";
+import Plugable from "./plugable";
 
 interface URLDep {
   filepath: string;
