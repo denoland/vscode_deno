@@ -64,6 +64,18 @@ jobs:
       - name: Package
         run: npm run build
 
+      - name: Release
+        if: |
+          startsWith(matrix.os, 'ubuntu') &&
+          github.repository == 'denoland/vscode_deno' &&
+          startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            vscode-deno.vsix
+
       - name: Publish
         if: |
           startsWith(matrix.os, 'ubuntu') &&
