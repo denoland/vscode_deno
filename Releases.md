@@ -6,7 +6,7 @@ Releases of the extension can be downloaded from [Visual Studio Marketplace](htt
 
 - fix: remove ansi codes from install output (#185)
 - fix: deno.land/x cache will always renew on vscode restart after 24 hours (#191)
-- fix: ingore 'rule' for this line does not work on the first line (#192)
+- fix: ignore 'rule' for this line does not work on the first line (#192)
 - build: release .vsix artifact during release (#195)
 
 ### [v2.2.0](https://github.com/denoland/vscode_deno/compare/v2.1.2...v2.2.0) / 2020.09.07
