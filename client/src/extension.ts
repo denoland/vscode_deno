@@ -43,11 +43,22 @@ import {
   DenoPluginConfigurationField,
 } from "../../core/configuration";
 
+import {
+  TypescriptDenoPluginMessage,
+  TypescriptDenoPluginConfig,
+} from "../../core/typescript_deno_plugin_config";
+
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
 type TypescriptAPI = {
-  configurePlugin(pluginId: string, configuration: ConfigurationField): void;
+  /**
+   * This method will `reset` the plugin by the msg
+   * see [this issue](https://github.com/microsoft/vscode/issues/106402)
+   * @param pluginId The ID of plugin send to
+   * @param msg the message that will send to plugin
+   */
+  configurePlugin(pluginId: string, msg: TypescriptDenoPluginMessage): void;
 };
 
 type DenoInfo = {
@@ -144,6 +155,21 @@ export class Extension {
 
     return config;
   }
+
+  private resetTypescriptDenoPlugin(
+    config?: ConfigurationField,
+    plugin_config?: TypescriptDenoPluginConfig
+  ) {
+    this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, {
+      project_config: config ?? this.getConfiguration(),
+      plugin_config:
+        plugin_config ??
+        ({ enable: this.enable } as TypescriptDenoPluginConfig),
+    });
+
+    commands.executeCommand("typescript.reloadProjects");
+  }
+
   // register command for deno extension
   private registerCommand(
     command: string,
@@ -231,7 +257,7 @@ export class Extension {
           progressOnInitialization: true,
           middleware: {
             provideCodeActions: (document, range, context, token, next) => {
-              if (!this.getConfiguration(document.uri).enable) {
+              if (!this.enable) {
                 return [];
               }
               // do not ask server for code action when the diagnostic isn't from deno
@@ -262,14 +288,14 @@ export class Extension {
               token,
               next
             ) => {
-              if (!this.getConfiguration(document.uri).enable) {
+              if (!this.enable) {
                 return [];
               }
 
               return next(document, position, context, token);
             },
             provideCodeLenses: (document, token, next) => {
-              if (!isInDeno(document.uri.fsPath)) {
+              if (!this.enable || !isInDeno(document.uri.fsPath)) {
                 return;
               }
               return next(document, token);
@@ -446,7 +472,8 @@ Executable ${this.denoInfo.executablePath}`;
 
         this.client?.sendNotification("_setEnable", this.enable);
 
-        this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
+        // Reset the plugin
+        this.resetTypescriptDenoPlugin();
         this.updateDiagnostic(document.uri);
       }
     }
@@ -480,10 +507,7 @@ Executable ${this.denoInfo.executablePath}`;
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
-    this.tsAPI.configurePlugin(
-      TYPESCRIPT_DENO_PLUGIN_ID,
-      this.getConfiguration(window.activeTextEditor?.document.uri)
-    );
+    this.resetTypescriptDenoPlugin();
 
     this.statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 0);
 

@@ -39,7 +39,7 @@ export class Completion implements Plugable {
     import_enhanced: ImportCompletionEnhanced
   ) {
     connection.onCompletion(async (params) => {
-      if (this.enabled) return;
+      if (!this.enabled) return;
       const { position, partialResultToken, textDocument } = params;
 
       const doc = documents.get(textDocument.uri);

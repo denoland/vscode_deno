@@ -3,18 +3,24 @@ import * as path from "path";
 import merge from "deepmerge";
 import typescript, {
   CodeFixAction,
+  createProgram,
   FormatCodeSettings,
+  Program,
   UserPreferences,
 } from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
-import { Configuration, ConfigurationField } from "../../core/configuration";
 import { getDenoDts } from "../../core/deno";
 import { ModuleResolver } from "../../core/module_resolver";
 import { CacheModule } from "../../core/deno_cache";
 import { normalizeFilepath, isUntitledDocument } from "../../core/util";
 import { normalizeImportStatement } from "../../core/deno_normalize_import_statement";
 import { getImportModules } from "../../core/deno_deps";
+
+import {
+  TypescriptDenoPluginConfigManager,
+  TypescriptDenoPluginMessage,
+} from "./config";
 
 const ignoredCompilerOptions: readonly string[] = [
   "allowSyntheticDefaultImports",
@@ -77,7 +83,7 @@ const ignoredCompilerOptions: readonly string[] = [
 export class DenoPlugin implements typescript.server.PluginModule {
   // plugin name
   static readonly PLUGIN_NAME = "typescript-deno-plugin";
-  private readonly configurationManager = new Configuration();
+  private readonly configurationManager = new TypescriptDenoPluginConfigManager();
   // see https://github.com/denoland/deno/blob/2debbdacb935cfe1eb7bb8d1f40a5063b339d90b/js/compiler.ts#L159-L170
   private readonly DEFAULT_OPTIONS: typescript.CompilerOptions = {
     allowJs: true,
@@ -109,11 +115,18 @@ export class DenoPlugin implements typescript.server.PluginModule {
   };
   private logger!: Logger;
 
+  private program?: Program;
+
   constructor(private readonly ts: typeof typescript) {}
 
   create(info: typescript.server.PluginCreateInfo): typescript.LanguageService {
     const { project, languageService, languageServiceHost } = info;
     const projectDirectory = project.getCurrentDirectory();
+
+    this.program = createProgram(
+      languageServiceHost.getScriptFileNames(),
+      languageServiceHost.getCompilationSettings()
+    );
 
     function getRealPath(filepath: string): string {
       return project.realpath ? project.realpath(filepath) : filepath;
@@ -154,7 +167,13 @@ export class DenoPlugin implements typescript.server.PluginModule {
     languageServiceHost.getCompilationSettings = () => {
       const projectConfig = getCompilationSettings();
 
-      if (!this.configurationManager.config.enable) {
+      this.logger.info(
+        `getCompilationSettings: ${JSON.stringify(
+          this.configurationManager.getPluginConfig()
+        )}`
+      );
+
+      if (!this.configurationManager.getPluginConfig()?.enable) {
         return projectConfig;
       }
 
@@ -174,25 +193,54 @@ export class DenoPlugin implements typescript.server.PluginModule {
       return compilationSettings;
     };
 
-    languageServiceHost.getScriptFileNames = () => {
-      const scriptFileNames = getScriptFileNames();
+    languageService.getProgram = () => {
+      this.program = createProgram(
+        languageServiceHost.getScriptFileNames(),
+        languageServiceHost.getCompilationSettings(),
+        undefined,
+        this.program
+      );
+      this.logger.info(`getProgram: ${JSON.stringify(this.program)}`);
+      return this.program;
+    };
 
-      if (!this.configurationManager.config.enable) {
+    languageServiceHost.getScriptFileNames = () => {
+      let scriptFileNames = getScriptFileNames();
+
+      this.logger.info(
+        `getScriptFileNames: ${
+          this.configurationManager.getPluginConfig()?.enable
+        } ${scriptFileNames}`
+      );
+
+      if (!this.configurationManager.getPluginConfig()?.enable) {
         return scriptFileNames;
       }
 
       // Get typescript declaration File
       const dtsFiles = [
-        getDenoDts(!!this.configurationManager.config.unstable),
+        getDenoDts(
+          !!this.configurationManager.getProjectConfig().config.unstable
+        ),
       ];
 
-      const iterator = new Set(dtsFiles).entries();
+      const iterator = new Set(dtsFiles);
+      scriptFileNames = [...iterator, ...scriptFileNames];
 
-      for (const [, filepath] of iterator) {
-        scriptFileNames.push(filepath);
-      }
+      this.logger.info(
+        `getScriptFileNames--dtsFiles: ${JSON.stringify(
+          dtsFiles
+        )} getScriptFileNames--scriptFileNames: ${JSON.stringify(
+          scriptFileNames
+        )}`
+      );
 
       return scriptFileNames;
+    };
+
+    languageServiceHost.getProjectVersion = () => {
+      this.logger.info(`getProjectVersion: ${new Date().toUTCString()}`);
+      return new Date().toUTCString();
     };
 
     if (resolveTypeReferenceDirectives) {
@@ -201,7 +249,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
         containingFile: string,
         ...rest
       ) => {
-        if (!this.configurationManager.config.enable) {
+        if (!this.configurationManager.getPluginConfig()?.enable) {
           return resolveTypeReferenceDirectives(
             typeDirectiveNames,
             containingFile,
@@ -223,13 +271,12 @@ export class DenoPlugin implements typescript.server.PluginModule {
           return [];
         }
 
-        const importMapsFilepath = this.configurationManager.config.import_map
-          ? path.isAbsolute(this.configurationManager.config.import_map)
-            ? this.configurationManager.config.import_map
-            : path.resolve(
-                project.getCurrentDirectory(),
-                this.configurationManager.config.import_map
-              )
+        const import_map = this.configurationManager.getProjectConfig().config
+          .import_map;
+        const importMapsFilepath = import_map
+          ? path.isAbsolute(import_map)
+            ? import_map
+            : path.resolve(project.getCurrentDirectory(), import_map)
           : undefined;
 
         const resolver = ModuleResolver.create(
@@ -273,7 +320,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
     languageService.getSemanticDiagnostics = (filename: string) => {
       const diagnostics = getSemanticDiagnostics(filename);
 
-      if (!this.configurationManager.config.enable) {
+      if (!this.configurationManager.getPluginConfig()?.enable) {
         return diagnostics;
       }
 
@@ -329,7 +376,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
         preferences
       );
 
-      if (!this.configurationManager.config.enable) {
+      if (!this.configurationManager.getPluginConfig()?.enable) {
         return fixActions;
       }
 
@@ -369,7 +416,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
         preferences
       );
 
-      if (!this.configurationManager.config.enable) {
+      if (!this.configurationManager.getPluginConfig()?.enable) {
         return details;
       }
 
@@ -436,7 +483,13 @@ export class DenoPlugin implements typescript.server.PluginModule {
         | typescript.ResolvedModuleFull
         | undefined
       )[] => {
-        if (!this.configurationManager.config.enable) {
+        this.logger.info(
+          `resolveModuleNames: ${JSON.stringify(
+            this.configurationManager.getPluginConfig()
+          )}`
+        );
+
+        if (!this.configurationManager.getPluginConfig()?.enable) {
           return resolveModuleNames(moduleNames, containingFile, ...rest);
         }
 
@@ -450,13 +503,12 @@ export class DenoPlugin implements typescript.server.PluginModule {
             // It will cause a series of bugs, so here we get the real file path
             getRealPath(containingFile);
 
-        const importMapsFilepath = this.configurationManager.config.import_map
-          ? path.isAbsolute(this.configurationManager.config.import_map)
-            ? this.configurationManager.config.import_map
-            : path.resolve(
-                project.getCurrentDirectory(),
-                this.configurationManager.config.import_map
-              )
+        const import_map = this.configurationManager.getProjectConfig().config
+          .import_map;
+        const importMapsFilepath = import_map
+          ? path.isAbsolute(import_map)
+            ? import_map
+            : path.resolve(project.getCurrentDirectory(), import_map)
           : undefined;
 
         const resolver = ModuleResolver.create(
@@ -543,9 +595,11 @@ export class DenoPlugin implements typescript.server.PluginModule {
       };
     }
 
-    this.configurationManager.resolveFromVscode(projectDirectory);
+    this.configurationManager
+      .getProjectConfig()
+      .resolveFromVscode(projectDirectory);
 
-    this.configurationManager.onUpdatedConfig(() => {
+    this.configurationManager.getProjectConfig().onUpdatedConfig(() => {
       project.refreshDiagnostics();
       project.updateGraph();
       languageService.getProgram()?.emit();
@@ -554,7 +608,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
     return languageService;
   }
 
-  onConfigurationChanged(c: ConfigurationField): void {
+  onConfigurationChanged(c: TypescriptDenoPluginMessage): void {
     this.logger.info(`onConfigurationChanged: ${JSON.stringify(c)}`);
     this.configurationManager.update(c);
   }
