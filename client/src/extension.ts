@@ -1,5 +1,5 @@
 import * as path from "path";
-import { promises as fs } from "fs";
+import fsSync, { promises as fs } from "fs";
 
 import {
   workspace,
@@ -481,13 +481,42 @@ Executable ${this.denoInfo.executablePath}`;
     });
 
     this.registerCommand("_init_project", async () => {
-      const setting: ProjectSetting = await initProject();
-      const config = workspace.getConfiguration(this.configurationSection);
-      // if you init project, you enable the plugin. NO NEED CHOOSE
-      config.update("enable", true);
-      config.update("lint", setting.lint);
-      // if lint enabled, enable unstable as well
-      config.update("unstable", setting.lint);
+      try {
+        const setting: ProjectSetting = await initProject();
+        const config = workspace.getConfiguration(this.configurationSection);
+        // if you init project, you enable the plugin. NO NEED CHOOSE
+        await config.update("enable", true);
+        await config.update("lint", setting.lint);
+        // if lint enabled, enable unstable as well
+        await config.update("unstable", setting.lint);
+        window
+          .showInformationMessage(
+            "Deno is now set up. You can enable and disable settings (like `--unstable`) in the `.vscode/settings.json` file. Before the extension will work you need to reload VS Code.",
+            "Reload window",
+            "Open settings.json"
+          )
+          .then(async (clicked) => {
+            if (clicked === "Reload window") {
+              commands.executeCommand("workbench.action.reloadWindow");
+            } else if (clicked === "Open settings.json") {
+              const ws_folder = workspace.workspaceFolders
+                ? workspace.workspaceFolders[0]
+                : undefined;
+              if (ws_folder !== undefined) {
+                const ws_path = ws_folder.uri.fsPath;
+                const config_path = path.join(ws_path, ".vscode/settings.json");
+                if (fsSync.existsSync(config_path)) {
+                  const document = await workspace.openTextDocument(
+                    config_path
+                  );
+                  window.showTextDocument(document);
+                }
+              }
+            }
+          });
+      } catch {
+        window.showErrorMessage("Init failed");
+      }
     });
 
     this.registerQuickFix({

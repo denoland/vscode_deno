@@ -14,7 +14,7 @@ export interface ProjectSetting {
 }
 
 export async function initProject(): Promise<ProjectSetting> {
-  const title = "Init vscode-deno project settings";
+  const title = "Init";
 
   async function lint(input: MultiStepInput, state: Partial<State>) {
     const pick = await input.showQuickPick({
@@ -22,7 +22,7 @@ export async function initProject(): Promise<ProjectSetting> {
       step: 1,
       totalSteps: 1,
       placeholder: "Enable deno lint?",
-      items: (["Enable", "Disable"].map((label) => ({
+      items: (["Yes", "No"].map((label) => ({
         label,
       })) as unknown[]) as QuickPickItem[],
       buttons: [],

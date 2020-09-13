@@ -62,7 +62,7 @@
       },
       {
         "command": "deno._init_project",
-        "title": "Init vscode-deno project",
+        "title": "Init",
         "category": "deno"
       }
     ],
