@@ -80,7 +80,7 @@ connection.onInitialize(
         definitionProvider: true,
         codeLensProvider: {},
         executeCommandProvider: {
-          commands: ["deno._clear_import_enhencement_cache"],
+          commands: ["deno._clear_import_enhancement_cache"],
         },
       },
     };
@@ -126,7 +126,7 @@ connection.onInitialized(async () => {
     DENO_DIR: getDenoDir(),
   });
   connection.onExecuteCommand(async (params: ExecuteCommandParams) => {
-    if (params.command === "deno._clear_import_enhencement_cache") {
+    if (params.command === "deno._clear_import_enhancement_cache") {
       import_enhanced
         .clearCache()
         .then(() => connection.window.showInformationMessage("Clear success!"))
