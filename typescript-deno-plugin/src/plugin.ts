@@ -3,9 +3,7 @@ import * as path from "path";
 import merge from "deepmerge";
 import typescript, {
   CodeFixAction,
-  createProgram,
   FormatCodeSettings,
-  Program,
   UserPreferences,
 } from "typescript/lib/tsserverlibrary";
 
@@ -115,18 +113,11 @@ export class DenoPlugin implements typescript.server.PluginModule {
   };
   private logger!: Logger;
 
-  private program?: Program;
-
   constructor(private readonly ts: typeof typescript) {}
 
   create(info: typescript.server.PluginCreateInfo): typescript.LanguageService {
     const { project, languageService, languageServiceHost } = info;
     const projectDirectory = project.getCurrentDirectory();
-
-    this.program = createProgram(
-      languageServiceHost.getScriptFileNames(),
-      languageServiceHost.getCompilationSettings()
-    );
 
     function getRealPath(filepath: string): string {
       return project.realpath ? project.realpath(filepath) : filepath;
@@ -191,17 +182,6 @@ export class DenoPlugin implements typescript.server.PluginModule {
       );
 
       return compilationSettings;
-    };
-
-    languageService.getProgram = () => {
-      this.program = createProgram(
-        languageServiceHost.getScriptFileNames(),
-        languageServiceHost.getCompilationSettings(),
-        undefined,
-        this.program
-      );
-      this.logger.info(`getProgram: ${JSON.stringify(this.program)}`);
-      return this.program;
     };
 
     languageServiceHost.getScriptFileNames = () => {
