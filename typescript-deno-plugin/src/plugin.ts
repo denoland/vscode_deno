@@ -5,7 +5,6 @@ import typescript, {
   CodeFixAction,
   FormatCodeSettings,
   UserPreferences,
-  ImportsNotUsedAsValues,
 } from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
@@ -170,8 +169,8 @@ export class DenoPlugin implements typescript.server.PluginModule {
       const extraOptions: ts.CompilerOptions = {
         isolatedModules: this.configurationManager.config.unstable,
         importsNotUsedAsValues: this.configurationManager.config.unstable
-          ? ImportsNotUsedAsValues.Error
-          : ImportsNotUsedAsValues.Remove,
+          ? this.ts.ImportsNotUsedAsValues.Error
+          : this.ts.ImportsNotUsedAsValues.Remove,
       };
 
       const compilationSettings = merge(
@@ -317,7 +316,21 @@ export class DenoPlugin implements typescript.server.PluginModule {
         7016,
       ];
 
-      return diagnostics.filter((v) => !ignoredDiagnostics.includes(v.code));
+      const ignoredCompileDiagnostics = [
+        // TS1208: All files must be modules when the '--isolatedModules' flag is
+        // provided.  We can ignore because we guarantuee that all files are
+        // modules.
+        1208,
+      ];
+
+      return diagnostics.filter(
+        (v) =>
+          !ignoredDiagnostics.includes(v.code) &&
+          !(
+            this.configurationManager.config.unstable &&
+            ignoredCompileDiagnostics.includes(v.code)
+          )
+      );
     };
 
     languageService.getCodeFixesAtPosition = (
