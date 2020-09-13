@@ -2,6 +2,10 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [v2.2.2](https://github.com/denoland/vscode_deno/compare/v2.2.1...v2.2.2) / 2020.09.13
+
+- chore: update tsconfig to match Deno 1.4.0 (#204)
+
 ### [v2.2.1](https://github.com/denoland/vscode_deno/compare/v2.2.0...v2.2.1) / 2020.09.09
 
 - fix: remove ansi codes from install output (#185)

@@ -5,6 +5,7 @@ import typescript, {
   CodeFixAction,
   FormatCodeSettings,
   UserPreferences,
+  ImportsNotUsedAsValues,
 } from "typescript/lib/tsserverlibrary";
 
 import { Logger } from "./logger";
@@ -166,8 +167,15 @@ export class DenoPlugin implements typescript.server.PluginModule {
         }
       }
 
+      const extraOptions: ts.CompilerOptions = {
+        isolatedModules: this.configurationManager.config.unstable,
+        importsNotUsedAsValues: this.configurationManager.config.unstable
+          ? ImportsNotUsedAsValues.Error
+          : ImportsNotUsedAsValues.Remove,
+      };
+
       const compilationSettings = merge(
-        merge(this.DEFAULT_OPTIONS, projectConfig),
+        merge(merge(this.DEFAULT_OPTIONS, extraOptions), projectConfig),
         this.MUST_OVERWRITE_OPTIONS
       );
 
