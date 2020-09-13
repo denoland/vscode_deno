@@ -29,7 +29,7 @@ export async function initProject(): Promise<ProjectSetting> {
       shouldResume: async () => false,
     });
 
-    if (pick.label === "Enable") {
+    if (pick.label === "Yes") {
       state.lint = true;
     } else {
       state.lint = false;
