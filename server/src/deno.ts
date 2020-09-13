@@ -62,9 +62,9 @@ class Deno {
       return;
     }
 
-    // If the currently used Deno is less than 1.3.3
+    // If the currently used Deno is less than 1.4.0
     // We will give an warning to upgrade.
-    const minimumDenoVersion = "1.3.3";
+    const minimumDenoVersion = "1.4.0";
     if (!semver.gte(this.version.deno, minimumDenoVersion)) {
       throw new Error(`Please upgrade to Deno ${minimumDenoVersion} or above.`);
     }
