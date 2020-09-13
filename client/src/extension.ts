@@ -42,6 +42,8 @@ import {
   DenoPluginConfigurationField,
 } from "../../core/configuration";
 
+import { initProject, ProjectSetting } from "./init_project";
+
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
@@ -476,6 +478,16 @@ Executable ${this.denoInfo.executablePath}`;
     this.registerCommand("_copy_text", async (text: string) => {
       await env.clipboard.writeText(text);
       await window.showInformationMessage(`Copied to clipboard.`);
+    });
+
+    this.registerCommand("_init_project", async () => {
+      const setting: ProjectSetting = await initProject();
+      const config = workspace.getConfiguration(this.configurationSection);
+      // if you init project, you enable the plugin. NO NEED CHOOSE
+      config.update("enable", true);
+      config.update("lint", setting.lint);
+      // if lint enabled, enable unstable as well
+      config.update("unstable", setting.lint);
     });
 
     this.registerQuickFix({
