@@ -2,6 +2,11 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [v2.2.3](https://github.com/denoland/vscode_deno/compare/v2.2.2...v2.2.3) / 2020.09.13
+
+- fix: failed to load typescript-deno-plugin error (#205)
+- chore: align ignored diagnostics to Deno 1.4.0 (#205)
+
 ### [v2.2.2](https://github.com/denoland/vscode_deno/compare/v2.2.1...v2.2.2) / 2020.09.13
 
 - chore: update tsconfig to match Deno 1.4.0 (#204)
