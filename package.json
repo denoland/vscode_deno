@@ -59,6 +59,11 @@
         "command": "deno._clear_import_enhancement_cache",
         "title": "Clear import enhancement cache",
         "category": "deno"
+      },
+      {
+        "command": "deno._init_project",
+        "title": "Init",
+        "category": "deno"
       }
     ],
     "views": {
