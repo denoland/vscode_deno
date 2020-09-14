@@ -349,7 +349,7 @@ export class ImportCompletionEnhanced {
           await this.mod_list_cache.transaction_commit();
         } catch {
           progress.done();
-          return CACHE_STATE.UNKNOWN_ERROR;
+          throw CACHE_STATE.UNKNOWN_ERROR;
         }
         progress.done();
         return CACHE_STATE.CACHE_SUCCESS;
