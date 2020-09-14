@@ -1,0 +1,12 @@
+## Get deno.land std versions
+GET https://cdn.deno.land/std/meta/versions.json HTTP/1.1
+
+###
+
+## Get specific version of std module content list
+GET https://cdn.deno.land/std/versions/0.69.0/meta/meta.json HTTP/1.1
+
+###
+
+## Get version list of a mod
+GET https://cdn.deno.land/sha256/meta/versions.json HTTP/1.1

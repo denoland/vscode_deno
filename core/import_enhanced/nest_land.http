@@ -1,0 +1,12 @@
+## Get std module info
+GET https://x.nest.land/api/package/std HTTP/1.1
+
+###
+
+## Get content info of std module
+GET https://x.nest.land/api/package/std/0.69.0 HTTP/1.1
+
+###
+
+## Get packages list
+GET https://x.nest.land/api/packages HTTP/1.1

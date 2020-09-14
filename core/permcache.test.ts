@@ -1,6 +1,14 @@
 import { PermCache, TRANSACTION_STATE } from "./permcache";
 import { sleep } from "./util";
 
+beforeAll(() => {
+  process.env.VSCODE_DENO_EXTENSION_PATH = __dirname;
+});
+
+afterAll(() => {
+  process.env.VSCODE_DENO_EXTENSION_PATH = undefined;
+});
+
 test("core / permcache", async () => {
   const data = [1, 2];
   const cache = await PermCache.create("permcache-test", 1);
