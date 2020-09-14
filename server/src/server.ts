@@ -133,6 +133,12 @@ connection.onInitialized(async () => {
         .catch(() => connection.window.showErrorMessage("Clear failed!"));
     }
   });
+  await fetchingCache();
+  
+  connection.console.log("server initialized.");
+});
+
+const fetchingCache = async () => {
   import_enhanced
     .cacheModList()
     .then((it) => {
@@ -144,11 +150,18 @@ connection.onInitialized(async () => {
     })
     .catch(() =>
       connection.window.showErrorMessage(
-        "deno.land/x module list failed to cache!"
+        "deno.land/x module list failed to cache!",
+        {title: "Retry"},
+        {title: "Close"},
+      ).then(
+        async choice => {
+          if(choice?.title === "Retry") {
+            await fetchingCache();
+          }
+      }
       )
     );
-  connection.console.log("server initialized.");
-});
+}
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
