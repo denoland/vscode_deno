@@ -144,14 +144,14 @@ const fetchingCache = async () => {
     .then((it) => {
       if (it === CACHE_STATE.CACHE_SUCCESS) {
         connection.window.showInformationMessage(
-          "deno.land/x module list cached successfully!"
+          "Third-party module list cached successfully!"
         );
       }
     })
     .catch(() =>
       connection.window
         .showErrorMessage(
-          "deno.land/x module list failed to cache!",
+          "Third-party module list failed to cache!",
           { title: "Retry" },
           { title: "Close" }
         )
