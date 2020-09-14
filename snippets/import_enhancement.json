@@ -10,5 +10,11 @@
     "prefix": ["impx", "importx"],
     "body": "import {$3} from 'https://deno.land/x/$1/$2';$0",
     "description": "Use this snippet to import a deno.land/x module."
+  },
+  "Import x.nest.land module": {
+    "scope": "javascript,typescript,javascriptreact,typescriptreact",
+    "prefix": ["impnest", "importnest"],
+    "body": "import {$3} from 'https://x.nest.land/$1@$2';$0",
+    "description": "Use this snippet to import a nest.land module."
   }
 }

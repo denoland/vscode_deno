@@ -305,7 +305,7 @@ export class ImportCompletionEnhanced {
 
   async cacheModList(): Promise<CACHE_STATE> {
     const progress = await this.connection.window.createWorkDoneProgress();
-    progress.begin("Fetching deno.land/x module list...", 0);
+    progress.begin("Fetching third-party module list...", 0);
     if (!this.mod_list_cache) {
       this.mod_list_cache = await PermCache.create<ModListCacheContent>(
         "mod_list",
