@@ -137,7 +137,11 @@ export class ImportCompletionEnhanced {
         }
 
         if (/.*:\/\/x.nest.land\/$/.test(current_line_text)) {
-          const result = await this.doSearchWithCache("x.nest.land");
+          const mods = await this.doSearchWithCache("x.nest.land");
+          const result: ModInfoList = [
+            { name: "std", description: "std module" },
+            ...mods,
+          ];
           return CompletionList.create(
             result.map(
               (it) =>
