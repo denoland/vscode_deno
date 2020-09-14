@@ -334,16 +334,23 @@ export class ImportCompletionEnhanced {
       ) {
         let index = 0;
         const total = SupportedRegistry.length;
-        for (const registry of SupportedRegistry) {
-          const mods = await getRegistries()[registry].modList();
-          const old_cache = this.mod_list_cache.transaction_get().data;
-          const new_cache = { ...old_cache };
-          new_cache[registry] = mods;
-          this.mod_list_cache.transaction_set(new_cache as ModListCacheContent);
-          index++;
-          progress.report((index / total) * 100);
+        try {
+          for (const registry of SupportedRegistry) {
+            const mods = await getRegistries()[registry].modList();
+            const old_cache = this.mod_list_cache.transaction_get().data;
+            const new_cache = { ...old_cache };
+            new_cache[registry] = mods;
+            this.mod_list_cache.transaction_set(
+              new_cache as ModListCacheContent
+            );
+            index++;
+            progress.report((index / total) * 100);
+          }
+          await this.mod_list_cache.transaction_commit();
+        } catch {
+          progress.done();
+          return CACHE_STATE.UNKNOWN_ERROR;
         }
-        await this.mod_list_cache.transaction_commit();
         progress.done();
         return CACHE_STATE.CACHE_SUCCESS;
       }
