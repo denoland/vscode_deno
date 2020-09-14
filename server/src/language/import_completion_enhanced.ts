@@ -344,6 +344,8 @@ export class ImportCompletionEnhanced {
           progress.report((index / total) * 100);
         }
         await this.mod_list_cache.transaction_commit();
+        progress.done();
+        return CACHE_STATE.CACHE_SUCCESS;
       }
       progress.done();
       return CACHE_STATE.UNKNOWN_ERROR;
