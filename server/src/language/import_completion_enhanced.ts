@@ -105,53 +105,65 @@ export class ImportCompletionEnhanced {
             (VERSION_REG.test(maybe_version) || maybe_version.length === 0) &&
             position.character > index_of_at_symbol
           ) {
-            const vers = await getRegistries()[imp_info.domain].modVersionList(
-              imp_info.module
-            );
-            if (vers.versions === undefined) {
+            try {
+              const vers = await getRegistries()[
+                imp_info.domain
+              ].modVersionList(imp_info.module);
+              if (vers.versions === undefined) {
+                return CompletionList.create();
+              }
+              const result = vers.versions
+                .sort((a, b) => {
+                  const av = semver.clean(a);
+                  const bv = semver.clean(b);
+                  if (
+                    av === null ||
+                    bv === null ||
+                    !semver.valid(av) ||
+                    !semver.valid(bv)
+                  ) {
+                    return 0;
+                  }
+                  return semver.gt(av, bv) ? -1 : 1;
+                })
+                .map((it, i) => {
+                  const ci = CompletionItem.create(it);
+                  ci.sortText = `a${String.fromCharCode(i) + 1}`;
+                  ci.filterText = it;
+                  ci.kind = CompletionItemKind.Value;
+                  return ci;
+                });
+              return CompletionList.create(result);
+            } catch {
               return CompletionList.create();
             }
-            const result = vers.versions
-              .sort((a, b) => {
-                const av = semver.clean(a);
-                const bv = semver.clean(b);
-                if (
-                  av === null ||
-                  bv === null ||
-                  !semver.valid(av) ||
-                  !semver.valid(bv)
-                ) {
-                  return 0;
-                }
-                return semver.gt(av, bv) ? -1 : 1;
-              })
-              .map((it, i) => {
-                const ci = CompletionItem.create(it);
-                ci.sortText = `a${String.fromCharCode(i) + 1}`;
-                ci.filterText = it;
-                ci.kind = CompletionItemKind.Value;
-                return ci;
-              });
-            return CompletionList.create(result);
           }
         }
 
         if (/.*:\/\/x.nest.land\/$/.test(current_line_text)) {
-          const mods = await this.doSearchWithCache("x.nest.land");
-          const result: ModInfoList = [
-            { name: "std", description: "std module" },
-            ...mods,
-          ];
-          return CompletionList.create(
-            result.map(
-              (it) =>
-                ({
-                  label: it.name,
-                  detail: it.description ?? "",
-                  kind: CompletionItemKind.Module,
-                } as CompletionItem)
-            )
-          );
+          try {
+            const mods = await this.doSearchWithCache("x.nest.land");
+            if (Object.keys(mods).length === 0) {
+              // If cache failed, do nothing
+              return CompletionList.create();
+            }
+            const result: ModInfoList = [
+              { name: "std", description: "std module" },
+              ...mods,
+            ];
+            return CompletionList.create(
+              result.map(
+                (it) =>
+                  ({
+                    label: it.name,
+                    detail: it.description ?? "",
+                    kind: CompletionItemKind.Module,
+                  } as CompletionItem)
+              )
+            );
+          } catch {
+            return CompletionList.create();
+          }
         }
 
         if (/.*:\/\/deno.land\/$/.test(current_line_text)) {
@@ -164,23 +176,27 @@ export class ImportCompletionEnhanced {
         if (/.*deno.land\/x\/([\w-_]+)?$/.test(current_line_text)) {
           // x modules
           if (this.mod_list_cache !== undefined) {
-            const result = await this.doSearchWithCache(
-              imp_info.domain as SupportedRegistryType
-            );
-            const r = result.map((it) => {
-              const ci = CompletionItem.create(it.name);
-              ci.kind = CompletionItemKind.Module;
-              ci.detail = it.description;
-              ci.insertText = `${it.name}@`;
-              ci.sortText = String.fromCharCode(1);
-              ci.filterText = it.name;
-              ci.command = {
-                command: "editor.action.triggerSuggest",
-                title: "Re-trigger completions...",
-              };
-              return ci;
-            });
-            return CompletionList.create(r);
+            try {
+              const result = await this.doSearchWithCache(
+                imp_info.domain as SupportedRegistryType
+              );
+              const r = result.map((it) => {
+                const ci = CompletionItem.create(it.name);
+                ci.kind = CompletionItemKind.Module;
+                ci.detail = it.description;
+                ci.insertText = `${it.name}@`;
+                ci.sortText = String.fromCharCode(1);
+                ci.filterText = it.name;
+                ci.command = {
+                  command: "editor.action.triggerSuggest",
+                  title: "Re-trigger completions...",
+                };
+                return ci;
+              });
+              return CompletionList.create(r);
+            } catch {
+              return CompletionList.create();
+            }
           } else {
             return CompletionList.create();
           }
@@ -191,61 +207,70 @@ export class ImportCompletionEnhanced {
           /.*x.nest.land\/.*@.*?\/$/.test(current_line_text)
         ) {
           // modules tree completion
-          const result = await this.doModTreeWithCache(
-            imp_info.domain as SupportedRegistryType,
-            imp_info.module,
-            [imp_info.version]
-          );
-          const arr_path = imp_info.path.split("/");
-          const path = arr_path.slice(0, arr_path.length - 1).join("/") + "/";
-          const ret =
-            result[getKeyOfVersionMap(imp_info.module, imp_info.version)];
-          return CompletionList.create(
-            ret.contents
-              .filter((it) => it.value.startsWith(path))
-              .map((it) => ({
-                path:
-                  path.length > 1
-                    ? it.value.replace(path, "")
-                    : it.value.substring(1),
-                type: it.type,
-              }))
-              .filter((it) => it.path.split("/").length < 2)
-              .filter(
-                (it) =>
-                  !(
-                    it.path.endsWith("_test.ts") || it.path.endsWith("_test.js")
-                  ) &&
-                  (it.path.endsWith(".ts") ||
-                    it.path.endsWith(".js") ||
-                    it.path.endsWith(".tsx") ||
-                    it.path.endsWith(".jsx") ||
-                    it.path.endsWith(".mjs") ||
-                    it.type !== "file") &&
-                  !it.path.startsWith("_") &&
-                  !it.path.startsWith(".") &&
-                  (it.path !== "testdata" || it.type !== "folder") &&
-                  it.path.length !== 0
-              )
-              .map((it) => {
-                const r = CompletionItem.create(it.path);
-                r.kind =
-                  it.type === "folder"
-                    ? CompletionItemKind.Folder
-                    : CompletionItemKind.File;
-                r.sortText = it.type === "folder" ? "a" : "b";
-                r.insertText = it.type === "folder" ? it.path + "/" : it.path;
-                if (it.type === "folder") {
-                  r.command = {
-                    command: "editor.action.triggerSuggest",
-                    title: "Re-trigger completions...",
-                  };
-                }
-                return r;
-              })
-          );
+          try {
+            const result = await this.doModTreeWithCache(
+              imp_info.domain as SupportedRegistryType,
+              imp_info.module,
+              [imp_info.version]
+            );
+            if (Object.keys(result).length === 0) {
+              // If cache failed, do nothing
+              return CompletionList.create();
+            }
+            const arr_path = imp_info.path.split("/");
+            const path = arr_path.slice(0, arr_path.length - 1).join("/") + "/";
+            const ret =
+              result[getKeyOfVersionMap(imp_info.module, imp_info.version)];
+            return CompletionList.create(
+              ret.contents
+                .filter((it) => it.value.startsWith(path))
+                .map((it) => ({
+                  path:
+                    path.length > 1
+                      ? it.value.replace(path, "")
+                      : it.value.substring(1),
+                  type: it.type,
+                }))
+                .filter((it) => it.path.split("/").length < 2)
+                .filter(
+                  (it) =>
+                    !(
+                      it.path.endsWith("_test.ts") ||
+                      it.path.endsWith("_test.js")
+                    ) &&
+                    (it.path.endsWith(".ts") ||
+                      it.path.endsWith(".js") ||
+                      it.path.endsWith(".tsx") ||
+                      it.path.endsWith(".jsx") ||
+                      it.path.endsWith(".mjs") ||
+                      it.type !== "file") &&
+                    !it.path.startsWith("_") &&
+                    !it.path.startsWith(".") &&
+                    (it.path !== "testdata" || it.type !== "folder") &&
+                    it.path.length !== 0
+                )
+                .map((it) => {
+                  const r = CompletionItem.create(it.path);
+                  r.kind =
+                    it.type === "folder"
+                      ? CompletionItemKind.Folder
+                      : CompletionItemKind.File;
+                  r.sortText = it.type === "folder" ? "a" : "b";
+                  r.insertText = it.type === "folder" ? it.path + "/" : it.path;
+                  if (it.type === "folder") {
+                    r.command = {
+                      command: "editor.action.triggerSuggest",
+                      title: "Re-trigger completions...",
+                    };
+                  }
+                  return r;
+                })
+            );
+          } catch {
+            /* noop */
+          }
+          return CompletionList.create();
         }
-        return CompletionList.create();
       }
     }
     return CompletionList.create();
