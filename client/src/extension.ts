@@ -553,7 +553,7 @@ Executable ${this.denoInfo.executablePath}`;
               this.denoInfo.executablePath,
               [
                 "cache",
-                this.getConfiguration().unstable ? "--unstable" : "",
+                ...this.getConfiguration().unstable ? ["--unstable"] : [],
                 moduleName,
               ],
               {
