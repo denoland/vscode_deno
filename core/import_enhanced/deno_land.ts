@@ -3,7 +3,6 @@ export type REGISTRY_TYPE = "deno.land";
 
 import {
   ModInfoList,
-  Optional,
   Registry,
   ModVersionMap,
   ModInfo,
@@ -17,14 +16,6 @@ import { getKeyOfVersionMap } from "./_utils";
 export class DenoLand implements Registry {
   REGISTRY_ID: string = REGISTRY_ID;
 
-  async std(): Promise<Optional<ModInfo>> {
-    // https://cdn.deno.land/std/meta/versions.json
-    return this.modVersionList("std");
-  }
-  async stdContents(version: string[]): Promise<Optional<ModVersionMap>> {
-    // https://cdn.deno.land/std/versions/$VERSION/meta/meta.json
-    return this.modContents("std", version);
-  }
   async modList(): Promise<ModInfoList> {
     type ModuleInfo = {
       name: string;

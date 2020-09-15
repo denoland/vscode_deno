@@ -1,5 +1,3 @@
-export type Optional<T> = T | undefined;
-
 export interface Entry {
   type: "file" | "folder";
   value: string;
@@ -26,8 +24,6 @@ export type ModInfoList = ModInfo[];
 export interface Registry {
   readonly REGISTRY_ID: string;
   // Allow registry don't have std module mirror
-  std(): Promise<Optional<ModInfo>>;
-  stdContents(version: string[]): Promise<Optional<ModVersionMap>>;
   modList(): Promise<ModInfoList>;
   modVersionList(mod: string): Promise<ModInfo>;
   modContents(mod: string, version: string[]): Promise<ModVersionMap>;

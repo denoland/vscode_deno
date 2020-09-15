@@ -8,7 +8,6 @@ import {
   ModInfo,
   ModInfoList,
   ModVersionMap,
-  Optional,
   Registry,
   ModContents,
 } from "./registry";
@@ -17,13 +16,7 @@ import { pureFilePathToEntry, getKeyOfVersionMap } from "./_utils";
 
 export class NestLand implements Registry {
   REGISTRY_ID: string = REGISTRY_ID;
-  async std(): Promise<Optional<ModInfo>> {
-    // https://x.nest.land/api/package/std
-    return this.modVersionList("std");
-  }
-  async stdContents(version: string[]): Promise<Optional<ModVersionMap>> {
-    return this.modContents("std", version);
-  }
+
   async modList(): Promise<ModInfoList> {
     // https://x.nest.land/api/packages
     const res: {
