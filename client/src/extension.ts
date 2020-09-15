@@ -551,7 +551,11 @@ Executable ${this.denoInfo.executablePath}`;
           (process, cancelToken) => {
             const ps = execa(
               this.denoInfo.executablePath,
-              ["cache", this.getConfiguration().unstable ? "--unstable" : "", moduleName],
+              [
+                "cache",
+                this.getConfiguration().unstable ? "--unstable" : "",
+                moduleName,
+              ],
               {
                 // timeout of 2 minute
                 timeout: 1000 * 60 * 2,
