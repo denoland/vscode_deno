@@ -13,6 +13,7 @@ import { Bridge } from "../bridge";
 import {
   getWellKnown,
   parseURLFromImportStatement,
+  WellKnown,
 } from "../../../core/import_intellisense";
 import { parse, regexpToFunction, Token, tokensToRegexp } from "path-to-regexp";
 
@@ -81,7 +82,13 @@ export class ImportIntelliSense {
     cursor: Position
   ): Promise<CompletionList> {
     this.connection.console.log("Autocompleting " + url);
-    const wellknown = await getWellKnown(url.origin);
+    let wellknown: WellKnown;
+    try {
+      wellknown = await getWellKnown(url.origin);
+    } catch (err) {
+      console.error(err);
+      return CompletionList.create();
+    }
 
     const positionInPath = cursor.character - urlIndex - url.origin.length;
     if (positionInPath < 0) return CompletionList.create();

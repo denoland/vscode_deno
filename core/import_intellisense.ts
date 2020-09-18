@@ -26,6 +26,14 @@ export function parseURLFromImportStatement(
   return undefined;
 }
 
+const REPLACEMENT_VARIABLE_REG = /\${{?(\w+)}?}/g;
+
+export function parseReplacementVariablesFromURL(url: string): string[] {
+  const matches = url.matchAll(REPLACEMENT_VARIABLE_REG);
+  if (!matches) return [];
+  return [...matches].map((m) => m[1]);
+}
+
 const wellKnownValidator = yup
   .object()
   .strict(true)
@@ -55,7 +63,7 @@ const wellKnownValidator = yup
                     url: yup
                       .string()
                       .required()
-                      .matches(/^https:\/\//),
+                      .matches(/^https?:\/\//),
                   })
               ),
           })
@@ -77,12 +85,34 @@ async function fetchWellKnown(origin: string): Promise<WellKnown> {
     for (const key of keys) {
       if (!registry.variables.find((v) => v.key == key.name)) {
         throw new Error(
-          `ValidationError: registry with schema ${registry.schema} is missing variable declaration for ${key.name}`
+          `ValidationError: registry with schema '${registry.schema}' is missing variable declaration for '${key.name}'`
         );
       }
     }
-  }
+    for (const variable of registry.variables) {
+      const keyIndex = keys.findIndex((k) => k.name == variable.key);
+      if (keyIndex === -1) {
+        throw new Error(
+          `ValidationError: registry with schema '${registry.schema}' a path parameter in schema for variable '${variable.key}'`
+        );
+      }
+      const variables = parseReplacementVariablesFromURL(variable.url);
+      const limitedKeys = keys.slice(0, keyIndex);
+      for (const v of variables) {
+        if (variable.key === v) {
+          throw new Error(
+            `ValidationError: url '${variable.url}' (for variable '${variable.key}' in registry with schema '${registry.schema}') uses variable '${v}', which is not allowed because that would be a self reference`
+          );
+        }
 
+        if (!limitedKeys.find((k) => k.name == v)) {
+          throw new Error(
+            `ValidationError: url '${variable.url}' (for variable '${variable.key}' in registry with schema '${registry.schema}') uses variable '${v}', but this is not possible because the schema defines '${v}' to the right of '${variable.key}'`
+          );
+        }
+      }
+    }
+  }
   return wk;
 }
 
