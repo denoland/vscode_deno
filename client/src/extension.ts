@@ -117,7 +117,6 @@ export class Extension {
   };
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
-    const config: ConfigurationField = {};
     const _config = workspace.getConfiguration(this.configurationSection, uri);
 
     function withConfigValue<C, K extends Extract<keyof C, string>>(
@@ -135,6 +134,9 @@ export class Extension {
         configSetting.globalValue ??
         configSetting.defaultValue) as C[K];
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const config: any = {};
 
     for (const field of DenoPluginConfigurationField) {
       withConfigValue(_config, config, field);

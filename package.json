@@ -146,6 +146,16 @@
           "examples": {
             "https://deno.land": true
           }
+        },
+        "deno.import_intellisense_autodiscovery": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Controls if auto-discovery of registries for import IntelliSense is enabled.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
         }
       }
     },

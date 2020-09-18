@@ -47,19 +47,25 @@ export class ImportIntelliSense {
         return CompletionList.create();
       default: {
         const origin = url.origin;
-        this.connection.console.log("New origin: " + origin);
-        getWellKnown(origin)
-          .then((wellknown) => {
-            this.connection.console.log(
-              `Import autocomplete for ${origin} available at vesion ${wellknown.version}`
-            );
-            this.bridge.promptEnableImportIntelliSense(origin);
-          })
-          .catch((err) => {
-            this.connection.console.log(
-              `Import autocomplete for ${origin} not available: ${err}`
-            );
-          });
+        if (config.import_intellisense_autodiscovery) {
+          this.connection.console.log(`Trying autodiscovery for ${origin}`);
+          getWellKnown(origin)
+            .then((wellknown) => {
+              this.connection.console.log(
+                `Auto-discovery for ${origin} worked. Origin capable at vesion ${wellknown.version}.`
+              );
+              this.bridge.promptEnableImportIntelliSense(origin);
+            })
+            .catch((err) => {
+              this.connection.console.log(
+                `Auto-discovery for ${origin} failed: ${err}`
+              );
+            });
+        } else {
+          this.connection.console.log(
+            `Autodiscovery disabled so it won't be tried for ${origin}`
+          );
+        }
         return CompletionList.create();
       }
     }

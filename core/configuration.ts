@@ -13,14 +13,16 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "import_map",
   "lint",
   "import_intellisense_origins",
+  "import_intellisense_autodiscovery"
 ];
 
 export type ConfigurationField = {
-  enable?: boolean;
-  unstable?: boolean;
-  import_map?: string | null;
-  lint?: boolean;
-  import_intellisense_origins?: { [origin: string]: boolean };
+  enable: boolean;
+  unstable: boolean;
+  import_map: string | null;
+  lint: boolean;
+  import_intellisense_origins: { [origin: string]: boolean };
+  import_intellisense_autodiscovery: boolean;
 };
 
 interface ConfigurationInterface {
@@ -36,6 +38,8 @@ export class Configuration implements ConfigurationInterface {
     unstable: false,
     import_map: null,
     lint: false,
+    import_intellisense_origins: {},
+    import_intellisense_autodiscovery: false,
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();
@@ -61,7 +65,7 @@ export class Configuration implements ConfigurationInterface {
       try {
         const settings: { [key: string]: never } = json5.parse(content);
 
-        const c: ConfigurationField = {};
+        const c: ConfigurationField = Configuration.defaultConfiguration;
 
         for (const key in settings) {
           /* istanbul ignore else */
@@ -89,6 +93,8 @@ export class Configuration implements ConfigurationInterface {
           typeof this._configuration.import_intellisense_origins === "object"
             ? this._configuration.import_intellisense_origins
             : {};
+        this._configuration.import_intellisense_autodiscovery = !!this
+          ._configuration.import_intellisense_autodiscovery;
       } catch {
         // ignore error
       }
