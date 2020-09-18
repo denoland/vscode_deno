@@ -11,6 +11,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { Bridge } from "../bridge";
 import {
+  fetchCompletionList,
   getWellKnown,
   parseURLFromImportStatement,
   WellKnown,
@@ -108,12 +109,24 @@ export class ImportIntelliSense {
         const matched = matcher(pathname);
         if (!matched) continue;
 
+        const values = Object.fromEntries(
+          Object.entries(matched.params).map<[string, string]>(
+            ([k, v]: [string, string[]]) => {
+              if (Array.isArray(v)) {
+                return [k, v.join("/")];
+              } else {
+                return [k, v];
+              }
+            }
+          )
+        );
+
         const completor = this.findCompletor(
           url.origin,
           urlIndex,
           cursor,
           tokens.slice(0, i + 1),
-          matched.params as Record<string, string>
+          values
         );
 
         if (!completor) break;
@@ -127,8 +140,17 @@ export class ImportIntelliSense {
             }
             break;
           case "variable":
-            // TODO: actually get data from server
-            completions.add(value);
+            try {
+              const url = registry.variables.find((v) => v.key === value)?.url;
+              if (!url) break;
+              const list = await fetchCompletionList(url, values);
+              for (const v of list) {
+                completions.add(v);
+              }
+            } catch (err) {
+              console.error(err);
+            }
+
             break;
         }
         break;

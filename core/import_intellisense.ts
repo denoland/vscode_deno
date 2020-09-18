@@ -119,3 +119,19 @@ async function fetchWellKnown(origin: string): Promise<WellKnown> {
 export async function getWellKnown(origin: string): Promise<WellKnown> {
   return fetchWellKnown(origin);
 }
+
+const stringArrayValidator = yup.array().required().of(yup.string().required());
+
+export async function fetchCompletionList(
+  url: string,
+  variables: Record<string, string>
+): Promise<string[]> {
+  for (const name in variables) {
+    url = url
+      .replace(`\${${name}}`, variables[name])
+      .replace(`\${{${name}}}`, encodeURIComponent(variables[name]));
+  }
+  console.log(url);
+  const resp = await got(url).json();
+  return stringArrayValidator.validate(resp);
+}
