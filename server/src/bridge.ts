@@ -2,7 +2,7 @@ import { IConnection } from "vscode-languageserver";
 import { WorkspaceFolder } from "vscode";
 
 import { Request } from "../../core/const";
-import {  ConfigurationField } from "../../core/configuration";
+import { ConfigurationField } from "../../core/configuration";
 
 /**
  * The bridge between client and server

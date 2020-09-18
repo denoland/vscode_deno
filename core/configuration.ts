@@ -13,7 +13,7 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "import_map",
   "lint",
   "import_intellisense_origins",
-  "import_intellisense_autodiscovery"
+  "import_intellisense_autodiscovery",
 ];
 
 export type ConfigurationField = {
