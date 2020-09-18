@@ -311,6 +311,29 @@ export class Extension {
 
           return config;
         });
+
+        client.onRequest(
+          Request.promptEnableImportIntelliSense,
+          async (origin: string) => {
+            const resp = await window.showInformationMessage(
+              `Do you want to enable import IntelliSense for ${origin}? Only do this if you trust ${origin}. [Learn more](https://deno.land).`,
+              "No",
+              "Yes"
+            );
+            const config = workspace.getConfiguration(
+              this.configurationSection
+            );
+            if (resp === "Yes" || resp === "No") {
+              let { import_intellisense_origins } = this.getConfiguration();
+              import_intellisense_origins = import_intellisense_origins ?? {};
+              import_intellisense_origins[origin] = resp === "Yes";
+              await config.update(
+                `import_intellisense_origins`,
+                import_intellisense_origins
+              );
+            }
+          }
+        );
       }
     );
   }

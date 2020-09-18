@@ -137,6 +137,15 @@
             true,
             false
           ]
+        },
+        "deno.import_intellisense_origins": {
+          "type": ["object"],
+          "default": {},
+          "markdownDescription": "Controls which origins are be enabled / disabed for import IntelliSense.",
+          "scope": "resource",
+          "examples": {
+            "https://deno.land": true
+          }
         }
       }
     },

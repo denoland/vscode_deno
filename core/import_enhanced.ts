@@ -29,7 +29,7 @@ export async function* fetchModList(): AsyncGenerator<{
   let page = 1;
   do {
     response = await got(
-      `https://api.deno.land/modules?limit=100&page=${page}`
+      `https://api.deno.land/modules?limit=100&page=${page}`,
     ).json();
     if (Array.isArray(response.data.results)) {
       yield {
@@ -45,7 +45,7 @@ export async function* fetchModList(): AsyncGenerator<{
 // this function now is search from cache only
 export async function searchX(
   cache: PermCache<ModList>,
-  keyword: string
+  keyword: string,
 ): Promise<ModList> {
   const arr = cache.get();
   if (arr !== undefined) {
@@ -62,13 +62,15 @@ interface ModVersions {
   versions: string[];
 }
 export async function listVersionsOfMod(
-  module_name: string
+  module_name: string,
 ): Promise<ModVersions> {
   // https://cdn.deno.land/$MODULE/meta/versions.json
   const response: ModVersions = await got(
-    `https://cdn.deno.land/${encodeURIComponent(
-      module_name
-    )}/meta/versions.json`
+    `https://cdn.deno.land/${
+      encodeURIComponent(
+        module_name,
+      )
+    }/meta/versions.json`,
   ).json();
   return response;
 }
@@ -90,7 +92,7 @@ export type ModTreeCache = PermCache<ModTreeCacheItem>;
 export async function modTreeOf(
   module_name: string,
   version = "latest",
-  cache?: PermCache<Record<string, ModTree>>
+  cache?: PermCache<Record<string, ModTree>>,
 ): Promise<ModTree> {
   // https://cdn.deno.land/$MODULE/versions/$VERSION/meta/meta.json
   let ver = version;
@@ -107,9 +109,11 @@ export async function modTreeOf(
   }
 
   const response: ModTree = await got(
-    `https://cdn.deno.land/${encodeURIComponent(
-      module_name
-    )}/versions/${ver}/meta/meta.json`
+    `https://cdn.deno.land/${
+      encodeURIComponent(
+        module_name,
+      )
+    }/versions/${ver}/meta/meta.json`,
   ).json();
 
   // cache it
@@ -132,7 +136,8 @@ interface ImportUrlInfo {
   path: string;
 }
 
-export const IMP_REG = /^.*?[import|export].+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
+export const IMP_REG =
+  /^.*?[import|export].+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 export const VERSION_REG = /^([\w.\-_]+)$/;
 export const MOD_NAME_REG = /^[\w-_]+$/;
 

@@ -3,11 +3,12 @@ import { WorkspaceFolder } from "vscode";
 
 import { Request } from "../../core/const";
 
-type Configuration = {
+export type Configuration = {
   enable: boolean;
   import_map?: string;
   unstable?: boolean;
   lint?: boolean;
+  import_intellisense_origins: { [origin: string]: boolean };
 };
 
 /**
@@ -40,5 +41,12 @@ export class Bridge {
     );
 
     return config;
+  }
+
+  async promptEnableImportIntelliSense(origin: string): Promise<void> {
+    await this.connection.sendRequest(
+      Request.promptEnableImportIntelliSense,
+      origin
+    );
   }
 }

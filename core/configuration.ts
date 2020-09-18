@@ -12,6 +12,7 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "unstable",
   "import_map",
   "lint",
+  "import_intellisense_origins",
 ];
 
 export type ConfigurationField = {
@@ -19,6 +20,7 @@ export type ConfigurationField = {
   unstable?: boolean;
   import_map?: string | null;
   lint?: boolean;
+  import_intellisense_origins?: { [origin: string]: boolean };
 };
 
 interface ConfigurationInterface {
@@ -83,6 +85,10 @@ export class Configuration implements ConfigurationInterface {
         this._configuration.import_map = this._configuration.import_map
           ? this._configuration.import_map + ""
           : null;
+        this._configuration.import_intellisense_origins =
+          typeof this._configuration.import_intellisense_origins === "object"
+            ? this._configuration.import_intellisense_origins
+            : {};
       } catch {
         // ignore error
       }
