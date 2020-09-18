@@ -29,7 +29,7 @@ export async function* fetchModList(): AsyncGenerator<{
   let page = 1;
   do {
     response = await got(
-      `https://api.deno.land/modules?limit=100&page=${page}`,
+      `https://api.deno.land/modules?limit=100&page=${page}`
     ).json();
     if (Array.isArray(response.data.results)) {
       yield {
