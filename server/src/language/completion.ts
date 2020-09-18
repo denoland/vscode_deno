@@ -60,8 +60,6 @@ export class Completion {
         return importIntellisense.complete(params);
       }
 
-      connection.console.log("pos: " + position.line);
-
       let deps = cache.get();
 
       if (!deps) {
