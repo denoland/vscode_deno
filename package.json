@@ -27,6 +27,7 @@
     "deno"
   ],
   "activationEvents": [
+    "onDebug",
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
     "onLanguage:typescript",
@@ -34,6 +35,71 @@
   ],
   "main": "./client/out/client/src/extension.js",
   "contributes": {
+    "breakpoints": [
+      {
+        "language": "typescript"
+      },
+      {
+        "language": "javascript"
+      },
+      {
+        "language": "typescriptreact"
+      },
+      {
+        "language": "javascriptreact"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "deno",
+        "label": "Deno",
+        "runtime": "deno",
+        "languages": [
+          "typescript",
+          "javascript",
+          "typescriptreact",
+          "javascriptreact"
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Deno: launch (Allow all)",
+            "body": {
+              "type": "pwa-node",
+              "request": "launch",
+              "name": "${2:Launch}",
+              "program": "^\"\\${workspaceFolder}/${1:main.ts}\"",
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "runtimeExecutable": "deno",
+              "runtimeArgs": [
+                "run",
+                "--inspect-brk",
+                "${3:-A}"
+              ],
+              "attachSimplePort": 9229
+            }
+          }
+        ],
+        "initialConfigurations": [
+          {
+            "label": "Deno: launch (Allow all)",
+            "body": {
+              "type": "pwa-node",
+              "request": "launch",
+              "name": "${2:Launch}",
+              "program": "^\"\\${workspaceFolder}/${1:main.ts}\"",
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "runtimeExecutable": "deno",
+              "runtimeArgs": [
+                "run",
+                "--inspect-brk",
+                "${3:-A}"
+              ],
+              "attachSimplePort": 9229
+            }
+          }
+        ]
+      }
+    ],
     "typescriptServerPlugins": [
       {
         "name": "typescript-deno-plugin",
