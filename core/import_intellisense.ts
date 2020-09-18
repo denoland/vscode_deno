@@ -1,4 +1,5 @@
 import got from "got";
+import * as yup from "yup";
 
 export const IMPORT_REG = /^.*?[import|export].+?from.+?['"](?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 
@@ -15,27 +16,50 @@ export function parseURLFromImportStatement(line: string): URL | undefined {
   return undefined;
 }
 
-export interface WellKnown {
-  version: 1;
-}
+const wellKnownValidator = yup
+  .object()
+  .strict(true)
+  .required()
+  .shape({
+    version: yup.number().required().equals([1]),
+    registries: yup
+      .array()
+      .required()
+      .of(
+        yup
+          .object()
+          .required()
+          .strict(true)
+          .shape({
+            schema: yup.string().required(),
+            variables: yup
+              .array()
+              .required()
+              .of(
+                yup
+                  .object()
+                  .required()
+                  .strict(true)
+                  .shape({
+                    key: yup.string().required(),
+                    url: yup
+                      .string()
+                      .required()
+                      .matches(/^https:\/\//),
+                  })
+              ),
+          })
+      ),
+  });
+
+export type WellKnown = yup.InferType<typeof wellKnownValidator>;
 
 async function fetchWellKnown(origin: string): Promise<WellKnown> {
   const wellknown = await got(
     `${origin}/.well-known/deno-import-intellisense.json`,
     {}
   ).json();
-  if (typeof wellknown !== "object" || !wellknown) {
-    throw new Error(
-      `Invalid WellKnown: file ${origin}/.well-known/deno-import-intellisense.json is not structued correctly`
-    );
-  }
-  const wk = wellknown as WellKnown;
-  if (wk.version !== 1) {
-    throw new Error(
-      `Invalid WellKnown: file ${origin}/.well-known/deno-import-intellisense.json has non '1' version`
-    );
-  }
-  return { version: 1 };
+  return await wellKnownValidator.validate(wellknown);
 }
 
 export async function getWellKnown(origin: string): Promise<WellKnown> {

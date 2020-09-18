@@ -139,7 +139,9 @@
           ]
         },
         "deno.import_intellisense_origins": {
-          "type": ["object"],
+          "type": [
+            "object"
+          ],
           "default": {},
           "markdownDescription": "Controls which origins are be enabled / disabed for import IntelliSense.",
           "scope": "resource",
@@ -211,8 +213,9 @@
     "@types/jest": "26.0.10",
     "@types/json5": "0.0.30",
     "@types/node": "14.6.2",
-    "@types/which": "1.3.2",
     "@types/semver": "7.3.3",
+    "@types/which": "1.3.2",
+    "@types/yup": "^0.29.7",
     "@typescript-eslint/eslint-plugin": "3.10.1",
     "@typescript-eslint/parser": "3.10.1",
     "coveralls": "3.1.0",
@@ -231,6 +234,7 @@
     "got": "^11.5.2",
     "json5": "^2.1.3",
     "semver": "7.3.2",
-    "typescript-deno-plugin": "./typescript-deno-plugin"
+    "typescript-deno-plugin": "./typescript-deno-plugin",
+    "yup": "^0.29.3"
   }
 }
