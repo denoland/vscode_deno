@@ -8,7 +8,10 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { Bridge } from "../bridge";
-import { parseURLFromImportStatement } from "../../../core/import_intellisense";
+import {
+  getWellKnown,
+  parseURLFromImportStatement,
+} from "../../../core/import_intellisense";
 
 export class ImportIntelliSense {
   constructor(
@@ -42,12 +45,23 @@ export class ImportIntelliSense {
       case false:
         this.connection.console.log("Origin disabled: " + url.origin);
         return CompletionList.create();
-      default:
-        // TODO: Check if the /.well-known/deno-import-intellisense.json
-        // exists before prompting.
-        this.bridge.promptEnableImportIntelliSense(url.origin);
-        this.connection.console.log("New origin: " + url.origin);
+      default: {
+        const origin = url.origin;
+        this.connection.console.log("New origin: " + origin);
+        getWellKnown(origin)
+          .then((wellknown) => {
+            this.connection.console.log(
+              `Import autocomplete for ${origin} available at vesion ${wellknown.version}`
+            );
+            this.bridge.promptEnableImportIntelliSense(origin);
+          })
+          .catch((err) => {
+            this.connection.console.log(
+              `Import autocomplete for ${origin} not available: ${err}`
+            );
+          });
         return CompletionList.create();
+      }
     }
   }
 
