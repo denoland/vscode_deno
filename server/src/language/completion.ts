@@ -72,24 +72,24 @@ export class Completion {
         position
       );
 
-      // if (/.*?import[^'"]*?'$/.test(currentLine)) {
-      //   deps = deps.map((it) => {
-      //     const url = new URL(it.url);
-      //     return {
-      //       filepath: it.filepath,
-      //       url: url.hostname === "deno.land" ? `${url.origin}` : it.url,
-      //     } as Deps;
-      //   });
-      //   const dedup_arr: string[] = [];
-      //   deps = deps.filter((it) => {
-      //     if (dedup_arr.includes(it.url)) {
-      //       return false;
-      //     } else {
-      //       dedup_arr.push(it.url);
-      //       return true;
-      //     }
-      //   });
-      // }
+      if (/.*?import[^'"]*?'$/.test(currentLine)) {
+        deps = deps.map((it) => {
+          const url = new URL(it.url);
+          return {
+            filepath: it.filepath,
+            url: url.hostname === "deno.land" ? `${url.origin}` : it.url,
+          } as Deps;
+        });
+        const dedup_arr: string[] = [];
+        deps = deps.filter((it) => {
+          if (dedup_arr.includes(it.url)) {
+            return false;
+          } else {
+            dedup_arr.push(it.url);
+            return true;
+          }
+        });
+      }
 
       const completes: CompletionItem[] = deps.map((dep) => {
         return {
