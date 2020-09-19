@@ -150,7 +150,6 @@ export class ImportIntelliSense {
             } catch (err) {
               console.error(err);
             }
-
             break;
         }
         break;

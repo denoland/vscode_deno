@@ -1,6 +1,7 @@
 import got from "got";
 import { Key, pathToRegexp } from "path-to-regexp";
 import * as yup from "yup";
+import { DiskCache } from "./diskcache";
 
 export const IMPORT_REG = /^(?<rest>.*?[import|export].+?from.+?['"])(?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 
@@ -113,9 +114,24 @@ async function fetchWellKnown(origin: string): Promise<WellKnown> {
   return wk;
 }
 
+const wellKnownCache = new DiskCache("import_intellisense_wellknown", 86400000);
+
 export async function getWellKnown(origin: string): Promise<WellKnown> {
-  return fetchWellKnown(origin);
+  try {
+    const cached = await wellKnownCache.get<WellKnown>(origin);
+    if (cached) return cached;
+  } catch {
+    // ignore and try to fetch
+  }
+  const wk = await fetchWellKnown(origin);
+  await wellKnownCache.set(origin, wk);
+  return wk;
 }
+
+const completionsCache = new DiskCache(
+  "import_intellisense_completions",
+  86400000
+);
 
 const stringArrayValidator = yup.array().required().of(yup.string().required());
 
@@ -128,7 +144,9 @@ export async function fetchCompletionList(
       .replace(`\${${name}}`, variables[name])
       .replace(`\${{${name}}}`, encodeURIComponent(variables[name]));
   }
-  console.log(url);
-  const resp = await got(url).json();
+  const resp = await got(url, {
+    cache: completionsCache,
+    cacheOptions: { shared: false },
+  }).json();
   return stringArrayValidator.validate(resp);
 }
