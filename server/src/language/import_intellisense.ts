@@ -96,7 +96,7 @@ export class ImportIntelliSense {
 
     const pathname = url.pathname;
 
-    const completions = new Set<string>();
+    const completions: string[] = [];
 
     for (const registry of wellknown.registries) {
       const tokens = parse(registry.schema);
@@ -134,9 +134,9 @@ export class ImportIntelliSense {
         switch (type) {
           case "literal":
             if (value.startsWith("/")) {
-              completions.add(value.slice(1));
+              completions.push(value.slice(1));
             } else {
-              completions.add(value);
+              completions.push(value);
             }
             break;
           case "variable":
@@ -145,7 +145,7 @@ export class ImportIntelliSense {
               if (!url) break;
               const list = await fetchCompletionList(url, values);
               for (const v of list) {
-                completions.add(v);
+                completions.push(v);
               }
             } catch (err) {
               console.error(err);
@@ -158,9 +158,10 @@ export class ImportIntelliSense {
     }
 
     const list = CompletionList.create(
-      [...completions].map((v) => {
+      completions.map((v, i) => {
         const c = CompletionItem.create(v);
         c.filterText = v;
+        c.sortText = `a${i}`;
         return c;
       })
     );

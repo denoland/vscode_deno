@@ -4,8 +4,6 @@ import * as yup from "yup";
 
 export const IMPORT_REG = /^(?<rest>.*?[import|export].+?from.+?['"])(?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 
-const map = new Map();
-
 export function parseURLFromImportStatement(
   line: string
 ): [URL, number] | undefined {
@@ -74,8 +72,7 @@ export type WellKnown = yup.InferType<typeof wellKnownValidator>;
 
 async function fetchWellKnown(origin: string): Promise<WellKnown> {
   const wellknown = await got(
-    `${origin}/.well-known/deno-import-intellisense.json`,
-    { cache: map }
+    `${origin}/.well-known/deno-import-intellisense.json`
   ).json();
   const wk = await wellKnownValidator.validate(wellknown);
 
