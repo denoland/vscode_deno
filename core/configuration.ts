@@ -65,7 +65,7 @@ export class Configuration implements ConfigurationInterface {
       try {
         const settings: { [key: string]: never } = json5.parse(content);
 
-        const c: ConfigurationField = Configuration.defaultConfiguration;
+        const c: Partial<ConfigurationField> = {};
 
         for (const key in settings) {
           /* istanbul ignore else */
@@ -93,15 +93,15 @@ export class Configuration implements ConfigurationInterface {
           typeof this._configuration.import_intellisense_origins === "object"
             ? this._configuration.import_intellisense_origins
             : {};
-        this._configuration.import_intellisense_autodiscovery = !!this
-          ._configuration.import_intellisense_autodiscovery;
+        this._configuration.import_intellisense_autodiscovery =
+          !!(this._configuration.import_intellisense_autodiscovery ?? true);
       } catch {
         // ignore error
       }
     }
   }
 
-  public update(c: ConfigurationField): void {
+  public update(c: Partial<ConfigurationField>): void {
     const oldConfig = JSON.parse(JSON.stringify(this._configuration));
     this._configuration = merge(this._configuration, c);
 
