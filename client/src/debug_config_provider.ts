@@ -56,15 +56,18 @@ export class DenoDebugConfigurationProvider
           langid === "typescriptreact" ||
           langid === "javascriptreact")
       ) {
-        config.__workspaceFolder = workspace?.uri.fsPath;
-        config.type = "pwa-node";
-        config.name = "Launch";
-        config.request = "launch";
-        config.program = "${file}";
-        config.runtimeExecutable = "deno";
-        config.runtimeArgs = ["run", "--inspect-brk", "-A"];
-        config.attachSimplePort = 9229;
-        return config;
+        // https://github.com/microsoft/vscode/issues/106703#issuecomment-694595773
+        // Bypass the bug of the vscode 1.49.0
+        debug.startDebugging(workspace, {
+          name: "Deno: Debug",
+          request: "launch",
+          type: "pwa-node",
+          program: "${file}",
+          runtimeExecutable: "deno",
+          runtimeArgs: ["run", "--inspect-brk", "-A"],
+          attachSimplePort: 9229,
+        });
+        return undefined;
       }
       return null;
     }
