@@ -43,7 +43,6 @@ export class DiskCache {
   constructor(namespace: string, private defaultTTL: number) {
     this.path = path.join(getVSCodeDenoDir(), namespace);
     fsp.mkdir(this.path).catch(() => undefined);
-    console.log("Caching to ", this.path);
   }
 
   private hash(key: string): string {

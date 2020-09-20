@@ -3,13 +3,14 @@ import { Key, pathToRegexp } from "path-to-regexp";
 import * as yup from "yup";
 import { DiskCache } from "./diskcache";
 
-export const IMPORT_REG = /^(?<rest>.*?[import|export].+?from.+?['"])(?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
+export const IMPORT_REG = /^(?<rest>.*?[import|export](.+?from)?.+?['"])(?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 
 export function parseURLFromImportStatement(
   line: string
 ): [URL, number] | undefined {
   const matchGroups = line.match(IMPORT_REG)?.groups;
   if (!matchGroups) {
+    /* istanbul ignore next */
     return undefined;
   }
   const url = matchGroups["url"];
@@ -41,7 +42,7 @@ const wellKnownValidator = yup
     version: yup.number().required().equals([1]),
     registries: yup
       .array()
-      .required()
+      .defined()
       .of(
         yup
           .object()
@@ -51,7 +52,7 @@ const wellKnownValidator = yup
             schema: yup.string().required(),
             variables: yup
               .array()
-              .required()
+              .defined()
               .of(
                 yup
                   .object()
@@ -71,13 +72,16 @@ const wellKnownValidator = yup
 
 export type WellKnown = yup.InferType<typeof wellKnownValidator>;
 
-async function fetchWellKnown(origin: string): Promise<WellKnown> {
+export async function fetchWellKnown(origin: string): Promise<WellKnown> {
   const wellknown = await got(
     `${origin}/.well-known/deno-import-intellisense.json`
   ).json();
-  const wk = await wellKnownValidator.validate(wellknown);
+  return validateWellKnown(wellknown);
+}
 
-  for (const registry of wk.registries) {
+export async function validateWellKnown(wk: unknown): Promise<WellKnown> {
+  const wellknown = await wellKnownValidator.validate(wk);
+  for (const registry of wellknown.registries) {
     const keys: Key[] = [];
     pathToRegexp(registry.schema, keys);
     for (const key of keys) {
@@ -91,7 +95,7 @@ async function fetchWellKnown(origin: string): Promise<WellKnown> {
       const keyIndex = keys.findIndex((k) => k.name == variable.key);
       if (keyIndex === -1) {
         throw new Error(
-          `ValidationError: registry with schema '${registry.schema}' a path parameter in schema for variable '${variable.key}'`
+          `ValidationError: registry with schema '${registry.schema}' is missing a path parameter in schema for variable '${variable.key}'`
         );
       }
       const variables = parseReplacementVariablesFromURL(variable.url);
@@ -111,7 +115,7 @@ async function fetchWellKnown(origin: string): Promise<WellKnown> {
       }
     }
   }
-  return wk;
+  return wellknown;
 }
 
 const wellKnownCache = new DiskCache("import_intellisense_wellknown", 86400000);
