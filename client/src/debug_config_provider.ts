@@ -9,13 +9,6 @@ import {
 } from "vscode";
 import { ConfigurationField } from "../../core/configuration";
 
-export interface DenoCmd {
-  name: string;
-  entrypoint: string;
-  security_flags: string;
-  port: string;
-}
-
 export function activeDenoDebug(
   context: ExtensionContext,
   config: ConfigurationField
