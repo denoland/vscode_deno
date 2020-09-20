@@ -8,7 +8,9 @@ export const IMPORT_REG = /^(?<rest>.*?[import|export](.+?from)?.+?['"])(?<url>[
 export function parseURLFromImportStatement(
   line: string
 ): [URL, number] | undefined {
+  /* istanbul ignore next */
   const matchGroups = line.match(IMPORT_REG)?.groups;
+  /* istanbul ignore next */
   if (!matchGroups) {
     /* istanbul ignore next */
     return undefined;
@@ -30,7 +32,6 @@ const REPLACEMENT_VARIABLE_REG = /\${{?(\w+)}?}/g;
 
 export function parseReplacementVariablesFromURL(url: string): string[] {
   const matches = url.matchAll(REPLACEMENT_VARIABLE_REG);
-  if (!matches) return [];
   return [...matches].map((m) => m[1]);
 }
 
@@ -139,16 +140,24 @@ const completionsCache = new DiskCache(
 
 const stringArrayValidator = yup.array().required().of(yup.string().required());
 
-export async function fetchCompletionList(
+export function buildCompletionListURL(
   url: string,
   variables: Record<string, string>
-): Promise<string[]> {
+): string {
   for (const name in variables) {
     url = url
       .replace(`\${${name}}`, variables[name])
       .replace(`\${{${name}}}`, encodeURIComponent(variables[name]));
   }
-  const resp = await got(url, {
+  return url;
+}
+
+export async function fetchCompletionList(
+  url: string,
+  variables: Record<string, string>
+): Promise<string[]> {
+  const finalURL = buildCompletionListURL(url, variables);
+  const resp = await got(finalURL, {
     cache: completionsCache,
     cacheOptions: { shared: false },
   }).json();

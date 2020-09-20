@@ -1,12 +1,17 @@
 import {
+  buildCompletionListURL,
+  fetchCompletionList,
   fetchWellKnown,
+  getWellKnown,
   parseReplacementVariablesFromURL,
   parseURLFromImportStatement,
   validateWellKnown,
 } from "./import_intellisense";
+import { getVSCodeDenoDir } from "./diskcache";
 import http from "http";
 import express from "express";
-import { readFile } from "fs/promises";
+import { mkdir, readFile, rmdir } from "fs/promises";
+import { join } from "path";
 
 let server1: http.Server;
 let server2: http.Server;
@@ -249,4 +254,78 @@ test("fetch wellknown", async () => {
   await expect(fetchWellKnown("http://localhost:8889")).rejects.toThrowError(
     "Response code 404"
   );
+  const dir = getVSCodeDenoDir();
+  try {
+    await rmdir(dir, { recursive: true });
+    await mkdir(join(dir, "import_intellisense_wellknown"), {
+      recursive: true,
+    });
+    await mkdir(join(dir, "import_intellisense_completions"), {
+      recursive: true,
+    });
+  } catch {
+    /* ignore */
+  }
+  await expect(getWellKnown("http://localhost:8888")).resolves.toEqual(
+    JSON.parse(
+      await readFile(
+        "./core/testdata/import_intellisense/test_registry/.well-known/deno-import-intellisense.json",
+        { encoding: "utf8" }
+      )
+    )
+  );
+  await expect(getWellKnown("http://localhost:8888")).resolves.toEqual(
+    JSON.parse(
+      await readFile(
+        "./core/testdata/import_intellisense/test_registry/.well-known/deno-import-intellisense.json",
+        { encoding: "utf8" }
+      )
+    )
+  );
+});
+
+test("build completion list url", () => {
+  expect(
+    buildCompletionListURL("https://deno.land/_vsc1/modules/${module}", {
+      module: "ltest",
+    })
+  ).toEqual("https://deno.land/_vsc1/modules/ltest");
+  expect(
+    buildCompletionListURL(
+      "https://deno.land/_vsc1/modules/${module}/v/${version}",
+      {
+        module: "ltest",
+        version: "1.0.0",
+      }
+    )
+  ).toEqual("https://deno.land/_vsc1/modules/ltest/v/1.0.0");
+  expect(
+    buildCompletionListURL(
+      "https://deno.land/_vsc1/modules/${module}/v/${{version}}",
+      {
+        module: "ltest",
+        version: "std/1.0.0",
+      }
+    )
+  ).toEqual("https://deno.land/_vsc1/modules/ltest/v/std%2F1.0.0");
+});
+
+test("fetch completions list", async () => {
+  await expect(
+    fetchCompletionList("http://localhost:8888/api/modules.json", {})
+  ).resolves.toEqual(["sqs", "s3", "ssm"]);
+  await expect(
+    fetchCompletionList("http://localhost:8888/api/modules/${module}.json", {
+      module: "sqs",
+    })
+  ).resolves.toEqual(["0.1.1", "0.1.0"]);
+  await expect(
+    fetchCompletionList(
+      "http://localhost:8888/api/versions/${module}/${{version}}.json",
+      {
+        module: "sqs",
+        version: "0.1.0",
+      }
+    )
+  ).resolves.toEqual(["mod.tsx", "src/app.ts", "deps.ts", "src/vendor/pkg.js"]);
 });
