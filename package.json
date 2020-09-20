@@ -62,7 +62,7 @@
         ],
         "configurationSnippets": [
           {
-            "label": "Deno: launch (Allow all)",
+            "label": "Deno: Debug",
             "body": {
               "type": "pwa-node",
               "request": "launch",
@@ -72,29 +72,10 @@
               "runtimeExecutable": "deno",
               "runtimeArgs": [
                 "run",
-                "--inspect-brk",
+                "--inspect-brk=127.0.0.1:${4:9229}",
                 "${3:-A}"
               ],
-              "attachSimplePort": 9229
-            }
-          }
-        ],
-        "initialConfigurations": [
-          {
-            "label": "Deno: launch (Allow all)",
-            "body": {
-              "type": "pwa-node",
-              "request": "launch",
-              "name": "${2:Launch}",
-              "program": "^\"\\${workspaceFolder}/${1:main.ts}\"",
-              "cwd": "^\"\\${workspaceFolder}\"",
-              "runtimeExecutable": "deno",
-              "runtimeArgs": [
-                "run",
-                "--inspect-brk",
-                "${3:-A}"
-              ],
-              "attachSimplePort": 9229
+              "attachSimplePort": "^${4:9229}"
             }
           }
         ]

@@ -27,10 +27,20 @@ export function activeDenoDebug(context: ExtensionContext) {
 export class DenoDebugConfigurationProvider
   implements DebugConfigurationProvider {
   provideDebugConfigurations(
-    folder: WorkspaceFolder | undefined
+    _folder: WorkspaceFolder | undefined
   ): ProviderResult<DebugConfiguration[]> {
-    console.log(folder);
-    return null;
+    return [
+      {
+        name: "${2:Debug Deno program}",
+        request: "launch",
+        type: "pwa-node",
+        program : "^\"\\${workspaceFolder}/${1:main.ts}\"",
+        cwd: "^\"\\${workspaceFolder}\"",
+        runtimeExecutable : "deno",
+        runtimeArgs : ["run", "--inspect-brk", "${3:-A}"],
+        attachSimplePort : 9229,
+      },
+    ];
   }
 
   resolveDebugConfiguration(
