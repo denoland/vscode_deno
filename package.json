@@ -73,7 +73,7 @@
               "runtimeArgs": [
                 "run",
                 "--inspect-brk=127.0.0.1:${4:9229}",
-                "${3:-A}"
+                "${3:--allow-all}"
               ],
               "attachSimplePort": "^${4:9229}"
             }
