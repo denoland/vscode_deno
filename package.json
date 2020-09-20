@@ -27,6 +27,7 @@
     "deno"
   ],
   "activationEvents": [
+    "onDebug",
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
     "onLanguage:typescript",
@@ -34,6 +35,52 @@
   ],
   "main": "./client/out/client/src/extension.js",
   "contributes": {
+    "breakpoints": [
+      {
+        "language": "typescript"
+      },
+      {
+        "language": "javascript"
+      },
+      {
+        "language": "typescriptreact"
+      },
+      {
+        "language": "javascriptreact"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "deno",
+        "label": "Deno",
+        "runtime": "deno",
+        "languages": [
+          "typescript",
+          "javascript",
+          "typescriptreact",
+          "javascriptreact"
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Deno: Debug",
+            "body": {
+              "type": "pwa-node",
+              "request": "launch",
+              "name": "${2:Launch Deno}",
+              "program": "^\"\\${workspaceFolder}/${1:main.ts}\"",
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "runtimeExecutable": "deno",
+              "runtimeArgs": [
+                "run",
+                "--inspect-brk=127.0.0.1:${4:9229}",
+                "${3:--allow-all}"
+              ],
+              "attachSimplePort": "^${4:9229}"
+            }
+          }
+        ]
+      }
+    ],
     "typescriptServerPlugins": [
       {
         "name": "typescript-deno-plugin",

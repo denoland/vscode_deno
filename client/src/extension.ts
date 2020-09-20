@@ -44,6 +44,8 @@ import {
 
 import { initProject, ProjectSetting } from "./init_project";
 
+import { activeDenoDebug } from "./debug_config_provider";
+
 const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
@@ -518,6 +520,8 @@ Executable ${this.denoInfo.executablePath}`;
         window.showErrorMessage("Init failed");
       }
     });
+
+    activeDenoDebug(context, this.getConfiguration());
 
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
