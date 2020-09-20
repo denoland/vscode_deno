@@ -29,13 +29,13 @@ export class DenoDebugConfigurationProvider
   provideDebugConfigurations(): ProviderResult<DebugConfiguration[]> {
     return [
       {
-        name: "Debug deno program",
+        name: "${2:Debug Deno program}",
         request: "launch",
         type: "pwa-node",
-        cwd: "${workspaceFolder}",
-        program: "main.ts",
+        program: '^"\\${workspaceFolder}/${1:main.ts}"',
+        cwd: '^"\\${workspaceFolder}"',
         runtimeExecutable: "deno",
-        runtimeArgs: ["run", "--inspect-brk", "-A"],
+        runtimeArgs: ["run", "--inspect-brk", "${3:-A}"],
         attachSimplePort: 9229,
       },
     ];
