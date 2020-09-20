@@ -7,6 +7,7 @@ import {
   ProviderResult,
   window,
 } from "vscode";
+import { ConfigurationField } from "../../core/configuration";
 
 export interface DenoCmd {
   name: string;
@@ -15,17 +16,21 @@ export interface DenoCmd {
   port: string;
 }
 
-export function activeDenoDebug(context: ExtensionContext): void {
+export function activeDenoDebug(
+  context: ExtensionContext,
+  config: ConfigurationField
+): void {
   context.subscriptions.push(
     debug.registerDebugConfigurationProvider(
       "deno",
-      new DenoDebugConfigurationProvider()
+      new DenoDebugConfigurationProvider(config)
     )
   );
 }
 
 export class DenoDebugConfigurationProvider
   implements DebugConfigurationProvider {
+  constructor(private config: ConfigurationField) {}
   provideDebugConfigurations(): ProviderResult<DebugConfiguration[]> {
     return [
       {
@@ -35,7 +40,12 @@ export class DenoDebugConfigurationProvider
         program: "main.ts",
         cwd: "${workspaceFolder}",
         runtimeExecutable: "deno",
-        runtimeArgs: ["run", "--inspect-brk", "--allow-all"],
+        runtimeArgs: [
+          "run",
+          ...(this.config.unstable ? ["--unstable"] : []),
+          "--inspect-brk",
+          "--allow-all",
+        ],
         attachSimplePort: 9229,
       },
     ];
@@ -64,7 +74,11 @@ export class DenoDebugConfigurationProvider
           type: "pwa-node",
           program: "${file}",
           runtimeExecutable: "deno",
-          runtimeArgs: ["run", "--inspect-brk"],
+          runtimeArgs: [
+            "run",
+            ...(this.config.unstable ? ["--unstable"] : []),
+            "--inspect-brk",
+          ],
           attachSimplePort: 9229,
         });
         return undefined;

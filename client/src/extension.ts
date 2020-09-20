@@ -521,7 +521,7 @@ Executable ${this.denoInfo.executablePath}`;
       }
     });
 
-    activeDenoDebug(context);
+    activeDenoDebug(context, this.getConfiguration());
 
     this.registerQuickFix({
       _fetch_remote_module: async (editor, text) => {
