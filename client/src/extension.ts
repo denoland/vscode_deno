@@ -1,5 +1,6 @@
 import * as path from "path";
 import fsSync, { promises as fs } from "fs";
+import strip from "strip-ansi";
 
 import {
   workspace,
@@ -100,10 +101,16 @@ export class Extension {
   public client: LanguageClient | undefined;
   private clientReady = false;
   private configurationSection = "deno";
+  // subproccess handle of deno watch
+  private subprocess_deno_watch:
+    | execa.ExecaChildProcess<string>
+    | undefined = undefined;
   // status bar
   private statusBar!: StatusBarItem;
   // output channel
   private output!: OutputChannel;
+  // deno watch output
+  private output_deno_watch!: OutputChannel;
   // Deno Information from Deno Language Server
   private denoInfo: DenoInfo = {
     DENO_DIR: "",
@@ -339,12 +346,22 @@ export class Extension {
     }
 
     if (this.statusBar) {
-      this.statusBar.text = `Deno ${this.denoInfo.version.deno}`;
+      this.statusBar.text = `Deno ${this.denoInfo.version.deno} ${
+        this.subprocess_deno_watch === undefined ? "🟢" : "🔴"
+      }`;
       this.statusBar.tooltip = `Deno ${this.denoInfo.version.deno}
 TypeScript ${this.denoInfo.version.typescript}
 V8 ${this.denoInfo.version.v8}
-Executable ${this.denoInfo.executablePath}`;
+Executable ${this.denoInfo.executablePath}
+-------------------------------------
+${
+  this.subprocess_deno_watch === undefined
+    ? "Click to start watching current file!"
+    : "Click to stop watching!"
+}
+`;
 
+      this.statusBar.command = "deno._deno_toggle_run_watch";
       this.statusBar.show();
     }
   }
@@ -456,6 +473,7 @@ Executable ${this.denoInfo.executablePath}`;
     this.context.subscriptions.push(this.statusBar);
 
     this.output = window.createOutputChannel("Deno");
+    this.output_deno_watch = window.createOutputChannel("Deno watch");
     this.context.subscriptions.push(this.output);
 
     this.context.subscriptions.push(
@@ -517,6 +535,45 @@ Executable ${this.denoInfo.executablePath}`;
       } catch {
         window.showErrorMessage("Init failed");
       }
+    });
+
+    this.registerCommand("_deno_toggle_run_watch", async () => {
+      if (this.subprocess_deno_watch !== undefined) {
+        this.subprocess_deno_watch.kill();
+        this.subprocess_deno_watch = undefined;
+        this.output_deno_watch.clear();
+        this.output_deno_watch.hide();
+        this.updateStatusBarVisibility(window.activeTextEditor?.document);
+        return;
+      }
+      const current_file_path = window.activeTextEditor?.document.uri.fsPath;
+      if (typeof current_file_path === "string") {
+        this.subprocess_deno_watch = execa("deno", [
+          "run",
+          "--unstable",
+          "--watch",
+          current_file_path,
+        ]);
+        this.subprocess_deno_watch.stderr?.addListener("data", (data) => {
+          const info = strip(data.toString());
+          if (info.startsWith("Watcher File change detected")) {
+            this.output_deno_watch.clear();
+          } else {
+            this.output_deno_watch.appendLine(strip(data.toString()));
+          }
+        });
+        this.subprocess_deno_watch.stdout?.addListener("data", (data) => {
+          this.output_deno_watch.appendLine(
+            "-------------Program output start-------------"
+          );
+          this.output_deno_watch.appendLine(strip(data.toString()));
+          this.output_deno_watch.appendLine(
+            "-------------Program output end  -------------"
+          );
+        });
+        this.output_deno_watch.show();
+      }
+      this.updateStatusBarVisibility(window.activeTextEditor?.document);
     });
 
     this.registerQuickFix({
