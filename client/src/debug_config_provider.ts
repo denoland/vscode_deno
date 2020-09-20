@@ -64,7 +64,7 @@ export class DenoDebugConfigurationProvider
           type: "pwa-node",
           program: "${file}",
           runtimeExecutable: "deno",
-          runtimeArgs: ["run", "--inspect-brk", "-A"],
+          runtimeArgs: ["run", "--inspect-brk"],
           attachSimplePort: 9229,
         });
         return undefined;
