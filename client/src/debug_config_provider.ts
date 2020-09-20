@@ -15,7 +15,7 @@ export interface DenoCmd {
   port: string;
 }
 
-export function activeDenoDebug(context: ExtensionContext) {
+export function activeDenoDebug(context: ExtensionContext): void {
   context.subscriptions.push(
     debug.registerDebugConfigurationProvider(
       "deno",
@@ -26,19 +26,17 @@ export function activeDenoDebug(context: ExtensionContext) {
 
 export class DenoDebugConfigurationProvider
   implements DebugConfigurationProvider {
-  provideDebugConfigurations(
-    _folder: WorkspaceFolder | undefined
-  ): ProviderResult<DebugConfiguration[]> {
+  provideDebugConfigurations(): ProviderResult<DebugConfiguration[]> {
     return [
       {
         name: "${2:Debug Deno program}",
         request: "launch",
         type: "pwa-node",
-        program : "^\"\\${workspaceFolder}/${1:main.ts}\"",
-        cwd: "^\"\\${workspaceFolder}\"",
-        runtimeExecutable : "deno",
-        runtimeArgs : ["run", "--inspect-brk", "${3:-A}"],
-        attachSimplePort : 9229,
+        program: '^"\\${workspaceFolder}/${1:main.ts}"',
+        cwd: '^"\\${workspaceFolder}"',
+        runtimeExecutable: "deno",
+        runtimeArgs: ["run", "--inspect-brk", "${3:-A}"],
+        attachSimplePort: 9229,
       },
     ];
   }
@@ -74,7 +72,7 @@ export class DenoDebugConfigurationProvider
     if (!config.program) {
       return window
         .showInformationMessage("Cannot find a program to debug")
-        .then((_) => {
+        .then(() => {
           return undefined; // abort launch
         });
     }
