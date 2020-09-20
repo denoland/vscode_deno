@@ -93,8 +93,9 @@ export class Configuration implements ConfigurationInterface {
           typeof this._configuration.import_intellisense_origins === "object"
             ? this._configuration.import_intellisense_origins
             : {};
-        this._configuration.import_intellisense_autodiscovery =
-          !!(this._configuration.import_intellisense_autodiscovery ?? true);
+        this._configuration.import_intellisense_autodiscovery = !!(
+          this._configuration.import_intellisense_autodiscovery ?? true
+        );
       } catch {
         // ignore error
       }
