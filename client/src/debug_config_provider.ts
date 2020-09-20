@@ -29,7 +29,7 @@ export class DenoDebugConfigurationProvider
   provideDebugConfigurations(): ProviderResult<DebugConfiguration[]> {
     return [
       {
-        name: "Deno: Debug (--allow-all)",
+        name: "Launch Deno",
         request: "launch",
         type: "pwa-node",
         program: "main.ts",

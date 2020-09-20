@@ -66,7 +66,7 @@
             "body": {
               "type": "pwa-node",
               "request": "launch",
-              "name": "${2:Launch}",
+              "name": "${2:Launch Deno}",
               "program": "^\"\\${workspaceFolder}/${1:main.ts}\"",
               "cwd": "^\"\\${workspaceFolder}\"",
               "runtimeExecutable": "deno",
