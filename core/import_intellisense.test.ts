@@ -10,7 +10,7 @@ import {
 import { getVSCodeDenoDir } from "./diskcache";
 import http from "http";
 import express from "express";
-import { mkdir, readFile, rmdir } from "fs/promises";
+import { promises as fsp } from "fs";
 import { join } from "path";
 
 let server1: http.Server;
@@ -245,7 +245,7 @@ test("advanced validations for wellknown", async () => {
 test("fetch wellknown", async () => {
   await expect(fetchWellKnown("http://localhost:8888")).resolves.toEqual(
     JSON.parse(
-      await readFile(
+      await fsp.readFile(
         "./core/testdata/import_intellisense/test_registry/.well-known/deno-import-intellisense.json",
         { encoding: "utf8" }
       )
@@ -256,11 +256,11 @@ test("fetch wellknown", async () => {
   );
   const dir = getVSCodeDenoDir();
   try {
-    await rmdir(dir, { recursive: true });
-    await mkdir(join(dir, "import_intellisense_wellknown"), {
+    await fsp.rmdir(dir, { recursive: true });
+    await fsp.mkdir(join(dir, "import_intellisense_wellknown"), {
       recursive: true,
     });
-    await mkdir(join(dir, "import_intellisense_completions"), {
+    await fsp.mkdir(join(dir, "import_intellisense_completions"), {
       recursive: true,
     });
   } catch {
@@ -268,7 +268,7 @@ test("fetch wellknown", async () => {
   }
   await expect(getWellKnown("http://localhost:8888")).resolves.toEqual(
     JSON.parse(
-      await readFile(
+      await fsp.readFile(
         "./core/testdata/import_intellisense/test_registry/.well-known/deno-import-intellisense.json",
         { encoding: "utf8" }
       )
@@ -276,7 +276,7 @@ test("fetch wellknown", async () => {
   );
   await expect(getWellKnown("http://localhost:8888")).resolves.toEqual(
     JSON.parse(
-      await readFile(
+      await fsp.readFile(
         "./core/testdata/import_intellisense/test_registry/.well-known/deno-import-intellisense.json",
         { encoding: "utf8" }
       )
