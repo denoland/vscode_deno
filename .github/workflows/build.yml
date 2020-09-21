@@ -64,6 +64,11 @@ jobs:
       - name: Package
         run: npm run build
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: vscode-deno
+          path: vscode-deno.vsix
+
       - name: Release
         if: |
           startsWith(matrix.os, 'ubuntu') &&
