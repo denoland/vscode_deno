@@ -6,6 +6,7 @@ module.exports = {
     "ts-jest": {
       tsConfig: {
         lib: ["esnext", "dom"],
+        resolveJsonModule: true,
       },
     },
   },

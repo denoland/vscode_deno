@@ -9,6 +9,7 @@ import {
 } from "path-to-regexp";
 import * as yup from "yup";
 import { DiskCache } from "./diskcache";
+import { version as VERSION } from "../package.json";
 
 export const IMPORT_REG = /^(?<rest>.*?[import|export](.+?from)?.+?['"])(?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 
@@ -82,7 +83,13 @@ export type WellKnown = yup.InferType<typeof wellKnownValidator>;
 
 export async function fetchWellKnown(origin: string): Promise<WellKnown> {
   const wellknown = await got(
-    `${origin}/.well-known/deno-import-intellisense.json`
+    `${origin}/.well-known/deno-import-intellisense.json`,
+    {
+      headers: {
+        accepts: "application/json",
+        "user-agent": `vscodedeno/${VERSION}`,
+      },
+    }
   ).json();
   return validateWellKnown(wellknown);
 }
@@ -168,6 +175,10 @@ export async function fetchCompletionList(
 ): Promise<string[]> {
   const finalURL = buildCompletionListURL(url, variables);
   const resp = await got(finalURL, {
+    headers: {
+      accepts: "application/json",
+      "user-agent": `vscodedeno/${VERSION}`,
+    },
     cache: completionsCache,
     cacheOptions: { shared: false },
   }).json();
