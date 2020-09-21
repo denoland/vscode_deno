@@ -15,6 +15,8 @@ import {
   getCompletionsForURL,
   getWellKnown,
   parseURLFromImportStatement,
+  wellKnownCache,
+  completionsCache,
 } from "../../../core/import_intellisense";
 
 export class ImportIntelliSense {
@@ -23,6 +25,11 @@ export class ImportIntelliSense {
     private bridge: Bridge,
     private documents: TextDocuments<TextDocument>
   ) {}
+
+  async clearCache(): Promise<void> {
+    await wellKnownCache.clear();
+    await completionsCache.clear();
+  }
 
   async complete(param: CompletionParams): Promise<CompletionList> {
     const { textDocument, position } = param;

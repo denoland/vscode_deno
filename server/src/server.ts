@@ -9,6 +9,7 @@ import {
   InitializeResult,
   TextDocumentSyncKind,
   CodeActionKind,
+  ExecuteCommandParams,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
@@ -80,7 +81,7 @@ connection.onInitialize(
         definitionProvider: true,
         codeLensProvider: {},
         executeCommandProvider: {
-          commands: ["deno._clear_import_enhancement_cache"],
+          commands: ["deno._clear_import_intellisense_cache"],
         },
       },
     };
@@ -125,28 +126,17 @@ connection.onInitialized(async () => {
     executablePath: deno.executablePath,
     DENO_DIR: getDenoDir(),
   });
-  // connection.onExecuteCommand(async (params: ExecuteCommandParams) => {
-  //   if (params.command === "deno._clear_import_enhancement_cache") {
-  //     importIntellisense
-  //       .clearCache()
-  //       .then(() => connection.window.showInformationMessage("Clear success!"))
-  //       .catch(() => connection.window.showErrorMessage("Clear failed!"));
-  //   }
-  // });
-  // importIntellisense
-  //   .cacheModList()
-  //   .then((it) => {
-  //     if (it === CACHE_STATE.CACHE_SUCCESS) {
-  //       connection.window.showInformationMessage(
-  //         "deno.land/x module list cached successfully!",
-  //       );
-  //     }
-  //   })
-  //   .catch(() =>
-  //     connection.window.showErrorMessage(
-  //       "deno.land/x module list failed to cache!",
-  //     )
-  //   );
+  connection.onExecuteCommand(async (params: ExecuteCommandParams) => {
+    if (params.command === "deno._clear_import_intellisense_cache") {
+      importIntellisense
+        .clearCache()
+        .then(() => connection.window.showInformationMessage("Clear success!"))
+        .catch((err) => {
+          console.log(err);
+          connection.window.showErrorMessage("Clear failed!");
+        });
+    }
+  });
   connection.console.log("server initialized.");
 });
 

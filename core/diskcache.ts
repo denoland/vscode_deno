@@ -86,7 +86,7 @@ export class DiskCache {
   }
 
   async clear(): Promise<void> {
-    await fsp.rmdir(this.path);
-    await fsp.mkdir(this.path);
+    await fsp.rmdir(this.path, { recursive: true });
+    await fsp.mkdir(this.path, { recursive: true });
   }
 }

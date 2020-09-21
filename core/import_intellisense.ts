@@ -126,7 +126,7 @@ export async function validateWellKnown(wk: unknown): Promise<WellKnown> {
   return wellknown;
 }
 
-const wellKnownCache = new DiskCache("import_intellisense_wellknown", 86400000);
+export const wellKnownCache = new DiskCache("import_intellisense_wellknown", 86400000);
 
 export async function getWellKnown(origin: string): Promise<WellKnown> {
   try {
@@ -140,7 +140,7 @@ export async function getWellKnown(origin: string): Promise<WellKnown> {
   return wk;
 }
 
-const completionsCache = new DiskCache(
+export const completionsCache = new DiskCache(
   "import_intellisense_completions",
   86400000
 );

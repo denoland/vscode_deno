@@ -56,8 +56,8 @@
         }
       },
       {
-        "command": "deno._clear_import_enhancement_cache",
-        "title": "Clear import enhancement cache",
+        "command": "deno._clear_import_intellisense_cache",
+        "title": "Clear import IntelliSense cache",
         "category": "deno"
       },
       {
