@@ -2,6 +2,8 @@ import {
   buildCompletionListURL,
   fetchCompletionList,
   fetchWellKnown,
+  findCompletor,
+  getCompletionsForURL,
   getWellKnown,
   parseReplacementVariablesFromURL,
   parseURLFromImportStatement,
@@ -328,4 +330,135 @@ test("fetch completions list", async () => {
       }
     )
   ).resolves.toEqual(["mod.tsx", "src/app.ts", "deps.ts", "src/vendor/pkg.js"]);
+});
+
+test("do completions", async () => {
+  const wellknown = await getWellKnown("http://localhost:8888");
+
+  await expect(
+    getCompletionsForURL(wellknown, new URL("http://localhost:8888/"), 0, 22)
+  ).resolves.toEqual(["x", "sqs@", "sqs"]);
+  await expect(
+    getCompletionsForURL(wellknown, new URL("http://localhost:8888/x/"), 0, 24)
+  ).resolves.toEqual(["sqs", "s3", "ssm"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/x/sqs"),
+      0,
+      27
+    )
+  ).resolves.toEqual(["sqs", "s3", "ssm"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/x/sqs@"),
+      0,
+      28
+    )
+  ).resolves.toEqual(["0.1.1", "0.1.0"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/x/ssm@"),
+      0,
+      28
+    )
+  ).resolves.toEqual(["v0"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/x/sqs/"),
+      0,
+      28
+    )
+  ).resolves.toEqual([
+    "app.ts",
+    "src/types.ts",
+    "deps.ts",
+    "src/vendor/pkg.js",
+  ]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/x/sqs@0.1.1/"),
+      0,
+      34
+    )
+  ).resolves.toEqual([
+    "app.ts",
+    "src/types.ts",
+    "deps.ts",
+    "src/vendor/pkg.js",
+  ]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/sqs@0.1.0/"),
+      0,
+      32
+    )
+  ).resolves.toEqual(["mod.tsx", "src/app.ts", "deps.ts", "src/vendor/pkg.js"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/sqs/"),
+      0,
+      26
+    )
+  ).resolves.toEqual([
+    "app.ts",
+    "src/types.ts",
+    "deps.ts",
+    "src/vendor/pkg.js",
+  ]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/sqs@0.1.1/"),
+      0,
+      32
+    )
+  ).resolves.toEqual([
+    "app.ts",
+    "src/types.ts",
+    "deps.ts",
+    "src/vendor/pkg.js",
+  ]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/sqs@0.1.0/"),
+      0,
+      32
+    )
+  ).resolves.toEqual(["mod.tsx", "src/app.ts", "deps.ts", "src/vendor/pkg.js"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/sqs@0.1.0/src"),
+      0,
+      32
+    )
+  ).resolves.toEqual(["mod.tsx", "src/app.ts", "deps.ts", "src/vendor/pkg.js"]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/sqs@0.1.0/src/vendor"),
+      0,
+      32
+    )
+  ).resolves.toEqual(["mod.tsx", "src/app.ts", "deps.ts", "src/vendor/pkg.js"]);
+
+  await expect(
+    getCompletionsForURL(wellknown, new URL("http://localhost:8888/srs"), 0, 25)
+  ).resolves.toEqual([]);
+  await expect(
+    getCompletionsForURL(
+      wellknown,
+      new URL("http://localhost:8888/x/srs@"),
+      0,
+      28
+    )
+  ).resolves.toEqual([]);
 });
