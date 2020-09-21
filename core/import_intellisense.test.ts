@@ -2,7 +2,6 @@ import {
   buildCompletionListURL,
   fetchCompletionList,
   fetchWellKnown,
-  findCompletor,
   getCompletionsForURL,
   getWellKnown,
   parseReplacementVariablesFromURL,
