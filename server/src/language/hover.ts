@@ -33,7 +33,7 @@ export class Hover {
             range: typeComment.contentRange,
             contents: [
               MarkedString.fromPlainText(
-                "Deno's external declaration library. For more detail: https://deno.land/std/manual.md"
+                "Deno's external declaration library. For more detail: https://deno.land/manual/getting_started/typescript#compiler-hint"
               ),
             ],
           };
