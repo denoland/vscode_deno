@@ -4,32 +4,23 @@ import fs from "fs";
 import path from "path";
 
 export function getVSCodeDenoDir(): string {
-  // ref https://deno.land/manual.html
-  // On Linux/Redox: $XDG_CACHE_HOME/deno or $HOME/.cache/deno
-  // On Windows: %LOCALAPPDATA%/deno (%LOCALAPPDATA% = FOLDERID_LocalAppData)
-  // On macOS: $HOME/Library/Caches/deno
-  // If something fails, it falls back to $HOME/.deno
   let vscodeDenoDir =
     process.env.VSCODE_DENO_EXTENSION_PATH !== undefined
       ? path.join(process.env.VSCODE_DENO_EXTENSION_PATH, "cache")
       : undefined;
   if (vscodeDenoDir === undefined) {
     switch (process.platform) {
-      /* istanbul ignore next */
       case "win32":
         vscodeDenoDir = `${process.env.LOCALAPPDATA}\\vscode_deno`;
         break;
-      /* istanbul ignore next */
       case "darwin":
         vscodeDenoDir = `${process.env.HOME}/Library/Caches/vscode_deno`;
         break;
-      /* istanbul ignore next */
       case "linux":
         vscodeDenoDir = process.env.XDG_CACHE_HOME
           ? `${process.env.XDG_CACHE_HOME}/vscode_deno`
           : `${process.env.HOME}/.cache/vscode_deno`;
         break;
-      /* istanbul ignore next */
       default:
         vscodeDenoDir = `${process.env.HOME}/.vscode_deno`;
     }
