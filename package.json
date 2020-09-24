@@ -254,6 +254,7 @@
     "which": "2.0.2"
   },
   "dependencies": {
+    "clone": "^2.1.2",
     "deep-equal": "2.0.3",
     "deepmerge": "^4.2.2",
     "got": "^11.5.2",
