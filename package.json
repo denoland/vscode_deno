@@ -2,7 +2,7 @@
   "name": "vscode-deno",
   "displayName": "Deno",
   "description": "Deno support for VSCode",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "publisher": "denoland",
   "icon": "deno.png",
   "galleryBanner": {
@@ -226,19 +226,19 @@
     "snippets": [
       {
         "language": "javascript",
-        "path": "snippets/import_enhancement.json"
+        "path": "snippets/import_intellisense.json"
       },
       {
         "language": "typescript",
-        "path": "snippets/import_enhancement.json"
+        "path": "snippets/import_intellisense.json"
       },
       {
         "language": "javascriptreact",
-        "path": "snippets/import_enhancement.json"
+        "path": "snippets/import_intellisense.json"
       },
       {
         "language": "typescriptreact",
-        "path": "snippets/import_enhancement.json"
+        "path": "snippets/import_intellisense.json"
       }
     ]
   },

@@ -3,7 +3,7 @@
 The Deno VS Code extension supports IntelliSense autocomplete for remote URLs in
 import statements.
 
-<!-- TODO(lucacasonato): add gif of the extension in action -->
+![Import IntelliSense](screenshot/import_intellisense.gif)
 
 ## FAQ
 
@@ -57,6 +57,13 @@ Because of these constraints registries that want to support import IntelliSense
 must provide information in a structued way that the Deno VS Code extension is
 capable of understanding. More information about this can be found in the
 [Adding support for a registry](#adding-support-for-a-registry) section.
+
+### The autocomplete results are not up to date!
+
+The extension caches autocomplete results for a specified amount of time. The
+length of time is specified by the origin through `Cache-Control` headers. You
+can forcefully clear the cache by running the `deno: Clear import IntelliSense cache`
+command from the VS Code command palette (`Ctrl+Shift+P` or `F1`).
 
 ## Adding support for a registry
 
