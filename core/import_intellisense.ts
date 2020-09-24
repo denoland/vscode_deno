@@ -82,6 +82,7 @@ const wellKnownValidator = yup
 export type WellKnown = yup.InferType<typeof wellKnownValidator>;
 
 export async function fetchWellKnown(origin: string): Promise<WellKnown> {
+  console.log(`GET ${origin}/.well-known/deno-import-intellisense.json`);
   const wellknown = await got(
     `${origin}/.well-known/deno-import-intellisense.json`,
     {
@@ -141,13 +142,18 @@ export const wellKnownCache = new DiskCache(
 export async function getWellKnown(origin: string): Promise<WellKnown> {
   try {
     const cached = await wellKnownCache.get<WellKnown>(origin);
-    if (cached) return cached;
+    if (cached !== undefined) return cached;
   } catch {
     // ignore and try to fetch
   }
-  const wk = await fetchWellKnown(origin);
-  await wellKnownCache.set(origin, wk);
-  return wk;
+  try {
+    const wk = await fetchWellKnown(origin);
+    await wellKnownCache.set(origin, wk);
+    return wk;
+  } catch (err) {
+    await wellKnownCache.set(origin, null);
+    throw err;
+  }
 }
 
 export const completionsCache = new DiskCache(
@@ -174,6 +180,7 @@ export async function fetchCompletionList(
   variables: Record<string, string>
 ): Promise<string[]> {
   const finalURL = buildCompletionListURL(url, variables);
+  console.log(`GET ${finalURL}`);
   const resp = await got(finalURL, {
     headers: {
       accepts: "application/json",
