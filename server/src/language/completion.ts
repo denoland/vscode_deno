@@ -12,7 +12,7 @@ import { getDenoDir } from "../../../core/deno";
 import { getAllDenoCachedDeps, Deps } from "../../../core/deno_deps";
 import { Cache } from "../../../core/cache";
 
-import { ImportCompletionEnhanced } from "./import_completion_enhanced";
+import { ImportIntelliSense } from "./import_intellisense";
 
 // Cache for 30 second or 30 references
 const cache = Cache.create<Deps[]>(1000 * 30, 30);
@@ -29,7 +29,7 @@ export class Completion {
   constructor(
     connection: IConnection,
     documents: TextDocuments<TextDocument>,
-    import_enhanced: ImportCompletionEnhanced
+    importIntellisense: ImportIntelliSense
   ) {
     connection.onCompletion(async (params) => {
       const { position, partialResultToken, textDocument } = params;
@@ -57,7 +57,7 @@ export class Completion {
         currentLine.length > 1000 || // if is a large file
         !isImport
       ) {
-        return import_enhanced.please(params);
+        return importIntellisense.complete(params);
       }
 
       let deps = cache.get();
@@ -96,10 +96,7 @@ export class Completion {
           label: dep.url,
           detail: dep.url,
           sortText: dep.url,
-          documentation:
-            dep.url === "https://deno.land"
-              ? ""
-              : dep.filepath.replace(getDenoDir(), "$DENO_DIR"),
+          documentation: dep.filepath.replace(getDenoDir(), "$DENO_DIR"),
           kind: CompletionItemKind.File,
           insertText: dep.url,
           cancel: partialResultToken,
@@ -107,7 +104,7 @@ export class Completion {
         } as CompletionItem;
       });
 
-      completes.push(...(await import_enhanced.please(params)).items);
+      completes.push(...(await importIntellisense.complete(params)).items);
 
       return completes;
     });

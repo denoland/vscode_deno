@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "target": "ES2017",
+    "lib": ["esnext", "dom"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": false,
