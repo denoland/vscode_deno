@@ -41,6 +41,7 @@ import {
   ConfigurationField,
   DenoPluginConfigurationField,
 } from "../../core/configuration";
+import { TypescriptDenoPluginParam } from "../../core/typescript_deno_plugin_param";
 
 import { initProject, ProjectSetting } from "./init_project";
 
@@ -50,7 +51,7 @@ const TYPESCRIPT_EXTENSION_NAME = "vscode.typescript-language-features";
 const TYPESCRIPT_DENO_PLUGIN_ID = "typescript-deno-plugin";
 
 type TypescriptAPI = {
-  configurePlugin(pluginId: string, configuration: ConfigurationField): void;
+  configurePlugin(pluginId: string, param: TypescriptDenoPluginParam): void;
 };
 
 type DenoInfo = {
@@ -414,7 +415,6 @@ Executable ${this.denoInfo.executablePath}`;
           !!config.enable
         );
 
-        this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, config);
         this.updateDiagnostic(document.uri);
       }
     }
@@ -443,15 +443,22 @@ Executable ${this.denoInfo.executablePath}`;
       }
     }
   }
+
+  configTDP() {
+    const config = this.getConfiguration(window.activeTextEditor?.document.uri);
+    this.tsAPI.configurePlugin(TYPESCRIPT_DENO_PLUGIN_ID, {
+      project_config: config,
+      // This is for later use, currently just same as project_config.enable
+      plugin_config: { enable: config.enable ?? false },
+    });
+  }
+
   // activate function for vscode
   public async activate(context: ExtensionContext): Promise<void> {
     this.context = context;
     this.tsAPI = await getTypescriptAPI();
 
-    this.tsAPI.configurePlugin(
-      TYPESCRIPT_DENO_PLUGIN_ID,
-      this.getConfiguration(window.activeTextEditor?.document.uri)
-    );
+    this.configTDP();
 
     this.statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 0);
 
@@ -696,6 +703,7 @@ Executable ${this.denoInfo.executablePath}`;
     });
 
     this.watchConfiguration(() => {
+      this.configTDP();
       this.sync(window.activeTextEditor?.document);
     });
 

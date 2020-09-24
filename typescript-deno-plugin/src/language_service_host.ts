@@ -6,6 +6,7 @@ import { getImportModules } from "../../core/deno_deps";
 import { ModuleResolver } from "../../core/module_resolver";
 import { isUntitledDocument } from "../../core/util";
 import { Logger } from "./logger";
+import { TDPConfigMgr } from "./config";
 
 export class DenoLanguageServerHost {
   private constructor(
@@ -14,6 +15,7 @@ export class DenoLanguageServerHost {
   ) {}
 
   static decorate(
+    configMgr: TDPConfigMgr,
     host: tss.LanguageServiceHost,
     project: tss.server.Project,
     logger: Logger
@@ -27,8 +29,10 @@ export class DenoLanguageServerHost {
         containingFile: string
       ): (tss.ResolvedModule | tss.ResolvedModuleFull | undefined)[] => {
         // TODO: enable conditionally
-
-        if (true && original_host.resolveModuleNames) {
+        if (
+          !configMgr.getPluginConfig()?.enable &&
+          original_host.resolveModuleNames
+        ) {
           logger.info("original one triggered");
           return original_host.resolveModuleNames(
             moduleNames,

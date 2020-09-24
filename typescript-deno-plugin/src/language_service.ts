@@ -1,5 +1,7 @@
-import { Logger } from "logger";
+import { TDPConfigMgr } from "./config";
+import { Logger } from "./logger";
 import tss from "typescript/lib/tsserverlibrary";
+import { getDenoDts } from "../../core/deno";
 
 export class DenoLanguageServer {
   private constructor(
@@ -8,6 +10,7 @@ export class DenoLanguageServer {
   ) {}
 
   static decorate(
+    configMgr: TDPConfigMgr,
     service: tss.LanguageService,
     host: tss.LanguageServiceHost,
     logger: Logger
@@ -22,10 +25,21 @@ export class DenoLanguageServer {
 
     new_service.getProgram = () => {
       const old_program = service.getProgram();
-      logger.info("getprogram: " + JSON.stringify(host.getScriptFileNames()));
+      const scriptFileNames = host.getScriptFileNames();
+
+      if (configMgr.getPluginConfig()?.enable) {
+        // Get typescript declaration File
+        const dtsFiles = [getDenoDts(!!configMgr.getProjectConfig()?.unstable)];
+        const iterator = new Set(dtsFiles).entries();
+        for (const [, filepath] of iterator) {
+          scriptFileNames.push(filepath);
+        }
+      }
+
+      logger.info("getProgram: " + JSON.stringify(scriptFileNames));
 
       const new_program = tss.createProgram({
-        rootNames: host.getScriptFileNames().map((it) => it),
+        rootNames: scriptFileNames,
         options: host.getCompilationSettings(),
         oldProgram: old_program,
       });
