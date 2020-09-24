@@ -318,7 +318,7 @@ export class Extension {
           Request.promptEnableImportIntelliSense,
           async (origin: string) => {
             const resp = await window.showInformationMessage(
-              `Do you want to enable import IntelliSense for ${origin}? Only do this if you trust ${origin}. [Learn more](https://deno.land).`,
+              `Do you want to enable import IntelliSense for ${origin}? Only do this if you trust ${origin}. [Learn more](https://github.com/denoland/vscode_deno/blob/master/import_intellisense.md).`,
               "No",
               "Yes"
             );
