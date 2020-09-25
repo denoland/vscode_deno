@@ -23,17 +23,26 @@ export class DenoLanguageServerHost {
     const original_host: tss.LanguageServiceHost = clone(host, true, 1);
 
     // start decorate
-    if (host.resolveModuleNames) {
+    if (original_host.resolveModuleNames) {
       host.resolveModuleNames = (
         moduleNames: string[],
         containingFile: string
       ): (tss.ResolvedModule | tss.ResolvedModuleFull | undefined)[] => {
+        logger.info(
+          "resolveModuleNames" +
+            JSON.stringify(moduleNames) +
+            "  " +
+            containingFile
+        );
         // TODO: enable conditionally
         if (
           !configMgr.getPluginConfig()?.enable &&
           original_host.resolveModuleNames
         ) {
-          logger.info("original one triggered");
+          logger.info(
+            "original one triggered reason: " +
+              JSON.stringify(configMgr.getPluginConfig())
+          );
           return original_host.resolveModuleNames(
             moduleNames,
             containingFile,
@@ -148,6 +157,87 @@ export class DenoLanguageServerHost {
 
           return result;
         });
+      };
+    }
+
+    if (original_host.resolveTypeReferenceDirectives) {
+      host.resolveTypeReferenceDirectives = (
+        typeDirectiveNames: string[],
+        containingFile: string,
+        ...rest
+      ) => {
+        logger.info(
+          "resolveTypeReferenceDirectives: " +
+            JSON.stringify(typeDirectiveNames) +
+            "   " +
+            containingFile
+        );
+        if (!configMgr.getPluginConfig()?.enable) {
+          if (original_host.resolveTypeReferenceDirectives) {
+            return original_host.resolveTypeReferenceDirectives(
+              typeDirectiveNames,
+              containingFile,
+              ...rest
+            );
+          }
+          return [];
+        }
+
+        // containingFile may be `untitled: ^ Untitled-1`
+        const realContainingFile = isUntitledDocument(containingFile)
+          ? path.join(project.getCurrentDirectory(), "untitled")
+          : // in Windows.
+            // containingFile may be a unix-like style
+            // eg. c:/Users/admin/path/to/file.ts
+            // This is not a legal file path in Windows
+            // It will cause a series of bugs, so here we get the real file path
+            containingFile;
+
+        if (!tss.sys.fileExists(realContainingFile)) {
+          return [];
+        }
+
+        const import_map = configMgr.getProjectConfig()?.import_map;
+        const importMapsFilepath = import_map
+          ? path.isAbsolute(import_map)
+            ? import_map
+            : path.resolve(project.getCurrentDirectory(), import_map)
+          : undefined;
+
+        const resolver = ModuleResolver.create(
+          realContainingFile,
+          importMapsFilepath
+        );
+
+        const result: (tss.ResolvedTypeReferenceDirective | undefined)[] = [];
+
+        for (const typeDirectiveName of typeDirectiveNames) {
+          const [resolvedModule] = resolver.resolveModules([typeDirectiveName]);
+
+          // if module found. then return the module file
+          if (resolvedModule) {
+            const target: tss.ResolvedTypeReferenceDirective = {
+              primary: false,
+              resolvedFileName: resolvedModule.filepath,
+            };
+
+            result.push(target);
+            continue;
+          }
+
+          // If the module does not exist, then apply the native reference method
+          if (original_host.resolveTypeReferenceDirectives) {
+            const [target] = original_host.resolveTypeReferenceDirectives(
+              [typeDirectiveName],
+              containingFile,
+              ...rest
+            );
+
+            result.push(target);
+          }
+        }
+
+        return result;
       };
     }
 

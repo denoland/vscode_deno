@@ -2,6 +2,7 @@ import { TDPConfigMgr } from "./config";
 import { Logger } from "./logger";
 import tss from "typescript/lib/tsserverlibrary";
 import { getDenoDts } from "../../core/deno";
+import path from "path";
 
 export class DenoLanguageServer {
   private constructor(
@@ -29,10 +30,14 @@ export class DenoLanguageServer {
 
       if (configMgr.getPluginConfig()?.enable) {
         // Get typescript declaration File
-        const dtsFiles = [getDenoDts(!!configMgr.getProjectConfig()?.unstable)];
+        const dtsFiles = [
+          getDenoDts(!!configMgr.getProjectConfig()?.unstable)
+            .split(path.sep)
+            .join(path.posix.sep),
+        ];
         const iterator = new Set(dtsFiles).entries();
         for (const [, filepath] of iterator) {
-          scriptFileNames.push(filepath);
+          scriptFileNames.unshift(filepath);
         }
       }
 
