@@ -1,5 +1,5 @@
 import ts_module from "typescript/lib/tsserverlibrary";
-import { DenoPlugin } from "./plugin2";
+import { DenoPlugin } from "./plugin";
 // @ts-ignore
 module.exports = function init({
   typescript,
