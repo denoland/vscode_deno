@@ -34,9 +34,9 @@ Features:
 
 </details>
 
-<details><summary>Intelligent module import enhanced</summary>
+<details><summary>IntelliSense for remote URL imports</summary>
 
-![Import enhanced](screenshot/import_enhancement.gif)
+![Import IntelliSense](screenshot/import_intellisense.gif)
 
 </details>
 
@@ -141,6 +141,10 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 - `deno.lint` - If inline `deno lint` diagnostics are enabled. Because this is experimental, `deno.unstable = true` is required. Default is `false`
 
+- `deno.import_intellisense_origins` - The list of origins that import IntelliSense is enabled or disabled for. Defaults to none. More info in [the import IntelliSense readme](./import_intellisense.md)
+
+- `deno.import_intellisense_autodiscovery` - If the extension should try to auto-discover new origins with import IntelliSense support and list prompt the user. Default is `true`. More info in [the import IntelliSense readme](./import_intellisense.md)
+
 We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
 
 ```json5
@@ -149,6 +153,9 @@ We recommend that you do not set global configuration. It should be configured i
   "deno.enable": true,
   "deno.import_map": "./path/to/import_map.json",
   "deno.unstable": false,
+  "deno.import_intellisense_origins": {
+    "https://deno.land": true,
+  },
 }
 ```
 

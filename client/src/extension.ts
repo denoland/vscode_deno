@@ -119,7 +119,6 @@ export class Extension {
   };
   // get configuration of Deno
   public getConfiguration(uri?: Uri): ConfigurationField {
-    const config: ConfigurationField = {};
     const _config = workspace.getConfiguration(this.configurationSection, uri);
 
     function withConfigValue<C, K extends Extract<keyof C, string>>(
@@ -137,6 +136,9 @@ export class Extension {
         configSetting.globalValue ??
         configSetting.defaultValue) as C[K];
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const config: any = {};
 
     for (const field of DenoPluginConfigurationField) {
       withConfigValue(_config, config, field);
@@ -313,6 +315,29 @@ export class Extension {
 
           return config;
         });
+
+        client.onRequest(
+          Request.promptEnableImportIntelliSense,
+          async (origin: string) => {
+            const resp = await window.showInformationMessage(
+              `Do you want to enable import IntelliSense for ${origin}? Only do this if you trust ${origin}. [Learn more](https://github.com/denoland/vscode_deno/blob/master/import_intellisense.md).`,
+              "No",
+              "Yes"
+            );
+            const config = workspace.getConfiguration(
+              this.configurationSection
+            );
+            if (resp === "Yes" || resp === "No") {
+              let { import_intellisense_origins } = this.getConfiguration();
+              import_intellisense_origins = import_intellisense_origins ?? {};
+              import_intellisense_origins[origin] = resp === "Yes";
+              await config.update(
+                `import_intellisense_origins`,
+                import_intellisense_origins
+              );
+            }
+          }
+        );
       }
     );
   }

@@ -12,13 +12,17 @@ export const DenoPluginConfigurationField: (keyof ConfigurationField)[] = [
   "unstable",
   "import_map",
   "lint",
+  "import_intellisense_origins",
+  "import_intellisense_autodiscovery",
 ];
 
 export type ConfigurationField = {
-  enable?: boolean;
-  unstable?: boolean;
-  import_map?: string | null;
-  lint?: boolean;
+  enable: boolean;
+  unstable: boolean;
+  import_map: string | null;
+  lint: boolean;
+  import_intellisense_origins: { [origin: string]: boolean };
+  import_intellisense_autodiscovery: boolean;
 };
 
 interface ConfigurationInterface {
@@ -34,6 +38,8 @@ export class Configuration implements ConfigurationInterface {
     unstable: false,
     import_map: null,
     lint: false,
+    import_intellisense_origins: {},
+    import_intellisense_autodiscovery: false,
   };
 
   private readonly _configUpdatedListeners = new Set<() => void>();
@@ -59,7 +65,7 @@ export class Configuration implements ConfigurationInterface {
       try {
         const settings: { [key: string]: never } = json5.parse(content);
 
-        const c: ConfigurationField = {};
+        const c: Partial<ConfigurationField> = {};
 
         for (const key in settings) {
           /* istanbul ignore else */
@@ -83,13 +89,20 @@ export class Configuration implements ConfigurationInterface {
         this._configuration.import_map = this._configuration.import_map
           ? this._configuration.import_map + ""
           : null;
+        this._configuration.import_intellisense_origins =
+          typeof this._configuration.import_intellisense_origins === "object"
+            ? this._configuration.import_intellisense_origins
+            : {};
+        this._configuration.import_intellisense_autodiscovery = !!(
+          this._configuration.import_intellisense_autodiscovery ?? true
+        );
       } catch {
         // ignore error
       }
     }
   }
 
-  public update(c: ConfigurationField): void {
+  public update(c: Partial<ConfigurationField>): void {
     const oldConfig = JSON.parse(JSON.stringify(this._configuration));
     this._configuration = merge(this._configuration, c);
 
