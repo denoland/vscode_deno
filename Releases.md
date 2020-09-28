@@ -2,6 +2,18 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [v2.3.1](https://github.com/denoland/vscode_deno/compare/v2.3.0...v2.3.1) / 2020.09.24
+
+- fix: enable recursive mode for mkdir of cache path (#232)
+
+### [v2.3.0](https://github.com/denoland/vscode_deno/compare/v2.2.3...v2.3.0) / 2020.09.24
+
+- feat: generic import intellisense (#219)
+- feat: out of the box debug support (#221)
+- feat: init project command to quickly set up .vscode/settings.json (#207)
+- fix: `Fetch the module` quickfix does not respect deno.unstable setting (#213)
+- chore: fix manual URL in hover card (#226)
+
 ### [v2.2.3](https://github.com/denoland/vscode_deno/compare/v2.2.2...v2.2.3) / 2020.09.13
 
 - fix: failed to load typescript-deno-plugin error (#205)

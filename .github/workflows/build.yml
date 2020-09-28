@@ -10,8 +10,8 @@ jobs:
       !startsWith(github.event.pull_request.head.label, 'denoland:')
     strategy:
       matrix:
-        node: ["12.16.1"]
-        deno: ["1.4.0"]
+        node: ["14.11.0"]
+        deno: ["1.4.1"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
     name: test in ${{ matrix.os }}
     steps:
@@ -63,6 +63,11 @@ jobs:
 
       - name: Package
         run: npm run build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: vscode-deno
+          path: vscode-deno.vsix
 
       - name: Release
         if: |

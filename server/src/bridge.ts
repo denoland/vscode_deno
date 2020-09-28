@@ -2,13 +2,7 @@ import { IConnection } from "vscode-languageserver";
 import { WorkspaceFolder } from "vscode";
 
 import { Request } from "../../core/const";
-
-type Configuration = {
-  enable: boolean;
-  import_map?: string;
-  unstable?: boolean;
-  lint?: boolean;
-};
+import { ConfigurationField } from "../../core/configuration";
 
 /**
  * The bridge between client and server
@@ -33,12 +27,19 @@ export class Bridge {
    * Get workspace folder config from client
    * @param uri
    */
-  async getWorkspaceConfig(uri: string): Promise<Configuration> {
-    const config: Configuration = await this.connection.sendRequest(
+  async getWorkspaceConfig(uri: string): Promise<ConfigurationField> {
+    const config: ConfigurationField = await this.connection.sendRequest(
       Request.getWorkspaceConfig,
       uri
     );
 
     return config;
+  }
+
+  async promptEnableImportIntelliSense(origin: string): Promise<void> {
+    await this.connection.sendRequest(
+      Request.promptEnableImportIntelliSense,
+      origin
+    );
   }
 }
