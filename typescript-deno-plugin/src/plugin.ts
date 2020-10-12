@@ -168,9 +168,6 @@ export class DenoPlugin implements typescript.server.PluginModule {
 
       const extraOptions: ts.CompilerOptions = {
         isolatedModules: this.configurationManager.config.unstable,
-        importsNotUsedAsValues: this.configurationManager.config.unstable
-          ? this.ts.ImportsNotUsedAsValues.Error
-          : this.ts.ImportsNotUsedAsValues.Remove,
       };
 
       const compilationSettings = merge(
