@@ -2,6 +2,11 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [v2.3.2](https://github.com/denoland/vscode_deno/compare/v2.3.1...v2.3.2) / 2020.10.12
+
+- chore: disable importsNotUsedAsValues --unstable default (#240)
+- build: husky pre-commit hooks (#224)
+
 ### [v2.3.1](https://github.com/denoland/vscode_deno/compare/v2.3.0...v2.3.1) / 2020.09.24
 
 - fix: enable recursive mode for mkdir of cache path (#232)
