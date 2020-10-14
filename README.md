@@ -118,16 +118,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)
 
-2. Enable Deno for your project:
-
-   Create a file `.vscode/settings.json` in your project folder:
-
-   ```json5
-   // .vscode/settings.json
-   {
-     "deno.enable": true,
-   }
-   ```
+2. Press <kbd>F1</kbd> or <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open command palette, type `deno init`.
 
 3. Enjoy!
 
