@@ -118,7 +118,7 @@ console.log("concat Array", M.concat([1, 2], [2, 3]));
 
 1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)
 
-2. Press <kbd>F1</kbd> or <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open command palette, type `deno init`.
+2. Press <kbd>F1</kbd> or <kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open command palette, type `deno init`.
 
 3. Enjoy!
 
