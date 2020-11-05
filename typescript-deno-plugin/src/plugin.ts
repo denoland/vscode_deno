@@ -18,11 +18,12 @@ import { getImportModules } from "../../core/deno_deps";
 
 const ignoredCompilerOptions: readonly string[] = [
   "allowSyntheticDefaultImports",
+  "allowUmdGlobalAccess",
+  "assumeChangesOnlyAffectDirectDependencies",
   "baseUrl",
   "build",
   "composite",
   "declaration",
-  "declarationDir",
   "declarationMap",
   "diagnostics",
   "downlevelIteration",
@@ -31,13 +32,13 @@ const ignoredCompilerOptions: readonly string[] = [
   "esModuleInterop",
   "extendedDiagnostics",
   "forceConsistentCasingInFileNames",
+  "generateCpuProfile",
   "help",
   "importHelpers",
   "incremental",
+  "init",
   "inlineSourceMap",
   "inlineSources",
-  "init",
-  "isolatedModules",
   "listEmittedFiles",
   "listFiles",
   "mapRoot",
@@ -54,9 +55,12 @@ const ignoredCompilerOptions: readonly string[] = [
   "outDir",
   "outFile",
   "paths",
+  "preserveConstEnums",
   "preserveSymlinks",
   "preserveWatchOutput",
   "pretty",
+  "reactNamespace",
+  "resolveJsonModule",
   "rootDir",
   "rootDirs",
   "showConfig",
@@ -68,8 +72,9 @@ const ignoredCompilerOptions: readonly string[] = [
   "target",
   "traceResolution",
   "tsBuildInfoFile",
-  "types",
   "typeRoots",
+  "types",
+  "useDefineForClassFields",
   "version",
   "watch",
 ];
@@ -94,6 +99,7 @@ export class DenoPlugin implements typescript.server.PluginModule {
     target: this.ts.ScriptTarget.ESNext,
     noEmit: true,
     noEmitHelpers: true,
+    isolatedModules: true,
   };
   // No matter how tsconfig.json is set in the working directory
   // It will always overwrite the configuration
@@ -166,12 +172,8 @@ export class DenoPlugin implements typescript.server.PluginModule {
         }
       }
 
-      const extraOptions: ts.CompilerOptions = {
-        isolatedModules: this.configurationManager.config.unstable,
-      };
-
       const compilationSettings = merge(
-        merge(merge(this.DEFAULT_OPTIONS, extraOptions), projectConfig),
+        merge(this.DEFAULT_OPTIONS, projectConfig),
         this.MUST_OVERWRITE_OPTIONS
       );
 
