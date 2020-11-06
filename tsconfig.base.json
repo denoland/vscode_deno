@@ -16,6 +16,5 @@
     "removeComments": true,
     "resolveJsonModule": true,
     "strictBindCallApply": true
-  },
-  // "exclude": ["**/*.test.ts"]
+  }
 }
