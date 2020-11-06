@@ -1,7 +1,7 @@
 {
-	"extends": "./tsconfig.base.json",
-	"compilerOptions": {
-		"composite": true
-	},
-	"files": ["./package.json"]
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "files": ["./package.json"]
 }
