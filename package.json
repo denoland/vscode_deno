@@ -17,7 +17,7 @@
     "url": "https://github.com/denoland/vscode_deno/issues"
   },
   "engines": {
-    "vscode": "^1.43.0"
+    "vscode": "^1.50.0"
   },
   "categories": [
     "Programming Languages",
@@ -242,14 +242,12 @@
       }
     ]
   },
-
   "husky": {
     "hooks": {
       "pre-commit": "npm run format && npm run lint",
       "pre-push": "npm run check && npm run test"
     }
   },
-
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "postinstall": "cd client && npm i && cd ../server && npm i",
@@ -277,8 +275,8 @@
     "coveralls": "3.1.0",
     "eslint": "7.7.0",
     "execa": "4.0.3",
-    "husky": "^4.3.0",
     "express": "^4.17.1",
+    "husky": "^4.3.0",
     "jest": "26.4.2",
     "prettier": "2.1.1",
     "ts-jest": "26.3.0",
