@@ -1,8 +1,14 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "outDir": "./out"
+    // "baseUrl": "./src",
+    "outDir": "../out/client",
+    "composite": true
   },
-  "include": ["./src", "../core"]
+  // "include": ["./src", "../core"],
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
 }

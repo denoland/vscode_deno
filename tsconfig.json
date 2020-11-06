@@ -2,17 +2,20 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "outDir": "./out",
+    // "outDir": "./out",
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
-    "baseUrl": "./src"
+    // "baseUrl": "./src",
+    // "composite": true
   },
-  "include": ["./src"],
-  "exclude": ["node_modules", "core/testdata"],
+  // "include": ["./src"],
+  // "exclude": ["node_modules", "core/testdata"],
+  "files": [],
   "references": [
     { "path": "./client" },
     { "path": "./server" },
-    { "path": "./typescript-deno-plugin" }
+    { "path": "./typescript-deno-plugin" },
+    { "path": "./core" }
   ]
 }

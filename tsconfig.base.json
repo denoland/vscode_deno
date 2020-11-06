@@ -17,5 +17,5 @@
     "resolveJsonModule": true,
     "strictBindCallApply": true
   },
-  "exclude": ["**/*.test.ts"]
+  // "exclude": ["**/*.test.ts"]
 }

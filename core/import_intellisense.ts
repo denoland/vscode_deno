@@ -9,7 +9,8 @@ import {
 } from "path-to-regexp";
 import * as yup from "yup";
 import { DiskCache } from "./diskcache";
-import { version as VERSION } from "../package.json";
+
+const VERSION = "2.3.3";
 
 export const IMPORT_REG = /^(?<rest>.*?[import|export](.+?from)?.+?['"])(?<url>[0-9a-zA-Z-_@~:/.?#:&=%+]*)/;
 

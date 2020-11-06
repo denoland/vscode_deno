@@ -14,7 +14,7 @@ test("core / FileWalker", async () => {
     path.join(TEST_DIR, "file_walker", "exclude", "c.tsx"),
   ];
 
-  const result = [];
+  const result: string[] = [];
 
   for await (const file of walker) {
     expect(typeof file).toBe("string");
@@ -35,7 +35,7 @@ test("core / FileWalker with specified extension name", async () => {
     path.join(TEST_DIR, "file_walker", "exclude", "c.tsx"),
   ];
 
-  const result = [];
+  const result: string[] = [];
 
   for await (const file of walker) {
     expect(typeof file).toBe("string");
@@ -57,7 +57,7 @@ test("core / FileWalker with exclude options", async () => {
     path.join(TEST_DIR, "file_walker", "b.ts"),
   ];
 
-  const result = [];
+  const result: string[] = [];
 
   for await (const file of walker) {
     expect(typeof file).toBe("string");
@@ -81,7 +81,7 @@ test("core / FileWalker ignore hidden file", async () => {
 
   const files = [path.join(TEST_DIR, "file_walker", "b.ts")];
 
-  const result = [];
+  const result: string[] = [];
 
   for await (const file of walker) {
     expect(typeof file).toBe("string");

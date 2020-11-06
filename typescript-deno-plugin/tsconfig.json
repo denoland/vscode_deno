@@ -1,8 +1,14 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "outDir": "../node_modules/typescript-deno-plugin/out"
+    // "baseUrl": "./src",
+    "outDir": "../out/typescript-deno-plugin",
+    "composite": true
   },
-  "include": ["./src", "../core"]
+  // "include": ["./src", "../core"],
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
 }

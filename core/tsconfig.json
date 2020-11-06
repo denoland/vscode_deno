@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../out/core",
+    "composite": true
+  },
+  // "include": ["./*"],
+  "exclude": [
+    // "*.test.ts"
+  ]
+}
