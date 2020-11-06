@@ -180,7 +180,7 @@ export class TreeViewProvider implements TreeDataProvider<Item> {
     });
   }
   refresh(): void {
-    this.privateOnDidChangeTreeData.fire();
+    this.privateOnDidChangeTreeData.fire(undefined);
   }
   dispose(): void {
     this.privateOnDidChangeTreeData.dispose();
