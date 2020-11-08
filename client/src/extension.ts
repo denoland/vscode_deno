@@ -514,8 +514,7 @@ Executable ${this.denoInfo.executablePath}`;
         // if you init project, you enable the plugin. NO NEED CHOOSE
         await config.update("enable", true);
         await config.update("lint", setting.lint);
-        // if lint enabled, enable unstable as well
-        await config.update("unstable", setting.lint);
+        await config.update("unstable", setting.unstable);
         window
           .showInformationMessage(
             "Deno is now set up. You can enable and disable settings (like `--unstable`) in the `.vscode/settings.json` file. Before the extension will work you need to reload VS Code.",
