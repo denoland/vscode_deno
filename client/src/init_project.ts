@@ -43,7 +43,8 @@ export async function initProject(): Promise<ProjectSetting> {
       title,
       step: 2,
       totalSteps,
-      placeholder: "Enable unstable mode? Note: unstable mode is required to use deno lint",
+      placeholder:
+        "Enable unstable mode? Note: unstable mode is required to use deno lint",
       items: (["Yes", "No"].map((label) => ({
         label,
       })) as unknown[]) as QuickPickItem[],
