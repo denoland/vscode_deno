@@ -1,15 +1,15 @@
 import * as path from "path";
 
 import {
-  IConnection,
-  Diagnostic,
-  DiagnosticSeverity,
   CodeAction,
   CodeActionKind,
   Command,
-  TextDocuments,
-  Range,
+  Diagnostic,
+  DiagnosticSeverity,
+  IConnection,
   Position,
+  Range,
+  TextDocuments,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as ts from "typescript";
@@ -17,7 +17,7 @@ import { URI } from "vscode-uri";
 
 import { Bridge } from "../bridge";
 import { ModuleResolver } from "../../../core/module_resolver";
-import { pathExists, isHttpURL, isValidDenoDocument } from "../../../core/util";
+import { isHttpURL, isValidDenoDocument, pathExists } from "../../../core/util";
 import { ImportMap } from "../../../core/import_map";
 import { getImportModules } from "../../../core/deno_deps";
 import { Notification } from "../../../core/const";
@@ -90,12 +90,12 @@ export class Diagnostics {
         });
 
       const denoLintAction = denoDiagnostics
-        .filter((v) => v.code && rules.includes(v.code as string))
-        .map((v) => {
+        .filter((v) => v.code && rules.find((r) => r.code == v.code))
+        .flatMap((v) => {
           const action = CodeAction.create(
             `ignore \`${v.code}\` for this line (${DENO_LINT})`,
             Command.create(
-              "Fix lint",
+              "Ignore lint on next line",
               `deno._ignore_next_line_lint`,
               // argument
               textDocument.uri,
@@ -104,25 +104,21 @@ export class Diagnostics {
             ),
             CodeActionKind.QuickFix
           );
-
-          return action;
-        });
-
-      if (denoLintAction.length) {
-        denoLintAction.push(
-          CodeAction.create(
-            `ignore entire file (${DENO_LINT})`,
+          const fileAction = CodeAction.create(
+            `ignore \`${v.code}\` for entire file (${DENO_LINT})`,
             Command.create(
-              "Fix lint for entry file",
-              `deno._ignore_entry_file`,
+              "Ignore lint for entire file",
+              `deno._ignore_entire_file_lint`,
               // argument
               textDocument.uri,
-              Range.create(Position.create(0, 0), Position.create(0, 0))
+              Range.create(Position.create(0, 0), Position.create(0, 0)),
+              v.code
             ),
             CodeActionKind.QuickFix
-          )
-        );
-      }
+          );
+
+          return [action, fileAction];
+        });
 
       return actions.concat(documentAction).concat(denoLintAction);
     });

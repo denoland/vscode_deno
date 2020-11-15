@@ -3,10 +3,13 @@ import {
   TextDocuments,
   MarkedString,
   Hover as LanguageServerHover,
+  MarkupKind,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
+import { deno } from "../deno";
 import { getDenoTypesHintsFromDocument } from "../deno_types";
+import { getDenoLintCodesFromDocument } from "../deno_lint";
 
 export class Hover {
   constructor(connection: IConnection, documents: TextDocuments<TextDocument>) {
@@ -42,6 +45,34 @@ export class Hover {
         }
       }
 
+      const denoLintCodes = getDenoLintCodesFromDocument(document);
+
+      for (const code of denoLintCodes) {
+        const start = code.range.start;
+        const end = code.range.end;
+        if (
+          position.line >= start.line &&
+          position.line <= end.line &&
+          position.character >= start.character &&
+          position.character <= end.character
+        ) {
+          const rules = await deno.getLintRules();
+          const rule = rules.find((r) => r.code == code.code);
+
+          if (rule) {
+            const hover: LanguageServerHover = {
+              range: code.range,
+              contents: {
+                kind: MarkupKind.Markdown,
+                value: `## ${rule.code}\n${
+                  rule?.docs || "_no docs available_\n"
+                }\n<br />`,
+              },
+            };
+            return hover;
+          }
+        }
+      }
       return;
     });
   }

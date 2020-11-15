@@ -41,8 +41,14 @@ interface LintOutput {
   errors: LintError[];
 }
 
+interface LintRule {
+  code: string;
+  tags: string[];
+  docs?: string;
+}
+
 // caching Deno lint's rules for 120s or 100 referenced times
-const denoLintRulesCache = Cache.create<string[]>(1000 * 120, 100);
+const denoLintRulesCache = Cache.create<LintRule[]>(1000 * 120, 100);
 
 class Deno {
   public version!: Version | void;
@@ -62,9 +68,9 @@ class Deno {
       return;
     }
 
-    // If the currently used Deno is less than 1.4.0
+    // If the currently used Deno is less than 1.4.3
     // We will give an warning to upgrade.
-    const minimumDenoVersion = "1.4.0";
+    const minimumDenoVersion = "1.5.3";
     if (!semver.gte(this.version.deno, minimumDenoVersion)) {
       throw new Error(`Please upgrade to Deno ${minimumDenoVersion} or above.`);
     }
@@ -111,17 +117,16 @@ class Deno {
     return formattedCode;
   }
 
-  public async getLintRules(): Promise<string[]> {
+  public async getLintRules(): Promise<LintRule[]> {
     const cachedRules = denoLintRulesCache.get();
     if (cachedRules) {
       return cachedRules;
     }
     const subprocess = execa(
       this.executablePath as string,
-      ["lint", "--unstable", "--rules"],
+      ["lint", "--unstable", "--rules", "--json"],
       {
         stdout: "pipe",
-
         env: {
           NO_COLOR: "1",
         },
@@ -135,11 +140,7 @@ class Deno {
       subprocess.stdout?.on("data", (data: Buffer) => (stdout += data));
     });
 
-    const rules = output
-      .split("\n")
-      .map((v) => v.trim())
-      .filter((v) => v.startsWith("-"))
-      .map((v) => v.replace(/^-\s+/, ""));
+    const rules = JSON.parse(output);
 
     denoLintRulesCache.set(rules);
 
