@@ -708,13 +708,19 @@ Executable ${this.denoInfo.executablePath}`;
         });
         return;
       },
-      _ignore_entry_file: async (editor) => {
+      _ignore_entire_file_lint: async (editor, _, _range, rule: unknown) => {
         editor.edit((edit) => {
           const firstLineText = editor.document.lineAt(0);
-          edit.insert(
-            new Position(0, 0),
-            "// deno-lint-ignore-file" + (firstLineText.text ? "\n" : "")
-          );
+          if (/^\s*\/\/\s+deno-lint-ignore-file\s*/.test(firstLineText.text)) {
+            edit.replace(firstLineText.range, firstLineText.text + " " + rule);
+          } else {
+            edit.insert(
+              new Position(0, 0),
+              "// deno-lint-ignore-file " +
+                rule +
+                (firstLineText.text ? "\n" : "")
+            );
+          }
         });
         return;
       },
