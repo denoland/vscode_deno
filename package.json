@@ -38,6 +38,13 @@
 	],
 	"main": "./client/out/extension",
 	"contributes": {
+		"commands": [
+			{
+				"command": "deno.status",
+				"title": "Status",
+				"category": "Deno Language Server"
+			}
+		],
 		"configuration": {
 			"type": "object",
 			"title": "Deno Language Service",
