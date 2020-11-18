@@ -1,18 +1,21 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "outDir": "./out",
-    "sourceMap": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "baseUrl": "./src"
-  },
-  "include": ["./src"],
-  "exclude": ["node_modules", "core/testdata"],
-  "references": [
-    { "path": "./client" },
-    { "path": "./server" },
-    { "path": "./typescript-deno-plugin" }
-  ]
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2019",
+		"lib": ["ES2019"],
+		"outDir": "out",
+		"rootDir": "src",
+		"sourceMap": true,
+		"strict": true,
+	},
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"node_modules",
+		".vscode-test"
+	],
+	"references": [
+		{ "path": "./client" }
+	]
 }

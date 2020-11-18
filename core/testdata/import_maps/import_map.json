@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "demo/": "https://example.com/demo/",
-    "core": "./src/relative/path/to"
-  }
-}

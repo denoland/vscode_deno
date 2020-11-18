@@ -16,212 +16,29 @@
 
 Adds Deno support for the Visual Studio Code.
 
-![screenshot](screenshot/screenshot.gif)
+<!-- ![screenshot](screenshot/screenshot.gif) -->
 
 </div>
 
 Features:
 
-<details><summary>Full intellisense support</summary>
-
-![Deno Support](screenshot/deno.gif)
-
-</details>
-
-<details><summary>Intelligent module import</summary>
-
-![Import](screenshot/import.gif)
-
-</details>
-
-<details><summary>IntelliSense for remote URL imports</summary>
-
-![Import IntelliSense](screenshot/import_intellisense.gif)
-
-</details>
-
-<details><summary>Supports importing ECMAScript modules</summary>
-
-![Import](screenshot/ecma.gif)
-
-</details>
-
-<details><summary>Diagnostics and quick fixes</summary>
-
-![Diagnostics](screenshot/diagnostics.gif)
-
-</details>
-
-<details><summary>Optional use of Deno's built in formatting</summary>
-
-![Format](screenshot/format.gif)
-
-</details>
-
-<details><summary>Client/Server model with LSP</summary>
-
-The extension separates Client/Server with LSP
-
-This means that complicated problems are handled on the server-side
-
-The extension won't block your Visual Studio Code
-
-![Process](screenshot/process.png)
-
-</details>
-
-<details><summary>Supports `Import Maps` for Deno</summary>
-
-![import_map](screenshot/import_map.gif)
-
-</details>
-
-<details><summary>External type definitions</summary>
-
-The extension supports the following ways to load external declaration files
-
-> These are all supported by Deno
-
-1. Compiler hint
-
-```ts
-// @deno-types="./foo.d.ts"
-import { foo } from "./foo.js";
-```
-
-see [example](/examples/compile-hint/mod.ts)
-
-2. `Triple-slash` reference directive
-
-```ts
-/// <reference types="https://raw.githubusercontent.com/date-fns/date-fns/master/typings.d.ts" />
-
-import { format } from "https://deno.land/x/date_fns/index.js";
-
-format(new Date(), "yyyy/MM/DD");
-```
-
-see [example](/examples/react/mod.tsx)
-
-3. `X-TypeScript-Types` custom header
-
-```ts
-import { array } from "https://cdn.pika.dev/fp-ts";
-
-const M = array.getMonoid<number>();
-console.log("concat Array", M.concat([1, 2], [2, 3]));
-```
-
-</details>
+_TBC_
 
 ## Usage
 
-1. Download and enable the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)
-
-2. Enable Deno for your project:
-
-   Create a file `.vscode/settings.json` in your project folder:
-
-   ```json5
-   // .vscode/settings.json
-   {
-     "deno.enable": true,
-   }
-   ```
-
-3. Enjoy!
+_TBC_
 
 ## Configuration
 
-- `deno.enable` - Enable extension. Default is `false`
-
-- `deno.import_map` - The file paths of Import Map. Default is `null`
-
-- `deno.unstable` - If Deno's unstable mode is enabled. Default is `false`
-
-- `deno.lint` - If inline `deno lint` diagnostics are enabled. Because this is experimental, `deno.unstable = true` is required. Default is `false`
-
-- `deno.import_intellisense_origins` - The list of origins that import IntelliSense is enabled or disabled for. Defaults to none. More info in [the import IntelliSense readme](./import_intellisense.md)
-
-- `deno.import_intellisense_autodiscovery` - If the extension should try to auto-discover new origins with import IntelliSense support and list prompt the user. Default is `true`. More info in [the import IntelliSense readme](./import_intellisense.md)
-
-We recommend that you do not set global configuration. It should be configured in `.vscode/settings.json` in the project directory:
-
-```json5
-// .vscode/settings.json
-{
-  "deno.enable": true,
-  "deno.import_map": "./path/to/import_map.json",
-  "deno.unstable": false,
-  "deno.import_intellisense_origins": {
-    "https://deno.land": true,
-  },
-}
-```
-
-This extension also provides Deno's formatting tools, settings are in `.vscode/settings.json`:
-
-```json5
-// .vscode/settings.json
-{
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno",
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "denoland.vscode-deno",
-  },
-}
-```
-
-This extension also provides inline `deno lint` diagnostics. You can enable this in `.vscode/settings.json`:
-
-NOTE: Since `deno lint` is still an experimental feature, you need to set `deno.unstable = true` in your VS Code settings. This function may change in the future.
-
-```json5
-// .vscode/settings.json
-{
-  "deno.enable": true,
-  "deno.unstable": true,
-  "deno.lint": true,
-}
-```
+_TBC_
 
 ## Contribute
 
-Follow these steps to contribute, the community needs your strength.
-
-1. Fork project
-
-2. Clone onto your computer:
-
-   ```bash
-   $ git clone https://github.com/your_github_name/vscode_deno.git
-   $ cd vscode_deno
-   $ npm i
-   ```
-
-3. Disable extension in Visual Studio Code if you have extension before
-
-4. Compile the extension:
-
-   ```bash
-   $ npm run compile # or `npm run watch` to automatically recompile on changes
-   ```
-
-5. Start debug extension
-
-   Open Visual Studio Code, find the `Run` item in the sidebar
-   and then run `Client + Server` task. If you see the error `Errors exist after running preLaunchTask 'undefined'.`, press `Continue anyway`.
-
-   Wait for Visual Studio Code debugger to open a new window
-
-6. Try updating Visual Studio Code and restart the debugger
-
-7. Finally, push to your fork and send a PR
+_TBC_
 
 ## Thanks
 
-This project was originally a fork of [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno) and
+This project was inspired by [justjavac/vscode-deno](https://github.com/justjavac/vscode-deno) and
 [axetroy/vscode-deno](https://github.com/axetroy/vscode-deno). Thanks for their contributions.
 
 ## License

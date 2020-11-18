@@ -1,6 +1,0 @@
-{
-  "headers": {
-    "location": "https://example.com/redirect_to_loop"
-  },
-  "url": "https://example.com/redirect_to_loop"
-}

@@ -1,5 +1,0 @@
-{
-  "deno.enable": "this should be a boolean",
-  "deno.unstable": [],
-  "deno.import_map": [1, 2, 3]
-}

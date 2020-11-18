@@ -1,299 +1,89 @@
 {
-  "name": "vscode-deno",
-  "displayName": "Deno",
-  "description": "Deno support for VSCode",
-  "version": "2.3.3",
-  "publisher": "denoland",
-  "icon": "deno.png",
-  "galleryBanner": {
-    "color": "#3B3738",
-    "theme": "dark"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/denoland/vscode_deno"
-  },
-  "bugs": {
-    "url": "https://github.com/denoland/vscode_deno/issues"
-  },
-  "engines": {
-    "vscode": "^1.43.0"
-  },
-  "categories": [
-    "Programming Languages",
-    "Other"
-  ],
-  "keywords": [
-    "deno"
-  ],
-  "activationEvents": [
-    "onDebug",
-    "onLanguage:javascript",
-    "onLanguage:javascriptreact",
-    "onLanguage:typescript",
-    "onLanguage:typescriptreact"
-  ],
-  "main": "./client/out/client/src/extension.js",
-  "contributes": {
-    "breakpoints": [
-      {
-        "language": "typescript"
-      },
-      {
-        "language": "javascript"
-      },
-      {
-        "language": "typescriptreact"
-      },
-      {
-        "language": "javascriptreact"
-      }
-    ],
-    "debuggers": [
-      {
-        "type": "deno",
-        "label": "Deno",
-        "runtime": "deno",
-        "languages": [
-          "typescript",
-          "javascript",
-          "typescriptreact",
-          "javascriptreact"
-        ],
-        "configurationSnippets": [
-          {
-            "label": "Deno: Debug",
-            "body": {
-              "type": "pwa-node",
-              "request": "launch",
-              "name": "${2:Launch Deno}",
-              "program": "^\"\\${workspaceFolder}/${1:main.ts}\"",
-              "cwd": "^\"\\${workspaceFolder}\"",
-              "runtimeExecutable": "deno",
-              "runtimeArgs": [
-                "run",
-                "--inspect-brk=127.0.0.1:${4:9229}",
-                "${3:--allow-all}"
-              ],
-              "attachSimplePort": "^${4:9229}"
-            }
-          }
-        ]
-      }
-    ],
-    "typescriptServerPlugins": [
-      {
-        "name": "typescript-deno-plugin",
-        "enableForWorkspaceTypeScriptVersions": true
-      }
-    ],
-    "commands": [
-      {
-        "command": "deno.restart_server",
-        "title": "Restart Deno Language Server",
-        "category": "deno"
-      },
-      {
-        "command": "deno._refresh_tree",
-        "title": "Refresh",
-        "category": "deno",
-        "icon": {
-          "light": "resource/icon/refresh.light.svg",
-          "dark": "resource/icon/refresh.dark.svg"
-        }
-      },
-      {
-        "command": "deno._clear_import_intellisense_cache",
-        "title": "Clear import IntelliSense cache",
-        "category": "deno"
-      },
-      {
-        "command": "deno._init_project",
-        "title": "Init",
-        "category": "deno"
-      }
-    ],
-    "views": {
-      "explorer": [
-        {
-          "id": "deno",
-          "name": "Deno Dependencies",
-          "when": "denoExtensionActivated"
-        }
-      ]
-    },
-    "menus": {
-      "view/title": [
-        {
-          "command": "deno._refresh_tree",
-          "group": "navigation@1",
-          "when": "view == deno"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "deno._refresh_tree",
-          "when": "never"
-        },
-        {
-          "command": "deno.restart_server",
-          "when": "denoExtensionActivated"
-        }
-      ]
-    },
-    "configuration": {
-      "type": "object",
-      "title": "Deno",
-      "properties": {
-        "deno.enable": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Controls whether Deno is enabled or not.\n\n**Not recommended in global configuration**",
-          "scope": "resource",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        "deno.import_map": {
-          "type": "string",
-          "default": null,
-          "markdownDescription": "The file path of an import map.\n\nIt can be a path that is relative to the project root, or an absolute path.\n\n**Not recommended in global configuration**",
-          "scope": "resource",
-          "examples": [
-            "./import_map.json",
-            "/absolute/path/to/import_map.json"
-          ]
-        },
-        "deno.unstable": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Controls if Deno's unstable mode types are used instead of stable mode types.\n\n**Not recommended in global configuration**",
-          "scope": "resource",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        "deno.lint": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Controls if `deno lint` is enabled. It is currently experimental, so make sure `deno.unstable: true` is enabled. \n\n**Not recommended in global configuration**",
-          "scope": "resource",
-          "examples": [
-            true,
-            false
-          ]
-        },
-        "deno.import_intellisense_origins": {
-          "type": [
-            "object"
-          ],
-          "default": {},
-          "markdownDescription": "Controls which origins are be enabled / disabed for import IntelliSense.",
-          "scope": "resource",
-          "examples": {
-            "https://deno.land": true
-          }
-        },
-        "deno.import_intellisense_autodiscovery": {
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Controls if auto-discovery of registries for import IntelliSense is enabled.",
-          "scope": "resource",
-          "examples": [
-            true,
-            false
-          ]
-        }
-      }
-    },
-    "jsonValidation": [
-      {
-        "fileMatch": [
-          "import_map.json",
-          "import_maps.json",
-          "importmap.json",
-          "importmaps.json",
-          "import-map.json",
-          "import-maps.json",
-          "importMap.json",
-          "importMaps.json"
-        ],
-        "url": "./schemas/import_map.schema.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "javascript",
-        "path": "snippets/import_intellisense.json"
-      },
-      {
-        "language": "typescript",
-        "path": "snippets/import_intellisense.json"
-      },
-      {
-        "language": "javascriptreact",
-        "path": "snippets/import_intellisense.json"
-      },
-      {
-        "language": "typescriptreact",
-        "path": "snippets/import_intellisense.json"
-      }
-    ]
-  },
-
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run format && npm run lint",
-      "pre-push": "npm run check && npm run test"
-    }
-  },
-
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "postinstall": "cd client && npm i && cd ../server && npm i && cd .. && npm run installvscode",
-    "installvscode": "npx vscode-install",
-    "watch": "tsc -b -w",
-    "compile": "tsc -b",
-    "check": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --check",
-    "format": "prettier \"**/*.md\" \"**/*.json\" \"**/*.ts\" \"**/*.yml\" --config ./.prettierrc.json --write",
-    "test": "jest --coverage",
-    "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "build": "npx vsce package -o ./vscode-deno.vsix",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
-  },
-  "devDependencies": {
-    "@types/deep-equal": "1.0.1",
-    "@types/express": "^4.17.8",
-    "@types/jest": "26.0.10",
-    "@types/json5": "0.0.30",
-    "@types/node": "14.6.2",
-    "@types/semver": "7.3.3",
-    "@types/which": "1.3.2",
-    "@types/yup": "^0.29.7",
-    "@typescript-eslint/eslint-plugin": "3.10.1",
-    "@typescript-eslint/parser": "3.10.1",
-    "coveralls": "3.1.0",
-    "eslint": "7.7.0",
-    "execa": "4.0.3",
-    "husky": "^4.3.0",
-    "express": "^4.17.1",
-    "jest": "26.4.2",
-    "prettier": "2.1.1",
-    "ts-jest": "26.3.0",
-    "typescript": "4.0.2",
-    "vscode": "1.1.37",
-    "which": "2.0.2"
-  },
-  "dependencies": {
-    "deep-equal": "2.0.3",
-    "deepmerge": "^4.2.2",
-    "got": "^11.5.2",
-    "json5": "^2.1.3",
-    "path-to-regexp": "^6.1.0",
-    "semver": "7.3.2",
-    "typescript-deno-plugin": "./typescript-deno-plugin",
-    "yup": "^0.29.3"
-  }
+	"name": "vscode-deno",
+	"displayName": "Deno Language Server",
+	"description": "A language server client for Deno",
+	"author": "Deno Land Inc.",
+	"license": "MIT",
+	"version": "3.0.0-pre",
+	"icon": "deno.png",
+	"galleryBanner": {
+		"color": "#3B3738",
+		"theme": "dark"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/denoland/vscode_deno3"
+	},
+	"bugs": {
+		"url": "https://github.com/denoland/vscode_deno/issues"
+	},
+	"publisher": "deno-land",
+	"categories": [
+		"Programming Languages",
+		"Formatters",
+		"Linters",
+		"Other"
+	],
+	"keywords": [
+		"deno"
+	],
+	"engines": {
+		"vscode": "^1.51.0"
+	},
+	"activationEvents": [
+		"onLanguage:typescript",
+		"onLanguage:typescriptreact",
+		"onLanguage:javascript",
+		"onLanguage:javascriptreact"
+	],
+	"main": "./client/out/extension",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "Deno Language Service",
+			"properties": {
+				"deno.enable": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Controls if the Deno Language Server is enabled.\n\n**Not recommended to be enabled globally.**",
+					"scope": "resource",
+					"examples": [
+						true,
+						false
+					]
+				},
+				"deno.unstable": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Controls if code will be type checked with Deno's unstable APIs (e.g. passing `--unstable` on the command line).\n\n**Not recommended to be enabled globally.**",
+					"scope": "resource",
+					"examples": [
+						true,
+						false
+					]
+				},
+				"deno.lint": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Controls if linting information will be provided by the Deno Language Server.\n\n**Not recommended to be enabled globally.**",
+					"scope": "resource",
+					"examples": [
+						true,
+						false
+					]
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"fmt": "deno fmt client/src",
+		"watch": "tsc -b -w",
+		"postinstall": "cd client && npm install && cd .."
+	},
+	"devDependencies": {
+		"@types/node": "^14.14.7",
+		"typescript": "^4.0.5"
+	}
 }
