@@ -7,16 +7,15 @@
  * `cli/lsp/lsp_extensions.rs` module.
  */
 
-import { RequestType, TextDocumentIdentifier } from "vscode-languageclient";
+import { RequestType } from "vscode-languageclient";
+import type { TextDocumentIdentifier } from "vscode-languageclient";
 
-export interface StatusParams {
-  /** The open document in the editor, which potentially the status can be
-	 * specific to that document. */
-  textDocument?: TextDocumentIdentifier;
+export interface VirtualTextDocumentParams {
+  textDocument: TextDocumentIdentifier;
 }
 
-/** Request status information of the Deno Language Server, which will be a
- * returned as a string. */
-export const status = new RequestType<StatusParams, string, void>(
-  "deno/status",
-);
+export const virtualTextDocument = new RequestType<
+  VirtualTextDocumentParams,
+  string,
+  void
+>("deno/virtualTextDocument");

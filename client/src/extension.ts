@@ -1,6 +1,7 @@
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
+import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import * as vscode from "vscode";
 import {
   Executable,
@@ -10,12 +11,47 @@ import {
 } from "vscode-languageclient";
 
 const EXTENSION_NS = "deno";
+const EXTENSION_TS_PLUGIN = "typescript-deno-plugin";
+const TS_LANGUAGE_FEATURES_EXTENSION = "vscode.typescript-language-features";
+
+interface TsLanguageFeaturesApiV0 {
+  configurePlugin(
+    pluginId: string,
+    configuration: vscode.WorkspaceConfiguration,
+  ): void;
+}
+
+interface TsLanguageFeatures {
+  getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
+}
+
+/** Assert that the condition is "truthy", otherwise throw. */
+function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
+  if (!cond) {
+    throw new Error(msg);
+  }
+}
+
+async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
+  const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
+    .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
+  const errorMessage =
+    "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
+  assert(extension, errorMessage);
+  const languageFeatures = await extension.activate();
+  const api = languageFeatures.getAPI(0);
+  assert(api, errorMessage);
+  return api;
+}
 
 let client: LanguageClient;
+let tsApi: TsLanguageFeaturesApiV0;
 
 /** When the extension activates, this function is called with the extension
  * context, and the extension bootstraps itself. */
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(
+  context: vscode.ExtensionContext,
+): Promise<void> {
   const run: Executable = {
     command: "deno",
     args: ["lsp"],
@@ -47,8 +83,8 @@ export function activate(context: vscode.ExtensionContext) {
     clientOptions,
   );
 
-  // Send a notification to the language server when the configuration changes.
   context.subscriptions.push(
+    // Send a notification to the language server when the configuration changes
     vscode.workspace.onDidChangeConfiguration((evt) => {
       if (evt.affectsConfiguration(EXTENSION_NS)) {
         client.sendNotification(
@@ -58,15 +94,30 @@ export function activate(context: vscode.ExtensionContext) {
           // information on the event not being reliable.
           { settings: null },
         );
+        tsApi.configurePlugin(
+          EXTENSION_TS_PLUGIN,
+          vscode.workspace.getConfiguration(EXTENSION_NS),
+        );
       }
     }),
+    // Register a content provider for Deno resolved read-only files.
+    vscode.workspace.registerTextDocumentContentProvider(
+      SCHEME,
+      new DenoTextDocumentContentProvider(client),
+    ),
   );
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
   registerCommand("status", commands.status);
 
-  client.start();
+  context.subscriptions.push(client.start());
+  tsApi = await getTsApi();
+  await client.onReady();
+  tsApi.configurePlugin(
+    EXTENSION_TS_PLUGIN,
+    vscode.workspace.getConfiguration(EXTENSION_NS),
+  );
 }
 
 export function deactivate(): Thenable<void> | undefined {

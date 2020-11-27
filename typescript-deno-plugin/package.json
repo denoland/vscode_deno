@@ -1,0 +1,20 @@
+{
+	"name": "typescript-deno-plugin",
+	"description": "Deno Language Server Client for VSCode",
+	"author": "Deno Land Inc.",
+	"license": "MIT",
+	"private": true,
+	"version": "3.0.0-pre",
+	"publisher": "deno-land",
+	"main": "./out/index",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/denoland/vscode_deno"
+	},
+	"engines": {
+		"vscode": "^1.51.0"
+	},
+	"devDependencies": {
+		"typescript": "^4.0.5"
+	}
+}

@@ -1,96 +1,126 @@
 {
-	"name": "vscode-deno",
-	"displayName": "Deno Language Server",
-	"description": "A language server client for Deno",
-	"author": "Deno Land Inc.",
-	"license": "MIT",
-	"version": "3.0.0-pre",
-	"icon": "deno.png",
-	"galleryBanner": {
-		"color": "#3B3738",
-		"theme": "dark"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/denoland/vscode_deno3"
-	},
-	"bugs": {
-		"url": "https://github.com/denoland/vscode_deno/issues"
-	},
-	"publisher": "deno-land",
-	"categories": [
-		"Programming Languages",
-		"Formatters",
-		"Linters",
-		"Other"
-	],
-	"keywords": [
-		"deno"
-	],
-	"engines": {
-		"vscode": "^1.51.0"
-	},
-	"activationEvents": [
-		"onLanguage:typescript",
-		"onLanguage:typescriptreact",
-		"onLanguage:javascript",
-		"onLanguage:javascriptreact"
-	],
-	"main": "./client/out/extension",
-	"contributes": {
-		"commands": [
-			{
-				"command": "deno.status",
-				"title": "Status",
-				"category": "Deno Language Server"
-			}
-		],
-		"configuration": {
-			"type": "object",
-			"title": "Deno Language Service",
-			"properties": {
-				"deno.enable": {
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "Controls if the Deno Language Server is enabled.\n\n**Not recommended to be enabled globally.**",
-					"scope": "resource",
-					"examples": [
-						true,
-						false
-					]
-				},
-				"deno.unstable": {
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "Controls if code will be type checked with Deno's unstable APIs (e.g. passing `--unstable` on the command line).\n\n**Not recommended to be enabled globally.**",
-					"scope": "resource",
-					"examples": [
-						true,
-						false
-					]
-				},
-				"deno.lint": {
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "Controls if linting information will be provided by the Deno Language Server.\n\n**Not recommended to be enabled globally.**",
-					"scope": "resource",
-					"examples": [
-						true,
-						false
-					]
-				}
-			}
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -b",
-		"fmt": "deno fmt client/src",
-		"watch": "tsc -b -w",
-		"postinstall": "cd client && npm install && cd .."
-	},
-	"devDependencies": {
-		"@types/node": "^14.14.7",
-		"typescript": "^4.0.5"
-	}
+  "name": "vscode-deno",
+  "displayName": "Deno Language Server",
+  "description": "A language server client for Deno",
+  "author": "Deno Land Inc.",
+  "license": "MIT",
+  "version": "3.0.0-pre",
+  "icon": "deno.png",
+  "galleryBanner": {
+    "color": "#3B3738",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/denoland/vscode_deno"
+  },
+  "bugs": {
+    "url": "https://github.com/denoland/vscode_deno/issues"
+  },
+  "publisher": "deno-land",
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "deno"
+  ],
+  "engines": {
+    "vscode": "^1.51.0"
+  },
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./client/out/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "deno.status",
+        "title": "Status",
+        "category": "Deno Language Server"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Deno Language Server",
+      "properties": {
+        "deno.enable": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Controls if the Deno Language Server is enabled. When enabled, the Deno Language Server will augment the VSCode JavaScript and TypeScript language services so that VSCode treats code as if it were running under Deno.\n\n**Not recommended to be enabled globally.**",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "deno.config": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "The file path to a `tsconfig.json` file. This is the equivalent to using `--config` on the command line. The path can be either be relative to the workspace, or an absolute path.\n\n**Not recommended to be set globally.**",
+          "scope": "window",
+          "examples": [
+            "./tsconfig.json",
+            "/path/to/tsconfig.json",
+            "C:\\path\\to\\tsconfig.json"
+          ]
+        },
+        "deno.importMap": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "The file path to an import map. This is the equivalent to using `--import-map` on the command line.\n\n[Import maps](https://github.com/WICG/import-maps#import-maps) provide a way to \"relocate\" modules based on their specifiers. The path can either be relative to the workspace, or an absolute path.\n\n**Not recommended to be set globally.**",
+          "scope": "window",
+          "examples": [
+            "./import-map.json",
+            "/path/to/import-map.json",
+            "C:\\path\\to\\import-map.json"
+          ]
+        },
+        "deno.unstable": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Controls if code will be type checked with Deno's unstable APIs. This is the equivalent to using `--unstable` on the command line.\n\n**Not recommended to be enabled globally.**",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "deno.lint": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Controls if linting information will be provided by the Deno Language Server.\n\n**Not recommended to be enabled globally.**",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        }
+      }
+    },
+    "typescriptServerPlugins": [
+      {
+        "name": "typescript-deno-plugin",
+        "enableForWorkspaceTypeScriptVersions": true
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "fmt": "deno fmt client/src typescript-deno-plugin/src",
+    "lint": "deno lint --unstable client/src typescript-deno-plugin/src",
+    "watch": "tsc -b -w",
+    "postinstall": "cd typescript-deno-plugin && npm i && cd ../client && npm i && cd .."
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.7",
+    "typescript": "^4.0.5",
+    "typescript-deno-plugin": "./typescript-deno-plugin"
+  }
 }
