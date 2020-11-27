@@ -46,10 +46,14 @@ class Plugin implements ts.server.PluginModule {
     // enabled for the workspace.
     around(host, "getScriptFileNames", (fn) => {
       const scriptFiles = fn();
-      return this.returnIfEnabled(
-        scriptFiles,
-        () => [],
-      );
+      // TODO(@kitsonk) we've got to get more services enabled as this causes
+      // problems with the built in language service
+      
+      // return this.returnIfEnabled(
+      //   scriptFiles,
+      //   () => [],
+      // );
+      return scriptFiles;
     });
 
     const getSemanticDiagnostics = (fileName: string) => {
