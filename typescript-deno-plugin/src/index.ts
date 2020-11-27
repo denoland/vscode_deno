@@ -72,10 +72,19 @@ class Plugin implements ts.server.PluginModule {
       );
     };
 
+    const getSuggestionDiagnostics = (fileName: string) => {
+      const diagnostics = ls.getSuggestionDiagnostics(fileName);
+      return this.returnIfEnabled(
+        diagnostics,
+        () => [],
+      );
+    };
+
     return {
       ...ls,
       getSemanticDiagnostics,
       getSyntacticDiagnostics,
+      getSuggestionDiagnostics,
     };
   }
 
