@@ -1,6 +1,6 @@
 {
   "name": "vscode-deno-canary",
-  "displayName": "Deno Language Server",
+  "displayName": "Deno Language Server - Canary",
   "description": "A language server client for Deno",
   "author": "Deno Land Inc.",
   "license": "MIT",
