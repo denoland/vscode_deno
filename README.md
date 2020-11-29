@@ -5,7 +5,7 @@
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode-deno)
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/denoland.vscode-deno)
 
-<img align="right" src=./deno.png height="150px">
+<img align="right" src=https://raw.githubusercontent.com/denoland/vscode_deno/main/deno.png height="150px">
 
 This extension adds support for using [Deno](https://deno.land) with Visual
 Studio Code, powered by `deno lsp`.
