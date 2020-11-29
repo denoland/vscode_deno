@@ -11,9 +11,9 @@ jobs:
     strategy:
       matrix:
         node: ["14.11.0"]
-        deno: ["1.4.1"]
+        deno: ["1.x"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
-    name: test in ${{ matrix.os }}
+    name: test-${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -50,19 +50,16 @@ jobs:
         run: npm i
 
       - name: Check code format
-        run: npm run check
+        run: npm run fmt
 
       - name: Lint
         run: npm run lint
-
-      - name: Test
-        run: npm run test
 
       - name: Compile
         run: npm run compile
 
       - name: Package
-        run: npm run build
+        run: npx vsce package -o vscode-deno.vsix
 
       - uses: actions/upload-artifact@v2
         with:
