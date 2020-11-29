@@ -48,7 +48,7 @@ class Plugin implements ts.server.PluginModule {
       const scriptFiles = fn();
       // TODO(@kitsonk) we've got to get more services enabled as this causes
       // problems with the built in language service
-      
+
       // return this.returnIfEnabled(
       //   scriptFiles,
       //   () => [],

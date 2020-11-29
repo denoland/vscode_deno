@@ -1,27 +1,25 @@
-name: build
+name: ci
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    if: |
-      github.event_name == 'push' ||
-      !startsWith(github.event.pull_request.head.label, 'denoland:')
-    strategy:
-      matrix:
-        node: ["14.11.0"]
-        deno: ["1.x"]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-    name: test-${{ matrix.os }}
+    runs-on: ubuntu-latest
+    name: ci
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: "14.11.0"
 
       - name: Get npm cache directory
         id: npm-cache
@@ -38,7 +36,7 @@ jobs:
       - name: Setup Deno
         uses: denolib/setup-deno@master
         with:
-          deno-version: ${{ matrix.deno }}
+          deno-version: 1.x
 
       - name: Environment
         run: |
@@ -46,11 +44,11 @@ jobs:
           npm -v
           deno --version
 
-      - name: Install
+      - name: Install npm packages
         run: npm i
 
-      - name: Check code format
-        run: npm run fmt
+      - name: Format
+        run: npm run fmt --check
 
       - name: Lint
         run: npm run lint
@@ -61,14 +59,14 @@ jobs:
       - name: Package
         run: npx vsce package -o vscode-deno.vsix
 
-      - uses: actions/upload-artifact@v2
+      - name: Artifact upload
+        uses: actions/upload-artifact@v2
         with:
           name: vscode-deno
           path: vscode-deno.vsix
 
       - name: Release
         if: |
-          startsWith(matrix.os, 'ubuntu') &&
           github.repository == 'denoland/vscode_deno' &&
           startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
