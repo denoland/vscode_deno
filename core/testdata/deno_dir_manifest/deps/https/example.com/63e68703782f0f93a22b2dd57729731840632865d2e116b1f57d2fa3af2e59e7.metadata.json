@@ -1,6 +1,0 @@
-{
-  "headers": {
-    "location": "https://another.example.com/path/mod.ts"
-  },
-  "url": "https://example.com/redirect"
-}
