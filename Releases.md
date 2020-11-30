@@ -2,6 +2,10 @@
 
 Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### v3.0.0-pre.1 / 2020.11.30
+
+This is a full rewrite of the extension to use the upcoming `deno lsp` feature.
+
 ### [v2.3.3](https://github.com/denoland/vscode_deno/compare/v2.3.2...v2.3.3) / 2020.11.05
 
 - chore: update compilation settings to match 1.5 (#251)
