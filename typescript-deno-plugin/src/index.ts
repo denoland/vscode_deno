@@ -57,27 +57,52 @@ class Plugin implements ts.server.PluginModule {
     });
 
     const getSemanticDiagnostics = (fileName: string) => {
-      const diagnostics = ls.getSemanticDiagnostics(fileName);
-      return this.returnIfEnabled(
-        diagnostics,
-        () => [],
-      );
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return [];
+      } else {
+        return ls.getSemanticDiagnostics(fileName);
+      }
     };
 
     const getSyntacticDiagnostics = (fileName: string) => {
-      const diagnostics = ls.getSyntacticDiagnostics(fileName);
-      return this.returnIfEnabled(
-        diagnostics,
-        () => [],
-      );
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return [];
+      } else {
+        return ls.getSyntacticDiagnostics(fileName);
+      }
     };
 
     const getSuggestionDiagnostics = (fileName: string) => {
-      const diagnostics = ls.getSuggestionDiagnostics(fileName);
-      return this.returnIfEnabled(
-        diagnostics,
-        () => [],
-      );
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return [];
+      } else {
+        return ls.getSuggestionDiagnostics(fileName);
+      }
+    };
+
+    const getQuickInfoAtPosition = (fileName: string, position: number) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getQuickInfoAtPosition(fileName, position);
+      }
+    };
+
+    const getDocumentHighlights = (
+      fileName: string,
+      position: number,
+      filesToSearch: string[],
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getDocumentHighlights(fileName, position, filesToSearch);
+      }
     };
 
     return {
@@ -85,6 +110,8 @@ class Plugin implements ts.server.PluginModule {
       getSemanticDiagnostics,
       getSyntacticDiagnostics,
       getSuggestionDiagnostics,
+      getQuickInfoAtPosition,
+      getDocumentHighlights,
     };
   }
 
@@ -92,24 +119,6 @@ class Plugin implements ts.server.PluginModule {
     this.log(`onConfigurationChanged(${JSON.stringify(settings)})`);
     updateSettings(this.project, settings);
     this.project.refreshDiagnostics();
-  }
-
-  /** A method that returns the first value if the plugin is _disabled_,
-   * usually the original value from the proxied method, or otherwise executes
-   * the supplied function and returns the value from that.
-   * 
-   * @param value The original value to return
-   * @param fn The function that will be called if plugin is enabled.
-   */
-  private returnIfEnabled<T>(
-    value: T,
-    fn: (settings: Settings) => T,
-  ): T {
-    const settings = getSettings(this.project);
-    if (!settings.enable) {
-      return value;
-    }
-    return fn(settings);
   }
 }
 
