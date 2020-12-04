@@ -92,6 +92,24 @@ class Plugin implements ts.server.PluginModule {
       }
     };
 
+    const getReferencesAtPosition = (fileName: string, position: number) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getReferencesAtPosition(fileName, position);
+      }
+    }
+
+    const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getDefinitionAndBoundSpan(fileName, position);
+      }
+    }
+
     const getDocumentHighlights = (
       fileName: string,
       position: number,
@@ -112,6 +130,8 @@ class Plugin implements ts.server.PluginModule {
       getSuggestionDiagnostics,
       getQuickInfoAtPosition,
       getDocumentHighlights,
+      getReferencesAtPosition,
+      getDefinitionAndBoundSpan,
     };
   }
 
