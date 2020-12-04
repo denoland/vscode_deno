@@ -1,10 +1,10 @@
 {
   "name": "vscode-deno-canary",
-  "displayName": "Deno Language Server - Canary",
-  "description": "A language server client for Deno",
+  "displayName": "Deno (Canary)",
+  "description": "A beta language server client for Deno. Requires Deno 1.6 or better.",
   "author": "Deno Land Inc.",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
