@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/denoland/vscode_deno/issues"
   },
-  "publisher": "deno-land",
+  "publisher": "denoland",
   "categories": [
     "Programming Languages",
     "Formatters",
