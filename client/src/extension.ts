@@ -1,6 +1,7 @@
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
+import type { Settings } from "./interfaces";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import * as vscode from "vscode";
 import {
@@ -17,7 +18,7 @@ const TS_LANGUAGE_FEATURES_EXTENSION = "vscode.typescript-language-features";
 interface TsLanguageFeaturesApiV0 {
   configurePlugin(
     pluginId: string,
-    configuration: vscode.WorkspaceConfiguration,
+    configuration: Settings,
   ): void;
 }
 
@@ -42,6 +43,26 @@ async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
   const api = languageFeatures.getAPI(0);
   assert(api, errorMessage);
   return api;
+}
+
+const settingsKeys: Array<keyof Settings> = [
+  "enable",
+  "config",
+  "importMap",
+  "lint",
+  "unstable",
+];
+
+function getSettings(): Settings {
+  const settings = vscode.workspace.getConfiguration(EXTENSION_NS);
+  const result = Object.create(null);
+  for (const key of settingsKeys) {
+    const value = settings.inspect(key);
+    assert(value);
+    result[key] = value.workspaceValue ?? value.globalValue ??
+      value.defaultValue;
+  }
+  return result;
 }
 
 let client: LanguageClient;
@@ -77,7 +98,7 @@ export async function activate(
       { scheme: "deno", language: "typescriptreact" },
     ],
     diagnosticCollectionName: "deno",
-    initializationOptions: vscode.workspace.getConfiguration(EXTENSION_NS),
+    initializationOptions: getSettings(),
   };
 
   client = new LanguageClient(
@@ -100,7 +121,7 @@ export async function activate(
         );
         tsApi.configurePlugin(
           EXTENSION_TS_PLUGIN,
-          vscode.workspace.getConfiguration(EXTENSION_NS),
+          getSettings(),
         );
       }
     }),
@@ -120,7 +141,7 @@ export async function activate(
   await client.onReady();
   tsApi.configurePlugin(
     EXTENSION_TS_PLUGIN,
-    vscode.workspace.getConfiguration(EXTENSION_NS),
+    getSettings(),
   );
 }
 
