@@ -1,7 +1,7 @@
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
 import { around } from "./aspect";
-import { Settings } from "./interfaces";
+import type { Settings } from "../../client/src/interfaces";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
 
 /** Contains the project settings that have been provided by the extension for
@@ -99,7 +99,7 @@ class Plugin implements ts.server.PluginModule {
       } else {
         return ls.getReferencesAtPosition(fileName, position);
       }
-    }
+    };
 
     const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
       const { enable } = getSettings(this.project);
@@ -108,7 +108,7 @@ class Plugin implements ts.server.PluginModule {
       } else {
         return ls.getDefinitionAndBoundSpan(fileName, position);
       }
-    }
+    };
 
     const getDocumentHighlights = (
       fileName: string,
