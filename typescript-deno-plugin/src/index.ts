@@ -110,6 +110,19 @@ class Plugin implements ts.server.PluginModule {
       }
     };
 
+    const getCompletionsAtPosition = (
+      fileName: string,
+      position: number,
+      options: ts.GetCompletionsAtPositionOptions | undefined,
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getCompletionsAtPosition(fileName, position, options);
+      }
+    };
+
     const getDocumentHighlights = (
       fileName: string,
       position: number,
@@ -132,6 +145,7 @@ class Plugin implements ts.server.PluginModule {
       getDocumentHighlights,
       getReferencesAtPosition,
       getDefinitionAndBoundSpan,
+      getCompletionsAtPosition,
     };
   }
 
