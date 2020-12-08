@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - v3.*
+      - canary/*
   pull_request:
     branches:
       - main
