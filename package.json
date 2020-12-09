@@ -73,7 +73,7 @@
         "deno.importMap": {
           "type": "string",
           "default": null,
-          "markdownDescription": "The file path to an import map. This is the equivalent to using `--import-map` on the command line.\n\n[Import maps](https://github.com/WICG/import-maps#import-maps) provide a way to \"relocate\" modules based on their specifiers. The path can either be relative to the workspace, or an absolute path.\n\n**Not recommended to be set globally.**",
+          "markdownDescription": "The file path to an import map. This is the equivalent to using `--import-map` on the command line.\n\n[Import maps](https://deno.land/manual@v1.6.0/linking_to_external_code/import_maps) provide a way to \"relocate\" modules based on their specifiers. The path can either be relative to the workspace, or an absolute path.\n\n**Not recommended to be set globally.**",
           "scope": "window",
           "examples": [
             "./import-map.json",
@@ -103,6 +103,15 @@
         }
       }
     },
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "import*map*.json",
+          "importMap*.json"
+        ],
+        "url": "./schemas/import_map.schema.json"
+      }
+    ],
     "typescriptServerPlugins": [
       {
         "name": "typescript-deno-plugin",
