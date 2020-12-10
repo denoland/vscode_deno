@@ -12,10 +12,11 @@ Studio Code, powered by `deno lsp`.
 
 > ⚠️ **Important:**
 > This branch contains the source code for the upcoming v3 version of the
-> extension, powered by `deno lsp`. This version is still in development
-> and is currently released on the VS Code marketplace as
-> `Deno Language Server - Canary`. The stable release is still v2. You can
-> find the source code for this version in the `v2` branch.
+> extension, powered by `deno lsp`. This version is still in development and is
+> currently released on the Visual Studio marketplace as
+> [**Deno (Canary)**](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno-canary).
+> The stable release is still v2. You can find the source code for this version
+> in the `v2` branch.
 
 ## Features
 
@@ -45,7 +46,8 @@ extension has the following configuration options:
   the workspace, or an absolute path.
   _string, default `null`, examples: `./tsconfig.json`, `/path/to/tsconfig.json`, `C:\path\to\tsconfig.json`_
 - `deno.importMap`: The file path to an import map. This is the equivalent to using
-  `--import-map` on the command line. [Import maps](https://github.com/WICG/import-maps#import-maps)
+  `--import-map` on the command line.
+  [Import maps](https://deno.land/manual/linking_to_external_code/import_maps)
   provide a way to "relocate" modules based on their specifiers. The path can
   either be relative to the workspace, or an absolute path.
   _string, default `null`, examples: `./import-map.json`, `/path/to/import-map.json`, `C:\path\to\import-map.json`_
