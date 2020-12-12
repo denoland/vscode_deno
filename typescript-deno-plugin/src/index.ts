@@ -157,6 +157,7 @@ class Plugin implements ts.server.PluginModule {
 }
 
 function init(): ts.server.PluginModule {
+  console.log("INIT typescript-deno-plugin");
   return new Plugin();
 }
 
