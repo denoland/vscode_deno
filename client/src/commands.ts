@@ -5,7 +5,7 @@
 
 import { ExtensionContext, Uri, ViewColumn, window, workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
-import { cache as cache_req, CacheParams } from "./lsp_extensions";
+import { cache as cacheReq } from "./lsp_extensions";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -20,13 +20,13 @@ export function cache(
   _context: ExtensionContext,
   client: LanguageClient,
 ): Callback {
-  return async () => {
+  return () => {
     const activeEditor = window.activeTextEditor;
     if (!activeEditor) {
       return;
     }
     return client.sendRequest(
-      cache_req,
+      cacheReq,
       { textDocument: { uri: activeEditor.document.uri.toString() } },
     );
   };
