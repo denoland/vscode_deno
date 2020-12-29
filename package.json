@@ -34,11 +34,18 @@
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onLanguage:javascript",
-    "onLanguage:javascriptreact"
+    "onLanguage:javascriptreact",
+    "onCommand:deno.cache",
+    "onCommand:deno.status"
   ],
   "main": "./client/out/extension",
   "contributes": {
     "commands": [
+      {
+        "command": "deno.cache",
+        "title": "Cache Dependencies",
+        "category": "Deno Language Server"
+      },
       {
         "command": "deno.status",
         "title": "Status",
