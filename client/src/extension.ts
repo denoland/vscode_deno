@@ -134,6 +134,7 @@ export async function activate(
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
+  registerCommand("cache", commands.cache);
   registerCommand("status", commands.status);
 
   context.subscriptions.push(client.start());
