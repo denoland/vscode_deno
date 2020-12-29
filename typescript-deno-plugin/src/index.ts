@@ -136,6 +136,27 @@ class Plugin implements ts.server.PluginModule {
       }
     };
 
+    const findRenameLocations = (
+      fileName: string,
+      position: number,
+      findInStrings: boolean,
+      findInComments: boolean,
+      providePrefixAndSuffixTextForRename?: boolean | undefined,
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.findRenameLocations(
+          fileName,
+          position,
+          findInStrings,
+          findInComments,
+          providePrefixAndSuffixTextForRename,
+        );
+      }
+    };
+
     return {
       ...ls,
       getSemanticDiagnostics,
@@ -146,6 +167,7 @@ class Plugin implements ts.server.PluginModule {
       getReferencesAtPosition,
       getDefinitionAndBoundSpan,
       getCompletionsAtPosition,
+      findRenameLocations,
     };
   }
 
