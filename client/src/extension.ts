@@ -76,6 +76,7 @@ export async function activate(
   const run: Executable = {
     command: "deno",
     args: ["lsp"],
+    // deno-lint-ignore no-undef
     options: { env: { ...process.env, "NO_COLOR": true } },
   };
 
@@ -84,6 +85,7 @@ export async function activate(
     // disabled for now, as this gets super chatty during development
     // args: ["lsp", "-L", "debug"],
     args: ["lsp"],
+    // deno-lint-ignore no-undef
     options: { env: { ...process.env, "NO_COLOR": true } },
   };
 
