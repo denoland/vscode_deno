@@ -56,30 +56,50 @@ class Plugin implements ts.server.PluginModule {
       return scriptFiles;
     });
 
-    const getSemanticDiagnostics = (fileName: string) => {
+    const getCompletionsAtPosition = (
+      fileName: string,
+      position: number,
+      options: ts.GetCompletionsAtPositionOptions | undefined,
+    ) => {
       const { enable } = getSettings(this.project);
       if (enable) {
-        return [];
+        return undefined;
       } else {
-        return ls.getSemanticDiagnostics(fileName);
+        return ls.getCompletionsAtPosition(fileName, position, options);
       }
     };
 
-    const getSyntacticDiagnostics = (fileName: string) => {
+    const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
       const { enable } = getSettings(this.project);
       if (enable) {
-        return [];
+        return undefined;
       } else {
-        return ls.getSyntacticDiagnostics(fileName);
+        return ls.getDefinitionAndBoundSpan(fileName, position);
       }
     };
 
-    const getSuggestionDiagnostics = (fileName: string) => {
+    const getDocumentHighlights = (
+      fileName: string,
+      position: number,
+      filesToSearch: string[],
+    ) => {
       const { enable } = getSettings(this.project);
       if (enable) {
-        return [];
+        return undefined;
       } else {
-        return ls.getSuggestionDiagnostics(fileName);
+        return ls.getDocumentHighlights(fileName, position, filesToSearch);
+      }
+    };
+
+    const getImplementationAtPosition = (
+      fileName: string,
+      position: number,
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getImplementationAtPosition(fileName, position);
       }
     };
 
@@ -101,51 +121,44 @@ class Plugin implements ts.server.PluginModule {
       }
     };
 
-    const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
+    const getSemanticDiagnostics = (fileName: string) => {
       const { enable } = getSettings(this.project);
       if (enable) {
-        return undefined;
+        return [];
       } else {
-        return ls.getDefinitionAndBoundSpan(fileName, position);
+        return ls.getSemanticDiagnostics(fileName);
       }
     };
 
-    const getCompletionsAtPosition = (
-      fileName: string,
-      position: number,
-      options: ts.GetCompletionsAtPositionOptions | undefined,
-    ) => {
+    const getSuggestionDiagnostics = (fileName: string) => {
       const { enable } = getSettings(this.project);
       if (enable) {
-        return undefined;
+        return [];
       } else {
-        return ls.getCompletionsAtPosition(fileName, position, options);
+        return ls.getSuggestionDiagnostics(fileName);
       }
     };
 
-    const getDocumentHighlights = (
-      fileName: string,
-      position: number,
-      filesToSearch: string[],
-    ) => {
+    const getSyntacticDiagnostics = (fileName: string) => {
       const { enable } = getSettings(this.project);
       if (enable) {
-        return undefined;
+        return [];
       } else {
-        return ls.getDocumentHighlights(fileName, position, filesToSearch);
+        return ls.getSyntacticDiagnostics(fileName);
       }
     };
 
     return {
       ...ls,
-      getSemanticDiagnostics,
-      getSyntacticDiagnostics,
-      getSuggestionDiagnostics,
-      getQuickInfoAtPosition,
-      getDocumentHighlights,
-      getReferencesAtPosition,
-      getDefinitionAndBoundSpan,
       getCompletionsAtPosition,
+      getDefinitionAndBoundSpan,
+      getDocumentHighlights,
+      getImplementationAtPosition,
+      getQuickInfoAtPosition,
+      getReferencesAtPosition,
+      getSemanticDiagnostics,
+      getSuggestionDiagnostics,
+      getSyntacticDiagnostics,
     };
   }
 
