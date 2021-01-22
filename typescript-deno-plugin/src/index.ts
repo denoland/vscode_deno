@@ -55,87 +55,7 @@ class Plugin implements ts.server.PluginModule {
       // );
       return scriptFiles;
     });
-
-    const getSemanticDiagnostics = (fileName: string) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return [];
-      } else {
-        return ls.getSemanticDiagnostics(fileName);
-      }
-    };
-
-    const getSyntacticDiagnostics = (fileName: string) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return [];
-      } else {
-        return ls.getSyntacticDiagnostics(fileName);
-      }
-    };
-
-    const getSuggestionDiagnostics = (fileName: string) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return [];
-      } else {
-        return ls.getSuggestionDiagnostics(fileName);
-      }
-    };
-
-    const getQuickInfoAtPosition = (fileName: string, position: number) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getQuickInfoAtPosition(fileName, position);
-      }
-    };
-
-    const getReferencesAtPosition = (fileName: string, position: number) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getReferencesAtPosition(fileName, position);
-      }
-    };
-
-    const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getDefinitionAndBoundSpan(fileName, position);
-      }
-    };
-
-    const getCompletionsAtPosition = (
-      fileName: string,
-      position: number,
-      options: ts.GetCompletionsAtPositionOptions | undefined,
-    ) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getCompletionsAtPosition(fileName, position, options);
-      }
-    };
-
-    const getDocumentHighlights = (
-      fileName: string,
-      position: number,
-      filesToSearch: string[],
-    ) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getDocumentHighlights(fileName, position, filesToSearch);
-      }
-    };
-
+    
     const findRenameLocations = (
       fileName: string,
       position: number,
@@ -157,17 +77,110 @@ class Plugin implements ts.server.PluginModule {
       }
     };
 
+    const getCompletionsAtPosition = (
+      fileName: string,
+      position: number,
+      options: ts.GetCompletionsAtPositionOptions | undefined,
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getCompletionsAtPosition(fileName, position, options);
+      }
+    };
+
+    const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getDefinitionAndBoundSpan(fileName, position);
+      }
+    };
+
+    const getDocumentHighlights = (
+      fileName: string,
+      position: number,
+      filesToSearch: string[],
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getDocumentHighlights(fileName, position, filesToSearch);
+      }
+    };
+
+    const getImplementationAtPosition = (
+      fileName: string,
+      position: number,
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getImplementationAtPosition(fileName, position);
+      }
+    };
+
+    const getQuickInfoAtPosition = (fileName: string, position: number) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getQuickInfoAtPosition(fileName, position);
+      }
+    };
+
+    const getReferencesAtPosition = (fileName: string, position: number) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.getReferencesAtPosition(fileName, position);
+      }
+    };
+
+    const getSemanticDiagnostics = (fileName: string) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return [];
+      } else {
+        return ls.getSemanticDiagnostics(fileName);
+      }
+    };
+
+    const getSuggestionDiagnostics = (fileName: string) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return [];
+      } else {
+        return ls.getSuggestionDiagnostics(fileName);
+      }
+    };
+
+    const getSyntacticDiagnostics = (fileName: string) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return [];
+      } else {
+        return ls.getSyntacticDiagnostics(fileName);
+      }
+    };
+
     return {
       ...ls,
-      getSemanticDiagnostics,
-      getSyntacticDiagnostics,
-      getSuggestionDiagnostics,
-      getQuickInfoAtPosition,
-      getDocumentHighlights,
-      getReferencesAtPosition,
-      getDefinitionAndBoundSpan,
-      getCompletionsAtPosition,
       findRenameLocations,
+      getCompletionsAtPosition,
+      getDefinitionAndBoundSpan,
+      getDocumentHighlights,
+      getImplementationAtPosition,
+      getQuickInfoAtPosition,
+      getReferencesAtPosition,
+      getSemanticDiagnostics,
+      getSuggestionDiagnostics,
+      getSyntacticDiagnostics,
     };
   }
 

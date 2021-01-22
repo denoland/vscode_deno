@@ -76,6 +76,8 @@ export async function activate(
   const run: Executable = {
     command: "deno",
     args: ["lsp"],
+    // deno-lint-ignore no-undef
+    options: { env: { ...process.env, "NO_COLOR": true } },
   };
 
   const debug: Executable = {
@@ -83,6 +85,8 @@ export async function activate(
     // disabled for now, as this gets super chatty during development
     // args: ["lsp", "-L", "debug"],
     args: ["lsp"],
+    // deno-lint-ignore no-undef
+    options: { env: { ...process.env, "NO_COLOR": true } },
   };
 
   const serverOptions: ServerOptions = { run, debug };
@@ -134,6 +138,7 @@ export async function activate(
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
+  registerCommand("cache", commands.cache);
   registerCommand("status", commands.status);
 
   context.subscriptions.push(client.start());
