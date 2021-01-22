@@ -55,6 +55,27 @@ class Plugin implements ts.server.PluginModule {
       // );
       return scriptFiles;
     });
+    
+    const findRenameLocations = (
+      fileName: string,
+      position: number,
+      findInStrings: boolean,
+      findInComments: boolean,
+      providePrefixAndSuffixTextForRename?: boolean | undefined,
+    ) => {
+      const { enable } = getSettings(this.project);
+      if (enable) {
+        return undefined;
+      } else {
+        return ls.findRenameLocations(
+          fileName,
+          position,
+          findInStrings,
+          findInComments,
+          providePrefixAndSuffixTextForRename,
+        );
+      }
+    };
 
     const getCompletionsAtPosition = (
       fileName: string,
@@ -150,6 +171,7 @@ class Plugin implements ts.server.PluginModule {
 
     return {
       ...ls,
+      findRenameLocations,
       getCompletionsAtPosition,
       getDefinitionAndBoundSpan,
       getDocumentHighlights,
