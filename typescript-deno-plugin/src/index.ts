@@ -1,8 +1,14 @@
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
 import { around } from "./aspect";
+import type { Parameters, ReturnType } from "./aspect";
 import type { Settings } from "../../client/src/interfaces";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
+
+type CallIfDisabledFunction = <T extends ts.LanguageService, J extends keyof T>(
+  fn: J,
+  enabledReturn: ReturnType<T[J]>,
+) => (...args: Parameters<T[J]>) => ReturnType<T[J]>;
 
 /** Contains the project settings that have been provided by the extension for
  * each workspace. */
@@ -44,143 +50,169 @@ class Plugin implements ts.server.PluginModule {
     // We have to "monkey patch" the language service host to strip out
     // script file names, so the language service does less when extension is
     // enabled for the workspace.
-    around(host, "getScriptFileNames", (fn) => {
-      const scriptFiles = fn();
-      // TODO(@kitsonk) we've got to get more services enabled as this causes
-      // problems with the built in language service
+    around(
+      host,
+      "getScriptFileNames",
+      (fn) => getSettings(this.project).enable ? [] : fn(),
+    );
 
-      // return this.returnIfEnabled(
-      //   scriptFiles,
-      //   () => [],
-      // );
-      return scriptFiles;
-    });
-
-    const findRenameLocations = (
-      fileName: string,
-      position: number,
-      findInStrings: boolean,
-      findInComments: boolean,
-      providePrefixAndSuffixTextForRename?: boolean | undefined,
-    ) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.findRenameLocations(
-          fileName,
-          position,
-          findInStrings,
-          findInComments,
-          providePrefixAndSuffixTextForRename,
-        );
-      }
+    /** Given an object and a method name on that object, call if disabled. */
+    const callIfDisabled: CallIfDisabledFunction = (fn, emptyReturn) => {
+      const target = (ls as any)[fn];
+      return (...args) => {
+        if (getSettings(this.project).enable) {
+          return emptyReturn;
+        }
+        return target.call(ls, ...args);
+      };
     };
 
-    const getCompletionsAtPosition = (
-      fileName: string,
-      position: number,
-      options: ts.GetCompletionsAtPositionOptions | undefined,
-    ) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getCompletionsAtPosition(fileName, position, options);
-      }
-    };
-
-    const getDefinitionAndBoundSpan = (fileName: string, position: number) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getDefinitionAndBoundSpan(fileName, position);
-      }
-    };
-
-    const getDocumentHighlights = (
-      fileName: string,
-      position: number,
-      filesToSearch: string[],
-    ) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getDocumentHighlights(fileName, position, filesToSearch);
-      }
-    };
-
-    const getImplementationAtPosition = (
-      fileName: string,
-      position: number,
-    ) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getImplementationAtPosition(fileName, position);
-      }
-    };
-
-    const getQuickInfoAtPosition = (fileName: string, position: number) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getQuickInfoAtPosition(fileName, position);
-      }
-    };
-
-    const getReferencesAtPosition = (fileName: string, position: number) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return undefined;
-      } else {
-        return ls.getReferencesAtPosition(fileName, position);
-      }
-    };
-
-    const getSemanticDiagnostics = (fileName: string) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return [];
-      } else {
-        return ls.getSemanticDiagnostics(fileName);
-      }
-    };
-
-    const getSuggestionDiagnostics = (fileName: string) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return [];
-      } else {
-        return ls.getSuggestionDiagnostics(fileName);
-      }
-    };
-
-    const getSyntacticDiagnostics = (fileName: string) => {
-      const { enable } = getSettings(this.project);
-      if (enable) {
-        return [];
-      } else {
-        return ls.getSyntacticDiagnostics(fileName);
-      }
-    };
+    const commentSelection = callIfDisabled("commentSelection", []);
+    const findReferences = callIfDisabled("findReferences", undefined);
+    const findRenameLocations = callIfDisabled(
+      "findRenameLocations",
+      undefined,
+    );
+    const getApplicableRefactors = callIfDisabled("getApplicableRefactors", []);
+    const getBraceMatchingAtPosition = callIfDisabled(
+      "getBraceMatchingAtPosition",
+      [],
+    );
+    const getBreakpointStatementAtPosition = callIfDisabled(
+      "getBreakpointStatementAtPosition",
+      undefined,
+    );
+    const getCodeFixesAtPosition = callIfDisabled("getCodeFixesAtPosition", []);
+    const getCompilerOptionsDiagnostics = callIfDisabled(
+      "getCompilerOptionsDiagnostics",
+      [],
+    );
+    const getCompletionEntryDetails = callIfDisabled(
+      "getCompletionEntryDetails",
+      undefined,
+    );
+    const getCompletionEntrySymbol = callIfDisabled(
+      "getCompletionEntrySymbol",
+      undefined,
+    );
+    const getCompletionsAtPosition = callIfDisabled(
+      "getCompletionsAtPosition",
+      undefined,
+    );
+    const getDefinitionAndBoundSpan = callIfDisabled(
+      "getDefinitionAndBoundSpan",
+      undefined,
+    );
+    const getDefinitionAtPosition = callIfDisabled(
+      "getDefinitionAtPosition",
+      undefined,
+    );
+    const getDocCommentTemplateAtPosition = callIfDisabled(
+      "getDocCommentTemplateAtPosition",
+      undefined,
+    );
+    const getDocumentHighlights = callIfDisabled(
+      "getDocumentHighlights",
+      undefined,
+    );
+    const getEditsForFileRename = callIfDisabled("getEditsForFileRename", []);
+    const getEditsForRefactor = callIfDisabled(
+      "getEditsForRefactor",
+      undefined,
+    );
+    const getImplementationAtPosition = callIfDisabled(
+      "getImplementationAtPosition",
+      undefined,
+    );
+    const getNameOrDottedNameSpan = callIfDisabled(
+      "getNameOrDottedNameSpan",
+      undefined,
+    );
+    const getNavigateToItems = callIfDisabled("getNavigateToItems", []);
+    const getNavigationBarItems = callIfDisabled("getNavigationBarItems", []);
+    const getOutliningSpans = callIfDisabled("getOutliningSpans", []);
+    const getQuickInfoAtPosition = callIfDisabled(
+      "getQuickInfoAtPosition",
+      undefined,
+    );
+    const getReferencesAtPosition = callIfDisabled(
+      "getReferencesAtPosition",
+      undefined,
+    );
+    const getSemanticDiagnostics = callIfDisabled("getSemanticDiagnostics", []);
+    const getSignatureHelpItems = callIfDisabled(
+      "getSignatureHelpItems",
+      undefined,
+    );
+    const getSuggestionDiagnostics = callIfDisabled(
+      "getSuggestionDiagnostics",
+      [],
+    );
+    const getSyntacticDiagnostics = callIfDisabled(
+      "getSyntacticDiagnostics",
+      [],
+    );
+    const getTodoComments = callIfDisabled("getTodoComments", []);
+    const getTypeDefinitionAtPosition = callIfDisabled(
+      "getTypeDefinitionAtPosition",
+      undefined,
+    );
+    const organizeImports = callIfDisabled("organizeImports", []);
+    const prepareCallHierarchy = callIfDisabled(
+      "prepareCallHierarchy",
+      undefined,
+    );
+    const provideCallHierarchyIncomingCalls = callIfDisabled(
+      "provideCallHierarchyIncomingCalls",
+      [],
+    );
+    const provideCallHierarchyOutgoingCalls = callIfDisabled(
+      "provideCallHierarchyOutgoingCalls",
+      [],
+    );
+    const toggleLineComment = callIfDisabled("toggleLineComment", []);
+    const toggleMultilineComment = callIfDisabled("toggleMultilineComment", []);
+    const uncommentSelection = callIfDisabled("uncommentSelection", []);
 
     return {
       ...ls,
+      commentSelection,
+      findReferences,
       findRenameLocations,
+      getApplicableRefactors,
+      getBraceMatchingAtPosition,
+      getBreakpointStatementAtPosition,
+      getCodeFixesAtPosition,
+      getCompilerOptionsDiagnostics,
+      getCompletionEntryDetails,
+      getCompletionEntrySymbol,
       getCompletionsAtPosition,
       getDefinitionAndBoundSpan,
+      getDefinitionAtPosition,
+      getDocCommentTemplateAtPosition,
       getDocumentHighlights,
+      getEditsForFileRename,
+      getEditsForRefactor,
       getImplementationAtPosition,
+      getNameOrDottedNameSpan,
+      getNavigateToItems,
+      getNavigationBarItems,
+      getOutliningSpans,
       getQuickInfoAtPosition,
       getReferencesAtPosition,
       getSemanticDiagnostics,
+      getSignatureHelpItems,
       getSuggestionDiagnostics,
       getSyntacticDiagnostics,
+      getTodoComments,
+      getTypeDefinitionAtPosition,
+      organizeImports,
+      prepareCallHierarchy,
+      provideCallHierarchyIncomingCalls,
+      provideCallHierarchyOutgoingCalls,
+      toggleLineComment,
+      toggleMultilineComment,
+      uncommentSelection,
     };
   }
 
