@@ -58,6 +58,7 @@ class Plugin implements ts.server.PluginModule {
 
     /** Given an object and a method name on that object, call if disabled. */
     const callIfDisabled: CallIfDisabledFunction = (fn, emptyReturn) => {
+      // deno-lint-ignore no-explicit-any
       const target = (ls as any)[fn];
       return (...args) => {
         if (getSettings(this.project).enable) {
