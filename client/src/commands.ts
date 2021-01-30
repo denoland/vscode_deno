@@ -3,8 +3,15 @@
 /** Contains handlers for commands that are enabled in Visual Studio Code for
  * the extension. */
 
-import { ExtensionContext, Uri, ViewColumn, window, workspace } from "vscode";
-import { LanguageClient } from "vscode-languageclient";
+import {
+  commands,
+  ExtensionContext,
+  Uri,
+  ViewColumn,
+  window,
+  workspace,
+} from "vscode";
+import { LanguageClient, Location, Position } from "vscode-languageclient";
 import { cache as cacheReq } from "./lsp_extensions";
 
 // deno-lint-ignore no-explicit-any
@@ -28,6 +35,20 @@ export function cache(
     return client.sendRequest(
       cacheReq,
       { textDocument: { uri: activeEditor.document.uri.toString() } },
+    );
+  };
+}
+
+export function showReferences(
+  _content: ExtensionContext,
+  client: LanguageClient,
+): Callback {
+  return (uri: string, position: Position, locations: Location[]) => {
+    commands.executeCommand(
+      "editor.action.showReferences",
+      Uri.parse(uri),
+      client.protocol2CodeConverter.asPosition(position),
+      locations.map(client.protocol2CodeConverter.asLocation),
     );
   };
 }

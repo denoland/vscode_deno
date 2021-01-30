@@ -55,7 +55,7 @@ class Plugin implements ts.server.PluginModule {
       // );
       return scriptFiles;
     });
-    
+
     const findRenameLocations = (
       fileName: string,
       position: number,
