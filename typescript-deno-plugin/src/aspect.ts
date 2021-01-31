@@ -5,14 +5,14 @@
 
 /** Extract the return type from a maybe function. */
 // deno-lint-ignore no-explicit-any
-type ReturnType<T = (...args: any) => any> = T extends (...args: any) => infer R
-  ? R
+export type ReturnType<T = (...args: any) => any> = T extends // deno-lint-ignore no-explicit-any
+(...args: any) => infer R ? R
   : // deno-lint-ignore no-explicit-any
   any;
 /** Extract the parameter types from a maybe function. */
 // deno-lint-ignore no-explicit-any
-type Parameters<T = (...args: any) => any> = T extends (...args: infer P) => any
-  ? P
+export type Parameters<T = (...args: any) => any> = T extends // deno-lint-ignore no-explicit-any
+(...args: infer P) => any ? P
   : never;
 
 type AroundAdvice<T, J extends keyof T> = (
