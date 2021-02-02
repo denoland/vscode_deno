@@ -46,8 +46,9 @@ async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
 }
 
 const settingsKeys: Array<keyof Settings> = [
-  "enable",
+  "codeLens",
   "config",
+  "enable",
   "importMap",
   "lint",
   "unstable",
@@ -138,6 +139,7 @@ export async function activate(
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
+  registerCommand("applyCodeActionCommand", commands.applyCodeActionCommand);
   registerCommand("cache", commands.cache);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
