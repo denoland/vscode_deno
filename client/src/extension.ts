@@ -139,7 +139,6 @@ export async function activate(
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
-  registerCommand("applyCodeAction", commands.applyCodeAction);
   registerCommand("cache", commands.cache);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
