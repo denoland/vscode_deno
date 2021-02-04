@@ -15,11 +15,11 @@ export interface ApplyCodeActionCommandsParams {
   commands: {}[];
 }
 
-export const applyCodeActionCommand = new RequestType<
+export const applyCodeAction = new RequestType<
   ApplyCodeActionCommandsParams,
   void,
   void
->("deno/applyCodeActionCommand");
+>("deno/applyCodeAction");
 
 export interface CacheParams {
   textDocument: TextDocumentIdentifier;

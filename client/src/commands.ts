@@ -13,7 +13,7 @@ import {
 } from "vscode";
 import { LanguageClient, Location, Position } from "vscode-languageclient";
 import {
-  applyCodeActionCommand as applyCodeActionCommandReq,
+  applyCodeAction as applyCodeActionReq,
   cache as cacheReq,
 } from "./lsp_extensions";
 
@@ -24,13 +24,13 @@ export type Factory = (
   client: LanguageClient,
 ) => Callback;
 
-export function applyCodeActionCommand(
+export function applyCodeAction(
   _context: ExtensionContext,
   client: LanguageClient,
 ): Callback {
   // deno-lint-ignore ban-types
   return (arg: { commands: {}[] }) =>
-    client.sendRequest(applyCodeActionCommandReq, arg);
+    client.sendRequest(applyCodeActionReq, arg);
 }
 
 /** For the current document active in the editor tell the Deno LSP to cache
