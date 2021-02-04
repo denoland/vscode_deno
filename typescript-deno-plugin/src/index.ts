@@ -1,9 +1,19 @@
 // Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
 
-import { around } from "./aspect";
-import type { Parameters, ReturnType } from "./aspect";
 import type { Settings } from "../../client/src/interfaces";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
+
+/** Extract the return type from a maybe function. */
+// deno-lint-ignore no-explicit-any
+type ReturnType<T = (...args: any) => any> = T extends // deno-lint-ignore no-explicit-any
+(...args: any) => infer R ? R
+  : // deno-lint-ignore no-explicit-any
+  any;
+/** Extract the parameter types from a maybe function. */
+// deno-lint-ignore no-explicit-any
+type Parameters<T = (...args: any) => any> = T extends // deno-lint-ignore no-explicit-any
+(...args: infer P) => any ? P
+  : never;
 
 type CallIfDisabledFunction = <T extends ts.LanguageService, J extends keyof T>(
   fn: J,
@@ -18,6 +28,7 @@ const projectSettings = new Map<string, Settings>();
  * received from the extension. */
 const defaultSettings: Settings = {
   enable: false,
+  codeLens: null,
   config: null,
   importMap: null,
   lint: false,
@@ -46,15 +57,6 @@ class Plugin implements ts.server.PluginModule {
       project.projectService.logger.info(`[typescript-deno-plugin] ${msg}`);
 
     this.project = project;
-
-    // We have to "monkey patch" the language service host to strip out
-    // script file names, so the language service does less when extension is
-    // enabled for the workspace.
-    around(
-      host,
-      "getScriptFileNames",
-      (fn) => getSettings(this.project).enable ? [] : fn(),
-    );
 
     /** Given an object and a method name on that object, call if disabled. */
     const callIfDisabled: CallIfDisabledFunction = (fn, emptyReturn) => {

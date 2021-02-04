@@ -10,6 +10,17 @@
 import { RequestType } from "vscode-languageclient";
 import type { TextDocumentIdentifier } from "vscode-languageclient";
 
+export interface ApplyCodeActionCommandsParams {
+  // deno-lint-ignore ban-types
+  commands: {}[];
+}
+
+export const applyCodeAction = new RequestType<
+  ApplyCodeActionCommandsParams,
+  void,
+  void
+>("deno/applyCodeAction");
+
 export interface CacheParams {
   textDocument: TextDocumentIdentifier;
 }

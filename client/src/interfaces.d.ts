@@ -7,6 +7,11 @@
 export interface Settings {
   /** Is the extension enabled or not. */
   enable: boolean;
+  /** Settings related to code lens. */
+  codeLens: {
+    references: boolean;
+    referencesAllFunctions: boolean;
+  } | null;
   /** A path to a `tsconfig.json` that should be applied. */
   config: string | null;
   /** A path to an import map that should be applied. */
