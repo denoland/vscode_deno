@@ -1,4 +1,4 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
  * configuration are available.  This interface should mirror the configuration

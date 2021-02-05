@@ -1,6 +1,11 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
+import {
+  EXTENSION_NS,
+  EXTENSION_TS_PLUGIN,
+  TS_LANGUAGE_FEATURES_EXTENSION,
+} from "./constants";
 import type { Settings } from "./interfaces";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import * as vscode from "vscode";
@@ -9,11 +14,7 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-} from "vscode-languageclient";
-
-const EXTENSION_NS = "deno";
-const EXTENSION_TS_PLUGIN = "typescript-deno-plugin";
-const TS_LANGUAGE_FEATURES_EXTENSION = "vscode.typescript-language-features";
+} from "vscode-languageclient/node";
 
 interface TsLanguageFeaturesApiV0 {
   configurePlugin(
@@ -140,6 +141,7 @@ export async function activate(
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
   registerCommand("cache", commands.cache);
+  registerCommand("initializeWorkspace", commands.initializeWorkspace);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
 
