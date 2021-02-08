@@ -66,6 +66,16 @@
             false
           ]
         },
+        "deno.codeLens.implementations": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enables or disables the display of code lens information for implementations of items in the code.",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.codeLens.references": {
           "type": "boolean",
           "default": false,

@@ -9,6 +9,7 @@ export interface Settings {
   enable: boolean;
   /** Settings related to code lens. */
   codeLens: {
+    implementations: boolean;
     references: boolean;
     referencesAllFunctions: boolean;
   } | null;
