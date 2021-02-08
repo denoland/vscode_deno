@@ -47,6 +47,11 @@
         "category": "Deno Language Server"
       },
       {
+        "command": "deno.initializeWorkspace",
+        "title": "Initialize Workspace Configuration",
+        "category": "Deno Language Server"
+      },
+      {
         "command": "deno.status",
         "title": "Status",
         "category": "Deno Language Server"
@@ -159,7 +164,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b",
-    "fmt": "deno fmt client/src typescript-deno-plugin/src",
+    "fmt": "deno fmt client/src typescript-deno-plugin/src README.md Releases.md",
     "lint": "deno lint --unstable client/src typescript-deno-plugin/src",
     "watch": "tsc -b -w",
     "postinstall": "cd typescript-deno-plugin && npm i && cd ../client && npm i && cd .."
@@ -168,7 +173,7 @@
     "typescript-deno-plugin": "./typescript-deno-plugin"
   },
   "devDependencies": {
-    "@types/node": "^14.14.7",
-    "typescript": "^4.0.5"
+    "@types/node": "^14.14.25",
+    "typescript": "^4.1.3"
   }
 }

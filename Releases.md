@@ -1,8 +1,42 @@
 # Releases
 
-Releases of the extension can be downloaded from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
+Releases of the extension can be downloaded from
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-### v3.0.0-pre.1 / 2020.11.30
+### [canary/0.0.8](https://github.com/denoland/vscode_deno/compare/canary/0.0.7...canary/0.0.8) / 2021.02.01
+
+- feat: code lens for references (#308)
+- feat: disable most of builtin language service when deno enabled (#307)
+
+### [canary/0.0.7](https://github.com/denoland/vscode_deno/compare/canary/0.0.6...canary/0.0.7) / 2021.01.24
+
+- feat: add back JSON schema for import maps (#283)
+- feat: add deno cache command (#291)
+- feat: plugin ignores getImplementation requests when Deno enabled (#302)
+- feat: change textDocument/rename to use LSP (#292)
+- fix: pass NO_COLOR when starting lsp (#293)
+
+### [canary/0.0.6](https://github.com/denoland/vscode_deno/compare/canary/0.0.5...canary/0.0.6) / 2020.12.13
+
+- fix: include typescript-deno-plugin in vsix (#285)
+
+### [canary/0.0.5](https://github.com/denoland/vscode_deno/compare/canary/0.0.4...canary/0.0.5) / 2020.12.09
+
+- chore: release on canary/* tag
+
+### [canary/0.0.4](https://github.com/denoland/vscode_deno/compare/canary/0.0.3...canary/0.0.4) / 2020.12.09
+
+- chore: disable built in completions (#279)
+
+### [canary/0.0.3](https://github.com/denoland/vscode_deno/compare/v3.0.0-pre.1...canary/0.0.3) / 2020.12.08
+
+- feat: suppresses quick info and document highlights (#266)
+- feat: suppress references and definitions (#270)
+- feat: extension activates on deno virtual files (#275)
+- fix: Update version so it can be published on marketplace (#272)
+- fix: plugin settings match language server settings (#276)
+
+### [v3.0.0-pre.1](https://github.com/denoland/vscode_deno/compare/v2.3.3...v3.0.0-pre.1) / 2020.11.30
 
 This is a full rewrite of the extension to use the upcoming `deno lsp` feature.
 
@@ -39,7 +73,8 @@ This is a full rewrite of the extension to use the upcoming `deno lsp` feature.
 ### [v2.2.1](https://github.com/denoland/vscode_deno/compare/v2.2.0...v2.2.1) / 2020.09.09
 
 - fix: remove ansi codes from install output (#185)
-- fix: deno.land/x cache will always renew on vscode restart after 24 hours (#191)
+- fix: deno.land/x cache will always renew on vscode restart after 24 hours
+  (#191)
 - fix: ignore 'rule' for this line does not work on the first line (#192)
 - build: release .vsix artifact during release (#195)
 

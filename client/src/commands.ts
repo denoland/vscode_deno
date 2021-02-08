@@ -1,8 +1,11 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /** Contains handlers for commands that are enabled in Visual Studio Code for
  * the extension. */
 
+import { EXTENSION_NS } from "./constants";
+import { pickInitWorkspace } from "./initialize_project";
+import { cache as cacheReq } from "./lsp_extensions";
 import {
   commands,
   ExtensionContext,
@@ -11,8 +14,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { LanguageClient, Location, Position } from "vscode-languageclient";
-import { cache as cacheReq } from "./lsp_extensions";
+import { LanguageClient, Location, Position } from "vscode-languageclient/node";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -36,6 +38,26 @@ export function cache(
       cacheReq,
       { textDocument: { uri: activeEditor.document.uri.toString() } },
     );
+  };
+}
+
+export function initializeWorkspace(
+  _context: ExtensionContext,
+  _client: LanguageClient,
+): Callback {
+  return async () => {
+    try {
+      const settings = await pickInitWorkspace();
+      const config = workspace.getConfiguration(EXTENSION_NS);
+      await config.update("enable", true);
+      await config.update("lint", settings.lint);
+      await config.update("unstable", settings.unstable);
+      await window.showInformationMessage(
+        "Deno is now setup in this workspace.",
+      );
+    } catch {
+      window.showErrorMessage("Deno project initialization failed.");
+    }
   };
 }
 
