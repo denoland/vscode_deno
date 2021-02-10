@@ -9,12 +9,18 @@ import { cache as cacheReq } from "./lsp_extensions";
 import {
   commands,
   ExtensionContext,
+  ProgressLocation,
   Uri,
   ViewColumn,
   window,
   workspace,
 } from "vscode";
-import { LanguageClient, Location, Position } from "vscode-languageclient/node";
+import {
+  DocumentUri,
+  LanguageClient,
+  Location,
+  Position,
+} from "vscode-languageclient/node";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -29,15 +35,25 @@ export function cache(
   _context: ExtensionContext,
   client: LanguageClient,
 ): Callback {
-  return () => {
+  return (uris: DocumentUri[] = []) => {
     const activeEditor = window.activeTextEditor;
     if (!activeEditor) {
       return;
     }
-    return client.sendRequest(
-      cacheReq,
-      { textDocument: { uri: activeEditor.document.uri.toString() } },
-    );
+    return window.withProgress({
+      location: ProgressLocation.Window,
+      title: "caching",
+    }, () => {
+      return client.sendRequest(
+        cacheReq,
+        {
+          referrer: { uri: activeEditor.document.uri.toString() },
+          uris: uris.map((uri) => ({
+            uri,
+          })),
+        },
+      );
+    });
   };
 }
 

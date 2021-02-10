@@ -11,7 +11,8 @@ import { RequestType } from "vscode-languageclient";
 import type { TextDocumentIdentifier } from "vscode-languageclient";
 
 export interface CacheParams {
-  textDocument: TextDocumentIdentifier;
+  referrer: TextDocumentIdentifier;
+  uris: TextDocumentIdentifier[];
 }
 
 export const cache = new RequestType<CacheParams, boolean, void>("deno/cache");
