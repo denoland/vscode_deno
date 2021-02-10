@@ -69,6 +69,7 @@ function getSettings(): Settings {
 
 let client: LanguageClient;
 let tsApi: TsLanguageFeaturesApiV0;
+let statusBarItem: vscode.StatusBarItem;
 
 /** When the extension activates, this function is called with the extension
  * context, and the extension bootstraps itself. */
@@ -114,6 +115,12 @@ export async function activate(
     clientOptions,
   );
 
+  statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    0,
+  );
+  context.subscriptions.push(statusBarItem);
+
   context.subscriptions.push(
     // Send a notification to the language server when the configuration changes
     vscode.workspace.onDidChangeConfiguration((evt) => {
@@ -148,6 +155,11 @@ export async function activate(
   context.subscriptions.push(client.start());
   tsApi = await getTsApi();
   await client.onReady();
+  const serverVersion =
+    (client.initializeResult?.serverInfo?.version ?? "").split(" ")[0];
+  statusBarItem.text = `Deno ${serverVersion}`;
+  statusBarItem.tooltip = client.initializeResult?.serverInfo?.version;
+  statusBarItem.show();
   tsApi.configurePlugin(
     EXTENSION_TS_PLUGIN,
     getSettings(),
