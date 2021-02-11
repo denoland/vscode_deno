@@ -17,6 +17,8 @@ Studio Code, powered by `deno lsp`.
 > [Check here](https://deno.land/#installation) for instructions on how to
 > install the Deno CLI.
 
+![Basic Usage of the Extension](screenshots/basic_usage.gif)
+
 ## Features
 
 - Type checking for JavaScript and TypeScript, including quick fixes, hover
