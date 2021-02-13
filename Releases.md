@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [canary/0.0.9](https://github.com/denoland/vscode_deno/compare/canary/0.0.8...canary/0.0.9) / 2021.02.13
+
+- feat: add initialize workspace command (#316)
+- feat: support deno cache quick fix (#322)
+- feat: add implementations code lens configuration option (#319)
+- chore: add screenshot to README (#323)
+
 ### [canary/0.0.8](https://github.com/denoland/vscode_deno/compare/canary/0.0.7...canary/0.0.8) / 2021.02.01
 
 - feat: code lens for references (#308)
