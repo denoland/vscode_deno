@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+
+### [canary/0.0.10](https://github.com/denoland/vscode_deno/compare/canary/0.0.9...canary/0.0.10) / 2021.02.13
+
+- fix: don't remove required files when packaging vsix
+
 ### [canary/0.0.9](https://github.com/denoland/vscode_deno/compare/canary/0.0.8...canary/0.0.9) / 2021.02.13
 
 - feat: add initialize workspace command (#316)

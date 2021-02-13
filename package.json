@@ -4,7 +4,7 @@
   "description": "A beta language server client for Deno. Requires Deno 1.6 or better.",
   "author": "Deno Land Inc.",
   "license": "MIT",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -28,7 +28,7 @@
     "deno"
   ],
   "engines": {
-    "vscode": "^1.51.0"
+    "vscode": "^1.53.0"
   },
   "activationEvents": [
     "onLanguage:typescript",
