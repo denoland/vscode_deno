@@ -39,7 +39,7 @@ export function pickInitWorkspace() {
       title,
       step: 2,
       totalSteps: 2,
-      placeholder: "Endable Deno unstable APIs?",
+      placeholder: "Enable Deno unstable APIs?",
       items: quickPickYesNo,
       shouldResume: () => Promise.resolve(false),
     });
