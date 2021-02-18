@@ -8,6 +8,8 @@ import { pickInitWorkspace } from "./initialize_project";
 import { cache as cacheReq } from "./lsp_extensions";
 import { WelcomePanel } from "./welcome";
 
+import * as vscode from "vscode";
+
 import {
   commands,
   ExtensionContext,
@@ -99,11 +101,9 @@ export function status(
   _context: ExtensionContext,
   _client: LanguageClient,
 ): Callback {
-  return async () => {
-    const document = await workspace.openTextDocument(
-      Uri.parse("deno:/status.md"),
-    );
-    return window.showTextDocument(document, ViewColumn.Two, true);
+  return () => {
+    const uri = Uri.parse("deno:/status.md");
+    return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
   };
 }
 
