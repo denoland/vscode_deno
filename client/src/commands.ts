@@ -6,6 +6,8 @@
 import { EXTENSION_NS } from "./constants";
 import { pickInitWorkspace } from "./initialize_project";
 import { cache as cacheReq } from "./lsp_extensions";
+import { WelcomePanel } from "./welcome";
+
 import {
   commands,
   ExtensionContext,
@@ -102,5 +104,14 @@ export function status(
       Uri.parse("deno:/status.md"),
     );
     return window.showTextDocument(document, ViewColumn.Two, true);
+  };
+}
+
+export function welcome(
+  context: ExtensionContext,
+  _client: LanguageClient,
+): Callback {
+  return () => {
+    WelcomePanel.createOrShow(context.extensionUri);
   };
 }

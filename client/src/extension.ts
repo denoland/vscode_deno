@@ -151,6 +151,7 @@ export async function activate(
   registerCommand("initializeWorkspace", commands.initializeWorkspace);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
+  registerCommand("welcome", commands.welcome);
 
   context.subscriptions.push(client.start());
   tsApi = await getTsApi();
@@ -164,6 +165,8 @@ export async function activate(
     EXTENSION_TS_PLUGIN,
     getSettings(),
   );
+
+  showWelcomePage(context);
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -171,6 +174,16 @@ export function deactivate(): Thenable<void> | undefined {
     return undefined;
   }
   return client.stop();
+}
+
+function showWelcomePage(context: vscode.ExtensionContext) {
+  const welcomeShown = context.globalState.get<boolean>("deno.welcomeShown") ??
+    false;
+
+  if (!welcomeShown) {
+    commands.welcome(context, client)();
+    context.globalState.update("deno.welcomeShown", true);
+  }
 }
 
 /** Internal function factory that returns a registerCommand function that is
