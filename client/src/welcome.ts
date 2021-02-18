@@ -123,7 +123,8 @@ export class WelcomePanel {
             <p>
               The extension does not assume it applies to all workspaces you use
               with VSCode. You can enable Deno in a workspace by running the
-              <em><a href="#" class="Command" data-command="init">Deno: Initialize Workspace Configuration</a></em>.
+              <em><a href="#" class="Command" data-command="init">Deno:
+              Initialize Workspace Configuration</a></em> command.
             </p>
             <p>
               You can also enable or disable it in the
