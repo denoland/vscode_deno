@@ -43,10 +43,11 @@
   "contributes": {
     "commands": [
       {
-        "command": "deno.welcome",
-        "title": "Welcome",
+        "command": "deno.cache",
+        "title": "Cache Dependencies",
         "category": "Deno",
-        "description": "Open the welcome page for the Deno extension."
+        "description": "Cache the active workspace document and its dependencies.",
+        "enablement": "deno:lspReady"
       },
       {
         "command": "deno.initializeWorkspace",
@@ -55,18 +56,17 @@
         "description": "Initialize the workspace configuration for Deno."
       },
       {
-        "command": "deno.cache",
-        "title": "Cache Dependencies",
-        "category": "Deno",
-        "description": "Cache the active workspace document and its dependencies.",
-        "enablement": "deno:lspReady"
-      },
-      {
         "command": "deno.status",
         "title": "Language Server Status",
         "category": "Deno",
         "description": "Provide a status document of the language server.",
         "enablement": "deno:lspReady"
+      },
+      {
+        "command": "deno.welcome",
+        "title": "Welcome",
+        "category": "Deno",
+        "description": "Open the welcome page for the Deno extension."
       }
     ],
     "configuration": {
