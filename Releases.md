@@ -3,6 +3,15 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.0.0](https://github.com/denoland/vscode_deno/compare/canary/0.0.10...3.0.0) / 2021.02.19
+
+Canary has been released as the main extension. Use Deno 1.7.5 or later.
+
+- chore: README improvements (#331)
+- feat: use preview instead of display for status (#330)
+- feat: add a welcome screen for extension (#329)
+- fix: typo in init command (#327)
+
 ### [canary/0.0.10](https://github.com/denoland/vscode_deno/compare/canary/0.0.9...canary/0.0.10) / 2021.02.13
 
 - fix: don't remove required files when packaging vsix
