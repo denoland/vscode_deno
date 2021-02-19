@@ -12,7 +12,7 @@
 This extension adds support for using [Deno](https://deno.land/) with Visual
 Studio Code, powered by the Deno language server.
 
-> ⚠️ **Important:** You need to have a version of Deno CLI installed (v1.6 or
+> ⚠️ **Important:** You need to have a version of Deno CLI installed (v1.7 or
 > later) and available in your path before attempting to use this extension.
 > [Check here](https://deno.land/#installation) for instructions on how to
 > install the Deno CLI.

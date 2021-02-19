@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.0.1](https://github.com/denoland/vscode_deno/compare/3.0.0...3.0.1) / 2021.02.19
+
+- fix: EXTENSION_ID corrected to denoland.vscode-deno extension (#333)
+
 ### [3.0.0](https://github.com/denoland/vscode_deno/compare/canary/0.0.10...3.0.0) / 2021.02.19
 
 Canary has been released as the main extension. Use Deno 1.7.5 or later.
