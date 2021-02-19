@@ -156,6 +156,7 @@ export async function activate(
   context.subscriptions.push(client.start());
   tsApi = await getTsApi();
   await client.onReady();
+  vscode.commands.executeCommand("setContext", "deno:lspReady", true);
   const serverVersion =
     (client.initializeResult?.serverInfo?.version ?? "").split(" ")[0];
   statusBarItem.text = `Deno ${serverVersion}`;
@@ -173,7 +174,9 @@ export function deactivate(): Thenable<void> | undefined {
   if (!client) {
     return undefined;
   }
-  return client.stop();
+  return client.stop().then(() => {
+    vscode.commands.executeCommand("setContext", "deno:lspReady", false);
+  });
 }
 
 function showWelcomePage(context: vscode.ExtensionContext) {

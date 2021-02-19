@@ -35,18 +35,18 @@
     "onLanguage:typescriptreact",
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
-    "onCommand:deno.cache",
-    "onCommand:deno.status",
+    "onCommand:deno.welcome",
+    "onCommand:deno.initializeWorkspace",
     "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/out/extension",
   "contributes": {
     "commands": [
       {
-        "command": "deno.cache",
-        "title": "Cache Dependencies",
+        "command": "deno.welcome",
+        "title": "Welcome",
         "category": "Deno",
-        "description": "Cache the active workspace document and its dependencies."
+        "description": "Open the welcome page for the Deno extension."
       },
       {
         "command": "deno.initializeWorkspace",
@@ -55,16 +55,18 @@
         "description": "Initialize the workspace configuration for Deno."
       },
       {
+        "command": "deno.cache",
+        "title": "Cache Dependencies",
+        "category": "Deno",
+        "description": "Cache the active workspace document and its dependencies.",
+        "enablement": "deno:lspReady"
+      },
+      {
         "command": "deno.status",
         "title": "Language Server Status",
         "category": "Deno",
-        "description": "Provide a status document of the language server."
-      },
-      {
-        "command": "deno.welcome",
-        "title": "Welcome",
-        "category": "Deno",
-        "description": "Open the welcome page for the Deno extension."
+        "description": "Provide a status document of the language server.",
+        "enablement": "deno:lspReady"
       }
     ],
     "configuration": {
