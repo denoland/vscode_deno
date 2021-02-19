@@ -1,14 +1,6 @@
 name: ci
 
-on:
-  push:
-    branches:
-      - main
-    tags:
-      - canary/*
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
