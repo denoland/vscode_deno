@@ -10,14 +10,14 @@
 <img align="right" src=https://raw.githubusercontent.com/denoland/vscode_deno/main/deno.png height="150px">
 
 This extension adds support for using [Deno](https://deno.land/) with Visual
-Studio Code, powered by `deno lsp`.
+Studio Code, powered by the Deno language server.
 
 > ⚠️ **Important:** You need to have a version of Deno CLI installed (v1.6 or
 > later) and available in your path before attempting to use this extension.
 > [Check here](https://deno.land/#installation) for instructions on how to
 > install the Deno CLI.
 
-![Basic Usage of the Extension](screenshots/basic_usage.gif)
+![Basic Usage of the Extension](./screenshots/basic_usage.gif)
 
 ## Features
 
@@ -37,8 +37,46 @@ Studio Code, powered by `deno lsp`.
 
 1. Install the Deno CLI, available in your path.
 2. Install this extension.
-3. Open the VS Code command palette with `Ctrl+Shift+P`, and run the
-   `Deno Language Server: Initialize Workspace Configuration` command.
+3. Open the VS Code command palette with `Ctrl+Shift+P`, and run the _Deno:
+   Initialize Workspace Configuration_ command.
+
+Because we recognize that not every TypeScript/JavaScript project that you might
+work on in VSCode. Therefore by default, this extension will only apply the Deno
+language server when the setting `deno.enable` is set to `true`. This can be
+done via editing the settings or using the command _Deno: Initialize Workspace
+Configuration_.
+
+While you can enable Deno globally, you probably only want to do that if every
+JavaScript/TypeScript workspace you work on in VSCode is a Deno based one.
+
+## Commands
+
+The extension provides several commands:
+
+- _Deno: Cache_ - instructs Deno to fetch and cache all the dependencies of the
+  current file open in the editor. This is similar to doing `deno cache` on the
+  command line. Deno will not automatically fetch and cache remote dependencies.
+
+  > ℹ️ &nbsp; If there are missing dependencies in a module, the extension will
+  > provide a quick fix to fetch and cache those dependencies, which invokes
+  > this command for you.
+- _Deno: Initialize Workspace Configuration_ - will enabled Deno on the current
+  workspace and allow you to choose to enable linting and Deno _unstable_ API
+  options.
+- _Deno: Language Server Status_ - displays a page of information about the
+  status of the Deno Language Server. Useful when submitting a bug about the
+  extension or the language server.
+- _Deno: Welcome_ - displays the information document that appears when the
+  extension is first installed.
+
+## Formatting
+
+The extension provides formatting capabilities for JavaScript, TypeScript, JSX,
+and TSX documents. When choosing to format a document or setting up a default
+formatter for these type of files, the extension should be listed as an option.
+
+> ℹ️ &nbsp; It does not currently provide format-on-paste or format-on-type
+> capabilities.
 
 ## Configuration
 
@@ -50,6 +88,9 @@ extension has the following configuration options:
   the extension will disable the built-in VSCode JavaScript and TypeScript
   language services, and will use the Deno Language Server (`deno lsp`) instead.
   _boolean, default `false`_
+- `deno.codeLens.implementations`: Enables or disables the display of code lens
+  information for implementations for items in the code. _boolean, default
+  `false`_
 - `deno.codeLens.references`: Enables or disables the display of code lens
   information for references of items in the code. _boolean, default `false`_
 - `deno.codeLens.referencesAllFunctions`: Enables or disables the display of
