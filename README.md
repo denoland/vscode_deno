@@ -105,8 +105,8 @@ extension has the following configuration options:
   [Import maps](https://deno.land/manual/linking_to_external_code/import_maps)
   provide a way to "relocate" modules based on their specifiers. The path can
   either be relative to the workspace, or an absolute path. _string, default
-  `null`, examples: `./import-map.json`, `/path/to/import-map.json`,
-  `C:\path\to\import-map.json`_
+  `null`, examples: `./import_map.json`, `/path/to/import_map.json`,
+  `C:\path\to\import_map.json`_
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `false`_
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
