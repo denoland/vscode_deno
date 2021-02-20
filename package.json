@@ -35,8 +35,8 @@
     "onLanguage:typescriptreact",
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
-    "onCommand:deno.cache",
-    "onCommand:deno.status",
+    "onCommand:deno.welcome",
+    "onCommand:deno.initializeWorkspace",
     "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/out/extension",
@@ -46,7 +46,8 @@
         "command": "deno.cache",
         "title": "Cache Dependencies",
         "category": "Deno",
-        "description": "Cache the active workspace document and its dependencies."
+        "description": "Cache the active workspace document and its dependencies.",
+        "enablement": "deno:lspReady"
       },
       {
         "command": "deno.initializeWorkspace",
@@ -58,7 +59,8 @@
         "command": "deno.status",
         "title": "Language Server Status",
         "category": "Deno",
-        "description": "Provide a status document of the language server."
+        "description": "Provide a status document of the language server.",
+        "enablement": "deno:lspReady"
       },
       {
         "command": "deno.welcome",
