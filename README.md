@@ -40,8 +40,8 @@ Studio Code, powered by the Deno language server.
 3. Open the VS Code command palette with `Ctrl+Shift+P`, and run the _Deno:
    Initialize Workspace Configuration_ command.
 
-Because we recognize that not every TypeScript/JavaScript project that you might
-work on in VSCode. Therefore by default, this extension will only apply the Deno
+We recognize that not every TypeScript/JavaScript project that you might
+work on in VSCode uses Deno — therefore, by default, this extension will only apply the Deno
 language server when the setting `deno.enable` is set to `true`. This can be
 done via editing the settings or using the command _Deno: Initialize Workspace
 Configuration_.
