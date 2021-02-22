@@ -108,7 +108,7 @@ export class WelcomePanel {
           <h1 class="Header-title">Deno for VSCode v${denoExtensionVersion}</h1>
           <p>The official Deno extension for Visual Studio Code, powered by the Deno Language Server.</p>
           <ul class="Header-links">
-            <li><a href="#" class="Command" data-command="openDocument" data-document="Releases.md">Release notes</a></li>
+            <li><a href="#" class="Command" data-command="openDocument" data-document="CHANGELOG.md">Change Log</a></li>
             <li><a href="https://github.com/denoland/vscode_deno/">GitHub</a></li>
             <li><a href="https://discord.gg/deno">Discord</a></li>
           </ul>
