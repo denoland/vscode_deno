@@ -1,4 +1,4 @@
-# Releases
+# Change Log
 
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
