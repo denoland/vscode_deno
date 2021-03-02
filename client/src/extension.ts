@@ -8,6 +8,7 @@ import {
 } from "./constants";
 import type { Settings } from "./interfaces";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
+import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import * as vscode from "vscode";
 import {
   Executable,
@@ -144,6 +145,13 @@ export async function activate(
     vscode.workspace.registerTextDocumentContentProvider(
       SCHEME,
       new DenoTextDocumentContentProvider(client),
+    ),
+  );
+
+  context.subscriptions.push(
+    vscode.debug.registerDebugConfigurationProvider(
+      "deno",
+      new DenoDebugConfigurationProvider(getSettings),
     ),
   );
 
