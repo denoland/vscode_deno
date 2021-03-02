@@ -83,6 +83,16 @@
             false
           ]
         },
+        "deno.path": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "A path to the `deno` CLI executable. By default, the extension looks for `deno` in the `PATH`, but if set, will use the path specified instead.",
+          "scope": "window",
+          "examples": [
+            "/usr/bin/deno",
+            "C:\\Program Files\\deno\\deno.exe"
+          ]
+        },
         "deno.codeLens.implementations": {
           "type": "boolean",
           "default": false,

@@ -76,15 +76,17 @@ let statusBarItem: vscode.StatusBarItem;
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
+  const command =
+    vscode.workspace.getConfiguration("deno").get<string>("path") || "deno";
   const run: Executable = {
-    command: "deno",
+    command,
     args: ["lsp"],
     // deno-lint-ignore no-undef
     options: { env: { ...process.env, "NO_COLOR": true } },
   };
 
   const debug: Executable = {
-    command: "deno",
+    command,
     // disabled for now, as this gets super chatty during development
     // args: ["lsp", "-L", "debug"],
     args: ["lsp"],

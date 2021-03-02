@@ -13,7 +13,9 @@ This extension adds support for using [Deno](https://deno.land/) with Visual
 Studio Code, powered by the Deno language server.
 
 > ⚠️ **Important:** You need to have a version of Deno CLI installed (v1.7 or
-> later) and available in your path before attempting to use this extension.
+> later). The extension requires the executable and by default will use the
+> environment path. You can explicitly set the path to the executable in Visual
+> Studio Code Settings for `deno.path`.
 > [Check here](https://deno.land/#installation) for instructions on how to
 > install the Deno CLI.
 
@@ -35,9 +37,11 @@ Studio Code, powered by the Deno language server.
 
 ## Usage
 
-1. Install the Deno CLI, available in your path.
+1. Install the Deno CLI.
 2. Install this extension.
-3. Open the VS Code command palette with `Ctrl+Shift+P`, and run the _Deno:
+3. Ensure `deno` is available in the environment path, or set its path via the
+   `deno.path` setting in VSCode.
+4. Open the VS Code command palette with `Ctrl+Shift+P`, and run the _Deno:
    Initialize Workspace Configuration_ command.
 
 We recognize that not every TypeScript/JavaScript project that you might work on
@@ -88,6 +92,10 @@ extension has the following configuration options:
   the extension will disable the built-in VSCode JavaScript and TypeScript
   language services, and will use the Deno Language Server (`deno lsp`) instead.
   _boolean, default `false`_
+- `deno.path`: A path to the `deno` executable. If unset, the extension will use
+  the environment path to resolve the `deno` executable. If set, the extension
+  will use the supplied path. The path should include the executable name (e.g.
+  `/usr/bin/deno`, `C:\Program Files\deno\deno.exe`).
 - `deno.codeLens.implementations`: Enables or disables the display of code lens
   information for implementations for items in the code. _boolean, default
   `false`_
