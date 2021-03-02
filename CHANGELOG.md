@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.1.0](https://github.com/denoland/vscode_deno/compare/3.0.1...3.1.0) / 2021.03.02
+
+- feat: add deno.path setting (#350)
+- fix: activate extension on command (#336)
+- chore: move Releases.md to CHANGELOG.md for better marketplace integration (#344)
+- docs: recommend import_map.json instead of import-map.json (#340)
+
 ### [3.0.1](https://github.com/denoland/vscode_deno/compare/3.0.0...3.0.1) / 2021.02.19
 
 - fix: EXTENSION_ID corrected to denoland.vscode-deno extension (#333)
