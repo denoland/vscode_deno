@@ -23,7 +23,7 @@ export class DenoDebugConfigurationProvider
         runtimeArgs: [
           "run",
           ...(this.#getSettings().unstable ? ["--unstable"] : []),
-          "--inspect-brk",
+          "--inspect",
           "--allow-all",
         ],
         attachSimplePort: 9229,
@@ -55,7 +55,7 @@ export class DenoDebugConfigurationProvider
           runtimeArgs: [
             "run",
             ...(this.#getSettings().unstable ? ["--unstable"] : []),
-            "--inspect-brk",
+            "--inspect",
             "--allow-all",
           ],
           attachSimplePort: 9229,
