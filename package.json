@@ -197,6 +197,26 @@
             "C:\\path\\to\\import_map.json"
           ]
         },
+        "deno.suggest.autoImports": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        },
+        "deno.suggest.completeFunctionCalls": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window"
+        },
+        "deno.suggest.names": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        },
+        "deno.suggest.paths": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        },
         "deno.unstable": {
           "type": "boolean",
           "default": false,
