@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.2.0](https://github.com/denoland/vscode_deno/compare/3.1.0...3.2.0) / 2021.03.15
+
+- feat: read-add debug support (#351)
+- feat: add settings to affect completions (#368)
+- fix: manual `deno` command resolution on windows (#367)
+
 ### [3.1.0](https://github.com/denoland/vscode_deno/compare/3.0.1...3.1.0) / 2021.03.02
 
 - feat: add deno.path setting (#350)
