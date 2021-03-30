@@ -82,20 +82,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const def = await getDefaultDenoCommand();
   let command = vscode.workspace.getConfiguration("deno").get<string>("path");
   if (!command || !workspaces) {
-	command = def;
+    command = def;
   } else if (!path.isAbsolute(command)) {
-	  // if sent a relative path, iterate over workspace folders to try and resolve.
-	  const list = await Promise.all(workspaces.map(async workspace => {
-			const dir = path.resolve(workspace.uri.path, command as string);
-			try {
-				const stat = await fs.promises.stat(dir);
-				if (!stat.isFile()) return false;
-				return dir;
-			} catch (e) {
-				return false;
-			}
-		}))
-		command = list.filter(Boolean).shift() || def;
+    // if sent a relative path, iterate over workspace folders to try and resolve.
+    const list = await Promise.all(workspaces.map(async workspace => {
+      const dir = path.resolve(workspace.uri.path, command as string);
+      try {
+        const stat = await fs.promises.stat(dir);
+        if (!stat.isFile()) return false;
+        return dir;
+      } catch (e) {
+        return false;
+      }
+    }))
+    command = list.filter(Boolean).shift() || def;
   }
 
   const run: Executable = {
