@@ -82,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const def = await getDefaultDenoCommand();
   let command = vscode.workspace.getConfiguration("deno").get<string>("path");
   if (!command || !workspaces) {
-    command = def;
+    command = command || def;
   } else if (!path.isAbsolute(command)) {
     // if sent a relative path, iterate over workspace folders to try and resolve.
     const list = await Promise.all(workspaces.map(async workspace => {
