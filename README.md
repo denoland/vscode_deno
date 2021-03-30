@@ -34,6 +34,7 @@ Studio Code, powered by the Deno language server.
 - Integration to Deno CLI's formatting functionality.
 - Allow specifying of import maps and TypeScript configuration files that are
   used with the Deno CLI.
+- [Auto completion for imports](./docs/ImportCompletions.md).
 
 ## Usage
 

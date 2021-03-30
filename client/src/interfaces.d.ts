@@ -12,8 +12,6 @@ import type {
  * contributions made by the extension.
  */
 export interface Settings {
-  /** Is the extension enabled or not. */
-  enable: boolean;
   /** Settings related to code lens. */
   codeLens: {
     implementations: boolean;
@@ -22,10 +20,23 @@ export interface Settings {
   } | null;
   /** A path to a `tsconfig.json` that should be applied. */
   config: string | null;
+  /** Is the extension enabled or not. */
+  enable: boolean;
   /** A path to an import map that should be applied. */
   importMap: string | null;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
+  suggest: {
+    autoImports: boolean;
+    completeFunctionCalls: boolean;
+    names: boolean;
+    paths: boolean;
+    imports: {
+      autoDiscovery: boolean;
+      hosts: string[];
+      reloadCache: boolean;
+    } | null;
+  } | null;
   /** Determine if the extension should be type checking against the unstable
 	 * APIs. */
   unstable: boolean;

@@ -52,6 +52,7 @@ const settingsKeys: Array<keyof Settings> = [
   "enable",
   "importMap",
   "lint",
+  "suggest",
   "unstable",
 ];
 
