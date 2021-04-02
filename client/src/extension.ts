@@ -150,6 +150,7 @@ export async function activate(
   registerCommand("cache", commands.cache);
   registerCommand("initializeWorkspace", commands.initializeWorkspace);
   registerCommand("restart", commands.startLanguageServer);
+  registerCommand("reloadImportRegistries", commands.reloadImportRegistries);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
   registerCommand("welcome", commands.welcome);

@@ -24,17 +24,12 @@ IDE.
 
 ### Configuration
 
-There are two key settings for configuring registries for auto completions:
+Settings for configuring registries for auto completions:
 
-- `deno.suggest.imports.autoDiscovery` - Enables or disables registry
-  auto-completions. This is `true` by default.
 - `deno.suggest.imports.hosts` - These are the _origins_ that are configured to
   provide import completions. The target host needs to support Deno import
   completions (detailed below). The value is an object where the key is the host
   and the value is if it is enabled or not. For example:
-- `deno.suggest.imports.reloadCache` - Causes the cached information from remote
-  registries to be reloaded. Similar to specifying the `--reload` flag on the
-  Deno CLI, but only for registry information.
 
   ```json
   {
@@ -43,9 +38,6 @@ There are two key settings for configuring registries for auto completions:
     }
   }
   ```
-
-> ⚠️ while this is similar to the original v2 version of this feature, the
-> configuration key names are different now.
 
 ### How does it work?
 
@@ -74,8 +66,8 @@ the module registry supports it.
 
 Currently, the Deno language server uses the same cache logic that is used for
 remote modules, and by default, Deno will not invalidate the local cache.
-Setting `deno.suggest.imports.reloadCache` to `true` will cause subsequent
-requests for the meta data to be reloaded from the module registry.
+Running the command `Deno: Reload Import Registries Cache` from the command
+pallet to clear the cached responses.
 
 ## Registry support for import completions
 

@@ -11,7 +11,10 @@ import {
 } from "./constants";
 import { pickInitWorkspace } from "./initialize_project";
 import type { DenoExtensionContext } from "./interfaces";
-import { cache as cacheReq } from "./lsp_extensions";
+import {
+  cache as cacheReq,
+  reloadImportRegistries as reloadImportRegistriesReq,
+} from "./lsp_extensions";
 import { WelcomePanel } from "./welcome";
 
 import {
@@ -82,6 +85,13 @@ export function initializeWorkspace(
       window.showErrorMessage("Deno project initialization failed.");
     }
   };
+}
+
+export function reloadImportRegistries(
+  _context: ExtensionContext,
+  { client }: DenoExtensionContext,
+): Callback {
+  return () => client.sendRequest(reloadImportRegistriesReq);
 }
 
 /** Start (or restart) the Deno Language Server */

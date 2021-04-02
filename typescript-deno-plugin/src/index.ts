@@ -38,9 +38,7 @@ const defaultSettings: Settings = {
     names: true,
     paths: true,
     imports: {
-      autoDiscovery: true,
       hosts: [],
-      reloadCache: false,
     },
   },
   unstable: false,

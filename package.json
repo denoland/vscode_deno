@@ -108,6 +108,12 @@
         "description": "Initialize the workspace configuration for Deno."
       },
       {
+        "command": "deno.reloadImportRegistries",
+        "title": "Reload Import Registries Cache",
+        "category": "Deno",
+        "description": "Reload any cached import registry responses."
+      },
+      {
         "command": "deno.restart",
         "title": "Restart Language Server",
         "category": "Deno",
@@ -223,12 +229,6 @@
           "default": true,
           "scope": "window"
         },
-        "deno.suggest.imports.autoDiscovery": {
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Controls auto-discovery of registries when import completions are enabled.",
-          "scope": "window"
-        },
         "deno.suggest.imports.hosts": {
           "type": "object",
           "default": {},
@@ -237,12 +237,6 @@
           "examples": {
             "https://deno.land/": true
           }
-        },
-        "deno.suggest.imports.reloadCache": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Determines if the language server should reload cached versions of import completions.",
-          "scope": "window"
         },
         "deno.unstable": {
           "type": "boolean",

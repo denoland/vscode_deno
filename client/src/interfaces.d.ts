@@ -32,9 +32,7 @@ export interface Settings {
     names: boolean;
     paths: boolean;
     imports: {
-      autoDiscovery: boolean;
       hosts: string[];
-      reloadCache: boolean;
     } | null;
   } | null;
   /** Determine if the extension should be type checking against the unstable
