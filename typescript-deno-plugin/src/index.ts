@@ -38,7 +38,7 @@ const defaultSettings: Settings = {
     names: true,
     paths: true,
     imports: {
-      hosts: [],
+      hosts: {},
     },
   },
   unstable: false,

@@ -32,7 +32,7 @@ export interface Settings {
     names: boolean;
     paths: boolean;
     imports: {
-      hosts: string[];
+      hosts: Record<string, boolean>;
     } | null;
   } | null;
   /** Determine if the extension should be type checking against the unstable
