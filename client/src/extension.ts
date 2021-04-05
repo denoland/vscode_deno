@@ -77,25 +77,29 @@ let statusBarItem: vscode.StatusBarItem;
 
 /** When the extension activates, this function is called with the extension
  * context, and the extension bootstraps itself. */
-export async function activate(context: vscode.ExtensionContext): Promise<void> {
+export async function activate(
+  context: vscode.ExtensionContext,
+): Promise<void> {
   const workspaces = vscode.workspace.workspaceFolders;
-  const def = await getDefaultDenoCommand();
+  const defaultCommand = await getDefaultDenoCommand();
   let command = vscode.workspace.getConfiguration("deno").get<string>("path");
   if (!command || !workspaces) {
-    command = command || def;
+    command = command ?? defaultCommand;
   } else if (!path.isAbsolute(command)) {
     // if sent a relative path, iterate over workspace folders to try and resolve.
-    const list = await Promise.all(workspaces.map(async workspace => {
-      const dir = path.resolve(workspace.uri.path, command as string);
+    const list = [];
+    for (const workspace of workspaces) {
+      const dir = path.resolve(workspace.uri.path, command);
       try {
         const stat = await fs.promises.stat(dir);
-        if (!stat.isFile()) return false;
-        return dir;
-      } catch (e) {
-        return false;
+        if (stat.isFile()) {
+          list.push(dir);
+        }
+      } catch {
+        // we simply don't push onto the array if we encounter an error
       }
-    }))
-    command = list.filter(Boolean).shift() || def;
+    }
+    command = list.shift() ?? defaultCommand;
   }
 
   const run: Executable = {
