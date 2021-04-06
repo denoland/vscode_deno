@@ -12,6 +12,7 @@ import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import * as semver from "semver";
 import * as vscode from "vscode";
 import {
   Executable,
@@ -19,6 +20,8 @@ import {
   LanguageClientOptions,
   ServerOptions,
 } from "vscode-languageclient/node";
+
+const SERVER_SEMVER = ">=1.9.0";
 
 interface TsLanguageFeaturesApiV0 {
   configurePlugin(
@@ -181,7 +184,14 @@ export async function activate(
     getSettings(),
   );
 
-  showWelcomePage(context);
+  if (
+    semver.valid(serverVersion) &&
+    !semver.satisfies(serverVersion, SERVER_SEMVER)
+  ) {
+    notifyServerSemver(serverVersion);
+  } else {
+    showWelcomePage(context);
+  }
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -191,6 +201,13 @@ export function deactivate(): Thenable<void> | undefined {
   return client.stop().then(() => {
     vscode.commands.executeCommand("setContext", "deno:lspReady", false);
   });
+}
+
+function notifyServerSemver(serverVersion: string) {
+  return vscode.window.showWarningMessage(
+    `The version of Deno language server ("${serverVersion}") does not meet the requirements of the extension ("${SERVER_SEMVER}"). Please update Deno and restart.`,
+    "OK",
+  );
 }
 
 function showWelcomePage(context: vscode.ExtensionContext) {
