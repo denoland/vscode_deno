@@ -80,9 +80,28 @@ let statusBarItem: vscode.StatusBarItem;
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
-  const command =
-    vscode.workspace.getConfiguration("deno").get<string>("path") ||
-    await getDefaultDenoCommand();
+  const workspaces = vscode.workspace.workspaceFolders;
+  const defaultCommand = await getDefaultDenoCommand();
+  let command = vscode.workspace.getConfiguration("deno").get<string>("path");
+  if (!command || !workspaces) {
+    command = command ?? defaultCommand;
+  } else if (!path.isAbsolute(command)) {
+    // if sent a relative path, iterate over workspace folders to try and resolve.
+    const list = [];
+    for (const workspace of workspaces) {
+      const dir = path.resolve(workspace.uri.path, command);
+      try {
+        const stat = await fs.promises.stat(dir);
+        if (stat.isFile()) {
+          list.push(dir);
+        }
+      } catch {
+        // we simply don't push onto the array if we encounter an error
+      }
+    }
+    command = list.shift() ?? defaultCommand;
+  }
+
   const run: Executable = {
     command,
     args: ["lsp"],
