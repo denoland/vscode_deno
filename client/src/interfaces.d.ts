@@ -1,5 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import type { StatusBarItem } from "vscode";
+import type {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+} from "vscode-languageclient/node";
+
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
  * configuration are available.  This interface should mirror the configuration
  * contributions made by the extension.
@@ -22,4 +29,20 @@ export interface Settings {
   /** Determine if the extension should be type checking against the unstable
 	 * APIs. */
   unstable: boolean;
+}
+
+export interface DenoExtensionContext {
+  client: LanguageClient;
+  clientOptions: LanguageClientOptions;
+  serverOptions: ServerOptions;
+  serverVersion: string;
+  statusBarItem: StatusBarItem;
+  tsApi: TsLanguageFeaturesApiV0;
+}
+
+export interface TsLanguageFeaturesApiV0 {
+  configurePlugin(
+    pluginId: string,
+    configuration: Settings,
+  ): void;
 }

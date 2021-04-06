@@ -3,25 +3,28 @@
 /** Contains handlers for commands that are enabled in Visual Studio Code for
  * the extension. */
 
-import { EXTENSION_NS } from "./constants";
+import {
+  ENABLEMENT_FLAG,
+  EXTENSION_NS,
+  LANGUAGE_CLIENT_ID,
+  LANGUAGE_CLIENT_NAME,
+} from "./constants";
 import { pickInitWorkspace } from "./initialize_project";
+import type { DenoExtensionContext } from "./interfaces";
 import { cache as cacheReq } from "./lsp_extensions";
 import { WelcomePanel } from "./welcome";
-
-import * as vscode from "vscode";
 
 import {
   commands,
   ExtensionContext,
   ProgressLocation,
   Uri,
-  ViewColumn,
   window,
   workspace,
 } from "vscode";
-import {
+import { LanguageClient } from "vscode-languageclient/node";
+import type {
   DocumentUri,
-  LanguageClient,
   Location,
   Position,
 } from "vscode-languageclient/node";
@@ -30,14 +33,14 @@ import {
 export type Callback = (...args: any[]) => unknown;
 export type Factory = (
   context: ExtensionContext,
-  client: LanguageClient,
+  extensionContext: DenoExtensionContext,
 ) => Callback;
 
 /** For the current document active in the editor tell the Deno LSP to cache
  * the file and all of its dependencies in the local cache. */
 export function cache(
   _context: ExtensionContext,
-  client: LanguageClient,
+  extensionContext: DenoExtensionContext,
 ): Callback {
   return (uris: DocumentUri[] = []) => {
     const activeEditor = window.activeTextEditor;
@@ -48,7 +51,7 @@ export function cache(
       location: ProgressLocation.Window,
       title: "caching",
     }, () => {
-      return client.sendRequest(
+      return extensionContext.client.sendRequest(
         cacheReq,
         {
           referrer: { uri: activeEditor.document.uri.toString() },
@@ -63,7 +66,7 @@ export function cache(
 
 export function initializeWorkspace(
   _context: ExtensionContext,
-  _client: LanguageClient,
+  _extensionContext: DenoExtensionContext,
 ): Callback {
   return async () => {
     try {
@@ -81,16 +84,49 @@ export function initializeWorkspace(
   };
 }
 
+/** Start (or restart) the Deno Language Server */
+export function startLanguageServer(
+  context: ExtensionContext,
+  extensionContext: DenoExtensionContext,
+): Callback {
+  return async () => {
+    const { statusBarItem } = extensionContext;
+    if (extensionContext.client) {
+      await extensionContext.client.stop();
+      statusBarItem.hide();
+      commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
+    }
+    const client = extensionContext.client = new LanguageClient(
+      LANGUAGE_CLIENT_ID,
+      LANGUAGE_CLIENT_NAME,
+      extensionContext.serverOptions,
+      extensionContext.clientOptions,
+    );
+    context.subscriptions.push(client.start());
+    await client.onReady();
+    commands.executeCommand("setContext", ENABLEMENT_FLAG, true);
+    const serverVersion = extensionContext.serverVersion =
+      (client.initializeResult?.serverInfo?.version ?? "")
+        .split(
+          " ",
+        )[0];
+    statusBarItem.text = `Deno ${serverVersion}`;
+    statusBarItem.tooltip = client
+      .initializeResult?.serverInfo?.version;
+    statusBarItem.show();
+  };
+}
+
 export function showReferences(
   _content: ExtensionContext,
-  client: LanguageClient,
+  extensionContext: DenoExtensionContext,
 ): Callback {
   return (uri: string, position: Position, locations: Location[]) => {
     commands.executeCommand(
       "editor.action.showReferences",
       Uri.parse(uri),
-      client.protocol2CodeConverter.asPosition(position),
-      locations.map(client.protocol2CodeConverter.asLocation),
+      extensionContext.client.protocol2CodeConverter.asPosition(position),
+      locations.map(extensionContext.client.protocol2CodeConverter.asLocation),
     );
   };
 }
@@ -99,17 +135,17 @@ export function showReferences(
  * Deno Language Server. */
 export function status(
   _context: ExtensionContext,
-  _client: LanguageClient,
+  _extensionContext: DenoExtensionContext,
 ): Callback {
   return () => {
     const uri = Uri.parse("deno:/status.md");
-    return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
+    return commands.executeCommand("markdown.showPreviewToSide", uri);
   };
 }
 
 export function welcome(
   context: ExtensionContext,
-  _client: LanguageClient,
+  _extensionContext: DenoExtensionContext,
 ): Callback {
   return () => {
     WelcomePanel.createOrShow(context.extensionUri);
