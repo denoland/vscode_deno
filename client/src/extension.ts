@@ -19,7 +19,7 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import * as vscode from "vscode";
-import { Executable, LanguageClient } from "vscode-languageclient/node";
+import type { Executable } from "vscode-languageclient/node";
 
 const SERVER_SEMVER = ">=1.8.3";
 
