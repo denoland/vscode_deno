@@ -14,9 +14,11 @@
     "vscode": "^1.53.0"
   },
   "dependencies": {
+    "semver": "7.3.5",
     "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
+    "@types/semver": "7.3.4",
     "@types/vscode": "1.53.0",
     "vscode-test": "^1.5.0"
   }
