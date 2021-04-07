@@ -21,7 +21,7 @@ import * as semver from "semver";
 import * as vscode from "vscode";
 import type { Executable } from "vscode-languageclient/node";
 
-const SERVER_SEMVER = ">=1.8.3";
+const SERVER_SEMVER = ">=1.9.0";
 
 interface TsLanguageFeatures {
   getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
