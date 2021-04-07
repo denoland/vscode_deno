@@ -2,11 +2,16 @@
 
 import * as commands from "./commands";
 import {
+  ENABLEMENT_FLAG,
   EXTENSION_NS,
   EXTENSION_TS_PLUGIN,
   TS_LANGUAGE_FEATURES_EXTENSION,
 } from "./constants";
-import type { Settings } from "./interfaces";
+import type {
+  DenoExtensionContext,
+  Settings,
+  TsLanguageFeaturesApiV0,
+} from "./interfaces";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import * as fs from "fs";
@@ -14,21 +19,9 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import * as vscode from "vscode";
-import {
-  Executable,
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-} from "vscode-languageclient/node";
+import type { Executable } from "vscode-languageclient/node";
 
-const SERVER_SEMVER = ">=1.9.0";
-
-interface TsLanguageFeaturesApiV0 {
-  configurePlugin(
-    pluginId: string,
-    configuration: Settings,
-  ): void;
-}
+const SERVER_SEMVER = ">=1.8.3";
 
 interface TsLanguageFeatures {
   getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
@@ -74,37 +67,14 @@ function getSettings(): Settings {
   return result;
 }
 
-let client: LanguageClient;
-let tsApi: TsLanguageFeaturesApiV0;
-let statusBarItem: vscode.StatusBarItem;
+const extensionContext = {} as DenoExtensionContext;
 
 /** When the extension activates, this function is called with the extension
  * context, and the extension bootstraps itself. */
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
-  const workspaces = vscode.workspace.workspaceFolders;
-  const defaultCommand = await getDefaultDenoCommand();
-  let command = vscode.workspace.getConfiguration("deno").get<string>("path");
-  if (!command || !workspaces) {
-    command = command ?? defaultCommand;
-  } else if (!path.isAbsolute(command)) {
-    // if sent a relative path, iterate over workspace folders to try and resolve.
-    const list = [];
-    for (const workspace of workspaces) {
-      const dir = path.resolve(workspace.uri.path, command);
-      try {
-        const stat = await fs.promises.stat(dir);
-        if (stat.isFile()) {
-          list.push(dir);
-        }
-      } catch {
-        // we simply don't push onto the array if we encounter an error
-      }
-    }
-    command = list.shift() ?? defaultCommand;
-  }
-
+  const command = await getCommand();
   const run: Executable = {
     command,
     args: ["lsp"],
@@ -121,8 +91,8 @@ export async function activate(
     options: { env: { ...process.env, "NO_COLOR": true } },
   };
 
-  const serverOptions: ServerOptions = { run, debug };
-  const clientOptions: LanguageClientOptions = {
+  extensionContext.serverOptions = { run, debug };
+  extensionContext.clientOptions = {
     documentSelector: [
       { scheme: "file", language: "javascript" },
       { scheme: "file", language: "javascriptreact" },
@@ -137,31 +107,24 @@ export async function activate(
     initializationOptions: getSettings(),
   };
 
-  client = new LanguageClient(
-    "deno-language-server",
-    "Deno Language Server",
-    serverOptions,
-    clientOptions,
-  );
-
-  statusBarItem = vscode.window.createStatusBarItem(
+  extensionContext.statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
     0,
   );
-  context.subscriptions.push(statusBarItem);
+  context.subscriptions.push(extensionContext.statusBarItem);
 
   context.subscriptions.push(
     // Send a notification to the language server when the configuration changes
     vscode.workspace.onDidChangeConfiguration((evt) => {
       if (evt.affectsConfiguration(EXTENSION_NS)) {
-        client.sendNotification(
+        extensionContext.client.sendNotification(
           "workspace/didChangeConfiguration",
           // We actually set this to empty because the language server will
           // call back and get the configuration. There can be issues with the
           // information on the event not being reliable.
           { settings: null },
         );
-        tsApi.configurePlugin(
+        extensionContext.tsApi.configurePlugin(
           EXTENSION_TS_PLUGIN,
           getSettings(),
         );
@@ -170,7 +133,7 @@ export async function activate(
     // Register a content provider for Deno resolved read-only files.
     vscode.workspace.registerTextDocumentContentProvider(
       SCHEME,
-      new DenoTextDocumentContentProvider(client),
+      new DenoTextDocumentContentProvider(extensionContext),
     ),
   );
 
@@ -185,40 +148,37 @@ export async function activate(
   const registerCommand = createRegisterCommand(context);
   registerCommand("cache", commands.cache);
   registerCommand("initializeWorkspace", commands.initializeWorkspace);
+  registerCommand("restart", commands.startLanguageServer);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
   registerCommand("welcome", commands.welcome);
 
-  context.subscriptions.push(client.start());
-  tsApi = await getTsApi();
-  await client.onReady();
-  vscode.commands.executeCommand("setContext", "deno:lspReady", true);
-  const serverVersion =
-    (client.initializeResult?.serverInfo?.version ?? "").split(" ")[0];
-  statusBarItem.text = `Deno ${serverVersion}`;
-  statusBarItem.tooltip = client.initializeResult?.serverInfo?.version;
-  statusBarItem.show();
-  tsApi.configurePlugin(
+  extensionContext.tsApi = await getTsApi();
+
+  await commands.startLanguageServer(context, extensionContext)();
+
+  extensionContext.tsApi.configurePlugin(
     EXTENSION_TS_PLUGIN,
     getSettings(),
   );
 
   if (
-    semver.valid(serverVersion) &&
-    !semver.satisfies(serverVersion, SERVER_SEMVER)
+    semver.valid(extensionContext.serverVersion) &&
+    !semver.satisfies(extensionContext.serverVersion, SERVER_SEMVER)
   ) {
-    notifyServerSemver(serverVersion);
+    notifyServerSemver(extensionContext.serverVersion);
   } else {
     showWelcomePage(context);
   }
 }
 
 export function deactivate(): Thenable<void> | undefined {
-  if (!client) {
+  if (!extensionContext.client) {
     return undefined;
   }
-  return client.stop().then(() => {
-    vscode.commands.executeCommand("setContext", "deno:lspReady", false);
+  return extensionContext.client.stop().then(() => {
+    extensionContext.statusBarItem.hide();
+    vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
   });
 }
 
@@ -234,7 +194,7 @@ function showWelcomePage(context: vscode.ExtensionContext) {
     false;
 
   if (!welcomeShown) {
-    commands.welcome(context, client)();
+    commands.welcome(context, extensionContext)();
     context.globalState.update("deno.welcomeShown", true);
   }
 }
@@ -248,15 +208,40 @@ function createRegisterCommand(
     name: string,
     factory: (
       context: vscode.ExtensionContext,
-      client: LanguageClient,
+      extensionContext: DenoExtensionContext,
     ) => commands.Callback,
   ): void {
     const fullName = `${EXTENSION_NS}.${name}`;
-    const command = factory(context, client);
+    const command = factory(context, extensionContext);
     context.subscriptions.push(
       vscode.commands.registerCommand(fullName, command),
     );
   };
+}
+
+async function getCommand() {
+  let command = vscode.workspace.getConfiguration("deno").get<string>("path");
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const defaultCommand = await getDefaultDenoCommand();
+  if (!command || !workspaceFolders) {
+    command = command ?? defaultCommand;
+  } else if (!path.isAbsolute(command)) {
+    // if sent a relative path, iterate over workspace folders to try and resolve.
+    const list = [];
+    for (const workspace of workspaceFolders) {
+      const dir = path.resolve(workspace.uri.path, command);
+      try {
+        const stat = await fs.promises.stat(dir);
+        if (stat.isFile()) {
+          list.push(dir);
+        }
+      } catch {
+        // we simply don't push onto the array if we encounter an error
+      }
+    }
+    command = list.shift() ?? defaultCommand;
+  }
+  return command;
 }
 
 function getDefaultDenoCommand() {
