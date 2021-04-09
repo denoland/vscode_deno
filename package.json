@@ -108,6 +108,12 @@
         "description": "Initialize the workspace configuration for Deno."
       },
       {
+        "command": "deno.reloadImportRegistries",
+        "title": "Reload Import Registries Cache",
+        "category": "Deno",
+        "description": "Reload any cached import registry responses."
+      },
+      {
         "command": "deno.restart",
         "title": "Restart Language Server",
         "category": "Deno",
@@ -223,6 +229,15 @@
           "default": true,
           "scope": "window"
         },
+        "deno.suggest.imports.hosts": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Controls which hosts are enabled for import suggestions.",
+          "scope": "window",
+          "examples": {
+            "https://deno.land/": true
+          }
+        },
         "deno.unstable": {
           "type": "boolean",
           "default": false,
@@ -252,6 +267,10 @@
           "importMap*.json"
         ],
         "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": "deno-import-intellisense.json",
+        "url": "./schemas/deno-import-intellisense.schema.json"
       }
     ],
     "typescriptServerPlugins": [
@@ -264,8 +283,8 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b",
-    "fmt": "deno fmt client/src typescript-deno-plugin/src README.md Releases.md",
-    "lint": "deno lint --unstable client/src typescript-deno-plugin/src",
+    "fmt": "deno fmt client/src typescript-deno-plugin/src docs README.md CHANGELOG.md",
+    "lint": "deno lint --unstable client/src typescript-deno-plugin/src docs",
     "watch": "tsc -b -w",
     "postinstall": "cd typescript-deno-plugin && npm i && cd ../client && npm i && cd .."
   },

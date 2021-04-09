@@ -13,7 +13,8 @@ Releases of the extension can be downloaded from
 
 - feat: add deno.path setting (#350)
 - fix: activate extension on command (#336)
-- chore: move Releases.md to CHANGELOG.md for better marketplace integration (#344)
+- chore: move Releases.md to CHANGELOG.md for better marketplace integration
+  (#344)
 - docs: recommend import_map.json instead of import-map.json (#340)
 
 ### [3.0.1](https://github.com/denoland/vscode_deno/compare/3.0.0...3.0.1) / 2021.02.19

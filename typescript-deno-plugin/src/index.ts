@@ -32,6 +32,15 @@ const defaultSettings: Settings = {
   config: null,
   importMap: null,
   lint: false,
+  suggest: {
+    autoImports: true,
+    completeFunctionCalls: false,
+    names: true,
+    paths: true,
+    imports: {
+      hosts: {},
+    },
+  },
   unstable: false,
 };
 

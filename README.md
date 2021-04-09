@@ -34,6 +34,7 @@ Studio Code, powered by the Deno language server.
 - Integration to Deno CLI's formatting functionality.
 - Allow specifying of import maps and TypeScript configuration files that are
   used with the Deno CLI.
+- [Auto completion for imports](./docs/ImportCompletions.md).
 
 ## Usage
 
@@ -69,7 +70,8 @@ The extension provides several commands:
   options.
 - _Deno: Language Server Status_ - displays a page of information about the
   status of the Deno Language Server. Useful when submitting a bug about the
-  extension or the language server.
+  extension or the language server. _ _Deno: Reload Import Registries Cache_ -
+  reload any cached responses from the configured import registries.
 - _Deno: Welcome_ - displays the information document that appears when the
   extension is first installed.
 
@@ -117,6 +119,9 @@ extension has the following configuration options:
   `C:\path\to\import_map.json`_
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `false`_
+- `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
+  for suggesting import auto completions. (See:
+  [ImportCompletions](./docs/ImportCompletions) for more information.)
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
   APIs. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_

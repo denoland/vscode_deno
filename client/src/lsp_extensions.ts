@@ -7,7 +7,7 @@
  * `cli/lsp/language_server.rs` under the method `request_else`.
  */
 
-import { RequestType } from "vscode-languageclient";
+import { RequestType, RequestType0 } from "vscode-languageclient";
 import type { TextDocumentIdentifier } from "vscode-languageclient";
 
 export interface CacheParams {
@@ -16,6 +16,10 @@ export interface CacheParams {
 }
 
 export const cache = new RequestType<CacheParams, boolean, void>("deno/cache");
+
+export const reloadImportRegistries = new RequestType0<boolean, void>(
+  "deno/reloadImportRegistries",
+);
 
 export interface VirtualTextDocumentParams {
   textDocument: TextDocumentIdentifier;
