@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.3.0](https://github.com/denoland/vscode_deno/compare/3.2.0...3.3.0) / 2021.04.13
+
+- feat: add support for import registry completions (#380)
+- feat: add restart language server command (#385)
+- feat: add version notification message (#383)
+- feat: support for relative path resolution (using workspaces) in deno.path (#381)
+
 ### [3.2.0](https://github.com/denoland/vscode_deno/compare/3.1.0...3.2.0) / 2021.03.15
 
 - feat: read-add debug support (#351)
