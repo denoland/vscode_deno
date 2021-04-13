@@ -61,7 +61,7 @@ class Plugin implements ts.server.PluginModule {
   private project!: ts.server.Project;
 
   create(info: ts.server.PluginCreateInfo): ts.LanguageService {
-    const { languageService: ls, languageServiceHost: host, project } = info;
+    const { languageService: ls, project } = info;
     this.log = (msg) =>
       project.projectService.logger.info(`[typescript-deno-plugin] ${msg}`);
 
