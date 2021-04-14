@@ -33,7 +33,7 @@ Settings for configuring registries for auto completions:
 
   ```json
   {
-    "deno.suggest.import.hosts": {
+    "deno.suggest.imports.hosts": {
       "https://deno.land/": true
     }
   }
