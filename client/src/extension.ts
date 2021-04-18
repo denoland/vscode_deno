@@ -227,6 +227,8 @@ async function getCommand() {
   const defaultCommand = await getDefaultDenoCommand();
   if (!command || !workspaceFolders) {
     command = command ?? defaultCommand;
+  } else if ((/[%|$]/g).test(command)) {
+    command = resolveEnvPath(command);
   } else if (!path.isAbsolute(command)) {
     // if sent a relative path, iterate over workspace folders to try and resolve.
     const list = [];
@@ -244,6 +246,26 @@ async function getCommand() {
     command = list.shift() ?? defaultCommand;
   }
   return command;
+
+  function resolveEnvPath(value: string) {
+    let pathToResolve: string;
+    switch (os.platform()) {
+      case 'darwin':
+      case 'linux':
+        pathToResolve = value.replace(/\$([\w]+)/g, (_, key) => {
+          if (key === 'HOME') return os.homedir();
+          return process.env[key] ?? '';
+        })
+        break;
+      case 'win32':
+        pathToResolve = value.replace(/%([\w]+)%/g, (_, key) => process.env[key] ?? '');
+        break;
+      default:
+        pathToResolve = value;
+    }
+
+    return path.normalize(pathToResolve);
+  }
 }
 
 function getDefaultDenoCommand() {
