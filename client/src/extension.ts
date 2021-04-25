@@ -20,6 +20,8 @@ import * as path from "path";
 import * as semver from "semver";
 import * as vscode from "vscode";
 import type { Executable } from "vscode-languageclient/node";
+import { DenoTestCodeLensProvider } from "./test_codelens_provider";
+import { TestRunner } from "./test_runner";
 
 const SERVER_SEMVER = ">=1.9.0";
 
@@ -35,8 +37,11 @@ function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
 }
 
 async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
-  const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
-    .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
+  const extension:
+    | vscode.Extension<TsLanguageFeatures>
+    | undefined = vscode.extensions.getExtension(
+      TS_LANGUAGE_FEATURES_EXTENSION,
+    );
   const errorMessage =
     "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
   assert(extension, errorMessage);
@@ -76,11 +81,12 @@ export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
   const command = await getCommand();
+  const settings = getSettings();
   const run: Executable = {
     command,
     args: ["lsp"],
     // deno-lint-ignore no-undef
-    options: { env: { ...process.env, "NO_COLOR": true } },
+    options: { env: { ...process.env, NO_COLOR: true } },
   };
 
   const debug: Executable = {
@@ -89,7 +95,7 @@ export async function activate(
     // args: ["lsp", "-L", "debug"],
     args: ["lsp"],
     // deno-lint-ignore no-undef
-    options: { env: { ...process.env, "NO_COLOR": true } },
+    options: { env: { ...process.env, NO_COLOR: true } },
   };
 
   extensionContext.serverOptions = { run, debug };
@@ -105,7 +111,7 @@ export async function activate(
       { scheme: "deno", language: "typescriptreact" },
     ],
     diagnosticCollectionName: "deno",
-    initializationOptions: getSettings(),
+    initializationOptions: settings,
   };
 
   extensionContext.statusBarItem = vscode.window.createStatusBarItem(
@@ -125,10 +131,7 @@ export async function activate(
           // information on the event not being reliable.
           { settings: null },
         );
-        extensionContext.tsApi.configurePlugin(
-          EXTENSION_TS_PLUGIN,
-          getSettings(),
-        );
+        extensionContext.tsApi.configurePlugin(EXTENSION_TS_PLUGIN, settings);
       }
     }),
     // Register a content provider for Deno resolved read-only files.
@@ -144,7 +147,22 @@ export async function activate(
       new DenoDebugConfigurationProvider(getSettings),
     ),
   );
-
+  const testCodelensEnabled = settings.codeLens?.tests ?? false;
+  if (testCodelensEnabled) {
+    const codeLensProvider = new DenoTestCodeLensProvider();
+    const docSelectors: vscode.DocumentFilter[] = [
+      {
+        pattern: settings.codeLens?.testSelector,
+      },
+    ];
+    const codeLensProviderDisposable = vscode.languages
+      .registerCodeLensProvider(
+        docSelectors,
+        codeLensProvider,
+      );
+    context.subscriptions.push(codeLensProviderDisposable);
+  }
+  const testRunner = new TestRunner(command, settings.unstable);
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
   registerCommand("cache", commands.cache);
@@ -152,6 +170,8 @@ export async function activate(
   registerCommand("restart", commands.startLanguageServer);
   registerCommand("reloadImportRegistries", commands.reloadImportRegistries);
   registerCommand("showReferences", commands.showReferences);
+  registerCommand("runTest", testRunner.runTestCommand);
+  registerCommand("debugTest", testRunner.debuTestCommand);
   registerCommand("status", commands.status);
   registerCommand("welcome", commands.welcome);
 
@@ -159,10 +179,7 @@ export async function activate(
 
   await commands.startLanguageServer(context, extensionContext)();
 
-  extensionContext.tsApi.configurePlugin(
-    EXTENSION_TS_PLUGIN,
-    getSettings(),
-  );
+  extensionContext.tsApi.configurePlugin(EXTENSION_TS_PLUGIN, getSettings());
 
   if (
     semver.valid(extensionContext.serverVersion) &&

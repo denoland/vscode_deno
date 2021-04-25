@@ -120,6 +120,18 @@
         "description": "Restart the Deno language server."
       },
       {
+        "command": "deno.runTest",
+        "title": "Run Deno Test",
+        "category": "Deno",
+        "desciption": "Run 'deno test' to current file."
+      },
+      {
+        "command": "deno.debugTest",
+        "title": "Debug Deno Test",
+        "category": "Deno",
+        "desciption": "Run 'deno test' to current file with debugger."
+      },
+      {
         "command": "deno.status",
         "title": "Language Server Status",
         "category": "Deno",
@@ -176,6 +188,21 @@
             true,
             false
           ]
+        },
+        "deno.codeLens.tests": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enables or disables the display of code lens information for tests of items in the code.",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "deno.codeLens.testSelector": {
+          "type": "string",
+          "default": "**/*_test.{cjs,mjs,js,jsx,ts,tsx}",
+          "description": "CodeLens for tests will be shown on files matching this pattern"
         },
         "deno.codeLens.referencesAllFunctions": {
           "type": "boolean",
@@ -259,6 +286,20 @@
           ]
         }
       }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == javascriptreact || editorLangId == typescriptreact",
+          "command": "deno.runTest",
+          "group": "02_deno"
+        },
+        {
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == javascriptreact || editorLangId == typescriptreact",
+          "command": "deno.debugTest",
+          "group": "02_deno"
+        }
+      ]
     },
     "jsonValidation": [
       {

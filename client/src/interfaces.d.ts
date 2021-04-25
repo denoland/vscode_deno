@@ -17,6 +17,8 @@ export interface Settings {
     implementations: boolean;
     references: boolean;
     referencesAllFunctions: boolean;
+    tests: boolean;
+    testSelector: string;
   } | null;
   /** A path to a `tsconfig.json` that should be applied. */
   config: string | null;
