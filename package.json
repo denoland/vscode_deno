@@ -43,6 +43,7 @@
     "onDebugResolve:javascriptreact",
     "onCommand:deno.welcome",
     "onCommand:deno.initializeWorkspace",
+    "onCommand:deno.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/out/extension",
