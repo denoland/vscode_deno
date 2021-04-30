@@ -51,6 +51,7 @@ const settingsKeys: Array<keyof Settings> = [
   "config",
   "enable",
   "importMap",
+  "internalDebug",
   "lint",
   "suggest",
   "unstable",

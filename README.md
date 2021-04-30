@@ -117,6 +117,8 @@ extension has the following configuration options:
   either be relative to the workspace, or an absolute path. _string, default
   `null`, examples: `./import_map.json`, `/path/to/import_map.json`,
   `C:\path\to\import_map.json`_
+- `deno.internalDebug`: If enabled the Deno Language Server will log additional
+  internal diagnostic information.
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `false`_
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used

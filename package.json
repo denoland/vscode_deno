@@ -257,6 +257,16 @@
             true,
             false
           ]
+        },
+        "deno.internalDebug": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Determines if the internal debugging information for the Deno language server will be logged to the _Deno Language Server_ console.",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
         }
       }
     },
@@ -283,7 +293,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b",
-    "fmt": "deno fmt client/src typescript-deno-plugin/src docs README.md CHANGELOG.md",
+    "fmt": "deno fmt .vscode .github client/src media typescript-deno-plugin/src typescript-deno-plugin/*.md docs package.json tsconfig.json README.md CHANGELOG.md",
     "lint": "deno lint --unstable client/src typescript-deno-plugin/src docs",
     "watch": "tsc -b -w",
     "postinstall": "cd typescript-deno-plugin && npm i && cd ../client && npm i && cd .."

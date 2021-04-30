@@ -31,6 +31,7 @@ const defaultSettings: Settings = {
   codeLens: null,
   config: null,
   importMap: null,
+  internalDebug: false,
   lint: false,
   suggest: {
     autoImports: true,
