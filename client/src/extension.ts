@@ -21,7 +21,16 @@ import * as semver from "semver";
 import * as vscode from "vscode";
 import type { Executable } from "vscode-languageclient/node";
 
+/** The minimum version of Deno that this extension is designed to support. */
 const SERVER_SEMVER = ">=1.9.0";
+
+/** The language IDs we care about. */
+const LANGUAGES = [
+  "typescript",
+  "javascript",
+  "typescriptreact",
+  "javascriptreact",
+];
 
 interface TsLanguageFeatures {
   getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
@@ -46,26 +55,119 @@ async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
   return api;
 }
 
-const settingsKeys: Array<keyof Settings> = [
+/** These are keys of settings that have a scope of window or machine. */
+const workspaceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "config",
-  "enable",
   "importMap",
   "lint",
   "suggest",
   "unstable",
 ];
 
-function getSettings(): Settings {
-  const settings = vscode.workspace.getConfiguration(EXTENSION_NS);
-  const result = Object.create(null);
-  for (const key of settingsKeys) {
-    const value = settings.inspect(key);
+/** These are keys of settings that can apply to an individual resource, like
+ * a file or folder. */
+const resourceSettingsKeys: Array<keyof Settings> = [
+  "enable",
+];
+
+/** Convert a workspace configuration to `Settings` for a workspace. */
+function configToWorkspaceSettings(
+  config: vscode.WorkspaceConfiguration,
+): Settings {
+  const workspaceSettings = Object.create(null);
+  for (const key of workspaceSettingsKeys) {
+    const value = config.inspect(key);
     assert(value);
-    result[key] = value.workspaceValue ?? value.globalValue ??
+    workspaceSettings[key] = value.workspaceLanguageValue ??
+      value.workspaceValue ??
+      value.globalValue ??
       value.defaultValue;
   }
-  return result;
+  for (const key of resourceSettingsKeys) {
+    const value = config.inspect(key);
+    assert(value);
+    workspaceSettings[key] = value.workspaceLanguageValue ??
+      value.workspaceValue ??
+      value.globalValue ??
+      value.defaultValue;
+  }
+  return workspaceSettings;
+}
+
+/** Convert a workspace configuration to settings that apply to a resource. */
+function configToResourceSettings(
+  config: vscode.WorkspaceConfiguration,
+): Partial<Settings> {
+  const resourceSettings = Object.create(null);
+  for (const key of resourceSettingsKeys) {
+    const value = config.inspect(key);
+    assert(value);
+    resourceSettings[key] = value.workspaceFolderLanguageValue ??
+      value.workspaceFolderValue ?? value.workspaceLanguageValue ??
+      value.workspaceValue ??
+      value.globalValue ??
+      value.defaultValue;
+  }
+  return resourceSettings;
+}
+
+function getWorkspaceSettings(): Settings {
+  const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+  return configToWorkspaceSettings(config);
+}
+
+/** Update the typescript-deno-plugin with settings. */
+function configurePlugin() {
+  const { documentSettings: documents, tsApi, workspaceSettings: workspace } =
+    extensionContext;
+  tsApi.configurePlugin(EXTENSION_TS_PLUGIN, { workspace, documents });
+}
+
+function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
+  if (event.affectsConfiguration(EXTENSION_NS)) {
+    extensionContext.client.sendNotification(
+      "workspace/didChangeConfiguration",
+      // We actually set this to empty because the language server will
+      // call back and get the configuration. There can be issues with the
+      // information on the event not being reliable.
+      { settings: null },
+    );
+    extensionContext.workspaceSettings = getWorkspaceSettings();
+    for (
+      const [key, { scope }] of Object.entries(
+        extensionContext.documentSettings,
+      )
+    ) {
+      extensionContext.documentSettings[key] = {
+        scope,
+        settings: configToResourceSettings(
+          vscode.workspace.getConfiguration(EXTENSION_NS, scope),
+        ),
+      };
+    }
+    configurePlugin();
+  }
+}
+
+function handleDocumentOpen(...documents: vscode.TextDocument[]) {
+  let didChange = false;
+  for (const doc of documents) {
+    if (!LANGUAGES.includes(doc.languageId)) {
+      continue;
+    }
+    const { languageId, uri } = doc;
+    extensionContext.documentSettings[path.normalize(doc.uri.fsPath)] = {
+      scope: { languageId, uri },
+      settings: configToResourceSettings(
+        vscode.workspace.getConfiguration(EXTENSION_NS, { languageId, uri }),
+      ),
+    };
+    didChange = true;
+  }
+  if (didChange) {
+    configurePlugin();
+  }
 }
 
 const extensionContext = {} as DenoExtensionContext;
@@ -105,8 +207,27 @@ export async function activate(
       { scheme: "deno", language: "typescriptreact" },
     ],
     diagnosticCollectionName: "deno",
-    initializationOptions: getSettings(),
+    initializationOptions: getWorkspaceSettings(),
   };
+
+  // When a document opens, the language server will query the client to
+  // determine the specific configuration of a resource, we need to ensure the
+  // the builtin TypeScript language service has the same "view" of the world,
+  // so when Deno is enabled, we need to disable the built in language service,
+  // but this is determined on a file by file basis.
+  vscode.workspace.onDidOpenTextDocument(
+    handleDocumentOpen,
+    extensionContext,
+    context.subscriptions,
+  );
+
+  // Send a notification to the language server when the configuration changes
+  // as well as update the TypeScript language service plugin
+  vscode.workspace.onDidChangeConfiguration(
+    handleConfigurationChange,
+    extensionContext,
+    context.subscriptions,
+  );
 
   extensionContext.statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
@@ -114,24 +235,8 @@ export async function activate(
   );
   context.subscriptions.push(extensionContext.statusBarItem);
 
+  // Register a content provider for Deno resolved read-only files.
   context.subscriptions.push(
-    // Send a notification to the language server when the configuration changes
-    vscode.workspace.onDidChangeConfiguration((evt) => {
-      if (evt.affectsConfiguration(EXTENSION_NS)) {
-        extensionContext.client.sendNotification(
-          "workspace/didChangeConfiguration",
-          // We actually set this to empty because the language server will
-          // call back and get the configuration. There can be issues with the
-          // information on the event not being reliable.
-          { settings: null },
-        );
-        extensionContext.tsApi.configurePlugin(
-          EXTENSION_TS_PLUGIN,
-          getSettings(),
-        );
-      }
-    }),
-    // Register a content provider for Deno resolved read-only files.
     vscode.workspace.registerTextDocumentContentProvider(
       SCHEME,
       new DenoTextDocumentContentProvider(extensionContext),
@@ -141,7 +246,7 @@ export async function activate(
   context.subscriptions.push(
     vscode.debug.registerDebugConfigurationProvider(
       "deno",
-      new DenoDebugConfigurationProvider(getSettings),
+      new DenoDebugConfigurationProvider(getWorkspaceSettings),
     ),
   );
 
@@ -159,10 +264,13 @@ export async function activate(
 
   await commands.startLanguageServer(context, extensionContext)();
 
-  extensionContext.tsApi.configurePlugin(
-    EXTENSION_TS_PLUGIN,
-    getSettings(),
-  );
+  extensionContext.documentSettings = {};
+  extensionContext.workspaceSettings = getWorkspaceSettings();
+  configurePlugin();
+  // when we activate, it might have been because a document was opened that
+  // activated us, which we need to grab the config for and send it over to the
+  // plugin
+  handleDocumentOpen(...vscode.workspace.textDocuments);
 
   if (
     semver.valid(extensionContext.serverVersion) &&
@@ -290,8 +398,8 @@ function getDefaultDenoCommand() {
     }
   }
 
-  function fileExists(executableFilePath: string) {
-    return new Promise((resolve) => {
+  function fileExists(executableFilePath: string): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
       fs.stat(executableFilePath, (err, stat) => {
         resolve(err == null && stat.isFile());
       });
