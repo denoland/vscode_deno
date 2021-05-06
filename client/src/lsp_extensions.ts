@@ -2,13 +2,18 @@
 
 /** Contains extensions to the Language Server Protocol that are supported by
  * the Deno Language Server.
- * 
+ *
  * The requests and notifications types should mirror the Deno's CLI
  * `cli/lsp/language_server.rs` under the method `request_else`.
  */
 
-import { RequestType, RequestType0 } from "vscode-languageclient";
+import {
+  CodeLensParams,
+  RequestType,
+  RequestType0,
+} from "vscode-languageclient";
 import type { TextDocumentIdentifier } from "vscode-languageclient";
+import { CodeLens } from "vscode";
 
 export interface CacheParams {
   referrer: TextDocumentIdentifier;
@@ -18,7 +23,7 @@ export interface CacheParams {
 export const cache = new RequestType<CacheParams, boolean, void>("deno/cache");
 
 export const reloadImportRegistries = new RequestType0<boolean, void>(
-  "deno/reloadImportRegistries",
+  "deno/reloadImportRegistries"
 );
 
 export interface VirtualTextDocumentParams {
@@ -30,3 +35,9 @@ export const virtualTextDocument = new RequestType<
   string,
   void
 >("deno/virtualTextDocument");
+
+export const testCodeLens = new RequestType<
+  CodeLensParams,
+  CodeLens[] | null | undefined,
+  void
+>("deno/testCodeLens");

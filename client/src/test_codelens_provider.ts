@@ -1,31 +1,26 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { CodeLens, CodeLensProvider, Range, TextDocument } from "vscode";
-import { parse } from "./test_parser";
+import {
+  CancellationToken,
+  CodeLens,
+  CodeLensProvider,
+  TextDocument,
+} from "vscode";
+import { DenoExtensionContext } from "./interfaces";
+import { testCodeLens } from "./lsp_extensions";
 
 export class DenoTestCodeLensProvider implements CodeLensProvider {
-  public async provideCodeLenses(document: TextDocument): Promise<CodeLens[]> {
-    const parseResults = parse(document.fileName, document.getText())
-      .map(({ start, end, testName }) => {
-        const range = new Range(
-          start.line + 2,
-          start.character,
-          end.line + 2,
-          end.character,
-        );
-        return [
-          new CodeLens(range, {
-            arguments: [testName],
-            command: "deno.runTest",
-            title: "Run",
-          }),
-          new CodeLens(range, {
-            arguments: [testName],
-            command: "deno.debugTest",
-            title: "Debug",
-          }),
-        ];
-      })
-      .flat();
-    return parseResults;
+  constructor(private extensionContext: DenoExtensionContext) {}
+  public async provideCodeLenses(
+    document: TextDocument,
+    token: CancellationToken
+  ): Promise<CodeLens[] | null | undefined> {
+    console.log(document.uri.toString());
+    const result = await this.extensionContext.client.sendRequest(
+      testCodeLens,
+      { textDocument: { uri: document.uri.toString() } },
+      token
+    );
+    console.log(result)
+    return result;
   }
 }

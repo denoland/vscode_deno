@@ -149,7 +149,7 @@ export async function activate(
   );
   const testCodelensEnabled = settings.codeLens?.tests ?? false;
   if (testCodelensEnabled) {
-    const codeLensProvider = new DenoTestCodeLensProvider();
+    const codeLensProvider = new DenoTestCodeLensProvider(extensionContext);
     const docSelectors: vscode.DocumentFilter[] = [
       {
         pattern: settings.codeLens?.testSelector,
