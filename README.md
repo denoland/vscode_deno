@@ -35,6 +35,7 @@ Studio Code, powered by the Deno language server.
 - Allow specifying of import maps and TypeScript configuration files that are
   used with the Deno CLI.
 - [Auto completion for imports](./docs/ImportCompletions.md).
+- [Workspace folder configuration](./docs/workspaceFolders.md).
 
 ## Usage
 
