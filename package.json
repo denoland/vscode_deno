@@ -142,7 +142,7 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Controls if the Deno Language Server is enabled. When enabled, the extension will disable the built-in VSCode JavaScript and TypeScript language services, and will use the Deno Language Server (`deno lsp`) instead.\n\n**Not recommended to be enabled globally.**",
-          "scope": "window",
+          "scope": "resource",
           "examples": [
             true,
             false

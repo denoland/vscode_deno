@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import type { StatusBarItem } from "vscode";
+import type { ConfigurationScope, StatusBarItem } from "vscode";
 import type {
   LanguageClient,
   LanguageClientOptions,
@@ -40,18 +40,32 @@ export interface Settings {
   unstable: boolean;
 }
 
+export interface PluginSettings {
+  workspace: Settings;
+  documents: Record<string, DocumentSettings>;
+}
+
+export interface DocumentSettings {
+  scope: ConfigurationScope;
+  settings: Partial<Settings>;
+}
+
 export interface DenoExtensionContext {
   client: LanguageClient;
   clientOptions: LanguageClientOptions;
+  /** A record of filepaths and their document settings. */
+  documentSettings: Record<string, DocumentSettings>;
   serverOptions: ServerOptions;
   serverVersion: string;
   statusBarItem: StatusBarItem;
   tsApi: TsLanguageFeaturesApiV0;
+  /** The current workspace settings. */
+  workspaceSettings: Settings;
 }
 
 export interface TsLanguageFeaturesApiV0 {
   configurePlugin(
     pluginId: string,
-    configuration: Settings,
+    configuration: PluginSettings,
   ): void;
 }

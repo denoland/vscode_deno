@@ -2,7 +2,7 @@
 
 /** Contains extensions to the Language Server Protocol that are supported by
  * the Deno Language Server.
- * 
+ *
  * The requests and notifications types should mirror the Deno's CLI
  * `cli/lsp/language_server.rs` under the method `request_else`.
  */
