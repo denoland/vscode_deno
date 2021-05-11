@@ -24,6 +24,9 @@ export interface Settings {
   enable: boolean;
   /** A path to an import map that should be applied. */
   importMap: string | null;
+  /** A flag that enables additional internal debug information to be printed
+   * to the _Deno Language Server_ output. */
+  internalDebug: boolean;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
   suggest: {

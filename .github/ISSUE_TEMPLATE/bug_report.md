@@ -23,6 +23,4 @@ If applicable, add screenshots to help explain your problem.
 
 **Versions**
 
-vscode: xxx
-deno: xxx
-extension: xxx
+vscode: xxx deno: xxx extension: xxx

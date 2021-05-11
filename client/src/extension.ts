@@ -60,6 +60,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "config",
   "importMap",
+  "internalDebug",
   "lint",
   "suggest",
   "unstable",
