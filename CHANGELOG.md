@@ -3,6 +3,23 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.4.0](https://github.com/denoland/vscode_deno/compare/3.3.0...3.4.0) / 2021.05.11
+
+- feat: handle per resource configuration (#411)
+
+  Along with Deno v1.10, the extension now supports vscode's multi-root
+  workspaces, which will allow you to enable and disable Deno per workspace
+  folder.
+
+- feat: add `internalDebug` config flag (#406)
+
+  Enabling `deno.internalDebug` to `true` will output additional (quite verbose)
+  logging information to help with diagnosing language server issues. This
+  requires Deno v1.10 or later to work.
+
+- fix: activate on `reloadImportRegistries` command (#407)
+- docs: fix type in `ImportCompletions.md` (#410)
+
 ### [3.3.0](https://github.com/denoland/vscode_deno/compare/3.2.0...3.3.0) / 2021.04.13
 
 - feat: add support for import registry completions (#380)
