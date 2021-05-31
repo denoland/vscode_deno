@@ -80,17 +80,17 @@ function configToWorkspaceSettings(
   for (const key of workspaceSettingsKeys) {
     const value = config.inspect(key);
     assert(value);
-    workspaceSettings[key] = value.workspaceLanguageValue ??
-      value.workspaceValue ??
-      value.globalValue ??
+    workspaceSettings[key] = value.workspaceLanguageValue ||
+      value.workspaceValue ||
+      value.globalValue ||
       value.defaultValue;
   }
   for (const key of resourceSettingsKeys) {
     const value = config.inspect(key);
     assert(value);
-    workspaceSettings[key] = value.workspaceLanguageValue ??
-      value.workspaceValue ??
-      value.globalValue ??
+    workspaceSettings[key] = value.workspaceLanguageValue ||
+      value.workspaceValue ||
+      value.globalValue ||
       value.defaultValue;
   }
   return workspaceSettings;
@@ -104,12 +104,13 @@ function configToResourceSettings(
   for (const key of resourceSettingsKeys) {
     const value = config.inspect(key);
     assert(value);
-    resourceSettings[key] = value.workspaceFolderLanguageValue ??
-      value.workspaceFolderValue ?? value.workspaceLanguageValue ??
-      value.workspaceValue ??
-      value.globalValue ??
+    resourceSettings[key] = value.workspaceFolderLanguageValue ||
+      value.workspaceFolderValue || value.workspaceLanguageValue ||
+      value.workspaceValue ||
+      value.globalValue ||
       value.defaultValue;
   }
+  resourceSettings['config'] = resourceSettings['config'] || false;
   return resourceSettings;
 }
 
