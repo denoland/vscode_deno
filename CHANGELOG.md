@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.5.0](https://github.com/denoland/vscode_deno/compare/3.3.0...3.4.0) / 2021.06.01
+
+- feat: recognize JSON(C) and markdown files (#404)
+
+  This allows the Deno language server to be used as a formatter for JSON(C) and
+  markdown files.
+
 ### [3.4.0](https://github.com/denoland/vscode_deno/compare/3.3.0...3.4.0) / 2021.05.11
 
 - feat: handle per resource configuration (#411)
