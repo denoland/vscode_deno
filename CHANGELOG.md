@@ -3,7 +3,14 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-### [3.5.0](https://github.com/denoland/vscode_deno/compare/3.3.0...3.4.0) / 2021.06.01
+### [3.5.1](https://github.com/denoland/vscode_deno/compare/3.5.0...3.5.1) / 2021.06.02
+
+- fix: bump semver of extension (#429)
+
+  This informs users that they require Deno 1.10.3 or later for the extension to
+  properly work.
+
+### [3.5.0](https://github.com/denoland/vscode_deno/compare/3.4.0...3.5.0) / 2021.06.01
 
 - feat: recognize JSON(C) and markdown files (#404)
 
