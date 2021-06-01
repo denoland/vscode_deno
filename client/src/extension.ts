@@ -22,7 +22,7 @@ import * as vscode from "vscode";
 import type { Executable } from "vscode-languageclient/node";
 
 /** The minimum version of Deno that this extension is designed to support. */
-const SERVER_SEMVER = ">=1.9.0";
+const SERVER_SEMVER = ">=1.10.3";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
