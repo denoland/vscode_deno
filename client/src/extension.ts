@@ -110,7 +110,6 @@ function configToResourceSettings(
       value.globalValue ||
       value.defaultValue;
   }
-  resourceSettings['config'] = resourceSettings['config'] || false;
   return resourceSettings;
 }
 
