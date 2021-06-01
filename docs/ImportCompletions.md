@@ -22,10 +22,25 @@ Module registries that support it can be configured for auto completion. This
 provides a handy way to explore a module registry from the "comfort" of your
 IDE.
 
+### Auto-discovery
+
+The Deno language server, by default, will attempt to determine if a server
+supports completion suggestions. If the host/origin has not been explicitly
+configured, it will check the server, and if it supports completion suggestions
+you will be prompted to choose to enable it or not.
+
+You should only enable this for registries you trust, as the remote server could
+provide suggestions for modules which are an attempt to get you to run
+un-trusted code.
+
 ### Configuration
 
 Settings for configuring registries for auto completions:
 
+- `deno.suggest.imports.autoDiscover` - If enabled, when the language server
+  discovers a new origin that isn't explicitly configured, it will check to see
+  if that origin supports import completions and prompt you to enable it or not.
+  This is `true` by default.
 - `deno.suggest.imports.hosts` - These are the _origins_ that are configured to
   provide import completions. The target host needs to support Deno import
   completions (detailed below). The value is an object where the key is the host

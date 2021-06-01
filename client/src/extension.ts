@@ -14,6 +14,8 @@ import type {
 } from "./interfaces";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
+import { registryState } from "./lsp_extensions";
+import { createRegistryStateHandler } from "./notification_handlers";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -267,6 +269,13 @@ export async function activate(
   extensionContext.tsApi = await getTsApi();
 
   await commands.startLanguageServer(context, extensionContext)();
+
+  context.subscriptions.push(
+    extensionContext.client.onNotification(
+      registryState,
+      createRegistryStateHandler(),
+    ),
+  );
 
   extensionContext.documentSettings = {};
   extensionContext.workspaceSettings = getWorkspaceSettings();

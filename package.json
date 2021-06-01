@@ -230,6 +230,12 @@
           "default": true,
           "scope": "window"
         },
+        "deno.suggest.imports.autoDiscover": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "If enabled, when new hosts/origins are encountered that support import suggestions, you will be prompted to enable or disable it.  Defaults to `true`.",
+          "scope": "window"
+        },
         "deno.suggest.imports.hosts": {
           "type": "object",
           "default": {},
