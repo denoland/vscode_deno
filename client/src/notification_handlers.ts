@@ -11,7 +11,7 @@ export function createRegistryStateHandler(): NotificationHandler<
     let enable = false;
     if (suggestions) {
       const selection = await vscode.window.showInformationMessage(
-        `The server "${origin}" supports completion suggestions for imports. Do you wish to enable this?\n\n*Only do this if you trust "${origin}".*\n\n[Learn More](https://github.com/denoland/vscode_deno/blob/main/docs/ImportCompletions.md)`,
+        `The server "${origin}" supports completion suggestions for imports. Do you wish to enable this? (Only do this if you trust "${origin}") [Learn More](https://github.com/denoland/vscode_deno/blob/main/docs/ImportCompletions.md)`,
         "No",
         "Enable",
       );
