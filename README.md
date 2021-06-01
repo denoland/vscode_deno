@@ -124,7 +124,7 @@ extension has the following configuration options:
   Language Server. _boolean, default `false`_
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
   for suggesting import auto completions. (See:
-  [ImportCompletions](./docs/ImportCompletions) for more information.)
+  [ImportCompletions](./docs/ImportCompletions.md) for more information.)
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
   APIs. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_
