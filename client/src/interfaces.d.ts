@@ -35,6 +35,7 @@ export interface Settings {
     names: boolean;
     paths: boolean;
     imports: {
+      autoDiscover: boolean;
       hosts: Record<string, boolean>;
     } | null;
   } | null;
