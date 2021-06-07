@@ -3,6 +3,15 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+- feat: add support for tasks and test code lens (#436)
+
+  The Deno Language Server as of Deno 1.11, code lenses for test are sent to the
+  client, and the extension now supports allowing those tests to be run in the
+  IDE. In addition, several tasks have been added to the extension which allow
+  users to setup and configure common Deno CLI tasks via the `tasks.json`.
+  Checkout out the [testing](./docs/testing.md) and [tasks](./docs/tasks.md)
+  documentation for more information.
+
 ### [3.5.1](https://github.com/denoland/vscode_deno/compare/3.5.0...3.5.1) / 2021.06.02
 
 - fix: bump semver of extension (#429)
