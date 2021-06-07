@@ -1,5 +1,7 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
+import type { Settings } from "./types";
 import * as vscode from "vscode";
-import type { Settings } from "./interfaces";
 
 export class DenoDebugConfigurationProvider
   implements vscode.DebugConfigurationProvider {

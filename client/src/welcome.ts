@@ -1,7 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import * as vscode from "vscode";
 import { EXTENSION_ID } from "./constants";
+
+import * as vscode from "vscode";
 
 function getNonce() {
   let text = "";

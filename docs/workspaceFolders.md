@@ -10,7 +10,7 @@ access to the per folder settings. If you look at the `.vscode/settings.json` in
 a folder, you will see a visual indication of what settings apply to folder,
 versus those that come from the workspace configuration:
 
-![alt text](../screenshots/workspace_folder_config.png ".vscode/settings.json example")
+![screenshot of the .vscode/setting.json configured as a workspace folder](../screenshots/workspace_folder_config.png ".vscode/settings.json example")
 
 ## Workspace Folder Settings
 

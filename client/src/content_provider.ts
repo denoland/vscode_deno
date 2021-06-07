@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import type { DenoExtensionContext } from "./interfaces";
 import { virtualTextDocument } from "./lsp_extensions";
+import type { DenoExtensionContext } from "./types";
 
 import type {
   CancellationToken,
