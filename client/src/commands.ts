@@ -156,7 +156,9 @@ export function test(
     const uri = vscode.Uri.parse(uriStr, true);
     const path = uri.fsPath;
     const config = vscode.workspace.getConfiguration(EXTENSION_NS, uri);
-    const testArgs: string[] = config.get("codeLens.testArgs") ?? [];
+    const testArgs: string[] = [
+      ...(config.get<string[]>("codeLens.testArgs") ?? []),
+    ];
     if (config.get("unstable")) {
       testArgs.push("--unstable");
     }
