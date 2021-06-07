@@ -361,7 +361,7 @@
       {
         "name": "deno",
         "owner": "deno",
-        "source": "deno",
+        "source": "deno-cli",
         "fileLocation": [
           "absolute"
         ],
@@ -370,7 +370,7 @@
       {
         "name": "deno-test",
         "owner": "deno",
-        "source": "deno",
+        "source": "deno-test",
         "fileLocation": [
           "absolute"
         ],
@@ -380,7 +380,7 @@
       {
         "name": "deno-lint",
         "owner": "deno",
-        "source": "deno",
+        "source": "deno-lint",
         "fileLocation": [
           "absolute"
         ],
