@@ -360,7 +360,7 @@
     "problemMatchers": [
       {
         "name": "deno",
-        "owner": "deno",
+        "owner": "deno-cli",
         "source": "deno-cli",
         "fileLocation": [
           "absolute"
@@ -369,7 +369,7 @@
       },
       {
         "name": "deno-test",
-        "owner": "deno",
+        "owner": "deno-test",
         "source": "deno-test",
         "fileLocation": [
           "absolute"
@@ -379,7 +379,7 @@
       },
       {
         "name": "deno-lint",
-        "owner": "deno",
+        "owner": "deno-lint",
         "source": "deno-lint",
         "fileLocation": [
           "absolute"
