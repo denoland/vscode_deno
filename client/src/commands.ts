@@ -10,21 +10,16 @@ import {
   LANGUAGE_CLIENT_NAME,
 } from "./constants";
 import { pickInitWorkspace } from "./initialize_project";
-import type { DenoExtensionContext } from "./interfaces";
 import {
   cache as cacheReq,
   reloadImportRegistries as reloadImportRegistriesReq,
 } from "./lsp_extensions";
+import * as tasks from "./tasks";
+import type { DenoExtensionContext } from "./types";
 import { WelcomePanel } from "./welcome";
+import { assert } from "./util";
 
-import {
-  commands,
-  ExtensionContext,
-  ProgressLocation,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
+import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import type {
   DocumentUri,
@@ -35,23 +30,23 @@ import type {
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
 export type Factory = (
-  context: ExtensionContext,
+  context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ) => Callback;
 
 /** For the current document active in the editor tell the Deno LSP to cache
  * the file and all of its dependencies in the local cache. */
 export function cache(
-  _context: ExtensionContext,
+  _context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ): Callback {
   return (uris: DocumentUri[] = []) => {
-    const activeEditor = window.activeTextEditor;
+    const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
       return;
     }
-    return window.withProgress({
-      location: ProgressLocation.Window,
+    return vscode.window.withProgress({
+      location: vscode.ProgressLocation.Window,
       title: "caching",
     }, () => {
       return extensionContext.client.sendRequest(
@@ -68,27 +63,27 @@ export function cache(
 }
 
 export function initializeWorkspace(
-  _context: ExtensionContext,
+  _context: vscode.ExtensionContext,
   _extensionContext: DenoExtensionContext,
 ): Callback {
   return async () => {
     try {
       const settings = await pickInitWorkspace();
-      const config = workspace.getConfiguration(EXTENSION_NS);
+      const config = vscode.workspace.getConfiguration(EXTENSION_NS);
       await config.update("enable", true);
       await config.update("lint", settings.lint);
       await config.update("unstable", settings.unstable);
-      await window.showInformationMessage(
+      await vscode.window.showInformationMessage(
         "Deno is now setup in this workspace.",
       );
     } catch {
-      window.showErrorMessage("Deno project initialization failed.");
+      vscode.window.showErrorMessage("Deno project initialization failed.");
     }
   };
 }
 
 export function reloadImportRegistries(
-  _context: ExtensionContext,
+  _context: vscode.ExtensionContext,
   { client }: DenoExtensionContext,
 ): Callback {
   return () => client.sendRequest(reloadImportRegistriesReq);
@@ -96,7 +91,7 @@ export function reloadImportRegistries(
 
 /** Start (or restart) the Deno Language Server */
 export function startLanguageServer(
-  context: ExtensionContext,
+  context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ): Callback {
   return async () => {
@@ -104,7 +99,7 @@ export function startLanguageServer(
     if (extensionContext.client) {
       await extensionContext.client.stop();
       statusBarItem.hide();
-      commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
+      vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
     }
     const client = extensionContext.client = new LanguageClient(
       LANGUAGE_CLIENT_ID,
@@ -114,7 +109,7 @@ export function startLanguageServer(
     );
     context.subscriptions.push(client.start());
     await client.onReady();
-    commands.executeCommand("setContext", ENABLEMENT_FLAG, true);
+    vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, true);
     const serverVersion = extensionContext.serverVersion =
       (client.initializeResult?.serverInfo?.version ?? "")
         .split(
@@ -128,13 +123,13 @@ export function startLanguageServer(
 }
 
 export function showReferences(
-  _content: ExtensionContext,
+  _content: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ): Callback {
   return (uri: string, position: Position, locations: Location[]) => {
-    commands.executeCommand(
+    vscode.commands.executeCommand(
       "editor.action.showReferences",
-      Uri.parse(uri),
+      vscode.Uri.parse(uri),
       extensionContext.client.protocol2CodeConverter.asPosition(position),
       locations.map(extensionContext.client.protocol2CodeConverter.asLocation),
     );
@@ -144,17 +139,61 @@ export function showReferences(
 /** Open and display the "virtual document" which provides the status of the
  * Deno Language Server. */
 export function status(
-  _context: ExtensionContext,
+  _context: vscode.ExtensionContext,
   _extensionContext: DenoExtensionContext,
 ): Callback {
   return () => {
-    const uri = Uri.parse("deno:/status.md");
-    return commands.executeCommand("markdown.showPreviewToSide", uri);
+    const uri = vscode.Uri.parse("deno:/status.md");
+    return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
+  };
+}
+
+export function test(
+  _context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+): Callback {
+  return async (uriStr: string, name: string) => {
+    const uri = vscode.Uri.parse(uriStr, true);
+    const path = uri.fsPath;
+    const config = vscode.workspace.getConfiguration(EXTENSION_NS, uri);
+    const testArgs: string[] = [
+      ...(config.get<string[]>("codeLens.testArgs") ?? []),
+    ];
+    if (config.get("unstable")) {
+      testArgs.push("--unstable");
+    }
+    const args = ["test", ...testArgs, "--filter", name, path];
+
+    const definition: tasks.DenoTaskDefinition = {
+      type: tasks.TASK_TYPE,
+      command: "test",
+      args,
+      cwd: ".",
+    };
+
+    assert(vscode.workspace.workspaceFolders);
+    const target = vscode.workspace.workspaceFolders[0];
+    const task = await tasks.buildDenoTask(
+      target,
+      definition,
+      `test "${name}"`,
+      args,
+      ["$deno-test"],
+    );
+
+    task.presentationOptions = {
+      reveal: vscode.TaskRevealKind.Always,
+      panel: vscode.TaskPanelKind.Dedicated,
+      clear: true,
+    };
+    task.group = vscode.TaskGroup.Test;
+
+    return vscode.tasks.executeTask(task);
   };
 }
 
 export function welcome(
-  context: ExtensionContext,
+  context: vscode.ExtensionContext,
   _extensionContext: DenoExtensionContext,
 ): Callback {
   return () => {

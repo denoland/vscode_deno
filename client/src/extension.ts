@@ -7,17 +7,18 @@ import {
   EXTENSION_TS_PLUGIN,
   TS_LANGUAGE_FEATURES_EXTENSION,
 } from "./constants";
-import type {
-  DenoExtensionContext,
-  Settings,
-  TsLanguageFeaturesApiV0,
-} from "./interfaces";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
-import * as fs from "fs";
-import * as os from "os";
+import { activateTaskProvider } from "./tasks";
+import type {
+  DenoExtensionContext,
+  Settings,
+  TsLanguageFeaturesApiV0,
+} from "./types";
+import { assert, getDenoCommand } from "./util";
+
 import * as path from "path";
 import * as semver from "semver";
 import * as vscode from "vscode";
@@ -36,13 +37,6 @@ const LANGUAGES = [
 
 interface TsLanguageFeatures {
   getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
-}
-
-/** Assert that the condition is "truthy", otherwise throw. */
-function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
-  if (!cond) {
-    throw new Error(msg);
-  }
 }
 
 async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
@@ -72,6 +66,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
  * a file or folder. */
 const resourceSettingsKeys: Array<keyof Settings> = [
   "enable",
+  "codeLens",
 ];
 
 /** Convert a workspace configuration to `Settings` for a workspace. */
@@ -180,7 +175,7 @@ const extensionContext = {} as DenoExtensionContext;
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
-  const command = await getCommand();
+  const command = await getDenoCommand();
   const run: Executable = {
     command,
     args: ["lsp"],
@@ -256,6 +251,9 @@ export async function activate(
     ),
   );
 
+  // Activate the task provider.
+  context.subscriptions.push(activateTaskProvider());
+
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
   registerCommand("cache", commands.cache);
@@ -264,6 +262,7 @@ export async function activate(
   registerCommand("reloadImportRegistries", commands.reloadImportRegistries);
   registerCommand("showReferences", commands.showReferences);
   registerCommand("status", commands.status);
+  registerCommand("test", commands.test);
   registerCommand("welcome", commands.welcome);
 
   extensionContext.tsApi = await getTsApi();
@@ -340,85 +339,4 @@ function createRegisterCommand(
       vscode.commands.registerCommand(fullName, command),
     );
   };
-}
-
-async function getCommand() {
-  let command = vscode.workspace.getConfiguration("deno").get<string>("path");
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  const defaultCommand = await getDefaultDenoCommand();
-  if (!command || !workspaceFolders) {
-    command = command ?? defaultCommand;
-  } else if (!path.isAbsolute(command)) {
-    // if sent a relative path, iterate over workspace folders to try and resolve.
-    const list = [];
-    for (const workspace of workspaceFolders) {
-      const dir = path.resolve(workspace.uri.path, command);
-      try {
-        const stat = await fs.promises.stat(dir);
-        if (stat.isFile()) {
-          list.push(dir);
-        }
-      } catch {
-        // we simply don't push onto the array if we encounter an error
-      }
-    }
-    command = list.shift() ?? defaultCommand;
-  }
-  return command;
-}
-
-function getDefaultDenoCommand() {
-  switch (os.platform()) {
-    case "win32":
-      return getDenoWindowsPath();
-    default:
-      return Promise.resolve("deno");
-  }
-
-  async function getDenoWindowsPath() {
-    // Adapted from https://github.com/npm/node-which/blob/master/which.js
-    // Within vscode it will do `require("child_process").spawn("deno")`,
-    // which will prioritize "deno.exe" on the path instead of a possible
-    // higher precedence non-exe executable. This is a problem because, for
-    // example, version managers may have a `deno.bat` shim on the path. To
-    // ensure the resolution of the `deno` command matches what occurs on the
-    // command line, attempt to manually resolve the file path (issue #361).
-    const denoCmd = "deno";
-    // deno-lint-ignore no-undef
-    const pathExtValue = process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM";
-    // deno-lint-ignore no-undef
-    const pathValue = process.env.PATH ?? "";
-    const pathExtItems = splitEnvValue(pathExtValue);
-    const pathFolderPaths = splitEnvValue(pathValue);
-
-    for (const pathFolderPath of pathFolderPaths) {
-      for (const pathExtItem of pathExtItems) {
-        const cmdFilePath = path.join(pathFolderPath, denoCmd + pathExtItem);
-        if (await fileExists(cmdFilePath)) {
-          return cmdFilePath;
-        }
-      }
-    }
-
-    // nothing found; return back command
-    return denoCmd;
-
-    function splitEnvValue(value: string) {
-      return value
-        .split(";")
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0);
-    }
-  }
-
-  function fileExists(executableFilePath: string): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-      fs.stat(executableFilePath, (err, stat) => {
-        resolve(err == null && stat.isFile());
-      });
-    }).catch(() => {
-      // ignore all errors
-      return false;
-    });
-  }
 }

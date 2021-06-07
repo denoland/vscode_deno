@@ -12,7 +12,7 @@
 This extension adds support for using [Deno](https://deno.land/) with Visual
 Studio Code, powered by the Deno language server.
 
-> ⚠️ **Important:** You need to have a version of Deno CLI installed (v1.7 or
+> ⚠️ **Important:** You need to have a version of Deno CLI installed (v1.10.3 or
 > later). The extension requires the executable and by default will use the
 > environment path. You can explicitly set the path to the executable in Visual
 > Studio Code Settings for `deno.path`.
@@ -36,6 +36,8 @@ Studio Code, powered by the Deno language server.
   used with the Deno CLI.
 - [Auto completion for imports](./docs/ImportCompletions.md).
 - [Workspace folder configuration](./docs/workspaceFolders.md).
+- [Testing Code Lens](./docs/testing.md).
+- [Provides Tasks for the Deno CLI](./docs/tasks.md).
 
 ## Usage
 
@@ -107,6 +109,11 @@ extension has the following configuration options:
 - `deno.codeLens.referencesAllFunctions`: Enables or disables the display of
   code lens information for all functions in the code. Requires
   `deno.codeLens.references` to be enabled as well. _boolean, default `false`_
+- `deno.codeLens.test`: Enables or disables the display of test code lens on
+  Deno tests. _boolean, default `true`_.
+- `deno.codeLens.testArgs`: Provides additional arguments that should be set
+  when invoking the Deno CLI test from a code lens. _array of strings, default
+  `[ "--allow-all" ]`_.
 - `deno.config`: The file path to a `tsconfig.json` file. This is the equivalent
   to using `--config` on the command line. The path can be either be relative to
   the workspace, or an absolute path. _string, default `null`, examples:

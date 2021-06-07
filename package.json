@@ -188,6 +188,23 @@
             false
           ]
         },
+        "deno.codeLens.test": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enables or disables the display of code lenses that allow running of individual tests in the code.",
+          "scope": "resource"
+        },
+        "deno.codeLens.testArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "--allow-all"
+          ],
+          "markdownDescription": "Additional arguments to use with the run test code lens.  Defaults to `[ \"--allow-all\" ]`.",
+          "scope": "resource"
+        },
         "deno.config": {
           "type": "string",
           "default": null,
@@ -288,6 +305,127 @@
       {
         "fileMatch": "deno-import-intellisense.json",
         "url": "./schemas/deno-import-intellisense.schema.json"
+      }
+    ],
+    "problemPatterns": [
+      {
+        "name": "deno",
+        "patterns": [
+          {
+            "regexp": "^(warning|error): (?:(\\S+) \\[(?:ERROR|WARN)\\]: )?(.*)$",
+            "severity": 1,
+            "code": 2,
+            "message": 3
+          },
+          {
+            "regexp": "^\\s{4}at\\s.*((?:file|http|https|data|blob):[^:]+):(\\d+):(\\d+)$",
+            "file": 1,
+            "line": 2,
+            "column": 3
+          }
+        ]
+      },
+      {
+        "name": "deno-test",
+        "patterns": [
+          {
+            "regexp": "^(\\S+:\\s.*)$",
+            "message": 1
+          },
+          {
+            "regexp": "^\\s{4}at\\s.*((?:file|http|https|data|blob):[^:]+):(\\d+):(\\d+)$",
+            "file": 1,
+            "line": 2,
+            "column": 3
+          }
+        ]
+      },
+      {
+        "name": "deno-lint",
+        "patterns": [
+          {
+            "regexp": "^\\(([^)]*)\\)\\s(.*)$",
+            "code": 1,
+            "message": 2
+          },
+          {
+            "regexp": "^\\s{4}at\\s([^:]+):(\\d+):(\\d+)$",
+            "file": 1,
+            "line": 2,
+            "column": 3
+          }
+        ]
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "deno",
+        "owner": "deno-cli",
+        "source": "deno-cli",
+        "fileLocation": [
+          "absolute"
+        ],
+        "pattern": "$deno"
+      },
+      {
+        "name": "deno-test",
+        "owner": "deno-test",
+        "source": "deno-test",
+        "fileLocation": [
+          "absolute"
+        ],
+        "severity": "error",
+        "pattern": "$deno-test"
+      },
+      {
+        "name": "deno-lint",
+        "owner": "deno-lint",
+        "source": "deno-lint",
+        "fileLocation": [
+          "absolute"
+        ],
+        "severity": "warning",
+        "pattern": "$deno-lint"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "deno",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string",
+            "description": "The Deno command to run.",
+            "examples": [
+              "bundle",
+              "cache",
+              "compile",
+              "lint",
+              "test"
+            ]
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Arguments to pass to the command."
+          },
+          "env": {
+            "type": "object",
+            "patternProperties": {
+              ".+": {
+                "type": "string"
+              }
+            },
+            "description": "Environment variables to set when executing the command."
+          }
+        }
       }
     ],
     "typescriptServerPlugins": [
