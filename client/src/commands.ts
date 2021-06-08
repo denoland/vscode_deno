@@ -162,6 +162,9 @@ export function test(
     if (config.get("unstable")) {
       testArgs.push("--unstable");
     }
+    if (config.get("importMap")) {
+      testArgs.push("--import-map", String(config.get("importMap")));
+    }
     const args = ["test", ...testArgs, "--filter", name, path];
 
     const definition: tasks.DenoTaskDefinition = {
