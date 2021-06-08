@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.6.1](https://github.com/denoland/vscode_deno/compare/3.6.0...3.6.1) / 2021.06.08
+
+- fix: update packaging and pin vsce version (#440)
+
+### [3.6.0](https://github.com/denoland/vscode_deno/compare/3.5.1...3.6.0) / 2021.06.08
+
 - feat: add support for tasks and test code lens (#436)
 
   The Deno Language Server as of Deno 1.11, code lenses for test are sent to the
