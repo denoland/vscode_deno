@@ -5,5 +5,4 @@
 **/tsconfig.json
 **/tsconfig.base.json
 
-screenshot
-typescript-deno-plugin
+/typescript-deno-plugin

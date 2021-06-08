@@ -51,7 +51,7 @@ jobs:
         run: npm run compile
 
       - name: Package
-        run: npx vsce package -o vscode-deno.vsix
+        run: npx vsce@1.93.0 package -o vscode-deno.vsix
 
       - name: Artifact upload
         uses: actions/upload-artifact@v2
@@ -77,4 +77,4 @@ jobs:
         env:
           # https://dev.azure.com/propelml/_usersSettings/tokens
           AZURE_PAT: ${{ secrets.AZURE_PAT }}
-        run: npx vsce publish --pat $AZURE_PAT
+        run: npx vsce@1.93.0 publish --pat $AZURE_PAT
