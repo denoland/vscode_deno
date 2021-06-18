@@ -18,7 +18,7 @@ export async function getDenoCommand(): Promise<string> {
   if (memoizedCommand !== undefined) {
     return memoizedCommand;
   }
-  let command = vscode.workspace.getConfiguration("deno").get<string>("path");
+  let command = getWorkspaceConfigDenoExePath();
   const workspaceFolders = vscode.workspace.workspaceFolders;
   const defaultCommand = await getDefaultDenoCommand();
   if (!command || !workspaceFolders) {
@@ -40,6 +40,16 @@ export async function getDenoCommand(): Promise<string> {
     command = list.shift() ?? defaultCommand;
   }
   return memoizedCommand = command;
+}
+
+function getWorkspaceConfigDenoExePath() {
+  const exePath = vscode.workspace.getConfiguration("deno").get<string>("path");
+  // it is possible for the path to be blank. In that case, return undefined
+  if (typeof exePath === "string" && exePath.trim().length === 0) {
+    return undefined;
+  } else {
+    return exePath;
+  }
 }
 
 function getDefaultDenoCommand() {
