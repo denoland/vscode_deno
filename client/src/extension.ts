@@ -17,7 +17,7 @@ import type {
   Settings,
   TsLanguageFeaturesApiV0,
 } from "./types";
-import { assert, getDenoCommand } from "./util";
+import { assert, getDenoCommand, getDenoLspArgs } from "./util";
 
 import * as path from "path";
 import * as semver from "semver";
@@ -176,9 +176,10 @@ export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
   const command = await getDenoCommand();
+  const args = await getDenoLspArgs();
   const run: Executable = {
     command,
-    args: ["lsp"],
+    args,
     // deno-lint-ignore no-undef
     options: { env: { ...process.env, "NO_COLOR": true } },
   };
@@ -186,8 +187,8 @@ export async function activate(
   const debug: Executable = {
     command,
     // disabled for now, as this gets super chatty during development
-    // args: ["lsp", "-L", "debug"],
-    args: ["lsp"],
+    // args: [...args, "-L", "debug"],
+    args,
     // deno-lint-ignore no-undef
     options: { env: { ...process.env, "NO_COLOR": true } },
   };
