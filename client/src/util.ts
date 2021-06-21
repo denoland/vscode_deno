@@ -1,11 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import * as childProcess from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import * as process from "process";
-import * as semver from "semver";
 import * as vscode from "vscode";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -13,36 +10,6 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
   if (!cond) {
     throw new Error(msg);
   }
-}
-
-export async function getDenoLspArgs(): Promise<string[]> {
-  const version = await getDenoVersion();
-  // The --parent-pid <pid> flag was added in 1.11.2.
-  if (version == null || semver.lt(version, "1.11.2")) {
-    return ["lsp"];
-  } else {
-    // The --parent-pid flag will cause the deno process to
-    // terminate itself when the vscode process no longer exists
-    return ["lsp", "--parent-pid", process.pid.toString()];
-  }
-}
-
-let memoizedVersion: semver.SemVer | undefined;
-
-export async function getDenoVersion(): Promise<semver.SemVer | undefined> {
-  if (memoizedVersion === undefined) {
-    try {
-      const denoCommand = await getDenoCommand();
-      const output = await execCommand(`${denoCommand} -V`);
-      const result = /[0-9]+\.[0-9]+\.[0-9]+/.exec(output);
-      if (result != null) {
-        memoizedVersion = new semver.SemVer(result[0]);
-      }
-    } catch (err) {
-      console.error(`Error getting deno version: ${err}`);
-    }
-  }
-  return memoizedVersion;
 }
 
 let memoizedCommand: string | undefined;
@@ -129,16 +96,4 @@ function getDefaultDenoCommand() {
       return false;
     });
   }
-}
-
-function execCommand(command: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    childProcess.exec(command, (err, stdout, stderr) => {
-      if (err) {
-        reject(stderr);
-      } else {
-        resolve(stdout);
-      }
-    });
-  });
 }

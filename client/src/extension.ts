@@ -17,7 +17,7 @@ import type {
   Settings,
   TsLanguageFeaturesApiV0,
 } from "./types";
-import { assert, getDenoCommand, getDenoLspArgs } from "./util";
+import { assert, getDenoCommand } from "./util";
 
 import * as path from "path";
 import * as semver from "semver";
@@ -25,7 +25,7 @@ import * as vscode from "vscode";
 import type { Executable } from "vscode-languageclient/node";
 
 /** The minimum version of Deno that this extension is designed to support. */
-const SERVER_SEMVER = ">=1.10.3";
+const SERVER_SEMVER = ">=1.11.2";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -176,7 +176,7 @@ export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
   const command = await getDenoCommand();
-  const args = await getDenoLspArgs();
+  const args = ["lsp", "--parent-pid", process.pid.toString()];
   const run: Executable = {
     command,
     args,
