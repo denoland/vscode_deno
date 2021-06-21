@@ -249,12 +249,12 @@ export async function activate(
   extensionContext.workspaceSettings = getWorkspaceSettings();
   configurePlugin();
 
-  await commands.startLanguageServer(context, extensionContext)();
-
   // when we activate, it might have been because a document was opened that
   // activated us, which we need to grab the config for and send it over to the
   // plugin
   handleDocumentOpen(...vscode.workspace.textDocuments);
+
+  await commands.startLanguageServer(context, extensionContext)();
 }
 
 export function deactivate(): Thenable<void> | undefined {
