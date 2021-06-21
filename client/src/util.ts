@@ -135,6 +135,9 @@ function getDefaultDenoCommand() {
 
 function execCommand(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
+    // todo(dsherret): this should handle multiple workspace folders
+    // in order to better support directory based deno executable
+    // version managers. For now, this is good enough.
     const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     childProcess.exec(command, {
       cwd,
