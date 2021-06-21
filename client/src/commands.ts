@@ -17,15 +17,21 @@ import {
 import * as tasks from "./tasks";
 import type { DenoExtensionContext } from "./types";
 import { WelcomePanel } from "./welcome";
-import { assert } from "./util";
+import { assert, getDenoCommandAndVersion } from "./util";
+import { registryState } from "./lsp_extensions";
+import { createRegistryStateHandler } from "./notification_handlers";
 
+import * as semver from "semver";
 import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type {
   DocumentUri,
   Location,
   Position,
 } from "vscode-languageclient/node";
+
+/** The minimum version of Deno that this extension is designed to support. */
+const SERVER_SEMVER = ">=1.11.2";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -42,14 +48,15 @@ export function cache(
 ): Callback {
   return (uris: DocumentUri[] = []) => {
     const activeEditor = vscode.window.activeTextEditor;
-    if (!activeEditor) {
+    const client = extensionContext.client;
+    if (!activeEditor || !client) {
       return;
     }
     return vscode.window.withProgress({
       location: vscode.ProgressLocation.Window,
       title: "caching",
     }, () => {
-      return extensionContext.client.sendRequest(
+      return client.sendRequest(
         cacheReq,
         {
           referrer: { uri: activeEditor.document.uri.toString() },
@@ -86,7 +93,7 @@ export function reloadImportRegistries(
   _context: vscode.ExtensionContext,
   { client }: DenoExtensionContext,
 ): Callback {
-  return () => client.sendRequest(reloadImportRegistriesReq);
+  return () => client?.sendRequest(reloadImportRegistriesReq);
 }
 
 /** Start (or restart) the Deno Language Server */
@@ -95,16 +102,48 @@ export function startLanguageServer(
   extensionContext: DenoExtensionContext,
 ): Callback {
   return async () => {
+    // Reset the state and stop the existing language server
     const { statusBarItem } = extensionContext;
     if (extensionContext.client) {
       await extensionContext.client.stop();
       statusBarItem.hide();
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
     }
+
+    // Check the deno version before starting the language server
+    // This is necessary because the `--parent-pid <pid>` flag for
+    // `deno lsp` won't exist in deno versions < 1.11.2
+    const { command, version } = await getDenoCommandAndVersion();
+    if (version == null) {
+      notifyDenoNotFound(command);
+      return;
+    } else if (!semver.satisfies(version, SERVER_SEMVER)) {
+      notifyServerSemver(version.version);
+      return;
+    }
+
+    // Start the new language server
+    const args = ["lsp", "--parent-pid", process.pid.toString()];
+    const serverOptions: ServerOptions = {
+      run: {
+        command,
+        args,
+        // deno-lint-ignore no-undef
+        options: { env: { ...process.env, "NO_COLOR": true } },
+      },
+      debug: {
+        command,
+        // disabled for now, as this gets super chatty during development
+        // args: [...args, "-L", "debug"],
+        args,
+        // deno-lint-ignore no-undef
+        options: { env: { ...process.env, "NO_COLOR": true } },
+      },
+    };
     const client = extensionContext.client = new LanguageClient(
       LANGUAGE_CLIENT_ID,
       LANGUAGE_CLIENT_NAME,
-      extensionContext.serverOptions,
+      serverOptions,
       extensionContext.clientOptions,
     );
     context.subscriptions.push(client.start());
@@ -119,7 +158,45 @@ export function startLanguageServer(
     statusBarItem.tooltip = client
       .initializeResult?.serverInfo?.version;
     statusBarItem.show();
+
+    context.subscriptions.push(
+      extensionContext.client.onNotification(
+        registryState,
+        createRegistryStateHandler(),
+      ),
+    );
+
+    showWelcomePageIfFirstUse(context, extensionContext);
   };
+}
+
+function notifyDenoNotFound(denoCommand: string) {
+  return vscode.window.showWarningMessage(
+    `Error resolving Deno executable. Please ensure Deno is on the PATH of this VS Code ` +
+      `process or specify a path to the executable in the "deno.path" setting. Could not ` +
+      `get version from command: ${denoCommand}`,
+    "OK",
+  );
+}
+
+function notifyServerSemver(serverVersion: string) {
+  return vscode.window.showWarningMessage(
+    `The version of Deno language server ("${serverVersion}") does not meet the requirements of the extension ("${SERVER_SEMVER}"). Please update Deno and restart.`,
+    "OK",
+  );
+}
+
+function showWelcomePageIfFirstUse(
+  context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+) {
+  const welcomeShown = context.globalState.get<boolean>("deno.welcomeShown") ??
+    false;
+
+  if (!welcomeShown) {
+    welcome(context, extensionContext)();
+    context.globalState.update("deno.welcomeShown", true);
+  }
 }
 
 export function showReferences(
@@ -127,6 +204,9 @@ export function showReferences(
   extensionContext: DenoExtensionContext,
 ): Callback {
   return (uri: string, position: Position, locations: Location[]) => {
+    if (!extensionContext.client) {
+      return;
+    }
     vscode.commands.executeCommand(
       "editor.action.showReferences",
       vscode.Uri.parse(uri),

@@ -1,8 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import * as childProcess from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import * as process from "process";
+import * as semver from "semver";
 import * as vscode from "vscode";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -12,12 +15,34 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
   }
 }
 
-let memoizedCommand: string | undefined;
+export interface DenoCommandAndVersion {
+  command: string;
+  /** The version of the deno CLI or undefined if it couldn't be determined. */
+  version: semver.SemVer | undefined;
+}
+
+export async function getDenoCommandAndVersion(): Promise<
+  DenoCommandAndVersion
+> {
+  let version: semver.SemVer | undefined;
+  let command = "deno";
+  try {
+    command = await getDenoCommand();
+    const output = await execCommand(`${command} -V`);
+    const result = /[0-9]+\.[0-9]+\.[0-9]+/.exec(output);
+    if (result != null) {
+      version = new semver.SemVer(result[0]);
+    }
+  } catch (err) {
+    console.error(`Error getting deno version: ${err}`);
+  }
+  return {
+    command,
+    version,
+  };
+}
 
 export async function getDenoCommand(): Promise<string> {
-  if (memoizedCommand !== undefined) {
-    return memoizedCommand;
-  }
   let command = vscode.workspace.getConfiguration("deno").get<string>("path");
   const workspaceFolders = vscode.workspace.workspaceFolders;
   const defaultCommand = await getDefaultDenoCommand();
@@ -27,7 +52,7 @@ export async function getDenoCommand(): Promise<string> {
     // if sent a relative path, iterate over workspace folders to try and resolve.
     const list = [];
     for (const workspace of workspaceFolders) {
-      const dir = path.resolve(workspace.uri.path, command);
+      const dir = path.resolve(workspace.uri.fsPath, command);
       try {
         const stat = await fs.promises.stat(dir);
         if (stat.isFile()) {
@@ -39,7 +64,7 @@ export async function getDenoCommand(): Promise<string> {
     }
     command = list.shift() ?? defaultCommand;
   }
-  return memoizedCommand = command;
+  return command;
 }
 
 function getDefaultDenoCommand() {
@@ -96,4 +121,19 @@ function getDefaultDenoCommand() {
       return false;
     });
   }
+}
+
+function execCommand(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    childProcess.exec(command, {
+      cwd,
+    }, (err, stdout, stderr) => {
+      if (err) {
+        reject(stderr);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
 }

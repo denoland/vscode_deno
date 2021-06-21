@@ -4,7 +4,6 @@ import type { ConfigurationScope, StatusBarItem } from "vscode";
 import type {
   LanguageClient,
   LanguageClientOptions,
-  ServerOptions,
 } from "vscode-languageclient/node";
 
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
@@ -57,11 +56,10 @@ export interface DocumentSettings {
 }
 
 export interface DenoExtensionContext {
-  client: LanguageClient;
+  client: LanguageClient | undefined;
   clientOptions: LanguageClientOptions;
   /** A record of filepaths and their document settings. */
   documentSettings: Record<string, DocumentSettings>;
-  serverOptions: ServerOptions;
   serverVersion: string;
   statusBarItem: StatusBarItem;
   tsApi: TsLanguageFeaturesApiV0;

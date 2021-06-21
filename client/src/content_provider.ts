@@ -20,6 +20,10 @@ export class DenoTextDocumentContentProvider
     uri: Uri,
     token: CancellationToken,
   ): ProviderResult<string> {
+    if (!this.extensionContext.client) {
+      throw new Error("Deno language server has not started.");
+    }
+
     return this.extensionContext.client.sendRequest(
       virtualTextDocument,
       { textDocument: { uri: uri.toString() } },
