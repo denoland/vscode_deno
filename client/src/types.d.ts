@@ -55,6 +55,11 @@ export interface DocumentSettings {
   settings: Partial<Settings>;
 }
 
+export interface TsApi {
+  /** Update the typescript-deno-plugin with settings. */
+  refresh(): void;
+}
+
 export interface DenoExtensionContext {
   client: LanguageClient | undefined;
   clientOptions: LanguageClientOptions;
@@ -62,14 +67,7 @@ export interface DenoExtensionContext {
   documentSettings: Record<string, DocumentSettings>;
   serverVersion: string;
   statusBarItem: StatusBarItem;
-  tsApi: TsLanguageFeaturesApiV0;
+  tsApi: TsApi;
   /** The current workspace settings. */
   workspaceSettings: Settings;
-}
-
-export interface TsLanguageFeaturesApiV0 {
-  configurePlugin(
-    pluginId: string,
-    configuration: PluginSettings,
-  ): void;
 }

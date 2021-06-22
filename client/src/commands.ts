@@ -20,7 +20,6 @@ import { WelcomePanel } from "./welcome";
 import { assert, getDenoCommand } from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
-import { configurePlugin } from "./ts_api";
 
 import * as semver from "semver";
 import * as vscode from "vscode";
@@ -161,7 +160,7 @@ export function startLanguageServer(
       ),
     );
 
-    configurePlugin(extensionContext);
+    extensionContext.tsApi.refresh();
 
     if (
       semver.valid(extensionContext.serverVersion) &&

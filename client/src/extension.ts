@@ -10,7 +10,7 @@ import { assert } from "./util";
 
 import * as path from "path";
 import * as vscode from "vscode";
-import { configurePlugin, getTsApi } from "./ts_api";
+import { getTsApi } from "./ts_api";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -106,7 +106,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         ),
       };
     }
-    configurePlugin(extensionContext);
+    extensionContext.tsApi.refresh();
 
     // restart when "deno.path" changes
     if (event.affectsConfiguration("deno.path")) {
@@ -131,7 +131,7 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
     didChange = true;
   }
   if (didChange) {
-    configurePlugin(extensionContext);
+    extensionContext.tsApi.refresh();
   }
 }
 
@@ -214,7 +214,11 @@ export async function activate(
   registerCommand("test", commands.test);
   registerCommand("welcome", commands.welcome);
 
-  extensionContext.tsApi = await getTsApi();
+  extensionContext.tsApi = await getTsApi(() => ({
+    documents: extensionContext.documentSettings,
+    workspace: extensionContext.workspaceSettings,
+  }));
+
   extensionContext.documentSettings = {};
   extensionContext.workspaceSettings = getWorkspaceSettings();
 

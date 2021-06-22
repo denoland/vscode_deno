@@ -41,9 +41,8 @@ export async function getDenoCommand(): Promise<string> {
 }
 
 function getWorkspaceConfigDenoExePath() {
-  const exePath = vscode.workspace.getConfiguration(EXTENSION_NS).get<string>(
-    "path",
-  );
+  const exePath = vscode.workspace.getConfiguration(EXTENSION_NS)
+    .get<string>("path");
   // it is possible for the path to be blank. In that case, return undefined
   if (typeof exePath === "string" && exePath.trim().length === 0) {
     return undefined;

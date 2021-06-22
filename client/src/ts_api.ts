@@ -4,7 +4,7 @@ import {
   EXTENSION_TS_PLUGIN,
   TS_LANGUAGE_FEATURES_EXTENSION,
 } from "./constants";
-import type { DenoExtensionContext, TsLanguageFeaturesApiV0 } from "./types";
+import type { PluginSettings, TsApi } from "./types";
 import { assert } from "./util";
 
 import * as vscode from "vscode";
@@ -13,7 +13,16 @@ interface TsLanguageFeatures {
   getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
 }
 
-export async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
+interface TsLanguageFeaturesApiV0 {
+  configurePlugin(
+    pluginId: string,
+    configuration: PluginSettings,
+  ): void;
+}
+
+export async function getTsApi(
+  getPluginSettings: () => PluginSettings,
+): Promise<TsApi> {
   const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
     .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
   const errorMessage =
@@ -22,12 +31,11 @@ export async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
   const languageFeatures = await extension.activate();
   const api = languageFeatures.getAPI(0);
   assert(api, errorMessage);
-  return api;
-}
 
-/** Update the typescript-deno-plugin with settings. */
-export function configurePlugin(extensionContext: DenoExtensionContext) {
-  const { documentSettings: documents, tsApi, workspaceSettings: workspace } =
-    extensionContext;
-  tsApi.configurePlugin(EXTENSION_TS_PLUGIN, { workspace, documents });
+  return {
+    refresh() {
+      const pluginSettings = getPluginSettings();
+      api.configurePlugin(EXTENSION_TS_PLUGIN, pluginSettings);
+    },
+  };
 }
