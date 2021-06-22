@@ -1,5 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { EXTENSION_NS } from "./constants";
+
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -39,7 +41,9 @@ export async function getDenoCommand(): Promise<string> {
 }
 
 function getWorkspaceConfigDenoExePath() {
-  const exePath = vscode.workspace.getConfiguration("deno").get<string>("path");
+  const exePath = vscode.workspace.getConfiguration(EXTENSION_NS).get<string>(
+    "path",
+  );
   // it is possible for the path to be blank. In that case, return undefined
   if (typeof exePath === "string" && exePath.trim().length === 0) {
     return undefined;

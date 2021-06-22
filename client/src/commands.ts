@@ -20,6 +20,7 @@ import { WelcomePanel } from "./welcome";
 import { assert, getDenoCommand } from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
+import { configurePlugin } from "./ts_api";
 
 import * as semver from "semver";
 import * as vscode from "vscode";
@@ -29,7 +30,6 @@ import type {
   Location,
   Position,
 } from "vscode-languageclient/node";
-import { configurePlugin } from "./ts_api";
 
 /** The minimum version of Deno that this extension is designed to support. */
 const SERVER_SEMVER = ">=1.10.3";
@@ -106,10 +106,11 @@ export function startLanguageServer(
     // Stop the existing language server and reset the state
     const { statusBarItem } = extensionContext;
     if (extensionContext.client) {
-      await extensionContext.client.stop();
+      const client = extensionContext.client;
       extensionContext.client = undefined;
       statusBarItem.hide();
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
+      await client.stop();
     }
 
     // Start a new language server

@@ -108,9 +108,10 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
     }
     configurePlugin(extensionContext);
 
-    // Restart the language server. This will allow for
-    // "deno.path" configuration changes to take effect.
-    vscode.commands.executeCommand("deno.restart");
+    // restart when "deno.path" changes
+    if (event.affectsConfiguration("deno.path")) {
+      vscode.commands.executeCommand("deno.restart");
+    }
   }
 }
 
