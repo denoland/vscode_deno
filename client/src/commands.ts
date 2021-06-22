@@ -17,7 +17,7 @@ import {
 import * as tasks from "./tasks";
 import type { DenoExtensionContext } from "./types";
 import { WelcomePanel } from "./welcome";
-import { assert, getDenoCommandAndVersion } from "./util";
+import { assert, getDenoCommand } from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
 
@@ -29,9 +29,10 @@ import type {
   Location,
   Position,
 } from "vscode-languageclient/node";
+import { configurePlugin } from "./ts_api";
 
 /** The minimum version of Deno that this extension is designed to support. */
-const SERVER_SEMVER = ">=1.11.2";
+const SERVER_SEMVER = ">=1.10.3";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -102,45 +103,34 @@ export function startLanguageServer(
   extensionContext: DenoExtensionContext,
 ): Callback {
   return async () => {
-    // Reset the state and stop the existing language server
+    // Stop the existing language server and reset the state
     const { statusBarItem } = extensionContext;
     if (extensionContext.client) {
       await extensionContext.client.stop();
+      extensionContext.client = undefined;
       statusBarItem.hide();
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
     }
 
-    // Check the deno version before starting the language server
-    // This is necessary because the `--parent-pid <pid>` flag for
-    // `deno lsp` won't exist in deno versions < 1.11.2
-    const { command, version } = await getDenoCommandAndVersion();
-    if (version == null) {
-      notifyDenoNotFound(command);
-      return;
-    } else if (!semver.satisfies(version, SERVER_SEMVER)) {
-      notifyServerSemver(version.version);
-      return;
-    }
-
-    // Start the new language server
-    const args = ["lsp", "--parent-pid", process.pid.toString()];
+    // Start a new language server
+    const command = await getDenoCommand();
     const serverOptions: ServerOptions = {
       run: {
         command,
-        args,
+        args: ["lsp"],
         // deno-lint-ignore no-undef
         options: { env: { ...process.env, "NO_COLOR": true } },
       },
       debug: {
         command,
         // disabled for now, as this gets super chatty during development
-        // args: [...args, "-L", "debug"],
-        args,
+        // args: ["lsp", "-L", "debug"],
+        args: ["lsp"],
         // deno-lint-ignore no-undef
         options: { env: { ...process.env, "NO_COLOR": true } },
       },
     };
-    const client = extensionContext.client = new LanguageClient(
+    const client = new LanguageClient(
       LANGUAGE_CLIENT_ID,
       LANGUAGE_CLIENT_NAME,
       serverOptions,
@@ -148,6 +138,10 @@ export function startLanguageServer(
     );
     context.subscriptions.push(client.start());
     await client.onReady();
+
+    // set this after a successful start
+    extensionContext.client = client;
+
     vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, true);
     const serverVersion = extensionContext.serverVersion =
       (client.initializeResult?.serverInfo?.version ?? "")
@@ -160,23 +154,23 @@ export function startLanguageServer(
     statusBarItem.show();
 
     context.subscriptions.push(
-      extensionContext.client.onNotification(
+      client.onNotification(
         registryState,
         createRegistryStateHandler(),
       ),
     );
 
-    showWelcomePageIfFirstUse(context, extensionContext);
-  };
-}
+    configurePlugin(extensionContext);
 
-function notifyDenoNotFound(denoCommand: string) {
-  return vscode.window.showWarningMessage(
-    `Error resolving Deno executable. Please ensure Deno is on the PATH of this VS Code ` +
-      `process or specify a path to the executable in the "deno.path" setting. Could not ` +
-      `get version from command: ${denoCommand}`,
-    "OK",
-  );
+    if (
+      semver.valid(extensionContext.serverVersion) &&
+      !semver.satisfies(extensionContext.serverVersion, SERVER_SEMVER)
+    ) {
+      notifyServerSemver(extensionContext.serverVersion);
+    } else {
+      showWelcomePageIfFirstUse(context, extensionContext);
+    }
+  };
 }
 
 function notifyServerSemver(serverVersion: string) {

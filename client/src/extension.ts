@@ -1,24 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
-import {
-  ENABLEMENT_FLAG,
-  EXTENSION_NS,
-  EXTENSION_TS_PLUGIN,
-  TS_LANGUAGE_FEATURES_EXTENSION,
-} from "./constants";
+import { ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { activateTaskProvider } from "./tasks";
-import type {
-  DenoExtensionContext,
-  Settings,
-  TsLanguageFeaturesApiV0,
-} from "./types";
+import type { DenoExtensionContext, Settings } from "./types";
 import { assert } from "./util";
 
 import * as path from "path";
 import * as vscode from "vscode";
+import { configurePlugin, getTsApi } from "./ts_api";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -27,22 +19,6 @@ const LANGUAGES = [
   "typescriptreact",
   "javascriptreact",
 ];
-
-interface TsLanguageFeatures {
-  getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
-}
-
-async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
-  const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
-    .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
-  const errorMessage =
-    "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
-  assert(extension, errorMessage);
-  const languageFeatures = await extension.activate();
-  const api = languageFeatures.getAPI(0);
-  assert(api, errorMessage);
-  return api;
-}
 
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
@@ -108,20 +84,9 @@ function getWorkspaceSettings(): Settings {
   return configToWorkspaceSettings(config);
 }
 
-/** Update the typescript-deno-plugin with settings. */
-function configurePlugin() {
-  const { documentSettings: documents, tsApi, workspaceSettings: workspace } =
-    extensionContext;
-  tsApi.configurePlugin(EXTENSION_TS_PLUGIN, { workspace, documents });
-}
-
 function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
-  if (!extensionContext.client) {
-    return;
-  }
-
   if (event.affectsConfiguration(EXTENSION_NS)) {
-    extensionContext.client.sendNotification(
+    extensionContext.client?.sendNotification(
       "workspace/didChangeConfiguration",
       // We actually set this to empty because the language server will
       // call back and get the configuration. There can be issues with the
@@ -141,7 +106,11 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         ),
       };
     }
-    configurePlugin();
+    configurePlugin(extensionContext);
+
+    // Restart the language server. This will allow for
+    // "deno.path" configuration changes to take effect.
+    vscode.commands.executeCommand("deno.restart");
   }
 }
 
@@ -161,7 +130,7 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
     didChange = true;
   }
   if (didChange) {
-    configurePlugin();
+    configurePlugin(extensionContext);
   }
 }
 
@@ -247,7 +216,6 @@ export async function activate(
   extensionContext.tsApi = await getTsApi();
   extensionContext.documentSettings = {};
   extensionContext.workspaceSettings = getWorkspaceSettings();
-  configurePlugin();
 
   // when we activate, it might have been because a document was opened that
   // activated us, which we need to grab the config for and send it over to the
@@ -261,10 +229,12 @@ export function deactivate(): Thenable<void> | undefined {
   if (!extensionContext.client) {
     return undefined;
   }
-  return extensionContext.client.stop().then(() => {
-    extensionContext.statusBarItem.hide();
-    vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
-  });
+
+  const client = extensionContext.client;
+  extensionContext.client = undefined;
+  extensionContext.statusBarItem.hide();
+  vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
+  return client.stop();
 }
 
 /** Internal function factory that returns a registerCommand function that is

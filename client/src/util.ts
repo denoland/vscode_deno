@@ -1,11 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import * as childProcess from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as process from "process";
-import * as semver from "semver";
 import * as vscode from "vscode";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -13,33 +11,6 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
   if (!cond) {
     throw new Error(msg);
   }
-}
-
-export interface DenoCommandAndVersion {
-  command: string;
-  /** The version of the deno CLI or undefined if it couldn't be determined. */
-  version: semver.SemVer | undefined;
-}
-
-export async function getDenoCommandAndVersion(): Promise<
-  DenoCommandAndVersion
-> {
-  let version: semver.SemVer | undefined;
-  let command = "deno";
-  try {
-    command = await getDenoCommand();
-    const output = await execCommand(`${command} -V`);
-    const result = /[0-9]+\.[0-9]+\.[0-9]+/.exec(output);
-    if (result != null) {
-      version = new semver.SemVer(result[0]);
-    }
-  } catch (err) {
-    console.error(`Error getting deno version: ${err}`);
-  }
-  return {
-    command,
-    version,
-  };
 }
 
 export async function getDenoCommand(): Promise<string> {
@@ -131,22 +102,4 @@ function getDefaultDenoCommand() {
       return false;
     });
   }
-}
-
-function execCommand(command: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    // todo(dsherret): this should handle multiple workspace folders
-    // in order to better support directory based deno executable
-    // version managers. For now, this is good enough.
-    const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    childProcess.exec(command, {
-      cwd,
-    }, (err, stdout, stderr) => {
-      if (err) {
-        reject(stderr);
-      } else {
-        resolve(stdout);
-      }
-    });
-  });
 }
