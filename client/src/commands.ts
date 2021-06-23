@@ -8,6 +8,7 @@ import {
   EXTENSION_NS,
   LANGUAGE_CLIENT_ID,
   LANGUAGE_CLIENT_NAME,
+  SERVER_SEMVER,
 } from "./constants";
 import { pickInitWorkspace } from "./initialize_project";
 import {
@@ -29,9 +30,6 @@ import type {
   Location,
   Position,
 } from "vscode-languageclient/node";
-
-/** The minimum version of Deno that this extension is designed to support. */
-const SERVER_SEMVER = ">=1.10.3";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -91,9 +89,9 @@ export function initializeWorkspace(
 
 export function reloadImportRegistries(
   _context: vscode.ExtensionContext,
-  { client }: DenoExtensionContext,
+  extensionContext: DenoExtensionContext,
 ): Callback {
-  return () => client?.sendRequest(reloadImportRegistriesReq);
+  return () => extensionContext.client?.sendRequest(reloadImportRegistriesReq);
 }
 
 /** Start (or restart) the Deno Language Server */
