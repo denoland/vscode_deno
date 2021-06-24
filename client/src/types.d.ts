@@ -4,7 +4,6 @@ import type { ConfigurationScope, StatusBarItem } from "vscode";
 import type {
   LanguageClient,
   LanguageClientOptions,
-  ServerOptions,
 } from "vscode-languageclient/node";
 
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
@@ -56,22 +55,19 @@ export interface DocumentSettings {
   settings: Partial<Settings>;
 }
 
+export interface TsApi {
+  /** Update the typescript-deno-plugin with settings. */
+  refresh(): void;
+}
+
 export interface DenoExtensionContext {
-  client: LanguageClient;
+  client: LanguageClient | undefined;
   clientOptions: LanguageClientOptions;
   /** A record of filepaths and their document settings. */
   documentSettings: Record<string, DocumentSettings>;
-  serverOptions: ServerOptions;
   serverVersion: string;
   statusBarItem: StatusBarItem;
-  tsApi: TsLanguageFeaturesApiV0;
+  tsApi: TsApi;
   /** The current workspace settings. */
   workspaceSettings: Settings;
-}
-
-export interface TsLanguageFeaturesApiV0 {
-  configurePlugin(
-    pluginId: string,
-    configuration: PluginSettings,
-  ): void;
 }

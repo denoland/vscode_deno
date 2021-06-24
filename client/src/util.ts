@@ -1,8 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { EXTENSION_NS } from "./constants";
+
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import * as process from "process";
 import * as vscode from "vscode";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -12,12 +15,7 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
   }
 }
 
-let memoizedCommand: string | undefined;
-
 export async function getDenoCommand(): Promise<string> {
-  if (memoizedCommand !== undefined) {
-    return memoizedCommand;
-  }
   let command = getWorkspaceConfigDenoExePath();
   const workspaceFolders = vscode.workspace.workspaceFolders;
   const defaultCommand = await getDefaultDenoCommand();
@@ -27,7 +25,7 @@ export async function getDenoCommand(): Promise<string> {
     // if sent a relative path, iterate over workspace folders to try and resolve.
     const list = [];
     for (const workspace of workspaceFolders) {
-      const dir = path.resolve(workspace.uri.path, command);
+      const dir = path.resolve(workspace.uri.fsPath, command);
       try {
         const stat = await fs.promises.stat(dir);
         if (stat.isFile()) {
@@ -39,11 +37,12 @@ export async function getDenoCommand(): Promise<string> {
     }
     command = list.shift() ?? defaultCommand;
   }
-  return memoizedCommand = command;
+  return command;
 }
 
 function getWorkspaceConfigDenoExePath() {
-  const exePath = vscode.workspace.getConfiguration("deno").get<string>("path");
+  const exePath = vscode.workspace.getConfiguration(EXTENSION_NS)
+    .get<string>("path");
   // it is possible for the path to be blank. In that case, return undefined
   if (typeof exePath === "string" && exePath.trim().length === 0) {
     return undefined;

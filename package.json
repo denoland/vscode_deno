@@ -1,7 +1,7 @@
 {
   "name": "vscode-deno",
   "displayName": "Deno",
-  "description": "A language server client for Deno. Requires Deno 1.8 or better.",
+  "description": "A language server client for Deno.",
   "author": "Deno Land Inc.",
   "license": "MIT",
   "version": "3.6.1",
@@ -115,7 +115,8 @@
         "command": "deno.reloadImportRegistries",
         "title": "Reload Import Registries Cache",
         "category": "Deno",
-        "description": "Reload any cached import registry responses."
+        "description": "Reload any cached import registry responses.",
+        "enablement": "deno:lspReady"
       },
       {
         "command": "deno.restart",

@@ -1,31 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
-import {
-  ENABLEMENT_FLAG,
-  EXTENSION_NS,
-  EXTENSION_TS_PLUGIN,
-  TS_LANGUAGE_FEATURES_EXTENSION,
-} from "./constants";
+import { ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
-import { registryState } from "./lsp_extensions";
-import { createRegistryStateHandler } from "./notification_handlers";
 import { activateTaskProvider } from "./tasks";
-import type {
-  DenoExtensionContext,
-  Settings,
-  TsLanguageFeaturesApiV0,
-} from "./types";
-import { assert, getDenoCommand } from "./util";
+import type { DenoExtensionContext, Settings } from "./types";
+import { assert } from "./util";
 
 import * as path from "path";
-import * as semver from "semver";
 import * as vscode from "vscode";
-import type { Executable } from "vscode-languageclient/node";
-
-/** The minimum version of Deno that this extension is designed to support. */
-const SERVER_SEMVER = ">=1.10.3";
+import { getTsApi } from "./ts_api";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -34,22 +19,6 @@ const LANGUAGES = [
   "typescriptreact",
   "javascriptreact",
 ];
-
-interface TsLanguageFeatures {
-  getAPI(version: 0): TsLanguageFeaturesApiV0 | undefined;
-}
-
-async function getTsApi(): Promise<TsLanguageFeaturesApiV0> {
-  const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
-    .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
-  const errorMessage =
-    "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
-  assert(extension, errorMessage);
-  const languageFeatures = await extension.activate();
-  const api = languageFeatures.getAPI(0);
-  assert(api, errorMessage);
-  return api;
-}
 
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
@@ -115,16 +84,9 @@ function getWorkspaceSettings(): Settings {
   return configToWorkspaceSettings(config);
 }
 
-/** Update the typescript-deno-plugin with settings. */
-function configurePlugin() {
-  const { documentSettings: documents, tsApi, workspaceSettings: workspace } =
-    extensionContext;
-  tsApi.configurePlugin(EXTENSION_TS_PLUGIN, { workspace, documents });
-}
-
 function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
   if (event.affectsConfiguration(EXTENSION_NS)) {
-    extensionContext.client.sendNotification(
+    extensionContext.client?.sendNotification(
       "workspace/didChangeConfiguration",
       // We actually set this to empty because the language server will
       // call back and get the configuration. There can be issues with the
@@ -144,7 +106,12 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         ),
       };
     }
-    configurePlugin();
+    extensionContext.tsApi.refresh();
+
+    // restart when "deno.path" changes
+    if (event.affectsConfiguration("deno.path")) {
+      vscode.commands.executeCommand("deno.restart");
+    }
   }
 }
 
@@ -164,7 +131,7 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
     didChange = true;
   }
   if (didChange) {
-    configurePlugin();
+    extensionContext.tsApi.refresh();
   }
 }
 
@@ -175,24 +142,6 @@ const extensionContext = {} as DenoExtensionContext;
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
-  const command = await getDenoCommand();
-  const run: Executable = {
-    command,
-    args: ["lsp"],
-    // deno-lint-ignore no-undef
-    options: { env: { ...process.env, "NO_COLOR": true } },
-  };
-
-  const debug: Executable = {
-    command,
-    // disabled for now, as this gets super chatty during development
-    // args: ["lsp", "-L", "debug"],
-    args: ["lsp"],
-    // deno-lint-ignore no-undef
-    options: { env: { ...process.env, "NO_COLOR": true } },
-  };
-
-  extensionContext.serverOptions = { run, debug };
   extensionContext.clientOptions = {
     documentSelector: [
       { scheme: "file", language: "javascript" },
@@ -265,60 +214,32 @@ export async function activate(
   registerCommand("test", commands.test);
   registerCommand("welcome", commands.welcome);
 
-  extensionContext.tsApi = await getTsApi();
-
-  await commands.startLanguageServer(context, extensionContext)();
-
-  context.subscriptions.push(
-    extensionContext.client.onNotification(
-      registryState,
-      createRegistryStateHandler(),
-    ),
-  );
+  extensionContext.tsApi = await getTsApi(() => ({
+    documents: extensionContext.documentSettings,
+    workspace: extensionContext.workspaceSettings,
+  }));
 
   extensionContext.documentSettings = {};
   extensionContext.workspaceSettings = getWorkspaceSettings();
-  configurePlugin();
+
   // when we activate, it might have been because a document was opened that
   // activated us, which we need to grab the config for and send it over to the
   // plugin
   handleDocumentOpen(...vscode.workspace.textDocuments);
 
-  if (
-    semver.valid(extensionContext.serverVersion) &&
-    !semver.satisfies(extensionContext.serverVersion, SERVER_SEMVER)
-  ) {
-    notifyServerSemver(extensionContext.serverVersion);
-  } else {
-    showWelcomePage(context);
-  }
+  await commands.startLanguageServer(context, extensionContext)();
 }
 
 export function deactivate(): Thenable<void> | undefined {
   if (!extensionContext.client) {
     return undefined;
   }
-  return extensionContext.client.stop().then(() => {
-    extensionContext.statusBarItem.hide();
-    vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
-  });
-}
 
-function notifyServerSemver(serverVersion: string) {
-  return vscode.window.showWarningMessage(
-    `The version of Deno language server ("${serverVersion}") does not meet the requirements of the extension ("${SERVER_SEMVER}"). Please update Deno and restart.`,
-    "OK",
-  );
-}
-
-function showWelcomePage(context: vscode.ExtensionContext) {
-  const welcomeShown = context.globalState.get<boolean>("deno.welcomeShown") ??
-    false;
-
-  if (!welcomeShown) {
-    commands.welcome(context, extensionContext)();
-    context.globalState.update("deno.welcomeShown", true);
-  }
+  const client = extensionContext.client;
+  extensionContext.client = undefined;
+  extensionContext.statusBarItem.hide();
+  vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
+  return client.stop();
 }
 
 /** Internal function factory that returns a registerCommand function that is

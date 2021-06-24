@@ -8,6 +8,7 @@ import {
   EXTENSION_NS,
   LANGUAGE_CLIENT_ID,
   LANGUAGE_CLIENT_NAME,
+  SERVER_SEMVER,
 } from "./constants";
 import { pickInitWorkspace } from "./initialize_project";
 import {
@@ -17,10 +18,13 @@ import {
 import * as tasks from "./tasks";
 import type { DenoExtensionContext } from "./types";
 import { WelcomePanel } from "./welcome";
-import { assert } from "./util";
+import { assert, getDenoCommand } from "./util";
+import { registryState } from "./lsp_extensions";
+import { createRegistryStateHandler } from "./notification_handlers";
 
+import * as semver from "semver";
 import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type {
   DocumentUri,
   Location,
@@ -42,14 +46,15 @@ export function cache(
 ): Callback {
   return (uris: DocumentUri[] = []) => {
     const activeEditor = vscode.window.activeTextEditor;
-    if (!activeEditor) {
+    const client = extensionContext.client;
+    if (!activeEditor || !client) {
       return;
     }
     return vscode.window.withProgress({
       location: vscode.ProgressLocation.Window,
       title: "caching",
     }, () => {
-      return extensionContext.client.sendRequest(
+      return client.sendRequest(
         cacheReq,
         {
           referrer: { uri: activeEditor.document.uri.toString() },
@@ -84,9 +89,9 @@ export function initializeWorkspace(
 
 export function reloadImportRegistries(
   _context: vscode.ExtensionContext,
-  { client }: DenoExtensionContext,
+  extensionContext: DenoExtensionContext,
 ): Callback {
-  return () => client.sendRequest(reloadImportRegistriesReq);
+  return () => extensionContext.client?.sendRequest(reloadImportRegistriesReq);
 }
 
 /** Start (or restart) the Deno Language Server */
@@ -95,20 +100,46 @@ export function startLanguageServer(
   extensionContext: DenoExtensionContext,
 ): Callback {
   return async () => {
+    // Stop the existing language server and reset the state
     const { statusBarItem } = extensionContext;
     if (extensionContext.client) {
-      await extensionContext.client.stop();
+      const client = extensionContext.client;
+      extensionContext.client = undefined;
       statusBarItem.hide();
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
+      await client.stop();
     }
-    const client = extensionContext.client = new LanguageClient(
+
+    // Start a new language server
+    const command = await getDenoCommand();
+    const serverOptions: ServerOptions = {
+      run: {
+        command,
+        args: ["lsp"],
+        // deno-lint-ignore no-undef
+        options: { env: { ...process.env, "NO_COLOR": true } },
+      },
+      debug: {
+        command,
+        // disabled for now, as this gets super chatty during development
+        // args: ["lsp", "-L", "debug"],
+        args: ["lsp"],
+        // deno-lint-ignore no-undef
+        options: { env: { ...process.env, "NO_COLOR": true } },
+      },
+    };
+    const client = new LanguageClient(
       LANGUAGE_CLIENT_ID,
       LANGUAGE_CLIENT_NAME,
-      extensionContext.serverOptions,
+      serverOptions,
       extensionContext.clientOptions,
     );
     context.subscriptions.push(client.start());
     await client.onReady();
+
+    // set this after a successful start
+    extensionContext.client = client;
+
     vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, true);
     const serverVersion = extensionContext.serverVersion =
       (client.initializeResult?.serverInfo?.version ?? "")
@@ -119,7 +150,45 @@ export function startLanguageServer(
     statusBarItem.tooltip = client
       .initializeResult?.serverInfo?.version;
     statusBarItem.show();
+
+    context.subscriptions.push(
+      client.onNotification(
+        registryState,
+        createRegistryStateHandler(),
+      ),
+    );
+
+    extensionContext.tsApi.refresh();
+
+    if (
+      semver.valid(extensionContext.serverVersion) &&
+      !semver.satisfies(extensionContext.serverVersion, SERVER_SEMVER)
+    ) {
+      notifyServerSemver(extensionContext.serverVersion);
+    } else {
+      showWelcomePageIfFirstUse(context, extensionContext);
+    }
   };
+}
+
+function notifyServerSemver(serverVersion: string) {
+  return vscode.window.showWarningMessage(
+    `The version of Deno language server ("${serverVersion}") does not meet the requirements of the extension ("${SERVER_SEMVER}"). Please update Deno and restart.`,
+    "OK",
+  );
+}
+
+function showWelcomePageIfFirstUse(
+  context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+) {
+  const welcomeShown = context.globalState.get<boolean>("deno.welcomeShown") ??
+    false;
+
+  if (!welcomeShown) {
+    welcome(context, extensionContext)();
+    context.globalState.update("deno.welcomeShown", true);
+  }
 }
 
 export function showReferences(
@@ -127,6 +196,9 @@ export function showReferences(
   extensionContext: DenoExtensionContext,
 ): Callback {
   return (uri: string, position: Position, locations: Location[]) => {
+    if (!extensionContext.client) {
+      return;
+    }
     vscode.commands.executeCommand(
       "editor.action.showReferences",
       vscode.Uri.parse(uri),
