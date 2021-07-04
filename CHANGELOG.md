@@ -3,6 +3,18 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.7.0](https://github.com/denoland/vscode_deno/compare/3.6.1...3.7.0) / 2021.07.02
+
+- feat: add support for import map in test code lens (#446)
+
+  When using the test code lens, the configuration of the import map is
+  reflected in running the test.
+
+- fix: activate extension on markdown / json / jsonc (#447)
+- fix: setting then clearing "deno.path" config should not use empty string for
+  path (#452)
+- fix: better handling when language server fails to start (#454)
+
 ### [3.6.1](https://github.com/denoland/vscode_deno/compare/3.6.0...3.6.1) / 2021.06.08
 
 - fix: update packaging and pin vsce version (#440)
