@@ -82,12 +82,16 @@ class Plugin implements ts.server.PluginModule {
   #log = (_msg: string) => {};
 
   create(info: ts.server.PluginCreateInfo): ts.LanguageService {
-    const { languageService: ls, project } = info;
+    const { languageService: ls, project, config } = info;
     this.#log = (msg) =>
       project.projectService.logger.info(`[typescript-deno-plugin] ${msg}`);
 
     this.#project = project;
     this.#projectName = project.getProjectName();
+    updateSettings(this.#project, config);
+    setImmediate(() => {
+      this.#project.refreshDiagnostics();
+    });
 
     /** Given an object and a method name on that object, call if disabled. */
     const callIfDisabled: CallIfDisabledFunction = (

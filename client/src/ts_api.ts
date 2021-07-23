@@ -20,22 +20,29 @@ interface TsLanguageFeaturesApiV0 {
   ): void;
 }
 
-export async function getTsApi(
+export function getTsApi(
   getPluginSettings: () => PluginSettings,
-): Promise<TsApi> {
-  const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
-    .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
-  const errorMessage =
-    "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
-  assert(extension, errorMessage);
-  const languageFeatures = await extension.activate();
-  const api = languageFeatures.getAPI(0);
-  assert(api, errorMessage);
+): TsApi {
+  let api: TsLanguageFeaturesApiV0 | undefined;
+  (async () => {
+    const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
+      .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
+    const errorMessage =
+      "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
+    assert(extension, errorMessage);
+    const languageFeatures = await extension.activate();
+    api = languageFeatures.getAPI(0);
+    assert(api, errorMessage);
+    const pluginSettings = getPluginSettings();
+    api.configurePlugin(EXTENSION_TS_PLUGIN, pluginSettings);
+  })();
 
   return {
     refresh() {
-      const pluginSettings = getPluginSettings();
-      api.configurePlugin(EXTENSION_TS_PLUGIN, pluginSettings);
+      if (api) {
+        const pluginSettings = getPluginSettings();
+        api.configurePlugin(EXTENSION_TS_PLUGIN, pluginSettings);
+      }
     },
   };
 }
