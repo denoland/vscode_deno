@@ -11,6 +11,9 @@ import type {
  * contributions made by the extension.
  */
 export interface Settings {
+  /** Specify an explicit path to the `deno` cache instead of using DENO_DIR
+   * or the OS default. */
+  cache: string | null;
   /** Settings related to code lens. */
   codeLens: {
     implementations: boolean;
@@ -30,6 +33,8 @@ export interface Settings {
   internalDebug: boolean;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
+  /** Specify an explicit path to the `deno` binary. */
+  path: string | null;
   suggest: {
     autoImports: boolean;
     completeFunctionCalls: boolean;

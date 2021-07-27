@@ -162,6 +162,12 @@
             "C:\\Program Files\\deno\\deno.exe"
           ]
         },
+        "deno.cache": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "A path to the cache directory for Deno. By default, the operating system's cache path plus `deno` is used, or the `DENO_DIR` environment variable, but if set, this path will be used instead.",
+          "scope": "window"
+        },
         "deno.codeLens.implementations": {
           "type": "boolean",
           "default": false,

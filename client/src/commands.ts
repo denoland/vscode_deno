@@ -234,9 +234,12 @@ export function test(
     if (config.get("unstable")) {
       testArgs.push("--unstable");
     }
-    if (config.get("importMap")) {
+    if (config.has("importMap")) {
       testArgs.push("--import-map", String(config.get("importMap")));
     }
+    const env = config.has("cache")
+      ? { "DENO_DIR": config.get("cache") } as Record<string, string>
+      : undefined;
     const args = ["test", ...testArgs, "--filter", name, path];
 
     const definition: tasks.DenoTaskDefinition = {
@@ -244,6 +247,7 @@ export function test(
       command: "test",
       args,
       cwd: ".",
+      env,
     };
 
     assert(vscode.workspace.workspaceFolders);
