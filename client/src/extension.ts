@@ -22,6 +22,7 @@ const LANGUAGES = [
 
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
+  "cache",
   "codeLens",
   "config",
   "importMap",
