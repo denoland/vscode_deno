@@ -214,7 +214,7 @@ export async function activate(
   registerCommand("test", commands.test);
   registerCommand("welcome", commands.welcome);
 
-  extensionContext.tsApi = await getTsApi(() => ({
+  extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
     workspace: extensionContext.workspaceSettings,
   }));

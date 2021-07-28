@@ -62,22 +62,20 @@ class Plugin implements ts.server.PluginModule {
   #project!: ts.server.Project;
   #projectName!: string;
 
-  #getGlobalSettings = (): Settings => {
+  #getGlobalSettings(): Settings {
     return projectSettings.get(this.#projectName)?.workspace ??
       defaultSettings;
-  };
+  }
 
-  #getSetting = <K extends keyof Settings>(
+  #getSetting<K extends keyof Settings>(
     fileName: string,
     key: K,
-  ): Settings[K] => {
+  ): Settings[K] {
     const settings = projectSettings.get(this.#projectName);
-    return settings
-      ? settings.documents[fileName]?.settings[key] ??
-        // deno-lint-ignore no-explicit-any
-        settings.workspace[key] as any
-      : defaultSettings[key];
-  };
+    return settings?.documents?.[fileName]?.settings[key] ??
+      // deno-lint-ignore no-explicit-any
+      settings?.workspace?.[key] as any ?? defaultSettings[key];
+  }
 
   #log = (_msg: string) => {};
 
