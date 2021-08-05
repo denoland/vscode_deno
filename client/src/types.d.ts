@@ -1,10 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import type { ConfigurationScope, StatusBarItem } from "vscode";
+import type { ConfigurationScope } from "vscode";
 import type {
   LanguageClient,
   LanguageClientOptions,
 } from "vscode-languageclient/node";
+import { DenoStatusBar } from "./status_bar";
+import { DenoServerInfo } from "./server_info";
 
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
  * configuration are available.  This interface should mirror the configuration
@@ -70,8 +72,8 @@ export interface DenoExtensionContext {
   clientOptions: LanguageClientOptions;
   /** A record of filepaths and their document settings. */
   documentSettings: Record<string, DocumentSettings>;
-  serverVersion: string;
-  statusBarItem: StatusBarItem;
+  serverInfo: DenoServerInfo | undefined;
+  statusBar: DenoStatusBar;
   tsApi: TsApi;
   /** The current workspace settings. */
   workspaceSettings: Settings;

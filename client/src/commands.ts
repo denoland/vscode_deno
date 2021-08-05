@@ -21,6 +21,7 @@ import { WelcomePanel } from "./welcome";
 import { assert, getDenoCommand } from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
+import { DenoServerInfo } from "./server_info";
 
 import * as semver from "semver";
 import * as vscode from "vscode";
@@ -101,11 +102,10 @@ export function startLanguageServer(
 ): Callback {
   return async () => {
     // Stop the existing language server and reset the state
-    const { statusBarItem } = extensionContext;
     if (extensionContext.client) {
       const client = extensionContext.client;
       extensionContext.client = undefined;
-      statusBarItem.hide();
+      extensionContext.statusBar.refresh(extensionContext);
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
       await client.stop();
     }
@@ -141,15 +141,10 @@ export function startLanguageServer(
     extensionContext.client = client;
 
     vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, true);
-    const serverVersion = extensionContext.serverVersion =
-      (client.initializeResult?.serverInfo?.version ?? "")
-        .split(
-          " ",
-        )[0];
-    statusBarItem.text = `Deno ${serverVersion}`;
-    statusBarItem.tooltip = client
-      .initializeResult?.serverInfo?.version;
-    statusBarItem.show();
+    extensionContext.serverInfo = new DenoServerInfo(
+      client.initializeResult?.serverInfo,
+    );
+    extensionContext.statusBar.refresh(extensionContext);
 
     context.subscriptions.push(
       client.onNotification(
@@ -161,10 +156,10 @@ export function startLanguageServer(
     extensionContext.tsApi.refresh();
 
     if (
-      semver.valid(extensionContext.serverVersion) &&
-      !semver.satisfies(extensionContext.serverVersion, SERVER_SEMVER)
+      semver.valid(extensionContext.serverInfo.version) &&
+      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER)
     ) {
-      notifyServerSemver(extensionContext.serverVersion);
+      notifyServerSemver(extensionContext.serverInfo.version);
     } else {
       showWelcomePageIfFirstUse(context, extensionContext);
     }
