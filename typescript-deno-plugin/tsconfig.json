@@ -12,7 +12,7 @@
   },
   "include": [
     "src",
-    "../client/src/interfaces.d.ts"
+    "../client/src/shared_types.d.ts"
   ],
   "exclude": [
     "node_modules"

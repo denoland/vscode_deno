@@ -4,13 +4,14 @@ import * as commands from "./commands";
 import { ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
+import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
+import { getTsApi } from "./ts_api";
 import type { DenoExtensionContext, Settings } from "./types";
 import { assert } from "./util";
 
 import * as path from "path";
 import * as vscode from "vscode";
-import { getTsApi } from "./ts_api";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -108,6 +109,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
       };
     }
     extensionContext.tsApi.refresh();
+    extensionContext.statusBar.refresh(extensionContext);
 
     // restart when "deno.path" changes
     if (event.affectsConfiguration("deno.path")) {
@@ -180,11 +182,8 @@ export async function activate(
     context.subscriptions,
   );
 
-  extensionContext.statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    0,
-  );
-  context.subscriptions.push(extensionContext.statusBarItem);
+  extensionContext.statusBar = new DenoStatusBar();
+  context.subscriptions.push(extensionContext.statusBar);
 
   // Register a content provider for Deno resolved read-only files.
   context.subscriptions.push(
@@ -238,7 +237,7 @@ export function deactivate(): Thenable<void> | undefined {
 
   const client = extensionContext.client;
   extensionContext.client = undefined;
-  extensionContext.statusBarItem.hide();
+  extensionContext.statusBar.refresh(extensionContext);
   vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
   return client.stop();
 }
