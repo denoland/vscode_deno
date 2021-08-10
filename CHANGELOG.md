@@ -3,6 +3,31 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.8.0](https://github.com/denoland/vscode_deno/compare/3.7.0...3.8.0) / 2021.08.10
+
+- feat: add ability to set cache directory in settings (#477)
+
+  The plugin supports setting the `deno.cache` option, which allows setting a
+  specific cache directory for the Deno language server to use. This is similar
+  to the `DENO_CACHE` environment variable that can be set when invoking Deno on
+  the command line.
+
+- feat: hide the status bar unless `deno.enable` is true (#485)
+
+  The Deno language server runs in a workspace even when the project isn't
+  enabled for Deno, as the formatting services are still available and the
+  language server needs to keep track of the state of documents in case the
+  workspace does become enabled. It is confusing to see the version of Deno in
+  the status bar. The extension now will not display this information unless the
+  workspace is enabled for Deno.
+
+- fix: properly handle plugin configuration at startup (#474)
+
+  This led to an issue where if Deno started before the built in TypeScript
+  language service in a Deno enabled project, the TypeScript language service
+  diagnostics were not _muted_ and incorrect or duplicate diagnostics were being
+  displayed.
+
 ### [3.7.0](https://github.com/denoland/vscode_deno/compare/3.6.1...3.7.0) / 2021.07.02
 
 - feat: add support for import map in test code lens (#446)
