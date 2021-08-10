@@ -9,7 +9,7 @@ Releases of the extension can be downloaded from
 
   The plugin supports setting the `deno.cache` option, which allows setting a
   specific cache directory for the Deno language server to use. This is similar
-  to the `DENO_CACHE` environment variable that can be set when invoking Deno on
+  to the `DENO_DIR` environment variable that can be set when invoking Deno on
   the command line.
 
 - feat: hide the status bar unless `deno.enable` is true (#485)
