@@ -230,13 +230,13 @@ export function test(
       testArgs.push("--unstable");
     }
     const importMap: string | undefined | null = config.get("importMap");
-    if (importMap != null) {
-      testArgs.push("--import-map", String(config.get("importMap")));
+    if (importMap?.trim()) {
+      testArgs.push("--import-map", importMap.trim());
     }
     const env = {} as Record<string, string>;
     const cacheDir: string | undefined | null = config.get("cache");
-    if (cacheDir != null) {
-      env["DENO_DIR"] = cacheDir;
+    if (cacheDir?.trim()) {
+      env["DENO_DIR"] = cacheDir.trim();
     }
     const args = ["test", ...testArgs, "--filter", name, path];
 
