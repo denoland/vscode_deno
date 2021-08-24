@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.8.1](https://github.com/denoland/vscode_deno/compare/3.8.0...3.8.1) / 2021.08.25
+
+- fix: properly parse config for test code lens (#502)
+- chore: bump minimum version of Deno CLI (#503)
+
 ### [3.8.0](https://github.com/denoland/vscode_deno/compare/3.7.0...3.8.0) / 2021.08.10
 
 - feat: add ability to set cache directory in settings (#477)
