@@ -229,12 +229,15 @@ export function test(
     if (config.get("unstable")) {
       testArgs.push("--unstable");
     }
-    if (config.has("importMap")) {
-      testArgs.push("--import-map", String(config.get("importMap")));
+    const importMap: string | undefined | null = config.get("importMap");
+    if (importMap?.trim()) {
+      testArgs.push("--import-map", importMap.trim());
     }
-    const env = config.has("cache")
-      ? { "DENO_DIR": config.get("cache") } as Record<string, string>
-      : undefined;
+    const env = {} as Record<string, string>;
+    const cacheDir: string | undefined | null = config.get("cache");
+    if (cacheDir?.trim()) {
+      env["DENO_DIR"] = cacheDir.trim();
+    }
     const args = ["test", ...testArgs, "--filter", name, path];
 
     const definition: tasks.DenoTaskDefinition = {
