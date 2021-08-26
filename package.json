@@ -446,7 +446,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run esbuild-plugin -- --minify && npm run esbuild-base -- --minify",
+    "vscode:prepublish": "npm run esbuild-plugin && npm run esbuild-base",
     "esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=client/dist/main.js --external:vscode --format=cjs --platform=node",
     "esbuild-plugin": "esbuild ./typescript-deno-plugin/src/index.ts --bundle --outfile=typescript-deno-plugin/dist/index.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run esbuild-plugin -- --sourcemap && npm run esbuild-base -- --sourcemap",
