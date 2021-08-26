@@ -47,8 +47,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Compile
-        run: npm run compile
+      - name: Type check
+        run: npm run test-compile
 
       - name: Package
         run: npx vsce@1.93.0 package -o vscode-deno.vsix
