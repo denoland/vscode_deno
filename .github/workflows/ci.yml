@@ -51,7 +51,7 @@ jobs:
         run: npm run test-compile
 
       - name: Package
-        run: npx vsce@1.93.0 package -o vscode-deno.vsix
+        run: npx vsce@1.96.1 package -o vscode-deno.vsix
 
       - name: Artifact upload
         uses: actions/upload-artifact@v2
