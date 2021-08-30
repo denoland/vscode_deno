@@ -1,30 +1,52 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import type { Settings } from "./types";
+import { getDenoCommand } from "./util";
 import * as vscode from "vscode";
 
 export class DenoDebugConfigurationProvider
   implements vscode.DebugConfigurationProvider {
   #getSettings: () => Settings;
 
+  #getEnv() {
+    const cache = this.#getSettings().cache;
+    return cache ? { "DENO_DIR": cache } : undefined;
+  }
+
+  #getAdditionalRuntimeArgs() {
+    const args: string[] = [];
+    const settings = this.#getSettings();
+    if (settings.unstable) {
+      args.push("--unstable");
+    }
+    if (settings.importMap) {
+      args.push("--import-map");
+      args.push(settings.importMap.trim());
+    }
+    if (settings.config) {
+      args.push("--config");
+      args.push(settings.config.trim());
+    }
+    return args;
+  }
+
   constructor(getSettings: () => Settings) {
     this.#getSettings = getSettings;
   }
 
-  provideDebugConfigurations(): vscode.ProviderResult<
-    vscode.DebugConfiguration[]
-  > {
+  async provideDebugConfigurations(): Promise<vscode.DebugConfiguration[]> {
     return [
       {
-        name: "Deno: Run",
         request: "launch",
+        name: "Launch Program",
         type: "pwa-node",
-        program: "main.ts",
+        program: "${workspaceFolder}/main.ts",
         cwd: "${workspaceFolder}",
-        runtimeExecutable: "deno",
+        env: this.#getEnv(),
+        runtimeExecutable: await getDenoCommand(),
         runtimeArgs: [
           "run",
-          ...(this.#getSettings().unstable ? ["--unstable"] : []),
+          ...this.#getAdditionalRuntimeArgs(),
           "--inspect",
           "--allow-all",
         ],
@@ -49,14 +71,15 @@ export class DenoDebugConfigurationProvider
         // https://github.com/microsoft/vscode/issues/106703#issuecomment-694595773
         // Bypass the bug of the vscode 1.49.0
         vscode.debug.startDebugging(workspace, {
-          name: "Deno: Run",
           request: "launch",
+          name: "Launch Program",
           type: "pwa-node",
           program: "${file}",
-          runtimeExecutable: "deno",
+          env: this.#getEnv(),
+          runtimeExecutable: await getDenoCommand(),
           runtimeArgs: [
             "run",
-            ...(this.#getSettings().unstable ? ["--unstable"] : []),
+            ...this.#getAdditionalRuntimeArgs(),
             "--inspect",
             "--allow-all",
           ],
