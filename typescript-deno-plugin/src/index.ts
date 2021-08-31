@@ -109,6 +109,18 @@ class Plugin implements ts.server.PluginModule {
       };
     };
 
+    // This "mutes" diagnostics for things like tsconfig files.
+    const projectGetGlobalProjectErrors = this.#project.getGlobalProjectErrors;
+    this.#project.getGlobalProjectErrors = () =>
+      this.#getGlobalSettings().enable
+        ? []
+        : projectGetGlobalProjectErrors.call(this.#project);
+    const projectGetAllProjectErrors = this.#project.getAllProjectErrors;
+    this.#project.getAllProjectErrors = () =>
+      this.#getGlobalSettings().enable
+        ? []
+        : projectGetAllProjectErrors.call(this.#project);
+
     const commentSelection = callIfDisabled("commentSelection", 0, []);
     const findReferences = callIfDisabled("findReferences", 0, undefined);
     const findRenameLocations = callIfDisabled(
@@ -186,8 +198,23 @@ class Plugin implements ts.server.PluginModule {
       0,
       undefined,
     );
+    const getEncodedSemanticClassifications = callIfDisabled(
+      "getEncodedSemanticClassifications",
+      0,
+      { spans: [], endOfLineState: 0 },
+    );
+    const getEncodedSyntacticClassifications = callIfDisabled(
+      "getEncodedSyntacticClassifications",
+      0,
+      { spans: [], endOfLineState: 0 },
+    );
     const getImplementationAtPosition = callIfDisabled(
       "getImplementationAtPosition",
+      0,
+      undefined,
+    );
+    const getJsxClosingTagAtPosition = callIfDisabled(
+      "getJsxClosingTagAtPosition",
       0,
       undefined,
     );
@@ -206,6 +233,13 @@ class Plugin implements ts.server.PluginModule {
       0,
       [],
     );
+    const getNavigationTree = callIfDisabled("getNavigationTree", 0, {
+      text: "",
+      kind: "" as ts.ScriptElementKind.unknown,
+      kindModifiers: "",
+      spans: [],
+      nameSpan: undefined,
+    });
     const getOutliningSpans = callIfDisabled("getOutliningSpans", 0, []);
     const getQuickInfoAtPosition = callIfDisabled(
       "getQuickInfoAtPosition",
@@ -217,6 +251,11 @@ class Plugin implements ts.server.PluginModule {
       0,
       undefined,
     );
+    const getSemanticClassifications = callIfDisabled(
+      "getSemanticClassifications",
+      0,
+      [],
+    ) as ts.LanguageService["getSemanticClassifications"];
     const getSemanticDiagnostics = callIfDisabled(
       "getSemanticDiagnostics",
       0,
@@ -224,6 +263,11 @@ class Plugin implements ts.server.PluginModule {
     );
     const getSignatureHelpItems = callIfDisabled(
       "getSignatureHelpItems",
+      0,
+      undefined,
+    );
+    const getSpanOfEnclosingComment = callIfDisabled(
+      "getSpanOfEnclosingComment",
       0,
       undefined,
     );
@@ -237,6 +281,11 @@ class Plugin implements ts.server.PluginModule {
       0,
       [],
     );
+    const getSyntacticClassifications = callIfDisabled(
+      "getSyntacticClassifications",
+      0,
+      [],
+    ) as ts.LanguageService["getSyntacticClassifications"];
     const getTodoComments = callIfDisabled("getTodoComments", 0, []);
     const getTypeDefinitionAtPosition = callIfDisabled(
       "getTypeDefinitionAtPosition",
@@ -259,6 +308,7 @@ class Plugin implements ts.server.PluginModule {
       0,
       [],
     );
+    const provideInlayHints = callIfDisabled("provideInlayHints", 0, []);
     const toggleLineComment = callIfDisabled("toggleLineComment", 0, []);
     const toggleMultilineComment = callIfDisabled(
       "toggleMultilineComment",
@@ -286,16 +336,23 @@ class Plugin implements ts.server.PluginModule {
       getDocumentHighlights,
       getEditsForFileRename,
       getEditsForRefactor,
+      getEncodedSemanticClassifications,
+      getEncodedSyntacticClassifications,
       getImplementationAtPosition,
+      getJsxClosingTagAtPosition,
       getNameOrDottedNameSpan,
       getNavigateToItems,
       getNavigationBarItems,
+      getNavigationTree,
       getOutliningSpans,
       getQuickInfoAtPosition,
       getReferencesAtPosition,
+      getSemanticClassifications,
       getSemanticDiagnostics,
       getSignatureHelpItems,
+      getSpanOfEnclosingComment,
       getSuggestionDiagnostics,
+      getSyntacticClassifications,
       getSyntacticDiagnostics,
       getTodoComments,
       getTypeDefinitionAtPosition,
@@ -303,6 +360,7 @@ class Plugin implements ts.server.PluginModule {
       prepareCallHierarchy,
       provideCallHierarchyIncomingCalls,
       provideCallHierarchyOutgoingCalls,
+      provideInlayHints,
       toggleLineComment,
       toggleMultilineComment,
       uncommentSelection,
