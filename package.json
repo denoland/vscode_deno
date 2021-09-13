@@ -29,7 +29,7 @@
     "deno"
   ],
   "engines": {
-    "vscode": "^1.53.0"
+    "vscode": "^1.60.0"
   },
   "activationEvents": [
     "onLanguage:typescript",
