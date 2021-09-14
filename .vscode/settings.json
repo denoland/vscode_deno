@@ -1,6 +1,0 @@
-{
-  "editor.insertSpaces": false,
-  "typescript.tsc.autoDetect": "off",
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.preferences.quoteStyle": "double"
-}
