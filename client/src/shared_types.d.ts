@@ -10,7 +10,7 @@ import type { ConfigurationScope } from "vscode";
  */
 export interface Settings {
   /** Specify an explicit path to the `deno` cache instead of using DENO_DIR
-	 * or the OS default. */
+   * or the OS default. */
   cache: string | null;
   /** Settings related to code lens. */
   codeLens: {
@@ -20,14 +20,14 @@ export interface Settings {
     test: boolean;
     testArgs: string[];
   } | null;
-  /** A path to a `tsconfig.json` that should be applied. */
+  /** A path to a configuration file that should be applied. */
   config: string | null;
   /** Is the extension enabled or not. */
   enable: boolean;
   /** A path to an import map that should be applied. */
   importMap: string | null;
   /** A flag that enables additional internal debug information to be printed
-	 * to the _Deno Language Server_ output. */
+   * to the _Deno Language Server_ output. */
   internalDebug: boolean;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
@@ -44,7 +44,7 @@ export interface Settings {
     } | null;
   } | null;
   /** Determine if the extension should be type checking against the unstable
-	   * APIs. */
+   * APIs. */
   unstable: boolean;
 }
 
