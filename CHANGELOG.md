@@ -3,6 +3,26 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.9.0](https://github.com/denoland/vscode_deno/compare/3.8.1...3.9.0) / 2021.09.15
+
+- feat: support deno.json(c) files (#521)
+
+  As of 1.14 Deno supports an expanded set of configuration options in the
+  configuration file above the supported TypeScript `"compilerOptions"` options.
+
+  The extension supports validating these configuration files, as well as
+  recommends naming them `deno.json` or `deno.jsonc`.
+
+- fix: debug config provider (#513)
+- fix: better suppression of built in diagnostics (#514)
+- chore: bundle extension (#506)
+
+  This decreases download/install size of the extension as well as speeds up
+  load time of the extension.
+
+- chore: fix packaging of extension (#507)
+- chore: update vscode typings (#519)
+
 ### [3.8.1](https://github.com/denoland/vscode_deno/compare/3.8.0...3.8.1) / 2021.08.25
 
 - fix: properly parse config for test code lens (#502)
