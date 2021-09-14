@@ -199,12 +199,12 @@
         "deno.config": {
           "type": "string",
           "default": null,
-          "markdownDescription": "The file path to a `tsconfig.json` file. This is the equivalent to using `--config` on the command line. The path can be either be relative to the workspace, or an absolute path.\n\n**Not recommended to be set globally.**",
+          "markdownDescription": "The file path to a configuration file. This is the equivalent to using `--config` on the command line. The path can be either be relative to the workspace, or an absolute path.\n\nIt is recommend you name it `deno.json` or `deno.jsonc`.\n\n**Not recommended to be set globally.**",
           "scope": "window",
           "examples": [
-            "./tsconfig.json",
-            "/path/to/tsconfig.json",
-            "C:\\path\\to\\tsconfig.json"
+            "./deno.jsonc",
+            "/path/to/deno.jsonc",
+            "C:\\path\\to\\deno.jsonc"
           ]
         },
         "deno.importMap": {
@@ -292,6 +292,13 @@
           "importMap*.json"
         ],
         "url": "./schemas/import_map.schema.json"
+      },
+      {
+        "fileMatch": [
+          "deno.json",
+          "deno.jsonc"
+        ],
+        "url": "https://raw.githubusercontent.com/denoland/deno/main/cli/schemas/config-file.v1.json"
       },
       {
         "fileMatch": "deno-import-intellisense.json",
