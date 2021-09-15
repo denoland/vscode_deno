@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.9.1](https://github.com/denoland/vscode_deno/compare/3.9.0...3.9.1) / 2021.09.15
+
+- revert: bundling related changes (#543)
+
 ### [3.9.0](https://github.com/denoland/vscode_deno/compare/3.8.1...3.9.0) / 2021.09.15
 
 - feat: support deno.json(c) files (#521)
