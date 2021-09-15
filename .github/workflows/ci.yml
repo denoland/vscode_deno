@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VSCE_COMMAND: ${{ 'vsce@1.99.0' }}
     name: ci
     steps:
       - name: Checkout
@@ -51,7 +53,7 @@ jobs:
         run: npm run test-compile
 
       - name: Package
-        run: npx vsce@1.96.1 package -o vscode-deno.vsix
+        run: npx $VSCE_COMMAND package -o vscode-deno.vsix
 
       - name: Artifact upload
         uses: actions/upload-artifact@v2
@@ -77,4 +79,4 @@ jobs:
         env:
           # https://dev.azure.com/propelml/_usersSettings/tokens
           AZURE_PAT: ${{ secrets.AZURE_PAT }}
-        run: npx vsce@1.93.0 publish --pat $AZURE_PAT
+        run: npx $VSCE_COMMAND publish --pat $AZURE_PAT
