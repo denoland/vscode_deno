@@ -49,7 +49,7 @@
     "onCommand:deno.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
-  "main": "./client/dist/main",
+  "main": "./client/out/extension",
   "contributes": {
     "breakpoints": [
       {
@@ -434,11 +434,8 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm i && npm run esbuild-plugin && npm i && npm run esbuild-base",
-    "esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=client/dist/main.js --external:vscode --format=cjs --platform=node",
-    "esbuild-plugin": "esbuild ./typescript-deno-plugin/src/index.ts --bundle --outfile=typescript-deno-plugin/dist/index.js --external:vscode --format=cjs --platform=node",
-    "esbuild": "npm run esbuild-plugin -- --sourcemap && npm run esbuild-base -- --sourcemap",
-    "test-compile": "tsc -b",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
     "fmt": "deno fmt .vscode .github client/src media typescript-deno-plugin/src typescript-deno-plugin/*.md docs package.json tsconfig.json README.md CHANGELOG.md",
     "lint": "deno lint --unstable client/src typescript-deno-plugin/src docs",
     "watch": "tsc -b -w",
@@ -449,7 +446,6 @@
   },
   "devDependencies": {
     "@types/node": "^14.14.25",
-    "esbuild": "^0.12.24",
     "typescript": "^4.4.2"
   }
 }
