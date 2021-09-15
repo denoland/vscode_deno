@@ -1,8 +1,8 @@
-.vscode
-node_modules
-out
-src
-*.map
-docs
-tsconfig.json
-/screenshots/*.png
+.vscode/**
+**/*.ts
+**/*.map
+.gitignore
+**/tsconfig.json
+**/tsconfig.base.json
+
+/typescript-deno-plugin

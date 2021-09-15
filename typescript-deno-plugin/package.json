@@ -6,7 +6,7 @@
 	"private": true,
 	"version": "3.9.0",
 	"publisher": "deno-land",
-	"main": "./dist/index",
+	"main": "./out/index",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/denoland/vscode_deno"
