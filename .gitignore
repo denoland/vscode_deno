@@ -1,6 +1,5 @@
 out
+dist
 node_modules
-client/server
-.vscode-test
-!.vscode
 *.vsix
+!.vscode
