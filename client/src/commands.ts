@@ -229,9 +229,11 @@ export function test(
     if (config.get("unstable")) {
       testArgs.push("--unstable");
     }
-    const importMap: string | undefined | null = config.get("importMap");
-    if (importMap?.trim()) {
-      testArgs.push("--import-map", importMap.trim());
+    if (!testArgs.includes("--import-map")) {
+      const importMap: string | undefined | null = config.get("importMap");
+      if (importMap?.trim()) {
+        testArgs.push("--import-map", importMap.trim());
+      }
     }
     const env = {} as Record<string, string>;
     const cacheDir: string | undefined | null = config.get("cache");
