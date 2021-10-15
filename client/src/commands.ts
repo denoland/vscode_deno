@@ -244,7 +244,6 @@ export function test(
       type: tasks.TASK_TYPE,
       command: "test",
       args,
-      cwd: ".",
       env,
     };
 
