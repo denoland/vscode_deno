@@ -3,6 +3,15 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.9.2](https://github.com/denoland/vscode_deno/compare/3.9.1...3.9.2) / 2021.11.09
+
+- fix: add back bundling and ensure CI uses same version of vsce for all steps
+  (#545)
+- fix: configurable import maps for testing code lens (#551)
+- fix: use workspace root as current directory for executing test code lens
+  (#564)
+- fix: do not cache unsupported origins in config (#571)
+
 ### [3.9.1](https://github.com/denoland/vscode_deno/compare/3.9.0...3.9.1) / 2021.09.15
 
 - revert: bundling related changes (#543)
