@@ -302,7 +302,7 @@
       },
       {
         "fileMatch": "deno-import-intellisense.json",
-        "url": "./schemas/deno-import-intellisense.schema.json"
+        "url": "./schemas/registry-completions.schema.json"
       }
     ],
     "problemPatterns": [
