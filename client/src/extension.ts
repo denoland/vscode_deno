@@ -12,7 +12,6 @@ import { assert } from "./util";
 
 import * as path from "path";
 import * as vscode from "vscode";
-import { debug } from "console";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
