@@ -246,11 +246,15 @@
         },
         "deno.suggest.imports.hosts": {
           "type": "object",
-          "default": {},
+          "default": {
+            "https://deno.land": true,
+            "https://cdn.nest.land": true,
+            "https://crux.land": true
+          },
           "markdownDescription": "Controls which hosts are enabled for import suggestions.",
           "scope": "window",
           "examples": {
-            "https://deno.land/": true
+            "https://deno.land": true
           }
         },
         "deno.unstable": {
