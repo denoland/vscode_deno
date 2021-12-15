@@ -10,4 +10,4 @@
       vscode.postMessage(msg);
     });
   }
-}());
+})();
