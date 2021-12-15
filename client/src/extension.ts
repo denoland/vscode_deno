@@ -46,20 +46,10 @@ function configToWorkspaceSettings(
 ): Settings {
   const workspaceSettings = Object.create(null);
   for (const key of workspaceSettingsKeys) {
-    const value = config.inspect(key);
-    assert(value);
-    workspaceSettings[key] = value.workspaceLanguageValue ??
-      value.workspaceValue ??
-      value.globalValue ??
-      value.defaultValue;
+    workspaceSettings[key] = config.get(key);
   }
   for (const key of resourceSettingsKeys) {
-    const value = config.inspect(key);
-    assert(value);
-    workspaceSettings[key] = value.workspaceLanguageValue ??
-      value.workspaceValue ??
-      value.globalValue ??
-      value.defaultValue;
+    workspaceSettings[key] = config.get(key);
   }
   return workspaceSettings;
 }
