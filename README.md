@@ -147,8 +147,14 @@ steps:
 
 1. Open this folder in VS Code.
 2. Run `npm i`.
-3. Run `npm run compile`.
-4. Run the `Launch Client` launch task from the VSCode debug menu.
+3. Run the `Launch Client` launch task from the VSCode debug menu.
+
+After making changes to the extension you can use the restart button in the
+VSCode debug menu, this makes a new build and reloads the client.
+
+Note that if you already have the deno extension installed from the VSCode
+Marketplace, it will be replaced for the `Launch Client` instance only. So
+there's no need to uninstall your existing Deno extension.
 
 Most changes and feature enhancements do not require changes to the extension
 though, as most information comes from the Deno Language Server itself, which is
