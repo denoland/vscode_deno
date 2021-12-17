@@ -9,4 +9,4 @@ export const LANGUAGE_CLIENT_NAME = "Deno Language Server";
 export const TS_LANGUAGE_FEATURES_EXTENSION =
   "vscode.typescript-language-features";
 /** The minimum version of Deno that this extension is designed to support. */
-export const SERVER_SEMVER = ">=1.13.0";
+export const SERVER_SEMVER = ">=1.17.0";
