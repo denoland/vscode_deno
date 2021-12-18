@@ -16,7 +16,7 @@ import {
   reloadImportRegistries as reloadImportRegistriesReq,
 } from "./lsp_extensions";
 import * as tasks from "./tasks";
-import type { DenoExtensionContext } from "./types";
+import type { DenoExtensionContext, TestCommandOptions } from "./types";
 import { WelcomePanel } from "./welcome";
 import { assert, getDenoCommand } from "./util";
 import { registryState } from "./lsp_extensions";
@@ -219,7 +219,7 @@ export function test(
   _context: vscode.ExtensionContext,
   _extensionContext: DenoExtensionContext,
 ): Callback {
-  return async (uriStr: string, name: string) => {
+  return async (uriStr: string, name: string, options: TestCommandOptions) => {
     const uri = vscode.Uri.parse(uriStr, true);
     const path = uri.fsPath;
     const config = vscode.workspace.getConfiguration(EXTENSION_NS, uri);
@@ -228,6 +228,9 @@ export function test(
     ];
     if (config.get("unstable")) {
       testArgs.push("--unstable");
+    }
+    if (options.inspect) {
+      testArgs.push("--inspect-brk");
     }
     if (!testArgs.includes("--import-map")) {
       const importMap: string | undefined | null = config.get("importMap");
@@ -266,7 +269,17 @@ export function test(
     };
     task.group = vscode.TaskGroup.Test;
 
-    return vscode.tasks.executeTask(task);
+    const createdTask = await vscode.tasks.executeTask(task);
+
+    if (options.inspect) {
+      await vscode.debug.startDebugging(target, {
+        name,
+        request: "attach",
+        type: "node",
+      });
+    }
+
+    return createdTask;
   };
 }
 
