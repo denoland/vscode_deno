@@ -229,7 +229,7 @@ export function test(
     if (config.get("unstable")) {
       testArgs.push("--unstable");
     }
-    if (options.inspect) {
+    if (options?.inspect) {
       testArgs.push("--inspect-brk");
     }
     if (!testArgs.includes("--import-map")) {
@@ -271,7 +271,7 @@ export function test(
 
     const createdTask = await vscode.tasks.executeTask(task);
 
-    if (options.inspect) {
+    if (options?.inspect) {
       await vscode.debug.startDebugging(target, {
         name,
         request: "attach",
