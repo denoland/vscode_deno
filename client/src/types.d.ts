@@ -26,3 +26,7 @@ export interface DenoExtensionContext {
   /** The current workspace settings. */
   workspaceSettings: Settings;
 }
+
+export interface TestCommandOptions {
+  inspect: boolean;
+}
