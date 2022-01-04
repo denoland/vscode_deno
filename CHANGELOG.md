@@ -3,6 +3,21 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.10.0](https://github.com/denoland/vscode_deno/compare/3.9.2...3.10.0) / 20212.01.05
+
+- feat: enable known registries by default (#594)
+
+  Known registries which support completions suggestions in the editor
+  (`deno.land`, `crux.land`, `nest.land`) are now enabled by default, making it
+  easier to discover packages.
+
+- feat: support the inspect option for `Deno.test` (#598)
+
+  This allows the code lens for the `Debug` command to execute a test in debug
+  mode.
+
+- chore: update min version (#596)
+
 ### [3.9.2](https://github.com/denoland/vscode_deno/compare/3.9.1...3.9.2) / 2021.11.09
 
 - fix: add back bundling and ensure CI uses same version of vsce for all steps
