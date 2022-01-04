@@ -8,7 +8,7 @@ Releases of the extension can be downloaded from
 - feat: enable known registries by default (#594)
 
   Known registries which support completions suggestions in the editor
-  (`deno.land`, `crux.land`, `next.land`) are now enabled by default, making it
+  (`deno.land`, `crux.land`, `nest.land`) are now enabled by default, making it
   easier to discover packages.
 
 - feat: support the inspect option for `Deno.test` (#598)
