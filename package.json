@@ -248,7 +248,7 @@
           "type": "object",
           "default": {
             "https://deno.land": true,
-            "https://cdn.nest.land": true,
+            "https://x.nest.land": true,
             "https://crux.land": true
           },
           "markdownDescription": "Controls which hosts are enabled for import suggestions.",
