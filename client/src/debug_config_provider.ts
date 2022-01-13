@@ -40,15 +40,15 @@ export class DenoDebugConfigurationProvider
         request: "launch",
         name: "Launch Program",
         type: "pwa-node",
-        program: "${workspaceFolder}/main.ts",
         cwd: "${workspaceFolder}",
         env: this.#getEnv(),
         runtimeExecutable: await getDenoCommand(),
         runtimeArgs: [
           "run",
           ...this.#getAdditionalRuntimeArgs(),
-          "--inspect",
+          "--inspect-brk",
           "--allow-all",
+          "${workspaceFolder}/main.ts"
         ],
         attachSimplePort: 9229,
       },
