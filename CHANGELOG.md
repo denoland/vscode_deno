@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.10.1](https://github.com/denoland/vscode_deno/compare/3.10.0...3.10.1) / 20212.01.16
+
+- fix: update nest.land registry (#602)
+
 ### [3.10.0](https://github.com/denoland/vscode_deno/compare/3.9.2...3.10.0) / 20212.01.05
 
 - feat: enable known registries by default (#594)
