@@ -149,6 +149,15 @@
           "markdownDescription": "A path to the cache directory for Deno. By default, the operating system's cache path plus `deno` is used, or the `DENO_DIR` environment variable, but if set, this path will be used instead.",
           "scope": "window"
         },
+        "deno.certificateStores": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": null,
+          "markdownDescription": "A list of root certificate stores used to validate TLS certificates when fetching and caching remote resources. This overrides the `DENO_TLS_CA_STORE` environment variable if set.",
+          "scope": "window"
+        },
         "deno.codeLens.implementations": {
           "type": "boolean",
           "default": false,
@@ -256,6 +265,21 @@
           "examples": {
             "https://deno.land": true
           }
+        },
+        "deno.tlsCertificate": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "A path to a PEM certificate to use as the certificate authority when validating TLS certificates when fetching and caching remote resources. This is like using `--cert` on the Deno CLI and overrides the `DENO_CERT` environment variable if set.",
+          "scope": "window"
+        },
+        "deno.unsafelyIgnoreCertificateErrors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": null,
+          "markdownDescription": "**DANGER** disables verification of TLS certificates for the hosts provided. There is likely a better way to deal with any errors than use this option. This is like using `--unsafely-ignore-certificate-errors` in the Deno CLI.",
+          "scope": "window"
         },
         "deno.unstable": {
           "type": "boolean",
