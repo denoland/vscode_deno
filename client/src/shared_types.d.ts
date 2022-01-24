@@ -45,10 +45,10 @@ export interface Settings {
     } | null;
   } | null;
   tlsCertificate: string | null;
-  unsafelyIgnoreCertificateErrors: boolean;
+  unsafelyIgnoreCertificateErrors: string[] | null;
   /** Determine if the extension should be type checking against the unstable
    * APIs. */
-  unstable: string[] | null;
+  unstable: boolean;
 }
 
 export interface PluginSettings {

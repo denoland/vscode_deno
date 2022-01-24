@@ -48,8 +48,8 @@ const defaultSettings: Settings = {
     },
   },
   tlsCertificate: null,
-  unsafelyIgnoreCertificateErrors: false,
-  unstable: null,
+  unsafelyIgnoreCertificateErrors: null,
+  unstable: false,
 };
 
 function updateSettings(
