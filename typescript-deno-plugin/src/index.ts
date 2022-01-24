@@ -49,7 +49,7 @@ const defaultSettings: Settings = {
   },
   tlsCertificate: null,
   unsafelyIgnoreCertificateErrors: false,
-  unstable: false,
+  unstable: null,
 };
 
 function updateSettings(

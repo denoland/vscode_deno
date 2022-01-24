@@ -48,7 +48,7 @@ export interface Settings {
   unsafelyIgnoreCertificateErrors: boolean;
   /** Determine if the extension should be type checking against the unstable
    * APIs. */
-  unstable: boolean;
+  unstable: string[] | null;
 }
 
 export interface PluginSettings {
