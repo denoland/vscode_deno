@@ -18,7 +18,7 @@ type Parameters<T = (...args: any) => any> = T extends // deno-lint-ignore no-ex
 type CallIfDisabledFunction = <T extends ts.LanguageService, J extends keyof T>(
   fn: J,
   fileNameArg: number | undefined,
-  enabledReturn: ReturnType<T[J]>,
+  enabledReturn: (() => ReturnType<T[J]>) | ReturnType<T[J]>,
 ) => (...args: Parameters<T[J]>) => ReturnType<T[J]>;
 
 /** Contains the project settings that have been provided by the extension for
@@ -109,9 +109,11 @@ class Plugin implements ts.server.PluginModule {
           ? this.#getSetting(args[fileNameArg] as string, "enable")
           : this.#getGlobalSettings().enable;
         return enabled
-          // we should return a new array, so if someone modifies a previous on
-          // we create a new one on each call
-          ? Array.isArray(emptyReturn) ? [] : emptyReturn
+          // in order to keep the `emptyReturn` separate instances, we do some
+          // analysis here to ensure we are returning a "fresh" `emptyReturn`
+          ? Array.isArray(emptyReturn) ? [] : typeof emptyReturn === "function"
+            ? (emptyReturn as () => unknown)()
+            : emptyReturn
           : target.call(ls, ...args);
       };
     };
@@ -208,12 +210,12 @@ class Plugin implements ts.server.PluginModule {
     const getEncodedSemanticClassifications = callIfDisabled(
       "getEncodedSemanticClassifications",
       0,
-      { spans: [], endOfLineState: 0 },
+      () => ({ spans: [], endOfLineState: 0 }),
     );
     const getEncodedSyntacticClassifications = callIfDisabled(
       "getEncodedSyntacticClassifications",
       0,
-      { spans: [], endOfLineState: 0 },
+      () => ({ spans: [], endOfLineState: 0 }),
     );
     const getImplementationAtPosition = callIfDisabled(
       "getImplementationAtPosition",
@@ -240,13 +242,13 @@ class Plugin implements ts.server.PluginModule {
       0,
       [],
     );
-    const getNavigationTree = callIfDisabled("getNavigationTree", 0, {
+    const getNavigationTree = callIfDisabled("getNavigationTree", 0, () => ({
       text: "",
       kind: "" as ts.ScriptElementKind.unknown,
       kindModifiers: "",
       spans: [],
       nameSpan: undefined,
-    });
+    }));
     const getOutliningSpans = callIfDisabled("getOutliningSpans", 0, []);
     const getQuickInfoAtPosition = callIfDisabled(
       "getQuickInfoAtPosition",
