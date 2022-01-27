@@ -108,7 +108,13 @@ class Plugin implements ts.server.PluginModule {
         const enabled = fileNameArg !== undefined
           ? this.#getSetting(args[fileNameArg] as string, "enable")
           : this.#getGlobalSettings().enable;
-        return enabled ? emptyReturn : target.call(ls, ...args);
+        return enabled
+          // we should return a new array, so if someone modifies a previous on
+          // we create a new one on each call
+          ? Array.isArray(emptyReturn)
+          : []
+          ? emptyReturn
+          : target.call(ls, ...args);
       };
     };
 
