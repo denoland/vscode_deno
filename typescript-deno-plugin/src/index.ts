@@ -29,6 +29,7 @@ const projectSettings = new Map<string, PluginSettings>();
  * received from the extension. */
 const defaultSettings: Settings = {
   cache: null,
+  certificateStores: null,
   enable: false,
   codeLens: null,
   config: null,
@@ -46,6 +47,8 @@ const defaultSettings: Settings = {
       hosts: {},
     },
   },
+  tlsCertificate: null,
+  unsafelyIgnoreCertificateErrors: null,
   unstable: false,
 };
 

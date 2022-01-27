@@ -12,6 +12,7 @@ export interface Settings {
   /** Specify an explicit path to the `deno` cache instead of using DENO_DIR
    * or the OS default. */
   cache: string | null;
+  certificateStores: string[] | null;
   /** Settings related to code lens. */
   codeLens: {
     implementations: boolean;
@@ -43,6 +44,8 @@ export interface Settings {
       hosts: Record<string, boolean>;
     } | null;
   } | null;
+  tlsCertificate: string | null;
+  unsafelyIgnoreCertificateErrors: string[] | null;
   /** Determine if the extension should be type checking against the unstable
    * APIs. */
   unstable: boolean;
