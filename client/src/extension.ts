@@ -24,12 +24,17 @@ const LANGUAGES = [
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
   "cache",
+  "certificateStores",
   "codeLens",
   "config",
+  "enable",
   "importMap",
   "internalDebug",
   "lint",
+  "path",
   "suggest",
+  "tlsCertificate",
+  "unsafelyIgnoreCertificateErrors",
   "unstable",
 ];
 
