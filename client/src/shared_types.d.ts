@@ -7,6 +7,10 @@ import type { ConfigurationScope } from "vscode";
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
  * configuration are available.  This interface should mirror the configuration
  * contributions made by the extension.
+ *
+ * **WARNING** please ensure that the `workspaceSettingsKeys` contains all the
+ * top level keys of this, as they need to be sent to the server on
+ * initialization.
  */
 export interface Settings {
   /** Specify an explicit path to the `deno` cache instead of using DENO_DIR
