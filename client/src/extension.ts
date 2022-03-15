@@ -1,17 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
-import { ENABLE_PATHS_ONLY, ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
+import { ENABLE_PATHS, ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
-import type { EnabledOnlyPath } from "./shared_types";
+import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
 import type { DenoExtensionContext, Settings } from "./types";
 import { assert } from "./util";
 
-import * as path from "path";
 import * as vscode from "vscode";
 
 /** The language IDs we care about. */
@@ -29,7 +28,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "config",
   "enable",
-  "enablePathsOnly",
+  "enablePaths",
   "importMap",
   "internalDebug",
   "lint",
@@ -45,7 +44,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
 const resourceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "enable",
-  "enablePathsOnly",
+  "enablePaths",
 ];
 
 /** Convert a workspace configuration to `Settings` for a workspace. */
@@ -76,8 +75,8 @@ function configToResourceSettings(
   return resourceSettings;
 }
 
-function getEnabledOnlyPaths(): EnabledOnlyPath[] {
-  const items = [] as EnabledOnlyPath[];
+function getEnabledPaths(): EnabledPaths[] {
+  const items = [] as EnabledPaths[];
   if (!vscode.workspace.workspaceFolders) {
     return items;
   }
@@ -86,16 +85,15 @@ function getEnabledOnlyPaths(): EnabledOnlyPath[] {
       EXTENSION_NS,
       workspaceFolder,
     );
-    const enabledOnlyPaths = config.get<string[]>(ENABLE_PATHS_ONLY);
-    if (!enabledOnlyPaths || !enabledOnlyPaths.length) {
+    const enabledPaths = config.get<string[]>(ENABLE_PATHS);
+    if (!enabledPaths || !enabledPaths.length) {
       continue;
     }
-    const workspace = path.normalize(workspaceFolder.uri.fsPath);
-    const paths = enabledOnlyPaths.map((folder) =>
-      path.resolve(workspace, folder)
+    const paths = enabledPaths.map((folder) =>
+      vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath
     );
     items.push({
-      workspace,
+      workspace: workspaceFolder.uri.fsPath,
       paths,
     });
   }
@@ -129,7 +127,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         ),
       };
     }
-    extensionContext.enabledPaths = getEnabledOnlyPaths();
+    extensionContext.enabledPaths = getEnabledPaths();
     extensionContext.tsApi.refresh();
     extensionContext.statusBar.refresh(extensionContext);
 
@@ -141,7 +139,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
 }
 
 function handleChangeWorkspaceFolders() {
-  extensionContext.enabledPaths = getEnabledOnlyPaths();
+  extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.tsApi.refresh();
 }
 
@@ -152,7 +150,7 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
       continue;
     }
     const { languageId, uri } = doc;
-    extensionContext.documentSettings[path.normalize(doc.uri.fsPath)] = {
+    extensionContext.documentSettings[doc.uri.fsPath] = {
       scope: { languageId, uri },
       settings: configToResourceSettings(
         vscode.workspace.getConfiguration(EXTENSION_NS, { languageId, uri }),
@@ -256,7 +254,7 @@ export async function activate(
   }));
 
   extensionContext.documentSettings = {};
-  extensionContext.enabledPaths = getEnabledOnlyPaths();
+  extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.workspaceSettings = getWorkspaceSettings();
 
   // when we activate, it might have been because a document was opened that

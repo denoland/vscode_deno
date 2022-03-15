@@ -31,7 +31,7 @@ const defaultSettings: Settings = {
   cache: null,
   certificateStores: null,
   enable: false,
-  enablePathsOnly: [],
+  enablePaths: [],
   codeLens: null,
   config: null,
   importMap: null,
