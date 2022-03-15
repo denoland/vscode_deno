@@ -126,11 +126,25 @@
         "deno.enable": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Controls if the Deno Language Server is enabled. When enabled, the extension will disable the built-in VSCode JavaScript and TypeScript language services, and will use the Deno Language Server (`deno lsp`) instead.\n\n**Not recommended to be enabled globally.**",
+          "markdownDescription": "Controls if the Deno Language Server is enabled. When enabled, the extension will disable the built-in VSCode JavaScript and TypeScript language services, and will use the Deno Language Server instead.\n\n**Not recommended to be enabled globally.**",
           "scope": "resource",
           "examples": [
             true,
             false
+          ]
+        },
+        "deno.enablePathsOnly": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Controls if the Deno Language Server is enabled for a specific paths only. When enabled, the extension will disable the built-in VSCode JavaScript and TypeScript language services for the specified paths, and will use the Deno Language Server instead.\n\n\n\nThe workspace folder is used as the base for the supplied paths. When a value is set, the value of `\"deno.enable\"` is ignored.\n\nIf for example you have all your Deno code in `worker` path in your workspace, you add an item with the value of `./worker`.\n\n**Not recommended to be enabled in user settings.**",
+          "scope": "resource",
+          "examples": [
+            [
+              "./worker"
+            ]
           ]
         },
         "deno.path": {

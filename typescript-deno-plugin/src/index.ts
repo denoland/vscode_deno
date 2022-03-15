@@ -31,6 +31,7 @@ const defaultSettings: Settings = {
   cache: null,
   certificateStores: null,
   enable: false,
+  enablePathsOnly: [],
   codeLens: null,
   config: null,
   importMap: null,
@@ -67,19 +68,28 @@ class Plugin implements ts.server.PluginModule {
   #project!: ts.server.Project;
   #projectName!: string;
 
-  #getGlobalSettings(): Settings {
-    return projectSettings.get(this.#projectName)?.workspace ??
-      defaultSettings;
+  // determines if a deno is enabled "globally" or not for those APIs which
+  // don't reference a file name
+  #denoEnabled(): boolean {
+    return projectSettings.get(this.#projectName)?.workspace?.enable ??
+      defaultSettings.enable;
   }
 
-  #getSetting<K extends keyof Settings>(
-    fileName: string,
-    key: K,
-  ): Settings[K] {
+  // determines if a specific filename is Deno enabled or not.
+  #fileNameDenoEnabled(fileName: string): boolean {
     const settings = projectSettings.get(this.#projectName);
-    return settings?.documents?.[fileName]?.settings[key] ??
-      // deno-lint-ignore no-explicit-any
-      settings?.workspace?.[key] as any ?? defaultSettings[key];
+    if (settings?.enabledPaths) {
+      const paths = settings.enabledPaths.find(({ workspace }) =>
+        fileName.startsWith(workspace)
+      )?.paths;
+      if (paths && paths.length) {
+        return paths.some((path) => fileName.startsWith(path));
+      }
+    }
+    // TODO(@kitsonk): rework all of this to be more like the workspace folders
+    // used for enabledPaths.
+    return settings?.documents?.[fileName]?.settings.enable ??
+      settings?.workspace?.enable ?? defaultSettings.enable;
   }
 
   #log = (_msg: string) => {};
@@ -106,8 +116,8 @@ class Plugin implements ts.server.PluginModule {
       const target = (ls as any)[fn];
       return (...args) => {
         const enabled = fileNameArg !== undefined
-          ? this.#getSetting(args[fileNameArg] as string, "enable")
-          : this.#getGlobalSettings().enable;
+          ? this.#fileNameDenoEnabled(args[fileNameArg] as string)
+          : this.#denoEnabled;
         return enabled
           // in order to keep the `emptyReturn` separate instances, we do some
           // analysis here to ensure we are returning a "fresh" `emptyReturn`
@@ -119,16 +129,16 @@ class Plugin implements ts.server.PluginModule {
     };
 
     // This "mutes" diagnostics for things like tsconfig files.
+    // TODO(@kitsonk) refine this logic to look at roots of projects against
+    // the workspace folder enablement
     const projectGetGlobalProjectErrors = this.#project.getGlobalProjectErrors;
     this.#project.getGlobalProjectErrors = () =>
-      this.#getGlobalSettings().enable
+      this.#denoEnabled()
         ? []
         : projectGetGlobalProjectErrors.call(this.#project);
     const projectGetAllProjectErrors = this.#project.getAllProjectErrors;
     this.#project.getAllProjectErrors = () =>
-      this.#getGlobalSettings().enable
-        ? []
-        : projectGetAllProjectErrors.call(this.#project);
+      this.#denoEnabled() ? [] : projectGetAllProjectErrors.call(this.#project);
 
     const commentSelection = callIfDisabled("commentSelection", 0, []);
     const findReferences = callIfDisabled("findReferences", 0, undefined);

@@ -29,6 +29,9 @@ export interface Settings {
   config: string | null;
   /** Is the extension enabled or not. */
   enable: boolean;
+  /** If set, indicates that only the paths in the workspace should be Deno
+   * enabled. */
+  enablePathsOnly: string[];
   /** A path to an import map that should be applied. */
   importMap: string | null;
   /** A flag that enables additional internal debug information to be printed
@@ -55,9 +58,17 @@ export interface Settings {
   unstable: boolean;
 }
 
+export interface EnabledOnlyPath {
+  /** The file system path of the workspace folder that is partially enabled. */
+  workspace: string;
+  /** The file system paths that are Deno enabled. */
+  paths: string[];
+}
+
 export interface PluginSettings {
-  workspace: Settings;
   documents: Record<string, DocumentSettings>;
+  enabledPaths: EnabledOnlyPath[];
+  workspace: Settings;
 }
 
 export interface DocumentSettings {
