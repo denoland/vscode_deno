@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import type { ConfigurationScope } from "vscode";
 
@@ -50,6 +50,10 @@ export interface Settings {
       autoDiscover: boolean;
       hosts: Record<string, boolean>;
     } | null;
+  } | null;
+  testing: {
+    args: string[];
+    enable: boolean;
   } | null;
   tlsCertificate: string | null;
   unsafelyIgnoreCertificateErrors: string[] | null;

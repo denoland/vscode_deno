@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /** Contains handlers for commands that are enabled in Visual Studio Code for
  * the extension. */
@@ -16,6 +16,7 @@ import {
   reloadImportRegistries as reloadImportRegistriesReq,
 } from "./lsp_extensions";
 import * as tasks from "./tasks";
+import { DenoTestController, TestingFeature } from "./testing";
 import type { DenoExtensionContext, TestCommandOptions } from "./types";
 import { WelcomePanel } from "./welcome";
 import { assert, getDenoCommand } from "./util";
@@ -105,6 +106,8 @@ export function startLanguageServer(
     if (extensionContext.client) {
       const client = extensionContext.client;
       extensionContext.client = undefined;
+      extensionContext.testController?.dispose();
+      extensionContext.testController = undefined;
       extensionContext.statusBar.refresh(extensionContext);
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
       await client.stop();
@@ -134,6 +137,8 @@ export function startLanguageServer(
       serverOptions,
       extensionContext.clientOptions,
     );
+    const testingFeature = new TestingFeature();
+    client.registerFeature(testingFeature);
     context.subscriptions.push(client.start());
     await client.onReady();
 
@@ -146,6 +151,10 @@ export function startLanguageServer(
     );
     extensionContext.serverCapabilities = client.initializeResult?.capabilities;
     extensionContext.statusBar.refresh(extensionContext);
+
+    if (testingFeature.enabled) {
+      context.subscriptions.push(new DenoTestController(extensionContext));
+    }
 
     context.subscriptions.push(
       client.onNotification(

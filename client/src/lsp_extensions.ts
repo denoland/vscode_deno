@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /** Contains extensions to the Language Server Protocol that are supported by
  * the Deno Language Server.
@@ -12,7 +12,12 @@ import {
   RequestType,
   RequestType0,
 } from "vscode-languageclient";
-import type { TextDocumentIdentifier } from "vscode-languageclient";
+import type {
+  Location,
+  MarkupContent,
+  Range,
+  TextDocumentIdentifier,
+} from "vscode-languageclient";
 
 export interface CacheParams {
   referrer: TextDocumentIdentifier;
@@ -52,6 +57,124 @@ export const task = new RequestType<
 >(
   "deno/task",
 );
+
+export interface TestData {
+  id: string;
+  label: string;
+  steps?: TestData[];
+  range?: Range;
+}
+
+export interface TestModuleParams {
+  textDocument: TextDocumentIdentifier;
+  kind: "insert" | "replace";
+  label: string;
+  tests: TestData[];
+}
+
+/** Notification of a discovery of a test module. The notification parameters
+ * include */
+export const testModule = new NotificationType<TestModuleParams>(
+  "deno/testModule",
+);
+
+export interface TestModuleDeleteParams {
+  textDocument: TextDocumentIdentifier;
+}
+
+export const testModuleDelete = new NotificationType<TestModuleDeleteParams>(
+  "deno/testModuleDelete",
+);
+
+export interface TestRunRequestParams {
+  id: number;
+  kind: "run" | "coverage" | "debug";
+  exclude?: TestIdentifier[];
+  include?: TestIdentifier[];
+}
+
+interface EnqueuedTestModule {
+  textDocument: TextDocumentIdentifier;
+  ids: string[];
+}
+
+export interface TestRunResponseParams {
+  enqueued: EnqueuedTestModule[];
+}
+
+export const testRun = new RequestType<
+  TestRunRequestParams,
+  TestRunResponseParams,
+  void
+>("deno/testRun");
+
+export interface TestIdentifier {
+  textDocument: TextDocumentIdentifier;
+  id?: string;
+  stepId?: string;
+}
+
+interface TestEnqueuedStartedSkipped {
+  type: "enqueued" | "started" | "skipped";
+  test: TestIdentifier;
+}
+
+export interface TestMessage {
+  message: MarkupContent;
+  expectedOutput?: string;
+  actualOutput?: string;
+  location?: Location;
+}
+
+interface TestFailedErrored {
+  type: "failed" | "errored";
+  test: TestIdentifier;
+  messages: TestMessage[];
+  duration?: number;
+}
+
+interface TestPassed {
+  type: "passed";
+  test: TestIdentifier;
+  duration?: number;
+}
+
+interface TestOutput {
+  type: "output";
+  value: string;
+  test?: TestIdentifier;
+  location?: Location;
+}
+
+interface TestEnd {
+  type: "end";
+}
+
+type TestRunProgressMessage =
+  | TestEnqueuedStartedSkipped
+  | TestFailedErrored
+  | TestPassed
+  | TestOutput
+  | TestEnd;
+
+export interface TestRunProgressParams {
+  id: number;
+  message: TestRunProgressMessage;
+}
+
+export const testRunProgress = new NotificationType<TestRunProgressParams>(
+  "deno/testRunProgress",
+);
+
+export interface TestRunCancelParams {
+  id: number;
+}
+
+export const testRunCancel = new RequestType<
+  TestRunCancelParams,
+  boolean,
+  void
+>("deno/testRunCancel");
 
 export interface VirtualTextDocumentParams {
   textDocument: TextDocumentIdentifier;
