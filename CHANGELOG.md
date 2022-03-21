@@ -3,6 +3,26 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.11.0](https://github.com/denoland/vscode_deno/compare/3.10.1...3.11.0) / 20212.03.21
+
+- feat: support certificate related options (#612)
+
+  Options are now supported to provide the Deno language server with custom TLS
+  certificate information as well as unsafely ignore invalid TLS certificates,
+  which are currently supported on the command line. This allows the extension
+  to cache modules in custom certificate TLS environments from the editor.
+
+- feat: support Deno enabling specified workspace paths (#635)
+
+  When used with a version of the Deno language server that supports the same
+  feature, specified folders (and their sub folders) can be _Deno enabled_
+  leaving the remaining folders in the workspace using the built-in
+  JavaScript/TypeScript language server. This feature is set using the _Deno:
+  Enable Paths_ setting or `"deno.enablePaths"` if editing settings directly.
+
+- fix: utilize fresh objects when muting built in ls (#615)
+- fix: send all workspace settings during initialization (#632)
+
 ### [3.10.1](https://github.com/denoland/vscode_deno/compare/3.10.0...3.10.1) / 20212.01.16
 
 - fix: update nest.land registry (#602)
