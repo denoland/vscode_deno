@@ -1,16 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
-import { ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
+import { ENABLE_PATHS, ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
+import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
 import type { DenoExtensionContext, Settings } from "./types";
 import { assert } from "./util";
 
-import * as path from "path";
 import * as vscode from "vscode";
 
 /** The language IDs we care about. */
@@ -28,6 +28,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "config",
   "enable",
+  "enablePaths",
   "importMap",
   "internalDebug",
   "lint",
@@ -41,8 +42,9 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
 /** These are keys of settings that can apply to an individual resource, like
  * a file or folder. */
 const resourceSettingsKeys: Array<keyof Settings> = [
-  "enable",
   "codeLens",
+  "enable",
+  "enablePaths",
 ];
 
 /** Convert a workspace configuration to `Settings` for a workspace. */
@@ -51,9 +53,6 @@ function configToWorkspaceSettings(
 ): Settings {
   const workspaceSettings = Object.create(null);
   for (const key of workspaceSettingsKeys) {
-    workspaceSettings[key] = config.get(key);
-  }
-  for (const key of resourceSettingsKeys) {
     workspaceSettings[key] = config.get(key);
   }
   return workspaceSettings;
@@ -74,6 +73,31 @@ function configToResourceSettings(
       value.defaultValue;
   }
   return resourceSettings;
+}
+
+function getEnabledPaths(): EnabledPaths[] {
+  const items = [] as EnabledPaths[];
+  if (!vscode.workspace.workspaceFolders) {
+    return items;
+  }
+  for (const workspaceFolder of vscode.workspace.workspaceFolders) {
+    const config = vscode.workspace.getConfiguration(
+      EXTENSION_NS,
+      workspaceFolder,
+    );
+    const enabledPaths = config.get<string[]>(ENABLE_PATHS);
+    if (!enabledPaths || !enabledPaths.length) {
+      continue;
+    }
+    const paths = enabledPaths.map((folder) =>
+      vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath
+    );
+    items.push({
+      workspace: workspaceFolder.uri.fsPath,
+      paths,
+    });
+  }
+  return items;
 }
 
 function getWorkspaceSettings(): Settings {
@@ -103,6 +127,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         ),
       };
     }
+    extensionContext.enabledPaths = getEnabledPaths();
     extensionContext.tsApi.refresh();
     extensionContext.statusBar.refresh(extensionContext);
 
@@ -113,6 +138,11 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
   }
 }
 
+function handleChangeWorkspaceFolders() {
+  extensionContext.enabledPaths = getEnabledPaths();
+  extensionContext.tsApi.refresh();
+}
+
 function handleDocumentOpen(...documents: vscode.TextDocument[]) {
   let didChange = false;
   for (const doc of documents) {
@@ -120,7 +150,7 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
       continue;
     }
     const { languageId, uri } = doc;
-    extensionContext.documentSettings[path.normalize(doc.uri.fsPath)] = {
+    extensionContext.documentSettings[doc.uri.fsPath] = {
       scope: { languageId, uri },
       settings: configToResourceSettings(
         vscode.workspace.getConfiguration(EXTENSION_NS, { languageId, uri }),
@@ -157,6 +187,14 @@ export async function activate(
     diagnosticCollectionName: "deno",
     initializationOptions: getWorkspaceSettings(),
   };
+
+  // When a workspace folder is opened, the updates or changes to the workspace
+  // folders need to be sent to the TypeScript language service plugin
+  vscode.workspace.onDidChangeWorkspaceFolders(
+    handleChangeWorkspaceFolders,
+    extensionContext,
+    context.subscriptions,
+  );
 
   // When a document opens, the language server will query the client to
   // determine the specific configuration of a resource, we need to ensure the
@@ -211,10 +249,12 @@ export async function activate(
 
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
+    enabledPaths: extensionContext.enabledPaths,
     workspace: extensionContext.workspaceSettings,
   }));
 
   extensionContext.documentSettings = {};
+  extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.workspaceSettings = getWorkspaceSettings();
 
   // when we activate, it might have been because a document was opened that
