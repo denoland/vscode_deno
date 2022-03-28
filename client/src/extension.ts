@@ -4,6 +4,7 @@ import * as commands from "./commands";
 import { ENABLE_PATHS, ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
+import { setupCheckConfig } from "./enable";
 import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
@@ -256,6 +257,9 @@ export async function activate(
   extensionContext.documentSettings = {};
   extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.workspaceSettings = getWorkspaceSettings();
+
+  // setup detection of enabling Deno detection
+  context.subscriptions.push(await setupCheckConfig());
 
   // when we activate, it might have been because a document was opened that
   // activated us, which we need to grab the config for and send it over to the
