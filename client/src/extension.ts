@@ -234,7 +234,7 @@ export async function activate(
   );
 
   // Activate the task provider.
-  context.subscriptions.push(activateTaskProvider());
+  context.subscriptions.push(activateTaskProvider(extensionContext));
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
