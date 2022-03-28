@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+export const ENABLE = "enable";
 export const ENABLE_PATHS = "enablePaths";
 export const ENABLEMENT_FLAG = "deno:lspReady";
 export const EXTENSION_ID = "denoland.vscode-deno";
