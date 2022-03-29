@@ -144,6 +144,7 @@ export function startLanguageServer(
     extensionContext.serverInfo = new DenoServerInfo(
       client.initializeResult?.serverInfo,
     );
+    extensionContext.serverCapabilities = client.initializeResult?.capabilities;
     extensionContext.statusBar.refresh(extensionContext);
 
     context.subscriptions.push(
@@ -254,8 +255,9 @@ export function test(
 
     assert(vscode.workspace.workspaceFolders);
     const target = vscode.workspace.workspaceFolders[0];
-    const task = await tasks.buildDenoTask(
+    const task = tasks.buildDenoTask(
       target,
+      await getDenoCommand(),
       definition,
       `test "${name}"`,
       args,
