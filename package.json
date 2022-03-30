@@ -296,7 +296,7 @@
         "deno.testing.enable": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Enable the testing API for the language server. When folder is Deno enabled, tests will be available in Test Explorer view.",
+          "markdownDescription": "Enable the testing API for the language server. When folder is Deno enabled, tests will be available in the Test Explorer view.",
           "scope": "window"
         },
         "deno.tlsCertificate": {
