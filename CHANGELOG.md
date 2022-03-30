@@ -3,6 +3,26 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.12.0](https://github.com/denoland/vscode_deno/compare/3.11.0...3.12.0) / 20212.03.30
+
+- feat: prompt for enabling when config detected (#640)
+
+  When a `deno.json` or `deno.jsonc` is detected in the root of a workspace or
+  workspace folder and Deno isn't explicitly enabled or disabled, a prompt will
+  appear to choose to enable the workspace (or workspace folder).
+
+- feat: support config file tasks (#641)
+
+  When a Deno configuration file (`deno.json`/`deno.jsonc`) applies to a
+  workspace, and the Deno language server supports the task detection feature,
+  tasks from the configuration file will be available in VSCode.
+
+- feat: support vscode Testing API (#629)
+
+  When the Deno language server supports the experimental testing API, tests
+  will be made available in the Testing Explorer pane and other decorations
+  individual tests in the code.
+
 ### [3.11.0](https://github.com/denoland/vscode_deno/compare/3.10.1...3.11.0) / 20212.03.21
 
 - feat: support certificate related options (#612)
