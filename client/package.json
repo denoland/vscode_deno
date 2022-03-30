@@ -18,8 +18,8 @@
     "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
-    "@types/semver": "7.3.8",
-    "@types/vscode": "1.60.0",
+    "@types/semver": "7.3.9",
+    "@types/vscode": "1.64.0",
     "vscode-test": "^1.6.1"
   }
 }

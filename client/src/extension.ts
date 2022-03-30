@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
 import { ENABLE_PATHS, ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
@@ -35,6 +35,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "lint",
   "path",
   "suggest",
+  "testing",
   "tlsCertificate",
   "unsafelyIgnoreCertificateErrors",
   "unstable",
@@ -186,7 +187,10 @@ export async function activate(
       { scheme: "file", language: "markdown" },
     ],
     diagnosticCollectionName: "deno",
-    initializationOptions: getWorkspaceSettings(),
+    initializationOptions: getWorkspaceSettings,
+    markdown: {
+      isTrusted: true,
+    },
   };
 
   // When a workspace folder is opened, the updates or changes to the workspace

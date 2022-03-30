@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import type {
   LanguageClient,
@@ -7,6 +7,7 @@ import type {
 import type { DenoServerInfo } from "./server_info";
 import type { DocumentSettings, EnabledPaths, Settings } from "./shared_types";
 import type { DenoStatusBar } from "./status_bar";
+import type * as vscode from "vscode";
 
 import type { ServerCapabilities } from "vscode-languageclient";
 
@@ -35,6 +36,7 @@ export interface DenoExtensionContext {
     | ServerCapabilities<DenoExperimental>
     | undefined;
   statusBar: DenoStatusBar;
+  testController: vscode.TestController | undefined;
   tsApi: TsApi;
   /** The current workspace settings. */
   workspaceSettings: Settings;
