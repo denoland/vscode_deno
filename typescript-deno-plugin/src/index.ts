@@ -312,7 +312,6 @@ class Plugin implements ts.server.PluginModule {
       0,
       undefined,
     );
-    const organizeImports = callIfDisabled("organizeImports", undefined, []);
     const prepareCallHierarchy = callIfDisabled(
       "prepareCallHierarchy",
       0,
@@ -376,7 +375,6 @@ class Plugin implements ts.server.PluginModule {
       getSyntacticDiagnostics,
       getTodoComments,
       getTypeDefinitionAtPosition,
-      organizeImports,
       prepareCallHierarchy,
       provideCallHierarchyIncomingCalls,
       provideCallHierarchyOutgoingCalls,
