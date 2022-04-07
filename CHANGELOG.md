@@ -3,7 +3,7 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-### [3.12.0](https://github.com/denoland/vscode_deno/compare/3.11.0...3.12.0) / 20212.03.30
+### [3.12.0](https://github.com/denoland/vscode_deno/compare/3.11.0...3.12.0) / 2022.03.30
 
 - feat: prompt for enabling when config detected (#640)
 
@@ -23,7 +23,7 @@ Releases of the extension can be downloaded from
   will be made available in the Testing Explorer pane and other decorations
   individual tests in the code.
 
-### [3.11.0](https://github.com/denoland/vscode_deno/compare/3.10.1...3.11.0) / 20212.03.21
+### [3.11.0](https://github.com/denoland/vscode_deno/compare/3.10.1...3.11.0) / 2022.03.21
 
 - feat: support certificate related options (#612)
 
@@ -43,11 +43,11 @@ Releases of the extension can be downloaded from
 - fix: utilize fresh objects when muting built in ls (#615)
 - fix: send all workspace settings during initialization (#632)
 
-### [3.10.1](https://github.com/denoland/vscode_deno/compare/3.10.0...3.10.1) / 20212.01.16
+### [3.10.1](https://github.com/denoland/vscode_deno/compare/3.10.0...3.10.1) / 2022.01.16
 
 - fix: update nest.land registry (#602)
 
-### [3.10.0](https://github.com/denoland/vscode_deno/compare/3.9.2...3.10.0) / 20212.01.05
+### [3.10.0](https://github.com/denoland/vscode_deno/compare/3.9.2...3.10.0) / 2022.01.05
 
 - feat: enable known registries by default (#594)
 
