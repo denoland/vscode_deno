@@ -111,7 +111,8 @@ extension has the following configuration options:
   code lens information for all functions in the code. Requires
   `deno.codeLens.references` to be enabled as well. _boolean, default `false`_
 - `deno.codeLens.test`: Enables or disables the display of test code lens on
-  Deno tests. _boolean, default `true`_.
+  Deno tests. _boolean, default `false`_. _This feature is deprecated, see
+  `deno.testing` below_
 - `deno.codeLens.testArgs`: Provides additional arguments that should be set
   when invoking the Deno CLI test from a code lens. _array of strings, default
   `[ "--allow-all" ]`_.
@@ -134,6 +135,11 @@ extension has the following configuration options:
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
   for suggesting import auto completions. (See:
   [ImportCompletions](./docs/ImportCompletions.md) for more information.)
+- `deno.testing.args`: Arguments to use when running tests via the Test
+  Explorer. Defaults to `[ \"--allow-all\" ]`.
+- `deno.testing.enable`: Enable the testing API for the language server. When
+  folder is Deno enabled, tests will be available in the Test Explorer view.
+  Defaults to `true`.
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
   APIs. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_
