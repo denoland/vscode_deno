@@ -78,14 +78,19 @@ export function initializeWorkspace(
       const settings = await pickInitWorkspace();
       const config = vscode.workspace.getConfiguration(EXTENSION_NS);
       await config.update("enable", true);
+
+      const lintInspect = config.inspect("lint");
+      assert(lintInspect);
+      const unstableInspect = config.inspect("unstable");
+      assert(unstableInspect);
       // Don't write settings if they have default values.
-      // This is a bit brittle, because we need to manually keep it in sync.
-      if (!settings.lint) {
+      if (lintInspect.defaultValue != settings.lint) {
         await config.update("lint", settings.lint);
       }
-      if (settings.unstable) {
+      if (unstableInspect != settings.unstable) {
         await config.update("unstable", settings.unstable);
       }
+
       await vscode.window.showInformationMessage(
         "Deno is now setup in this workspace.",
       );
