@@ -131,7 +131,7 @@ extension has the following configuration options:
 - `deno.internalDebug`: If enabled the Deno Language Server will log additional
   internal diagnostic information.
 - `deno.lint`: Controls if linting information will be provided by the Deno
-  Language Server. _boolean, default `false`_
+  Language Server. _boolean, default `true`_
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
   for suggesting import auto completions. (See:
   [ImportCompletions](./docs/ImportCompletions.md) for more information.)

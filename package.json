@@ -326,7 +326,7 @@
         },
         "deno.lint": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Controls if linting information will be provided by the Deno Language Server.\n\n**Not recommended to be enabled globally.**",
           "scope": "window",
           "examples": [
