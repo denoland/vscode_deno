@@ -87,7 +87,7 @@ export function initializeWorkspace(
       if (lintInspect.defaultValue != settings.lint) {
         await config.update("lint", settings.lint);
       }
-      if (unstableInspect != settings.unstable) {
+      if (unstableInspect.defaultValue != settings.unstable) {
         await config.update("unstable", settings.unstable);
       }
 
