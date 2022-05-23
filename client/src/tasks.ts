@@ -144,15 +144,19 @@ class DenoTaskProvider implements vscode.TaskProvider {
     const supportsConfigTasks = this.#extensionContext.serverCapabilities
       ?.experimental?.denoConfigTasks;
     if (client && supportsConfigTasks) {
-      const configTasks = await client.sendRequest(taskReq, {});
-      for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
-        if (configTasks) {
-          for (const { name, detail } of configTasks) {
-            tasks.push(
-              buildDenoConfigTask(workspaceFolder, process, name, detail),
-            );
+      try {
+        const configTasks = await client.sendRequest(taskReq, {});
+        for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
+          if (configTasks) {
+            for (const { name, detail } of configTasks) {
+              tasks.push(
+                buildDenoConfigTask(workspaceFolder, process, name, detail),
+              );
+            }
           }
         }
+      } catch (err) {
+        vscode.window.showErrorMessage("Failed to retrieve config tasks from deno")
       }
     }
 
