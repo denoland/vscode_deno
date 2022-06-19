@@ -159,7 +159,7 @@ steps:
 Most changes and feature enhancements do not require changes to the extension
 though, as most information comes from the Deno Language Server itself, which is
 integrated into the Deno CLI. Please check out the
-[contribution guidelines](https://github.com/denoland/deno/tree/master/docs/contributing)
+[contribution guidelines](https://deno.land/manual/contributing)
 for the Deno CLI.
 
 ## Thanks
