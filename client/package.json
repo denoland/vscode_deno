@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "semver": "7.3.5",
-    "vscode-languageclient": "^7.0.0"
+    "vscode-languageclient": "^8.0.1"
   },
   "devDependencies": {
     "@types/semver": "7.3.9",
