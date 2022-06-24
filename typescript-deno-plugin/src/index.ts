@@ -122,7 +122,9 @@ class Plugin implements ts.server.PluginModule {
         return enabled
           // in order to keep the `emptyReturn` separate instances, we do some
           // analysis here to ensure we are returning a "fresh" `emptyReturn`
-          ? Array.isArray(emptyReturn) ? [] : typeof emptyReturn === "function"
+          ? Array.isArray(emptyReturn)
+            ? []
+            : typeof emptyReturn === "function"
             ? (emptyReturn as () => unknown)()
             : emptyReturn
           : target.call(ls, ...args);
