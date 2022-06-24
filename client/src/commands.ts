@@ -150,8 +150,7 @@ export function startLanguageServer(
     );
     const testingFeature = new TestingFeature();
     client.registerFeature(testingFeature);
-    context.subscriptions.push(client.start());
-    await client.onReady();
+    await client.start();
 
     // set this after a successful start
     extensionContext.client = client;
