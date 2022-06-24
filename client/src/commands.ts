@@ -19,7 +19,7 @@ import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
 import type { DenoExtensionContext, TestCommandOptions } from "./types";
 import { WelcomePanel } from "./welcome";
-import { assert, getDenoCommand } from "./util";
+import { assert, getDenoCommandName, getDenoCommandPath } from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
@@ -32,6 +32,7 @@ import type {
   Location,
   Position,
 } from "vscode-languageclient/node";
+import { getWorkspacesEnabledInfo } from "./enable";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -125,7 +126,24 @@ export function startLanguageServer(
     }
 
     // Start a new language server
-    const command = await getDenoCommand();
+    const command = await getDenoCommandPath();
+    if (command == null) {
+      const message =
+        "Could not resolve Deno executable. Please ensure it is available " +
+        `on the PATH used by VS Code or set an explicit "deno.path" setting.`;
+
+      // only show the message if the user has enabled deno or they have
+      // a deno configuration file and haven't explicitly disabled deno
+      const enabledInfo = await getWorkspacesEnabledInfo();
+      const shouldShowMessage = enabledInfo
+        .some((e) => e.enabled || e.hasDenoConfig && e.enabled !== false);
+      if (shouldShowMessage) {
+        vscode.window.showErrorMessage(message);
+      }
+      extensionContext.outputChannel.appendLine(`Error: ${message}`);
+      return;
+    }
+
     const serverOptions: ServerOptions = {
       run: {
         command,
@@ -146,7 +164,10 @@ export function startLanguageServer(
       LANGUAGE_CLIENT_ID,
       LANGUAGE_CLIENT_NAME,
       serverOptions,
-      extensionContext.clientOptions,
+      {
+        outputChannel: extensionContext.outputChannel,
+        ...extensionContext.clientOptions,
+      },
     );
     const testingFeature = new TestingFeature();
     client.registerFeature(testingFeature);
@@ -274,9 +295,10 @@ export function test(
 
     assert(vscode.workspace.workspaceFolders);
     const target = vscode.workspace.workspaceFolders[0];
+    const denoCommand = await getDenoCommandName();
     const task = tasks.buildDenoTask(
       target,
-      await getDenoCommand(),
+      denoCommand,
       definition,
       `test "${name}"`,
       args,
