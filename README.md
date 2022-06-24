@@ -165,8 +165,8 @@ there's no need to uninstall your existing Deno extension.
 Most changes and feature enhancements do not require changes to the extension
 though, as most information comes from the Deno Language Server itself, which is
 integrated into the Deno CLI. Please check out the
-[contribution guidelines](https://deno.land/manual/contributing)
-for the Deno CLI.
+[contribution guidelines](https://deno.land/manual/contributing) for the Deno
+CLI.
 
 ## Thanks
 

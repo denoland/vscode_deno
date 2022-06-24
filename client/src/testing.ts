@@ -134,9 +134,11 @@ export class DenoTestController implements vscode.Disposable {
   #testController: vscode.TestController;
 
   constructor(extensionContext: DenoExtensionContext) {
-    const testController = extensionContext.testController = this
-      .#testController = vscode.tests
-        .createTestController("denoTestController", "Deno");
+    const testController = extensionContext.testController =
+      this
+        .#testController =
+        vscode.tests
+          .createTestController("denoTestController", "Deno");
     this.#subscriptions.push(testController);
 
     const { client } = extensionContext;
