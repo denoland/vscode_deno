@@ -25,14 +25,9 @@ export async function getDenoCommand(): Promise<string> {
     // if sent a relative path, iterate over workspace folders to try and resolve.
     const list = [];
     for (const workspace of workspaceFolders) {
-      const dir = path.resolve(workspace.uri.fsPath, command);
-      try {
-        const stat = await fs.promises.stat(dir);
-        if (stat.isFile()) {
-          list.push(dir);
-        }
-      } catch {
-        // we simply don't push onto the array if we encounter an error
+      const commandPath = path.resolve(workspace.uri.fsPath, command);
+      if (await fileExists(commandPath)) {
+        list.push(commandPath);
       }
     }
     command = list.shift() ?? defaultCommand;
@@ -94,15 +89,15 @@ function getDefaultDenoCommand() {
         .filter((item) => item.length > 0);
     }
   }
+}
 
-  function fileExists(executableFilePath: string): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-      fs.stat(executableFilePath, (err, stat) => {
-        resolve(err == null && stat.isFile());
-      });
-    }).catch(() => {
-      // ignore all errors
-      return false;
+function fileExists(executableFilePath: string): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    fs.stat(executableFilePath, (err, stat) => {
+      resolve(err == null && stat.isFile());
     });
-  }
+  }).catch(() => {
+    // ignore all errors
+    return false;
+  });
 }
