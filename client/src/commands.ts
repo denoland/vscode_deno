@@ -19,7 +19,7 @@ import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
 import type { DenoExtensionContext, TestCommandOptions } from "./types";
 import { WelcomePanel } from "./welcome";
-import { assert, getDenoCommandPath } from "./util";
+import { assert, getDenoCommandName, getDenoCommandPath } from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
@@ -295,7 +295,7 @@ export function test(
 
     assert(vscode.workspace.workspaceFolders);
     const target = vscode.workspace.workspaceFolders[0];
-    const denoCommand = await getDenoCommandPath() ?? "deno";
+    const denoCommand = await getDenoCommandName();
     const task = tasks.buildDenoTask(
       target,
       denoCommand,

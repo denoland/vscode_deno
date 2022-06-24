@@ -15,6 +15,12 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
   }
 }
 
+/** Returns the absolute path to an existing deno command or
+ * the "deno" command name if not found. */
+export async function getDenoCommandName() {
+  return await getDenoCommandPath() ?? "deno";
+}
+
 /** Returns the absolute path to an existing deno command. */
 export async function getDenoCommandPath() {
   const command = getWorkspaceConfigDenoExePath();
