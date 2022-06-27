@@ -156,7 +156,10 @@ class DenoTaskProvider implements vscode.TaskProvider {
           }
         }
       } catch (err) {
-        vscode.window.showErrorMessage("Failed to retrieve config tasks from deno")
+        vscode.window.showErrorMessage("Failed to retrieve config tasks.");
+        this.#extensionContext.outputChannel.appendLine(
+          `Error retrieving config tasks: ${err}`,
+        );
       }
     }
 
