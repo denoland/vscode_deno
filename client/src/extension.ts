@@ -1,7 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import * as commands from "./commands";
-import { ENABLE_PATHS, ENABLEMENT_FLAG, EXTENSION_NS } from "./constants";
+import {
+  ENABLE_PATHS,
+  ENABLEMENT_FLAG,
+  EXTENSION_NS,
+  LANGUAGE_CLIENT_NAME,
+} from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { setupCheckConfig } from "./enable";
@@ -172,6 +177,8 @@ const extensionContext = {} as DenoExtensionContext;
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
+  extensionContext.outputChannel = extensionContext.outputChannel ??
+    vscode.window.createOutputChannel(LANGUAGE_CLIENT_NAME);
   extensionContext.clientOptions = {
     documentSelector: [
       { scheme: "file", language: "javascript" },

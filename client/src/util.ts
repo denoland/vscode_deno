@@ -15,29 +15,30 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
   }
 }
 
-export async function getDenoCommand(): Promise<string> {
-  let command = getWorkspaceConfigDenoExePath();
+/** Returns the absolute path to an existing deno command or
+ * the "deno" command name if not found. */
+export async function getDenoCommandName() {
+  return await getDenoCommandPath() ?? "deno";
+}
+
+/** Returns the absolute path to an existing deno command. */
+export async function getDenoCommandPath() {
+  const command = getWorkspaceConfigDenoExePath();
   const workspaceFolders = vscode.workspace.workspaceFolders;
-  const defaultCommand = await getDefaultDenoCommand();
   if (!command || !workspaceFolders) {
-    command = command ?? defaultCommand;
+    return command ?? await getDefaultDenoCommand();
   } else if (!path.isAbsolute(command)) {
     // if sent a relative path, iterate over workspace folders to try and resolve.
-    const list = [];
     for (const workspace of workspaceFolders) {
-      const dir = path.resolve(workspace.uri.fsPath, command);
-      try {
-        const stat = await fs.promises.stat(dir);
-        if (stat.isFile()) {
-          list.push(dir);
-        }
-      } catch {
-        // we simply don't push onto the array if we encounter an error
+      const commandPath = path.resolve(workspace.uri.fsPath, command);
+      if (await fileExists(commandPath)) {
+        return commandPath;
       }
     }
-    command = list.shift() ?? defaultCommand;
+    return undefined;
+  } else {
+    return command;
   }
-  return command;
 }
 
 function getWorkspaceConfigDenoExePath() {
@@ -51,58 +52,59 @@ function getWorkspaceConfigDenoExePath() {
   }
 }
 
-function getDefaultDenoCommand() {
-  switch (os.platform()) {
-    case "win32":
-      return getDenoWindowsPath();
-    default:
-      return Promise.resolve("deno");
-  }
+async function getDefaultDenoCommand() {
+  // Adapted from https://github.com/npm/node-which/blob/master/which.js
+  // Within vscode it will do `require("child_process").spawn("deno")`,
+  // which will prioritize "deno.exe" on the path instead of a possible
+  // higher precedence non-exe executable. This is a problem because, for
+  // example, version managers may have a `deno.bat` shim on the path. To
+  // ensure the resolution of the `deno` command matches what occurs on the
+  // command line, attempt to manually resolve the file path (issue #361).
+  const denoCmd = "deno";
+  const pathValue = process.env.PATH ?? "";
+  const pathFolderPaths = splitEnvValue(pathValue);
+  const pathExts = getPathExts();
+  const cmdFileNames = pathExts == null
+    ? [denoCmd]
+    : pathExts.map((ext) => denoCmd + ext);
 
-  async function getDenoWindowsPath() {
-    // Adapted from https://github.com/npm/node-which/blob/master/which.js
-    // Within vscode it will do `require("child_process").spawn("deno")`,
-    // which will prioritize "deno.exe" on the path instead of a possible
-    // higher precedence non-exe executable. This is a problem because, for
-    // example, version managers may have a `deno.bat` shim on the path. To
-    // ensure the resolution of the `deno` command matches what occurs on the
-    // command line, attempt to manually resolve the file path (issue #361).
-    const denoCmd = "deno";
-    // deno-lint-ignore no-undef
-    const pathExtValue = process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM";
-    // deno-lint-ignore no-undef
-    const pathValue = process.env.PATH ?? "";
-    const pathExtItems = splitEnvValue(pathExtValue);
-    const pathFolderPaths = splitEnvValue(pathValue);
-
-    for (const pathFolderPath of pathFolderPaths) {
-      for (const pathExtItem of pathExtItems) {
-        const cmdFilePath = path.join(pathFolderPath, denoCmd + pathExtItem);
-        if (await fileExists(cmdFilePath)) {
-          return cmdFilePath;
-        }
+  for (const pathFolderPath of pathFolderPaths) {
+    for (const cmdFileName of cmdFileNames) {
+      const cmdFilePath = path.join(pathFolderPath, cmdFileName);
+      if (await fileExists(cmdFilePath)) {
+        return cmdFilePath;
       }
     }
+  }
 
-    // nothing found; return back command
-    return denoCmd;
+  // nothing found
+  return undefined;
 
-    function splitEnvValue(value: string) {
-      return value
-        .split(";")
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0);
+  function getPathExts() {
+    if (os.platform() === "win32") {
+      const pathExtValue = process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM";
+      return splitEnvValue(pathExtValue);
+    } else {
+      return undefined;
     }
   }
 
-  function fileExists(executableFilePath: string): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-      fs.stat(executableFilePath, (err, stat) => {
-        resolve(err == null && stat.isFile());
-      });
-    }).catch(() => {
-      // ignore all errors
-      return false;
-    });
+  function splitEnvValue(value: string) {
+    const pathSplitChar = os.platform() === "win32" ? ";" : ":";
+    return value
+      .split(pathSplitChar)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
   }
+}
+
+function fileExists(executableFilePath: string): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    fs.stat(executableFilePath, (err, stat) => {
+      resolve(err == null && stat.isFile());
+    });
+  }).catch(() => {
+    // ignore all errors
+    return false;
+  });
 }

@@ -2,7 +2,7 @@
 
 import { task as taskReq } from "./lsp_extensions";
 import type { DenoExtensionContext } from "./types";
-import { getDenoCommand } from "./util";
+import { getDenoCommandName } from "./util";
 
 import * as vscode from "vscode";
 
@@ -122,7 +122,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
 
     const tasks: vscode.Task[] = [];
 
-    const process = await getDenoCommand();
+    const process = await getDenoCommandName();
     for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
       for (const { command, group, problemMatchers } of defs) {
         const task = buildDenoTask(
@@ -171,7 +171,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
       if (isWorkspaceFolder(task.scope)) {
         return buildDenoTask(
           task.scope,
-          await getDenoCommand(),
+          await getDenoCommandName(),
           definition,
           task.name,
           args,
@@ -182,7 +182,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
       if (isWorkspaceFolder(task.scope)) {
         return buildDenoConfigTask(
           task.scope,
-          await getDenoCommand(),
+          await getDenoCommandName(),
           definition.name,
           definition.detail,
         );

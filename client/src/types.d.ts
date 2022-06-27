@@ -40,6 +40,7 @@ export interface DenoExtensionContext {
   tsApi: TsApi;
   /** The current workspace settings. */
   workspaceSettings: Settings;
+  outputChannel: vscode.OutputChannel;
 }
 
 export interface TestCommandOptions {

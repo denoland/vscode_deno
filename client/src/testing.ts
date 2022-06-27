@@ -14,7 +14,7 @@ import type { DenoExtensionContext } from "./types";
 import { assert } from "./util";
 
 import * as vscode from "vscode";
-import { MarkupKind } from "vscode-languageclient/node";
+import { FeatureState, MarkupKind } from "vscode-languageclient/node";
 import type {
   ClientCapabilities,
   DocumentSelector,
@@ -29,6 +29,10 @@ export class TestingFeature implements StaticFeature {
 
   get enabled() {
     return this.#enabled;
+  }
+
+  getState(): FeatureState {
+    return { kind: "static" };
   }
 
   fillClientCapabilities(capabilities: ClientCapabilities): void {
@@ -134,9 +138,11 @@ export class DenoTestController implements vscode.Disposable {
   #testController: vscode.TestController;
 
   constructor(extensionContext: DenoExtensionContext) {
-    const testController = extensionContext.testController = this
-      .#testController = vscode.tests
-        .createTestController("denoTestController", "Deno");
+    const testController = extensionContext.testController =
+      this
+        .#testController =
+        vscode.tests
+          .createTestController("denoTestController", "Deno");
     this.#subscriptions.push(testController);
 
     const { client } = extensionContext;

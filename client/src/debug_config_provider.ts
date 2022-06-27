@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import type { Settings } from "./types";
-import { getDenoCommand } from "./util";
+import { getDenoCommandName } from "./util";
 import * as vscode from "vscode";
 
 export class DenoDebugConfigurationProvider
@@ -43,7 +43,7 @@ export class DenoDebugConfigurationProvider
         program: "${workspaceFolder}/main.ts",
         cwd: "${workspaceFolder}",
         env: this.#getEnv(),
-        runtimeExecutable: await getDenoCommand(),
+        runtimeExecutable: await getDenoCommandName(),
         runtimeArgs: [
           "run",
           ...this.#getAdditionalRuntimeArgs(),
@@ -76,7 +76,7 @@ export class DenoDebugConfigurationProvider
           type: "pwa-node",
           program: "${file}",
           env: this.#getEnv(),
-          runtimeExecutable: await getDenoCommand(),
+          runtimeExecutable: await getDenoCommandName(),
           runtimeArgs: [
             "run",
             ...this.#getAdditionalRuntimeArgs(),
