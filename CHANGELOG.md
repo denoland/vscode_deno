@@ -3,6 +3,16 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.13.0](https://github.com/denoland/vscode_deno/compare/3.12.0...3.13.0) / 2022.06.27
+
+- feat: don't write configuration to settings.json if values are default (#666)
+- feat: enable lint by default (#665)
+
+- fix: do not start lsp or show any messages if `deno` not found and not in a
+  Deno project (#683)
+- fix: resolve `deno` command from the default install location if it's not on
+  the PATH (#684)
+
 ### [3.12.0](https://github.com/denoland/vscode_deno/compare/3.11.0...3.12.0) / 2022.03.30
 
 - feat: prompt for enabling when config detected (#640)
