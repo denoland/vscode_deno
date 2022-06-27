@@ -63,6 +63,8 @@ async function getDefaultDenoCommand() {
   const denoCmd = "deno";
   const pathValue = process.env.PATH ?? "";
   const pathFolderPaths = splitEnvValue(pathValue);
+  // resolve the default install location in case it's not on the PATH
+  pathFolderPaths.push(getUserDenoBinDir());
   const pathExts = getPathExts();
   const cmdFileNames = pathExts == null
     ? [denoCmd]
@@ -95,6 +97,10 @@ async function getDefaultDenoCommand() {
       .split(pathSplitChar)
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
+  }
+
+  function getUserDenoBinDir() {
+    return path.join(os.homedir(), ".deno", "bin");
   }
 }
 
