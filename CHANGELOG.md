@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.13.1](https://github.com/denoland/vscode_deno/compare/3.13.0...3.13.1) / 2022.07.22
+
+- fix: catch errors while fetching config tasks from language server (#669)
+
 ### [3.13.0](https://github.com/denoland/vscode_deno/compare/3.12.0...3.13.0) / 2022.06.27
 
 - feat: don't write configuration to settings.json if values are default (#666)
