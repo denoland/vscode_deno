@@ -143,6 +143,8 @@ extension has the following configuration options:
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
   APIs. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_
+- `deno.enablePaths`: - Controls if the Deno Language Server is enabled for only specific paths of the workspace folder. 
+   Defaults to an empty list.
 
 ## Contribute
 
