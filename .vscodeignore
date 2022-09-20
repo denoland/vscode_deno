@@ -12,7 +12,6 @@ typescript-deno-plugin
 node_modules
 !node_modules/typescript-deno-plugin/dist/*.js
 !node_modules/typescript-deno-plugin/package.json
-!screenshots/basic_usage.gif
 client
 !client/dist/*.js
 !client/package.json
