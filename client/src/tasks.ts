@@ -145,7 +145,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
       ?.experimental?.denoConfigTasks;
     if (client && supportsConfigTasks) {
       try {
-        const configTasks = await client.sendRequest(taskReq, {});
+        const configTasks = await client.sendRequest(taskReq);
         for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
           if (configTasks) {
             for (const { name, detail } of configTasks) {

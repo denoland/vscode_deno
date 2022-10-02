@@ -39,10 +39,6 @@ export const registryState = new NotificationType<RegistryStateParams>(
   "deno/registryState",
 );
 
-export interface TaskParams {
-  scope?: string;
-}
-
 export interface TaskRequestResponse {
   name: string;
   detail: string;
@@ -50,8 +46,7 @@ export interface TaskRequestResponse {
 
 /** Requests any tasks from the language server that the language server is
  * aware of, which are defined in a Deno configuration file. */
-export const task = new RequestType<
-  TaskParams,
+export const task = new RequestType0<
   TaskRequestResponse[] | undefined,
   void
 >(
