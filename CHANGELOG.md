@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.13.2](https://github.com/denoland/vscode_deno/compare/3.13.1...3.13.2) / 2022.10.09
+
+- fix: deno/tasks expects no parameters (#722)
+- fix: exclude demo image from extension package (#711)
+
 ### [3.13.1](https://github.com/denoland/vscode_deno/compare/3.13.0...3.13.1) / 2022.07.22
 
 - fix: catch errors while fetching config tasks from language server (#669)
