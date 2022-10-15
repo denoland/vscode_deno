@@ -242,6 +242,64 @@
             "C:\\path\\to\\import_map.json"
           ]
         },
+        "deno.inlayHints.parameterNames.enabled": {
+          "type": "string",
+          "enum": [
+            "none",
+            "literals",
+            "all"
+          ],
+          "enumDescriptions": [
+            "Disable inlay hints for parameters.",
+            "Display inlay hints for literal arguments.",
+            "Display inlay hints for all literal and non-literal arguments."
+          ],
+          "default": "none",
+          "markdownDescription": "Enable/disable inlay hints for parameter names.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.parameterNames.suppressWhenArgumentMatchesName": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Do not display an inlay hint when the argument name matches the parameter.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.parameterTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable/disable inlay hints for implicit parameter types.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.variableTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable/disable inlay hints for implicit variable types.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.variableTypes.suppressWhenTypeMatchesName": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Suppress type hints where the variable name matches the implicit type.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.propertyDeclarationTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable/disable inlay hints for implicit property declarations.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.functionLikeReturnTypes.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable/disable inlay hints for implicit function return types.",
+          "scope": "resource"
+        },
+        "deno.inlayHints.enumMemberValues.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable/disable inlay hints for enum values.",
+          "scope": "resource"
+        },
         "deno.suggest.autoImports": {
           "type": "boolean",
           "default": true,
