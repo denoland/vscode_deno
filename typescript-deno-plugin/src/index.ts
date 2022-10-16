@@ -7,8 +7,8 @@ import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
 // deno-lint-ignore no-explicit-any
 type ReturnType<T = (...args: any) => any> = T extends // deno-lint-ignore no-explicit-any
 (...args: any) => infer R ? R
-  : // deno-lint-ignore no-explicit-any
-  any;
+  // deno-lint-ignore no-explicit-any
+  : any;
 /** Extract the parameter types from a maybe function. */
 // deno-lint-ignore no-explicit-any
 type Parameters<T = (...args: any) => any> = T extends // deno-lint-ignore no-explicit-any
