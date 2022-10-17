@@ -167,14 +167,6 @@ to suit your individual needs.
   "editor.defaultFormatter": "denoland.vscode-deno"
 }
 ```
-{
-    "deno.enable": true,
-    "deno.lint": true,
-    "deno.unstable": false,
-    "editor.formatOnSave": true,
-    "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" },
-}
-```
 ## Contribute
 
 We appreciate your help!
