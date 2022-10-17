@@ -145,6 +145,9 @@ extension has the following configuration options:
   _boolean, default `false`_
 - `deno.enablePaths`: - Controls if the Deno Language Server is enabled for only
   specific paths of the workspace folder. Defaults to an empty list.
+- `deno.cache`: - Deno caches dependency TypeScript files when it builds or runs
+  an application. Sometimes that doesn't happen and the user must use `--reload` 
+  to force a reload of a cached files. 
 
 ## Contribute
 
