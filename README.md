@@ -146,6 +146,11 @@ extension has the following configuration options:
 - `deno.enablePaths`: - Controls if the Deno Language Server is enabled for only
   specific paths of the workspace folder. Defaults to an empty list.
 
+## Code Formatting  
+There has been several discussions related to code formatting while working with Deno.
+These JSON configuration files can be placed in the .vscode directory and altered as needed
+to suit your individual needs.
+
 ## Contribute
 
 We appreciate your help!
