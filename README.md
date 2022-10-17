@@ -148,7 +148,7 @@ extension has the following configuration options:
 
 ## Code Formatting  
 There has been several discussions related to code formatting while working with Deno.
-These JSON configuration files can be placed in the .vscode directory and altered as needed
+These JSON configuration files can be added to your .vscode/settings directory and altered as needed
 to suit your individual needs.
 
 ```
@@ -160,7 +160,21 @@ to suit your individual needs.
     "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" },
 }
 ```
-
+```
+{
+  "deno.enable": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "denoland.vscode-deno"
+}
+```
+{
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.unstable": false,
+    "editor.formatOnSave": true,
+    "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" },
+}
+```
 ## Contribute
 
 We appreciate your help!
