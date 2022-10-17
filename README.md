@@ -151,13 +151,15 @@ There has been several discussions related to code formatting while working with
 These JSON configuration files can be placed in the .vscode directory and altered as needed
 to suit your individual needs.
 
-```{
+```
+{
     "deno.enable": true,
     "deno.lint": true,
     "deno.unstable": false,
     "editor.formatOnSave": true,
     "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" },
-}```
+}
+```
 
 ## Contribute
 
