@@ -3,6 +3,16 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.14.0](https://github.com/denoland/vscode_deno/compare/3.13.2...3.14.0) / 2022.10.26
+
+- feat: add inlay hint settings (#733)
+
+  With versions of Deno that support it (Release 1.27 and later), the extension
+  now support configuring inlay hints for Deno enabled projects. The settings
+  are controlled via `deno.inlayHints` and are off by default.
+
+- fix: send inlay hints config on init (#740)
+
 ### [3.13.2](https://github.com/denoland/vscode_deno/compare/3.13.1...3.13.2) / 2022.10.09
 
 - fix: deno/tasks expects no parameters (#722)
