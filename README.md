@@ -82,78 +82,9 @@ The extension provides several commands:
 ## Formatting
 
 The extension provides formatting capabilities for JavaScript, TypeScript, JSX,
-and TSX documents. When choosing to format a document or setting up a default
-formatter for these type of files, the extension should be listed as an option.
-
-> ℹ️ &nbsp; It does not currently provide format-on-paste or format-on-type
-> capabilities.
-
-## Configuration
-
-You can control the settings for this extension through your VS Code settings
-page. You can open the settings page using the `Ctrl+,` keyboard shortcut. The
-extension has the following configuration options:
-
-- `deno.enable`: Controls if the Deno Language Server is enabled. When enabled,
-  the extension will disable the built-in VSCode JavaScript and TypeScript
-  language services, and will use the Deno Language Server (`deno lsp`) instead.
-  _boolean, default `false`_
-- `deno.path`: A path to the `deno` executable. If unset, the extension will use
-  the environment path to resolve the `deno` executable. If set, the extension
-  will use the supplied path. The path should include the executable name (e.g.
-  `/usr/bin/deno`, `C:\Program Files\deno\deno.exe`).
-- `deno.codeLens.implementations`: Enables or disables the display of code lens
-  information for implementations for items in the code. _boolean, default
-  `false`_
-- `deno.codeLens.references`: Enables or disables the display of code lens
-  information for references of items in the code. _boolean, default `false`_
-- `deno.codeLens.referencesAllFunctions`: Enables or disables the display of
-  code lens information for all functions in the code. Requires
-  `deno.codeLens.references` to be enabled as well. _boolean, default `false`_
-- `deno.codeLens.test`: Enables or disables the display of test code lens on
-  Deno tests. _boolean, default `false`_. _This feature is deprecated, see
-  `deno.testing` below_
-- `deno.codeLens.testArgs`: Provides additional arguments that should be set
-  when invoking the Deno CLI test from a code lens. _array of strings, default
-  `[ "--allow-all" ]`_.
-- `deno.config`: The file path to a configuration file. This is the equivalent
-  to using `--config` on the command line. The path can be either be relative to
-  the workspace, or an absolute path. It is recommended you name this file
-  either `deno.json` or `deno.jsonc`. _string, default `null`, examples:
-  `./deno.jsonc`, `/path/to/deno.jsonc`, `C:\path\to\deno.jsonc`_
-- `deno.importMap`: The file path to an import map. This is the equivalent to
-  using `--import-map` on the command line.
-  [Import maps](https://deno.land/manual/linking_to_external_code/import_maps)
-  provide a way to "relocate" modules based on their specifiers. The path can
-  either be relative to the workspace, or an absolute path. _string, default
-  `null`, examples: `./import_map.json`, `/path/to/import_map.json`,
-  `C:\path\to\import_map.json`_
-- `deno.internalDebug`: If enabled the Deno Language Server will log additional
-  internal diagnostic information.
-- `deno.lint`: Controls if linting information will be provided by the Deno
-  Language Server. _boolean, default `true`_
-- `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
-  for suggesting import auto completions. (See:
-  [ImportCompletions](./docs/ImportCompletions.md) for more information.)
-- `deno.testing.args`: Arguments to use when running tests via the Test
-  Explorer. Defaults to `[ \"--allow-all\" ]`.
-- `deno.testing.enable`: Enable the testing API for the language server. When
-  folder is Deno enabled, tests will be available in the Test Explorer view.
-  Defaults to `true`.
-- `deno.unstable`: Controls if code will be type checked with Deno's unstable
-  APIs. This is the equivalent to using `--unstable` on the command line.
-  _boolean, default `false`_
-- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
-  specific paths of the workspace folder. Defaults to an empty list.
-- `deno.cache`: Controls the location of the cache (`DENO_DIR`) for the Deno
-  language server. This is similar to setting the `DENO_DIR` environment
-  variable on the command line.
-
-## Code Formatting
-
-This extension provide code formatting for JavaScript, TypeScript, JSON and
-Markdown files. If you do not have a default formatter configured, vscode will
-prompt to you to configure a default formatter.
+TSX, JSON and markdown documents. When choosing to format a document or setting
+up a default formatter for these type of files, the extension should be listed
+as an option.
 
 When configuring a formatter, you use the extension name, which in the case of
 this extension is `denoland.vscode-deno`. For example, to configure Deno to
@@ -183,6 +114,86 @@ The formatter will respect the settings in your Deno configuration file, which
 can be explicitly set via `deno.config` or automatically detected in the
 workspace. You can find more information about formatter settings at
 [Deno Tools - Formatter](https://deno.land/manual/tools/formatter).
+
+> ℹ️ &nbsp; It does not currently provide format-on-paste or format-on-type
+> capabilities.
+
+## Configuration
+
+You can control the settings for this extension through your VS Code settings
+page. You can open the settings page using the `Ctrl+,` keyboard shortcut. The
+extension has the following configuration options:
+
+- `deno.enable`: Controls if the Deno Language Server is enabled. When enabled,
+  the extension will disable the built-in VSCode JavaScript and TypeScript
+  language services, and will use the Deno Language Server (`deno lsp`) instead.
+  _boolean, default `false`_
+- `deno.path`: A path to the `deno` executable. If unset, the extension will use
+  the environment path to resolve the `deno` executable. If set, the extension
+  will use the supplied path. The path should include the executable name (e.g.
+  `/usr/bin/deno`, `C:\Program Files\deno\deno.exe`).
+- `deno.cache`: Controls the location of the cache (`DENO_DIR`) for the Deno
+  language server. This is similar to setting the `DENO_DIR` environment
+  variable on the command line.
+- `deno.codeLens.implementations`: Enables or disables the display of code lens
+  information for implementations for items in the code. _boolean, default
+  `false`_
+- `deno.codeLens.references`: Enables or disables the display of code lens
+  information for references of items in the code. _boolean, default `false`_
+- `deno.codeLens.referencesAllFunctions`: Enables or disables the display of
+  code lens information for all functions in the code. Requires
+  `deno.codeLens.references` to be enabled as well. _boolean, default `false`_
+- `deno.codeLens.test`: Enables or disables the display of test code lens on
+  Deno tests. _boolean, default `false`_. _This feature is deprecated, see
+  `deno.testing` below_
+- `deno.codeLens.testArgs`: Provides additional arguments that should be set
+  when invoking the Deno CLI test from a code lens. _array of strings, default
+  `[ "--allow-all" ]`_.
+- `deno.config`: The file path to a configuration file. This is the equivalent
+  to using `--config` on the command line. The path can be either be relative to
+  the workspace, or an absolute path. It is recommended you name this file
+  either `deno.json` or `deno.jsonc`. _string, default `null`, examples:
+  `./deno.jsonc`, `/path/to/deno.jsonc`, `C:\path\to\deno.jsonc`_
+- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
+  specific paths of the workspace folder. Defaults to an empty list.
+- `deno.importMap`: The file path to an import map. This is the equivalent to
+  using `--import-map` on the command line.
+  [Import maps](https://deno.land/manual/linking_to_external_code/import_maps)
+  provide a way to "relocate" modules based on their specifiers. The path can
+  either be relative to the workspace, or an absolute path. _string, default
+  `null`, examples: `./import_map.json`, `/path/to/import_map.json`,
+  `C:\path\to\import_map.json`_
+- `deno.inlayHints.enumMemberValues.enabled` - Enable/disable inlay hints for
+  enum values.
+- `deno.inlayHints.functionLikeReturnTypes.enabled` - Enable/disable inlay hints
+  for implicit function return types.
+- `deno.inlayHints.parameterNames.enabled` - Enable/disable inlay hints for
+  parameter names. Values can be `"none"`, `"literals"`, `"all"`.
+- `deno.inlayHints.parameterNames.suppressWhenArgumentMatchesName` - Do not
+  display an inlay hint when the argument name matches the parameter.
+- `deno.inlayHints.parameterTypes.enabled` - Enable/disable inlay hints for
+  implicit parameter types.
+- `deno.inlayHints.propertyDeclarationTypes.enabled` - Enable/disable inlay
+  hints for implicit property declarations.
+- `deno.inlayHints.variableTypes.enabled` - Enable/disable inlay hints for
+  implicit variable types.
+- `deno.inlayHints.variableTypes.suppressWhenTypeMatchesName` - Suppress type
+  hints where the variable name matches the implicit type.
+- `deno.internalDebug`: If enabled the Deno Language Server will log additional
+  internal diagnostic information.
+- `deno.lint`: Controls if linting information will be provided by the Deno
+  Language Server. _boolean, default `true`_
+- `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
+  for suggesting import auto completions. (See:
+  [ImportCompletions](./docs/ImportCompletions.md) for more information.)
+- `deno.testing.args`: Arguments to use when running tests via the Test
+  Explorer. Defaults to `[ \"--allow-all\" ]`.
+- `deno.testing.enable`: Enable the testing API for the language server. When
+  folder is Deno enabled, tests will be available in the Test Explorer view.
+  Defaults to `true`.
+- `deno.unstable`: Controls if code will be type checked with Deno's unstable
+  APIs. This is the equivalent to using `--unstable` on the command line.
+  _boolean, default `false`_
 
 ## Contribute
 
