@@ -36,6 +36,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "enable",
   "enablePaths",
   "importMap",
+  "inlayHints",
   "internalDebug",
   "lint",
   "path",

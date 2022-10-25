@@ -35,6 +35,7 @@ const defaultSettings: Settings = {
   codeLens: null,
   config: null,
   importMap: null,
+  inlayHints: null,
   internalDebug: false,
   lint: false,
   path: null,

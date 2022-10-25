@@ -34,6 +34,29 @@ export interface Settings {
   enablePaths: string[];
   /** A path to an import map that should be applied. */
   importMap: string | null;
+  /** Options related to the display of inlay hints. */
+  inlayHints: {
+    parameterNames: {
+      /** Enable/disable inlay hints for parameter names. */
+      enabled: "none" | "literals" | "all";
+      /** Do not display an inlay hint when the argument name matches the parameter. */
+      suppressWhenArgumentMatchesName: boolean;
+    } | null;
+    /** Enable/disable inlay hints for implicit parameter types. */
+    parameterTypes: { enabled: boolean } | null;
+    variableTypes: {
+      /** Enable/disable inlay hints for implicit variable types. */
+      enabled: boolean;
+      /** Suppress type hints where the variable name matches the implicit type. */
+      suppressWhenTypeMatchesName: boolean;
+    } | null;
+    /** Enable/disable inlay hints for implicit property declarations. */
+    propertyDeclarationTypes: { enabled: boolean } | null;
+    /** Enable/disable inlay hints for implicit function return types. */
+    functionLikeReturnTypes: { enabled: boolean } | null;
+    /** Enable/disable inlay hints for enum values. */
+    enumMemberValues: { enabled: boolean } | null;
+  } | null;
   /** A flag that enables additional internal debug information to be printed
    * to the _Deno Language Server_ output. */
   internalDebug: boolean;
