@@ -149,6 +149,41 @@ extension has the following configuration options:
   an application. Sometimes that doesn't happen and the user must use `--reload` 
   to force a reload of a cached files. 
 
+## Code Formatting
+
+This extension provide code formatting for JavaScript, TypeScript, JSON and
+Markdown files. If you do not have a default formatter configured, vscode will
+prompt to you to configure a default formatter.
+
+When configuring a formatter, you use the extension name, which in the case of
+this extension is `denoland.vscode-deno`. For example, to configure Deno to
+format your TypeScript files automatically on saving, you might set your
+`settings.json` in the workspace like this:
+
+```json
+{
+  "deno.enable": true,
+  "deno.lint": true,
+  "editor.formatOnSave": true,
+  "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" }
+}
+```
+
+Or if you wanted to have Deno be your default formatter overall:
+
+```json
+{
+  "deno.enable": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "denoland.vscode-deno"
+}
+```
+
+The formatter will respect the settings in your Deno configuration file, which
+can be explicitly set via `deno.config` or automatically detected in the
+workspace. You can find more information about formatter settings at
+[Deno Tools - Formatter](https://deno.land/manual/tools/formatter).
+
 ## Contribute
 
 We appreciate your help!
