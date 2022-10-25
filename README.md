@@ -143,11 +143,11 @@ extension has the following configuration options:
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
   APIs. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_
-- `deno.enablePaths`: - Controls if the Deno Language Server is enabled for only
+- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
   specific paths of the workspace folder. Defaults to an empty list.
-- `deno.cache`: - Deno caches dependency TypeScript files when it builds or runs
-  an application. Sometimes that doesn't happen and the user must use `--reload` 
-  to force a reload of a cached files. 
+- `deno.cache`: Controls the location of the cache (`DENO_DIR`) for the Deno
+  language server. This is similar to setting the `DENO_DIR` environment
+  variable on the command line.
 
 ## Code Formatting
 
