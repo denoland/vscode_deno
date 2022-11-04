@@ -79,6 +79,9 @@ class Plugin implements ts.server.PluginModule {
 
   // determines if a specific filename is Deno enabled or not.
   #fileNameDenoEnabled(fileName: string): boolean {
+    if (process.platform === "win32") {
+      fileName = fileName.replace(/\//g, "\\");
+    }
     const settings = projectSettings.get(this.#projectName);
     if (settings?.enabledPaths) {
       const paths = settings.enabledPaths.find(({ workspace }) =>
