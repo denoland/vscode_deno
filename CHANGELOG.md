@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.14.1](https://github.com/denoland/vscode_deno/compare/3.14.0...3.14.1) / 2022.11.11
+
+- fix: `enablePaths` on Windows (#745)
+
 ### [3.14.0](https://github.com/denoland/vscode_deno/compare/3.13.2...3.14.0) / 2022.10.26
 
 - feat: add inlay hint settings (#733)
