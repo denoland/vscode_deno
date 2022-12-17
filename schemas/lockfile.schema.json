@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/denoland/vscode_deno/blob/main/schemas/lockfile.schema.json",
+  "title": "Deno Lock file",
+  "description": "An import map which is used to remap imports when modules are loaded.\n\nSee https://deno.land/manual@v1.6.0/linking_to_external_code/import_maps in the Deno documentation for more information.",
+  "type": "object",
+  "required": [
+    "version",
+    "remote"
+  ],
+  "additionalProperties": {
+    "type": "string",
+    "description": "The hash as the value for the remote URL as the key."
+  },
+  "properties": {
+    "version": {
+      "description": "The version of the import map.",
+      "type": "string",
+      "enum": [
+        "2"
+      ]
+    },
+    "remote": {
+      "description": "A map of remote URLs to their respective hashes.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "description": "The hash as the value for the remote URL as the key."
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["version", "remote"]
+    },
+    {
+      "additionalProperties": {
+        "type": "string",
+        "description": "The hash as the value for the remote URL as the key."
+      }
+    }
+  ]
+}
