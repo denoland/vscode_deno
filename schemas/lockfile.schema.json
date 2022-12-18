@@ -55,7 +55,7 @@
             "properties": {
               "integrity": {
                 "type": "string",
-                "description": "The hash of the npm package itself as well as the name of the hash.",
+                "description": "The hash of the npm package itself as well as the name of the hash."
               },
               "dependencies": {
                 "type": "object",
