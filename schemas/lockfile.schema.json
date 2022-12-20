@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/denoland/vscode_deno/blob/main/schemas/lockfile.schema.json",
+  "title": "Deno Lock file",
+  "description": "A lockfile that stores the hashes of all dependencies in a project to ensure integrity.\n\nSee https://deno.land/manual@v1.28.2/basics/modules/integrity_checking in the Deno documentation for more information.",
+  "type": "object",
+  "required": [
+    "version",
+    "remote"
+  ],
+  "additionalProperties": {
+    "type": "string",
+    "description": "The hash as the value for the remote URL as the key."
+  },
+  "properties": {
+    "version": {
+      "description": "The version of the lockfile.",
+      "type": "string",
+      "default": "2",
+      "enum": [
+        "2"
+      ]
+    },
+    "remote": {
+      "description": "A map of remote URLs to their respective hashes.",
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "type": "string",
+        "description": "The hash as the value for the remote URL as the key."
+      }
+    },
+    "npm": {
+      "description": "A map of npm package names and versions to their respective hashes.",
+      "type": "object",
+      "default": {},
+      "properties": {
+        "specifiers": {
+          "type": "object",
+          "description": "A map of (usually) shortened npm package specifiers to their full specifier.",
+          "default": {},
+          "additionalProperties": {
+            "type": "string",
+            "description": "The full specifier as the value for the shortened specifier as the key."
+          }
+        },
+        "packages": {
+          "type": "object",
+          "description": "A map of npm package names and versions to their respective hashes.",
+          "default": {},
+          "additionalProperties": {
+            "type": "object",
+            "description": "The npm package name to information about hashes about itself and dependencies",
+            "default": {},
+            "properties": {
+              "integrity": {
+                "type": "string",
+                "description": "The hash of the npm package itself as well as the name of the hash."
+              },
+              "dependencies": {
+                "type": "object",
+                "default": {},
+                "description": "A map of npm package names to the version and name of the package",
+                "additionalProperties": {
+                  "type": "string",
+                  "description": "The package name as the key to the package name + version as the value."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["version", "remote"]
+    },
+    {
+      "additionalProperties": {
+        "type": "string",
+        "description": "The hash as the value for the remote URL as the key."
+      }
+    }
+  ]
+}
