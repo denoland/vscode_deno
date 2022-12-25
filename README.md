@@ -1,6 +1,6 @@
 # Deno for Visual Studio Code
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/denoland/vscode_deno/ci)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/denoland/vscode_deno/ci.yml?branch=main)
 
 ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/denoland.vscode-deno)
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/denoland.vscode-deno)
