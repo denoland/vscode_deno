@@ -242,7 +242,7 @@ export async function activate(
   context.subscriptions.push(
     vscode.debug.registerDebugConfigurationProvider(
       "deno",
-      new DenoDebugConfigurationProvider(getWorkspaceSettings),
+      new DenoDebugConfigurationProvider(extensionContext),
     ),
   );
 
