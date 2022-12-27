@@ -4,7 +4,7 @@
   "description": "A language server client for Deno.",
   "author": "Deno Land Inc.",
   "license": "MIT",
-  "version": "3.14.1",
+  "version": "3.15.0",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -254,7 +254,7 @@
             "Display inlay hints for literal arguments.",
             "Display inlay hints for all literal and non-literal arguments."
           ],
-          "default": "none",
+          "default": "all",
           "markdownDescription": "Enable/disable inlay hints for parameter names.",
           "scope": "resource"
         },
@@ -266,13 +266,13 @@
         },
         "deno.inlayHints.parameterTypes.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable/disable inlay hints for implicit parameter types.",
           "scope": "resource"
         },
         "deno.inlayHints.variableTypes.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable/disable inlay hints for implicit variable types.",
           "scope": "resource"
         },
@@ -284,19 +284,19 @@
         },
         "deno.inlayHints.propertyDeclarationTypes.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable/disable inlay hints for implicit property declarations.",
           "scope": "resource"
         },
         "deno.inlayHints.functionLikeReturnTypes.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable/disable inlay hints for implicit function return types.",
           "scope": "resource"
         },
         "deno.inlayHints.enumMemberValues.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable/disable inlay hints for enum values.",
           "scope": "resource"
         },
@@ -422,6 +422,18 @@
       {
         "fileMatch": "deno-import-intellisense.json",
         "url": "./schemas/registry-completions.schema.json"
+      },
+      {
+        "fileMatch": "deno.lock",
+        "url": "./schemas/lockfile.schema.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "json",
+        "filenames": [
+          "deno.lock"
+        ]
       }
     ],
     "problemPatterns": [
@@ -558,7 +570,7 @@
     "esbuild-plugin": "esbuild ./typescript-deno-plugin/src/index.ts --bundle --outfile=typescript-deno-plugin/dist/index.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run esbuild-plugin -- --sourcemap && npm run esbuild-base -- --sourcemap",
     "test-compile": "tsc -b",
-    "fmt": "deno fmt .vscode .github client/src media typescript-deno-plugin/src typescript-deno-plugin/*.md docs package.json tsconfig.json README.md CHANGELOG.md",
+    "fmt": "deno fmt .vscode .github client/src media schemas typescript-deno-plugin/src typescript-deno-plugin/*.md docs package.json tsconfig.json README.md CHANGELOG.md",
     "lint": "deno lint --unstable client/src typescript-deno-plugin/src docs",
     "postinstall": "cd typescript-deno-plugin && npm i && cd ../client && npm i && cd .."
   },

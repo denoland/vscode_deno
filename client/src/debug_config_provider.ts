@@ -1,21 +1,22 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import type { Settings } from "./types";
+import type { DenoExtensionContext } from "./types";
 import { getDenoCommandName } from "./util";
+import * as semver from "semver";
 import * as vscode from "vscode";
 
 export class DenoDebugConfigurationProvider
   implements vscode.DebugConfigurationProvider {
-  #getSettings: () => Settings;
+  #extensionContext: DenoExtensionContext;
 
   #getEnv() {
-    const cache = this.#getSettings().cache;
+    const cache = this.#extensionContext.clientOptions.initializationOptions().cache;
     return cache ? { "DENO_DIR": cache } : undefined;
   }
 
   #getAdditionalRuntimeArgs() {
     const args: string[] = [];
-    const settings = this.#getSettings();
+    const settings = this.#extensionContext.clientOptions.initializationOptions();
     if (settings.unstable) {
       args.push("--unstable");
     }
@@ -30,8 +31,18 @@ export class DenoDebugConfigurationProvider
     return args;
   }
 
-  constructor(getSettings: () => Settings) {
-    this.#getSettings = getSettings;
+  #getInspectArg() {
+    const version = this.#extensionContext.serverInfo?.version;
+
+    if (version && semver.valid(version) && semver.satisfies(version, ">=1.29.0")) {
+      return "--inspect-wait"
+    } else {
+      return "--inspect";
+    }
+  }
+
+  constructor(extensionContext: DenoExtensionContext) {
+    this.#extensionContext = extensionContext;
   }
 
   async provideDebugConfigurations(): Promise<vscode.DebugConfiguration[]> {
@@ -47,7 +58,7 @@ export class DenoDebugConfigurationProvider
         runtimeArgs: [
           "run",
           ...this.#getAdditionalRuntimeArgs(),
-          "--inspect",
+          this.#getInspectArg(),
           "--allow-all",
         ],
         attachSimplePort: 9229,
@@ -80,7 +91,7 @@ export class DenoDebugConfigurationProvider
           runtimeArgs: [
             "run",
             ...this.#getAdditionalRuntimeArgs(),
-            "--inspect",
+            this.#getInspectArg(),
             "--allow-all",
           ],
           attachSimplePort: 9229,
