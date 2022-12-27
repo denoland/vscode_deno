@@ -50,7 +50,7 @@ export class DenoDebugConfigurationProvider
       {
         request: "launch",
         name: "Launch Program",
-        type: "pwa-node",
+        type: "node",
         program: "${workspaceFolder}/main.ts",
         cwd: "${workspaceFolder}",
         env: this.#getEnv(),
@@ -84,7 +84,7 @@ export class DenoDebugConfigurationProvider
         vscode.debug.startDebugging(workspace, {
           request: "launch",
           name: "Launch Program",
-          type: "pwa-node",
+          type: "node",
           program: "${file}",
           env: this.#getEnv(),
           runtimeExecutable: await getDenoCommandName(),
