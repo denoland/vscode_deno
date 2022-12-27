@@ -149,6 +149,9 @@ extension has the following configuration options:
 - `deno.codeLens.testArgs`: Provides additional arguments that should be set
   when invoking the Deno CLI test from a code lens. _array of strings, default
   `[ "--allow-all" ]`_.
+- `deno.codeLens.testEnvs`: Provides additional environments that should be set
+  when invoking the Deno CLI test from a code lens. Its value type should be 
+  `Record<string, string>`, e.g., `{"APP_MODE":"debug"}`.
 - `deno.config`: The file path to a configuration file. This is the equivalent
   to using `--config` on the command line. The path can be either be relative to
   the workspace, or an absolute path. It is recommended you name this file

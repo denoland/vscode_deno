@@ -279,7 +279,7 @@ export function test(
         testArgs.push("--import-map", importMap.trim());
       }
     }
-    const env = {} as Record<string, string>;
+    const env = config.get("codeLens.testEnvs", {}) as  Record<string, string>;
     const cacheDir: string | undefined | null = config.get("cache");
     if (cacheDir?.trim()) {
       env["DENO_DIR"] = cacheDir.trim();

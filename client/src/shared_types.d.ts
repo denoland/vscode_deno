@@ -24,6 +24,7 @@ export interface Settings {
     referencesAllFunctions: boolean;
     test: boolean;
     testArgs: string[];
+    testEnvs: Record<string, string>;
   } | null;
   /** A path to a configuration file that should be applied. */
   config: string | null;

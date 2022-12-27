@@ -220,6 +220,12 @@
           "markdownDescription": "Additional arguments to use with the run test code lens.  Defaults to `[ \"--allow-all\", \"--no-check\" ]`.",
           "scope": "resource"
         },
+        "deno.codeLens.testEnvs": {
+          "type": "object",
+          "default": {},
+          "description": "Environment variables that will be passed to the process that runs the Deno tests",
+          "scope": "resource"
+        },
         "deno.config": {
           "type": "string",
           "default": null,
