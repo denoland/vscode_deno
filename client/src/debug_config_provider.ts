@@ -37,7 +37,7 @@ export class DenoDebugConfigurationProvider
     if (version && semver.valid(version) && semver.satisfies(version, ">=1.29.0")) {
       return "--inspect-wait"
     } else {
-      return "--inspect";
+      return "--inspect-brk";
     }
   }
 
