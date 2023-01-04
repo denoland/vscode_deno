@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.16.0](https://github.com/denoland/vscode_deno/compare/3.15.0...3.16.0) / 2023.01.04
+
+- feat: Add lockfile schema (#766)
+- feat: Make `--inspect-brk` default in older versions of Deno (#779)
+- feat: Make `--inspect-wait` default when creating debug config (#775)
+- feat: Use "node" launch type instead of "pwa-node" (#758)
+
 ### [3.15.0](https://github.com/denoland/vscode_deno/compare/3.14.1...3.15.0) / 2022.12.14
 
 feat: enable inlay hints by default (#759)
