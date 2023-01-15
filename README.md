@@ -110,6 +110,11 @@ Or if you wanted to have Deno be your default formatter overall:
 }
 ```
 
+By default, when initializing a new workspace, the extension will ask if you want
+to set the default formatter for these types of files to be Deno. If you choose
+to do so, the extension will set the `editor.defaultFormatter` setting to
+`denoland.vscode-deno` for these types of files.
+
 The formatter will respect the settings in your Deno configuration file, which
 can be explicitly set via `deno.config` or automatically detected in the
 workspace. You can find more information about formatter settings at

@@ -10,6 +10,7 @@ const quickPickYesNo = [
 export interface InitWorkspaceSettings {
   lint: boolean;
   unstable: boolean;
+  defaultFormatter: boolean
 }
 
 export function pickInitWorkspace() {
@@ -25,7 +26,7 @@ export function pickInitWorkspace() {
     const pick = await input.showQuickPick({
       title,
       step: 1,
-      totalSteps: 2,
+      totalSteps: 3,
       placeholder: "Enable Deno linting?",
       items: quickPickYesNo,
       shouldResume: () => Promise.resolve(false),
@@ -38,12 +39,25 @@ export function pickInitWorkspace() {
     const pick = await input.showQuickPick({
       title,
       step: 2,
-      totalSteps: 2,
+      totalSteps: 3,
       placeholder: "Enable Deno unstable APIs?",
       items: quickPickYesNo,
       shouldResume: () => Promise.resolve(false),
     });
     state.unstable = pick.label === "Yes" ? true : false;
+    return (input: MultiStepInput) => pickDefaultFormatter(input, state)
+  }
+
+  async function pickDefaultFormatter (input: MultiStepInput, state: Partial<State>) {
+    const pick = await input.showQuickPick({
+      title,
+      step: 3,
+      totalSteps: 3,
+      placeholder: "Enable default formatter for TypeScript and TSX?",
+      items: quickPickYesNo,
+      shouldResume: () => Promise.resolve(false),
+    })
+    state.defaultFormatter = pick.label === "Yes" ? true : false
   }
 
   async function collectInputs() {

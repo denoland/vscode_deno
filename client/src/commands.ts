@@ -78,6 +78,7 @@ export function initializeWorkspace(
     try {
       const settings = await pickInitWorkspace();
       const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+      const languageSpecificConfigs = await Promise.all(["typescript", "typescriptreact"].map(async (languageId) => vscode.workspace.getConfiguration("", { languageId })))
       await config.update("enable", true);
 
       const lintInspect = config.inspect("lint");
@@ -92,11 +93,21 @@ export function initializeWorkspace(
         await config.update("unstable", settings.unstable);
       }
 
+      if (settings.defaultFormatter) {
+        for (const languageSpecificConfig of languageSpecificConfigs) {
+          const defaultFormatterInspect = languageSpecificConfig.inspect("editor.defaultFormatter")
+          assert(defaultFormatterInspect)
+          if (defaultFormatterInspect.defaultValue != "denoland.vscode-deno") {
+            await languageSpecificConfig.update("editor.defaultFormatter", "denoland.vscode-deno", false, true)
+          }
+        }
+      }
+
       await vscode.window.showInformationMessage(
         "Deno is now setup in this workspace.",
       );
-    } catch {
-      vscode.window.showErrorMessage("Deno project initialization failed.");
+    } catch (err) {
+      vscode.window.showErrorMessage("Deno project initialization failed.", (err as Error).message);
     }
   };
 }
