@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.17.0](https://github.com/denoland/vscode_deno/compare/3.16.0...3.17.0) / 2023.01.28
+
+Revert "feat: enable inlay hints by default" (#794)
+
 ### [3.16.0](https://github.com/denoland/vscode_deno/compare/3.15.0...3.16.0) / 2023.01.04
 
 - feat: Add lockfile schema (#766)
