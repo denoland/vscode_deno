@@ -133,6 +133,16 @@
             false
           ]
         },
+        "deno.cacheOnSave": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Controls if the Deno cache is enabled on save. When enabled, the extension will cache the active document and its dependencies using the Deno cache.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.enablePaths": {
           "type": "array",
           "items": {

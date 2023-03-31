@@ -32,6 +32,8 @@ export interface Settings {
   maxTsServerMemory: number | null;
   /** Is the extension enabled or not. */
   enable: boolean;
+  /** Controls if the Deno cache is enabled on save. When enabled, the extension will cache the active document and its dependencies using the Deno cache. */
+  cacheOnSave: boolean;
   /** If set, indicates that only the paths in the workspace should be Deno
    * enabled. */
   enablePaths: string[];

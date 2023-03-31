@@ -30,6 +30,7 @@ const LANGUAGES = [
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
   "cache",
+  "cacheOnSave",
   "certificateStores",
   "codeLens",
   "config",
@@ -176,6 +177,15 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
   }
 }
 
+function handleTextDocumentSave(doc: vscode.TextDocument) {
+  if (!LANGUAGES.includes(doc.languageId)) {
+    return;
+  }
+  if (extensionContext.workspaceSettings.cacheOnSave) {
+    vscode.commands.executeCommand("deno.cache");
+  }
+}
+
 const extensionContext = {} as DenoExtensionContext;
 
 /** When the extension activates, this function is called with the extension
@@ -232,6 +242,12 @@ export async function activate(
     extensionContext,
     context.subscriptions,
   );
+
+  vscode.workspace.onDidSaveTextDocument(
+    handleTextDocumentSave,
+    extensionContext,
+    context.subscriptions,
+  )
 
   extensionContext.statusBar = new DenoStatusBar();
   context.subscriptions.push(extensionContext.statusBar);
