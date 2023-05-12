@@ -238,7 +238,7 @@
           "scope": "resource",
           "examples": [
             0,
-            500,
+            100,
             1000
           ]
         },
