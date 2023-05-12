@@ -231,6 +231,17 @@
             "C:\\path\\to\\deno.jsonc"
           ]
         },
+        "deno.documentPreloadLimit": {
+          "type": "number",
+          "markdownDescription": "Maximum number of file system entries to traverse when finding scripts to preload into TypeScript on startup. Set this to 0 to disable document preloading.",
+          "default": 1000,
+          "scope": "resource",
+          "examples": [
+            0,
+            100,
+            1000
+          ]
+        },
         "deno.importMap": {
           "type": "string",
           "default": null,

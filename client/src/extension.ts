@@ -33,6 +33,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "certificateStores",
   "codeLens",
   "config",
+  "documentPreloadLimit",
   "enable",
   "enablePaths",
   "importMap",
