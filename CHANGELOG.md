@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.18.0](https://github.com/denoland/vscode_deno/compare/3.17.0...3.18.0) / 2023.05.12
+
+- feat: configurable document preload limit (#846)
+
 ### [3.17.0](https://github.com/denoland/vscode_deno/compare/3.16.0...3.17.0) / 2023.01.28
 
 Revert "feat: enable inlay hints by default" (#794)
