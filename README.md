@@ -128,6 +128,8 @@ extension has the following configuration options:
   the extension will disable the built-in VSCode JavaScript and TypeScript
   language services, and will use the Deno Language Server (`deno lsp`) instead.
   _boolean, default `false`_
+- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
+  specific paths of the workspace folder. Defaults to an empty list.
 - `deno.path`: A path to the `deno` executable. If unset, the extension will use
   the environment path to resolve the `deno` executable. If set, the extension
   will use the supplied path. The path should include the executable name (e.g.
@@ -154,8 +156,9 @@ extension has the following configuration options:
   the workspace, or an absolute path. It is recommended you name this file
   either `deno.json` or `deno.jsonc`. _string, default `null`, examples:
   `./deno.jsonc`, `/path/to/deno.jsonc`, `C:\path\to\deno.jsonc`_
-- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
-  specific paths of the workspace folder. Defaults to an empty list.
+- `deno.documentPreloadLimit`: Maximum number of file system entries to traverse
+  when finding scripts to preload into TypeScript on startup. Set this to `0` to
+  disable document preloading.
 - `deno.importMap`: The file path to an import map. This is the equivalent to
   using `--import-map` on the command line.
   [Import maps](https://deno.land/manual/linking_to_external_code/import_maps)

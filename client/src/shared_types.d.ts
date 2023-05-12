@@ -27,6 +27,8 @@ export interface Settings {
   } | null;
   /** A path to a configuration file that should be applied. */
   config: string | null;
+  /** Maximum number of file system entries to traverse when preloading. */
+  documentPreloadLimit: number | null;
   /** Is the extension enabled or not. */
   enable: boolean;
   /** If set, indicates that only the paths in the workspace should be Deno

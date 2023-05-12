@@ -34,6 +34,7 @@ const defaultSettings: Settings = {
   enablePaths: [],
   codeLens: null,
   config: null,
+  documentPreloadLimit: null,
   importMap: null,
   inlayHints: null,
   internalDebug: false,
