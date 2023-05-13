@@ -211,23 +211,24 @@ export function startLanguageServer(
   };
 
   function getV8Flags() {
-    const envFlags = process.env.DENO_V8_FLAGS ?? "";
-    const hasMemoryFlagInEnv = envFlags.includes("--max-old-space-size") ??
-      false;
+    let v8Flags = process.env.DENO_V8_FLAGS ?? "";
     if (
-      hasMemoryFlagInEnv &&
+      v8Flags.includes("--max-old-space-size") &&
       extensionContext.workspaceSettings.maxTsServerMemory == null
     ) {
-      return envFlags;
+      // the v8 flags already include a max-old-space-size and the user
+      // has not provided a maxTsServerMemory value
+      return v8Flags;
     }
     const maxTsServerMemory = Math.max(
       128,
       extensionContext.workspaceSettings.maxTsServerMemory ?? 3072,
     );
-    let v8Flags = `--max-old-space-size=${maxTsServerMemory}`;
-    if (envFlags.length > 0) {
-      v8Flags += `,${envFlags}`;
+    if (v8Flags.length > 0) {
+      v8Flags += ",";
     }
+    // flags at the end take precedence
+    v8Flags += `--max-old-space-size=${maxTsServerMemory}`;
     return v8Flags;
   }
 }
