@@ -144,20 +144,24 @@ export function startLanguageServer(
       return;
     }
 
+    const env = {
+      ...process.env,
+      "DENO_V8_FLAGS": getV8Flags(),
+      "NO_COLOR": true,
+    };
+
     const serverOptions: ServerOptions = {
       run: {
         command,
         args: ["lsp"],
-        // deno-lint-ignore no-undef
-        options: { env: { ...process.env, "NO_COLOR": true } },
+        options: { env },
       },
       debug: {
         command,
         // disabled for now, as this gets super chatty during development
         // args: ["lsp", "-L", "debug"],
         args: ["lsp"],
-        // deno-lint-ignore no-undef
-        options: { env: { ...process.env, "NO_COLOR": true } },
+        options: { env },
       },
     };
     const client = new LanguageClient(
@@ -205,6 +209,27 @@ export function startLanguageServer(
       showWelcomePageIfFirstUse(context, extensionContext);
     }
   };
+
+  function getV8Flags() {
+    const envFlags = process.env.DENO_V8_FLAGS ?? "";
+    const hasMemoryFlagInEnv = envFlags.includes("--max-old-space-size") ??
+      false;
+    if (
+      hasMemoryFlagInEnv &&
+      extensionContext.workspaceSettings.maxTsServerMemory == null
+    ) {
+      return envFlags;
+    }
+    const maxTsServerMemory = Math.max(
+      128,
+      extensionContext.workspaceSettings.maxTsServerMemory ?? 3072,
+    );
+    let v8Flags = `--max-old-space-size=${maxTsServerMemory}`;
+    if (envFlags.length > 0) {
+      v8Flags += `,${envFlags}`;
+    }
+    return v8Flags;
+  }
 }
 
 function notifyServerSemver(serverVersion: string) {

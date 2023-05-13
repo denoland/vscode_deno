@@ -35,6 +35,7 @@ const defaultSettings: Settings = {
   codeLens: null,
   config: null,
   documentPreloadLimit: null,
+  maxTsServerMemory: null,
   importMap: null,
   inlayHints: null,
   internalDebug: false,
