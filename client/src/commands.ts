@@ -212,8 +212,10 @@ export function startLanguageServer(
 
   function getV8Flags() {
     let v8Flags = process.env.DENO_V8_FLAGS ?? "";
+    const hasMaxOldSpaceSizeFlag = v8Flags.includes("--max-old-space-size=") ||
+      v8Flags.includes("--max_old_space_size=");
     if (
-      v8Flags.includes("--max-old-space-size=") &&
+      hasMaxOldSpaceSizeFlag &&
       extensionContext.workspaceSettings.maxTsServerMemory == null
     ) {
       // the v8 flags already include a max-old-space-size and the user
