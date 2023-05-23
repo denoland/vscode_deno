@@ -186,6 +186,8 @@ extension has the following configuration options:
   internal diagnostic information.
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `true`_
+- `deno.maxTsServerMemory`: Maximum amount of memory the TypeScript isolate can
+  use. Defaults to 3072 (3GB).
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
   for suggesting import auto completions. (See:
   [ImportCompletions](./docs/ImportCompletions.md) for more information.)

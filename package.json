@@ -311,6 +311,12 @@
           "markdownDescription": "Enable/disable inlay hints for enum values.",
           "scope": "resource"
         },
+        "deno.maxTsServerMemory": {
+          "type": "number",
+          "markdownDescription": "Maximum amount of memory the TypeScript isolate can use. Defaults to 3072 (3GB).",
+          "default": 3072,
+          "scope": "resource"
+        },
         "deno.suggest.autoImports": {
           "type": "boolean",
           "default": true,

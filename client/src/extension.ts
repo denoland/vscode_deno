@@ -34,6 +34,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "config",
   "documentPreloadLimit",
+  "maxTsServerMemory",
   "enable",
   "enablePaths",
   "importMap",
@@ -140,8 +141,11 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
     extensionContext.tsApi.refresh();
     extensionContext.statusBar.refresh(extensionContext);
 
-    // restart when "deno.path" changes
-    if (event.affectsConfiguration("deno.path")) {
+    // restart when certain config changes
+    if (
+      event.affectsConfiguration("deno.path") ||
+      event.affectsConfiguration("deno.maxTsServerMemory")
+    ) {
       vscode.commands.executeCommand("deno.restart");
     }
   }

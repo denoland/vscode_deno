@@ -144,20 +144,24 @@ export function startLanguageServer(
       return;
     }
 
+    const env = {
+      ...process.env,
+      "DENO_V8_FLAGS": getV8Flags(),
+      "NO_COLOR": true,
+    };
+
     const serverOptions: ServerOptions = {
       run: {
         command,
         args: ["lsp"],
-        // deno-lint-ignore no-undef
-        options: { env: { ...process.env, "NO_COLOR": true } },
+        options: { env },
       },
       debug: {
         command,
         // disabled for now, as this gets super chatty during development
         // args: ["lsp", "-L", "debug"],
         args: ["lsp"],
-        // deno-lint-ignore no-undef
-        options: { env: { ...process.env, "NO_COLOR": true } },
+        options: { env },
       },
     };
     const client = new LanguageClient(
@@ -205,6 +209,32 @@ export function startLanguageServer(
       showWelcomePageIfFirstUse(context, extensionContext);
     }
   };
+
+  function getV8Flags() {
+    let v8Flags = process.env.DENO_V8_FLAGS ?? "";
+    const hasMaxOldSpaceSizeFlag = v8Flags.includes("--max-old-space-size=") ||
+      v8Flags.includes("--max_old_space_size=");
+    if (
+      hasMaxOldSpaceSizeFlag &&
+      extensionContext.workspaceSettings.maxTsServerMemory == null
+    ) {
+      // the v8 flags already include a max-old-space-size and the user
+      // has not provided a maxTsServerMemory value
+      return v8Flags;
+    }
+    // Use the same defaults and minimum as vscode uses for this setting
+    // https://github.com/microsoft/vscode/blob/48d4ba271686e8072fc6674137415bc80d936bc7/extensions/typescript-language-features/src/configuration/configuration.ts#L213-L214
+    const maxTsServerMemory = Math.max(
+      128,
+      extensionContext.workspaceSettings.maxTsServerMemory ?? 3072,
+    );
+    if (v8Flags.length > 0) {
+      v8Flags += ",";
+    }
+    // flags at the end take precedence
+    v8Flags += `--max-old-space-size=${maxTsServerMemory}`;
+    return v8Flags;
+  }
 }
 
 function notifyServerSemver(serverVersion: string) {
