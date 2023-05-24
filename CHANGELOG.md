@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.19.1](https://github.com/denoland/vscode_deno/compare/3.19.0...3.19.1) / 2023.05.24
+
+- fix: update default import suggestions (#854)
+
 ### [3.19.0](https://github.com/denoland/vscode_deno/compare/3.18.0...3.19.0) / 2023.05.23
 
 - feat: ability to increase typescript isolate's max memory (#848)
