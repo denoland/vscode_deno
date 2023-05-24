@@ -346,9 +346,7 @@
         "deno.suggest.imports.hosts": {
           "type": "object",
           "default": {
-            "https://deno.land": true,
-            "https://x.nest.land": true,
-            "https://crux.land": true
+            "https://deno.land": true
           },
           "markdownDescription": "Controls which hosts are enabled for import suggestions.",
           "scope": "window",
