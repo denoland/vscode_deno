@@ -65,6 +65,8 @@ export interface Settings {
   internalDebug: boolean;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
+  /** A custom npm registry used for npm specifiers. */
+  npmRegistry: string | null;
   /** Specify an explicit path to the `deno` binary. */
   path: string | null;
   suggest: {

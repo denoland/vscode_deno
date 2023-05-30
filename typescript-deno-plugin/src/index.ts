@@ -40,6 +40,7 @@ const defaultSettings: Settings = {
   inlayHints: null,
   internalDebug: false,
   lint: false,
+  npmRegistry: null,
   path: null,
   suggest: {
     autoImports: true,

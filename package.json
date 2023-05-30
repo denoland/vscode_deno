@@ -157,6 +157,15 @@
             "C:\\Program Files\\deno\\deno.exe"
           ]
         },
+        "deno.npmRegistry": {
+          "type": "string",
+          "default": null,
+          "markdownDescription": "A custom npm registry used for npm specifiers. By default, use the global https://www.npmjs.com/ registry.",
+          "scope": "window",
+          "examples": [
+            "https://artifactory.mycompany.net/artifactory/api/npm/virtual-npm"
+          ]
+        },
         "deno.cache": {
           "type": "string",
           "default": null,
