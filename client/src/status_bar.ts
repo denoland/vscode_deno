@@ -12,6 +12,7 @@ export class DenoStatusBar {
       vscode.StatusBarAlignment.Right,
       0,
     );
+    this.#inner.command = "deno.openOutput";
   }
 
   dispose() {
