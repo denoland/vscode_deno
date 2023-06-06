@@ -264,6 +264,7 @@ export async function activate(
   registerCommand("status", commands.status);
   registerCommand("test", commands.test);
   registerCommand("welcome", commands.welcome);
+  registerCommand("openOutput", commands.openOutput);
 
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,

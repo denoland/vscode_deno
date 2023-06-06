@@ -364,3 +364,12 @@ export function welcome(
     WelcomePanel.createOrShow(context.extensionUri);
   };
 }
+
+export function openOutput(
+  _context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+) {
+  return () => {
+    extensionContext.outputChannel.show(true);
+  };
+}
