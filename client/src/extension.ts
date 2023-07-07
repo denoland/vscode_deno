@@ -182,6 +182,17 @@ function handleTextDocumentSave(doc: vscode.TextDocument) {
     return;
   }
   if (extensionContext.workspaceSettings.cacheOnSave) {
+    const diagnostics = vscode.languages.getDiagnostics(doc.uri);
+    if (
+      !diagnostics.some((it) =>
+        it.code === "no-cache" || it.code === "no-cache-npm"
+      )
+    ) {
+      console.log("no-cache diagnostic not found, skipping cache...");
+      return;
+    }
+
+    console.log("no-cache diagnostic found, caching...");
     vscode.commands.executeCommand("deno.cache");
   }
 }
@@ -247,7 +258,7 @@ export async function activate(
     handleTextDocumentSave,
     extensionContext,
     context.subscriptions,
-  )
+  );
 
   extensionContext.statusBar = new DenoStatusBar();
   context.subscriptions.push(extensionContext.statusBar);
