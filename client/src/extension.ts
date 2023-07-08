@@ -188,7 +188,6 @@ function handleTextDocumentSave(doc: vscode.TextDocument) {
         it.code === "no-cache" || it.code === "no-cache-npm"
       )
     ) {
-      console.log("no-cache diagnostic not found, skipping cache...");
       return;
     }
 
