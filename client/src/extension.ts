@@ -30,6 +30,7 @@ const LANGUAGES = [
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
   "cache",
+  "cacheOnSave",
   "certificateStores",
   "codeLens",
   "config",
@@ -77,7 +78,8 @@ function configToResourceSettings(
     const value = config.inspect(key);
     assert(value);
     resourceSettings[key] = value.workspaceFolderLanguageValue ??
-      value.workspaceFolderValue ?? value.workspaceLanguageValue ??
+      value.workspaceFolderValue ??
+      value.workspaceLanguageValue ??
       value.workspaceValue ??
       value.globalValue ??
       value.defaultValue;
@@ -99,8 +101,8 @@ function getEnabledPaths(): EnabledPaths[] {
     if (!enabledPaths || !enabledPaths.length) {
       continue;
     }
-    const paths = enabledPaths.map((folder) =>
-      vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath
+    const paths = enabledPaths.map(
+      (folder) => vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath,
     );
     items.push({
       workspace: workspaceFolder.uri.fsPath,
@@ -176,6 +178,24 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
   }
 }
 
+function handleTextDocumentSave(doc: vscode.TextDocument) {
+  if (!LANGUAGES.includes(doc.languageId)) {
+    return;
+  }
+  if (extensionContext.workspaceSettings.cacheOnSave) {
+    const diagnostics = vscode.languages.getDiagnostics(doc.uri);
+    if (
+      !diagnostics.some(
+        (it) => it.code === "no-cache" || it.code === "no-cache-npm",
+      )
+    ) {
+      return;
+    }
+
+    vscode.commands.executeCommand("deno.cache");
+  }
+}
+
 const extensionContext = {} as DenoExtensionContext;
 
 /** When the extension activates, this function is called with the extension
@@ -229,6 +249,12 @@ export async function activate(
   // as well as update the TypeScript language service plugin
   vscode.workspace.onDidChangeConfiguration(
     handleConfigurationChange,
+    extensionContext,
+    context.subscriptions,
+  );
+
+  vscode.workspace.onDidSaveTextDocument(
+    handleTextDocumentSave,
     extensionContext,
     context.subscriptions,
   );

@@ -69,12 +69,13 @@ The extension provides several commands:
   > ℹ️ &nbsp; If there are missing dependencies in a module, the extension will
   > provide a quick fix to fetch and cache those dependencies, which invokes
   > this command for you.
+
 - _Deno: Initialize Workspace Configuration_ - will enabled Deno on the current
   workspace and allow you to choose to enable linting and Deno _unstable_ API
   options.
 - _Deno: Language Server Status_ - displays a page of information about the
   status of the Deno Language Server. Useful when submitting a bug about the
-  extension or the language server. _ _Deno: Reload Import Registries Cache_ -
+  extension or the language server. \_ _Deno: Reload Import Registries Cache_ -
   reload any cached responses from the configured import registries.
 - _Deno: Welcome_ - displays the information document that appears when the
   extension is first installed.
@@ -137,6 +138,9 @@ extension has the following configuration options:
 - `deno.cache`: Controls the location of the cache (`DENO_DIR`) for the Deno
   language server. This is similar to setting the `DENO_DIR` environment
   variable on the command line.
+- `deno.cacheOnSave`: Controls if the Deno cache is enabled to cache on save
+  automatically. When enabled, the extension will cache the active document and
+  its dependencies using the Deno cache automatically when the user saves it.
 - `deno.codeLens.implementations`: Enables or disables the display of code lens
   information for implementations for items in the code. _boolean, default
   `false`_
