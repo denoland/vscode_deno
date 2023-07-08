@@ -29,7 +29,7 @@ const projectSettings = new Map<string, PluginSettings>();
  * received from the extension. */
 const defaultSettings: Settings = {
   cache: null,
-  cacheOnSave: true,
+  cacheOnSave: false,
   certificateStores: null,
   enable: false,
   enablePaths: [],
