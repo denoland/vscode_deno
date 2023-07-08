@@ -78,7 +78,8 @@ function configToResourceSettings(
     const value = config.inspect(key);
     assert(value);
     resourceSettings[key] = value.workspaceFolderLanguageValue ??
-      value.workspaceFolderValue ?? value.workspaceLanguageValue ??
+      value.workspaceFolderValue ??
+      value.workspaceLanguageValue ??
       value.workspaceValue ??
       value.globalValue ??
       value.defaultValue;
@@ -100,8 +101,8 @@ function getEnabledPaths(): EnabledPaths[] {
     if (!enabledPaths || !enabledPaths.length) {
       continue;
     }
-    const paths = enabledPaths.map((folder) =>
-      vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath
+    const paths = enabledPaths.map(
+      (folder) => vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath,
     );
     items.push({
       workspace: workspaceFolder.uri.fsPath,
@@ -184,14 +185,13 @@ function handleTextDocumentSave(doc: vscode.TextDocument) {
   if (extensionContext.workspaceSettings.cacheOnSave) {
     const diagnostics = vscode.languages.getDiagnostics(doc.uri);
     if (
-      !diagnostics.some((it) =>
-        it.code === "no-cache" || it.code === "no-cache-npm"
+      !diagnostics.some(
+        (it) => it.code === "no-cache" || it.code === "no-cache-npm",
       )
     ) {
       return;
     }
 
-    console.log("no-cache diagnostic found, caching...");
     vscode.commands.executeCommand("deno.cache");
   }
 }
