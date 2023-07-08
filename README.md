@@ -75,8 +75,9 @@ The extension provides several commands:
   options.
 - _Deno: Language Server Status_ - displays a page of information about the
   status of the Deno Language Server. Useful when submitting a bug about the
-  extension or the language server. \_ _Deno: Reload Import Registries Cache_ -
-  reload any cached responses from the configured import registries.
+  extension or the language server.
+- _Deno: Reload Import Registries Cache_ - reload any cached responses from the
+  configured import registries.
 - _Deno: Welcome_ - displays the information document that appears when the
   extension is first installed.
 
@@ -138,9 +139,8 @@ extension has the following configuration options:
 - `deno.cache`: Controls the location of the cache (`DENO_DIR`) for the Deno
   language server. This is similar to setting the `DENO_DIR` environment
   variable on the command line.
-- `deno.cacheOnSave`: Controls if the Deno cache is enabled to cache on save
-  automatically. When enabled, the extension will cache the active document and
-  its dependencies using the Deno cache automatically when the user saves it.
+- `deno.cacheOnSave`: Controls if the extension should cache the active
+  document's dependencies on save.
 - `deno.codeLens.implementations`: Enables or disables the display of code lens
   information for implementations for items in the code. _boolean, default
   `false`_
