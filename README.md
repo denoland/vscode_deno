@@ -206,27 +206,8 @@ extension has the following configuration options:
 
 ## Contribute
 
-We appreciate your help!
+[Learn how to setup & contribute to this project](.github/CONTRIBUTING.md)
 
-To build the extension locally, clone this repository and run the following
-steps:
-
-1. Open this folder in VS Code.
-2. Run `npm i`.
-3. Run the `Launch Client` launch task from the VSCode debug menu.
-
-After making changes to the extension you can use the restart button in the
-VSCode debug menu, this makes a new build and reloads the client.
-
-Note that if you already have the deno extension installed from the VSCode
-Marketplace, it will be replaced for the `Launch Client` instance only. So
-there's no need to uninstall your existing Deno extension.
-
-Most changes and feature enhancements do not require changes to the extension
-though, as most information comes from the Deno Language Server itself, which is
-integrated into the Deno CLI. Please check out the
-[contribution guidelines](https://deno.land/manual/contributing) for the Deno
-CLI.
 
 ## Thanks
 
