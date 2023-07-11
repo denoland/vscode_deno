@@ -29,11 +29,14 @@ const projectSettings = new Map<string, PluginSettings>();
  * received from the extension. */
 const defaultSettings: Settings = {
   cache: null,
+  cacheOnSave: false,
   certificateStores: null,
   enable: false,
   enablePaths: [],
   codeLens: null,
   config: null,
+  documentPreloadLimit: null,
+  maxTsServerMemory: null,
   importMap: null,
   inlayHints: null,
   internalDebug: false,
