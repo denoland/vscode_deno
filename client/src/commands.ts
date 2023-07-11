@@ -85,13 +85,9 @@ export function initializeWorkspace(
       assert(lintInspect);
       const unstableInspect = config.inspect("unstable");
       assert(unstableInspect);
-      // Don't write settings if they have default values.
-      if (lintInspect.defaultValue != settings.lint) {
-        await config.update("lint", settings.lint);
-      }
-      if (unstableInspect.defaultValue != settings.unstable) {
-        await config.update("unstable", settings.unstable);
-      }
+
+      await config.update("lint", settings.lint);
+      await config.update("unstable", settings.unstable);
 
       if (settings.defaultFormatter) {
         for (const languageSpecificConfig of languageSpecificConfigs) {
