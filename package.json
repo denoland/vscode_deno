@@ -4,7 +4,7 @@
   "description": "A language server client for Deno.",
   "author": "Deno Land Inc.",
   "license": "MIT",
-  "version": "3.17.0",
+  "version": "3.19.1",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -133,6 +133,16 @@
             false
           ]
         },
+        "deno.cacheOnSave": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Controls if the extension should cache the active document's dependencies on save.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.enablePaths": {
           "type": "array",
           "items": {
@@ -231,6 +241,17 @@
             "C:\\path\\to\\deno.jsonc"
           ]
         },
+        "deno.documentPreloadLimit": {
+          "type": "number",
+          "markdownDescription": "Maximum number of file system entries to traverse when finding scripts to preload into TypeScript on startup. Set this to 0 to disable document preloading.",
+          "default": 1000,
+          "scope": "resource",
+          "examples": [
+            0,
+            100,
+            1000
+          ]
+        },
         "deno.importMap": {
           "type": "string",
           "default": null,
@@ -300,6 +321,12 @@
           "markdownDescription": "Enable/disable inlay hints for enum values.",
           "scope": "resource"
         },
+        "deno.maxTsServerMemory": {
+          "type": "number",
+          "markdownDescription": "Maximum amount of memory the TypeScript isolate can use. Defaults to 3072 (3GB).",
+          "default": 3072,
+          "scope": "resource"
+        },
         "deno.suggest.autoImports": {
           "type": "boolean",
           "default": true,
@@ -329,9 +356,7 @@
         "deno.suggest.imports.hosts": {
           "type": "object",
           "default": {
-            "https://deno.land": true,
-            "https://x.nest.land": true,
-            "https://crux.land": true
+            "https://deno.land": true
           },
           "markdownDescription": "Controls which hosts are enabled for import suggestions.",
           "scope": "window",
