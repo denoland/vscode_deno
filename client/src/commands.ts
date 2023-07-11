@@ -78,7 +78,15 @@ export function initializeWorkspace(
     try {
       const settings = await pickInitWorkspace();
       const config = vscode.workspace.getConfiguration(EXTENSION_NS);
-      const languageSpecificConfigs = await Promise.all(["typescript", "typescriptreact"].map(async (languageId) => vscode.workspace.getConfiguration("", { languageId })))
+      const SUPPORTED_LANGUAGES = [
+        "javascript",
+        "typescript",
+        "javascriptreact",
+        "typescriptreact",
+      ];
+      const languageSpecificConfigs = SUPPORTED_LANGUAGES.map((languageId) =>
+        vscode.workspace.getConfiguration("", { languageId })
+      );
       await config.update("enable", true);
 
       const lintInspect = config.inspect("lint");
@@ -89,12 +97,19 @@ export function initializeWorkspace(
       await config.update("lint", settings.lint);
       await config.update("unstable", settings.unstable);
 
-      if (settings.defaultFormatter) {
+      if (settings.fmt) {
         for (const languageSpecificConfig of languageSpecificConfigs) {
-          const defaultFormatterInspect = languageSpecificConfig.inspect("editor.defaultFormatter")
-          assert(defaultFormatterInspect)
+          const defaultFormatterInspect = languageSpecificConfig.inspect(
+            "editor.defaultFormatter",
+          );
+          assert(defaultFormatterInspect);
           if (defaultFormatterInspect.defaultValue != "denoland.vscode-deno") {
-            await languageSpecificConfig.update("editor.defaultFormatter", "denoland.vscode-deno", false, true)
+            await languageSpecificConfig.update(
+              "editor.defaultFormatter",
+              "denoland.vscode-deno",
+              false,
+              true,
+            );
           }
         }
       }

@@ -10,7 +10,7 @@ const quickPickYesNo = [
 export interface InitWorkspaceSettings {
   lint: boolean;
   unstable: boolean;
-  defaultFormatter: boolean
+  fmt: boolean;
 }
 
 export function pickInitWorkspace() {
@@ -22,10 +22,26 @@ export function pickInitWorkspace() {
 
   const title = "Initialize Project";
 
-  async function pickLint(input: MultiStepInput, state: Partial<State>) {
+  async function pickDefaultFormatter(
+    input: MultiStepInput,
+    state: Partial<State>,
+  ) {
     const pick = await input.showQuickPick({
       title,
       step: 1,
+      totalSteps: 3,
+      placeholder: "Enable Deno formatting?",
+      items: quickPickYesNo,
+      shouldResume: () => Promise.resolve(false),
+    });
+    state.fmt = pick.label === "Yes" ? true : false;
+    return (input: MultiStepInput) => pickLint(input, state);
+  }
+
+  async function pickLint(input: MultiStepInput, state: Partial<State>) {
+    const pick = await input.showQuickPick({
+      title,
+      step: 2,
       totalSteps: 3,
       placeholder: "Enable Deno linting?",
       items: quickPickYesNo,
@@ -38,26 +54,13 @@ export function pickInitWorkspace() {
   async function pickUnstable(input: MultiStepInput, state: Partial<State>) {
     const pick = await input.showQuickPick({
       title,
-      step: 2,
+      step: 3,
       totalSteps: 3,
       placeholder: "Enable Deno unstable APIs?",
       items: quickPickYesNo,
       shouldResume: () => Promise.resolve(false),
     });
     state.unstable = pick.label === "Yes" ? true : false;
-    return (input: MultiStepInput) => pickDefaultFormatter(input, state)
-  }
-
-  async function pickDefaultFormatter (input: MultiStepInput, state: Partial<State>) {
-    const pick = await input.showQuickPick({
-      title,
-      step: 3,
-      totalSteps: 3,
-      placeholder: "Enable default formatter for TypeScript and TSX?",
-      items: quickPickYesNo,
-      shouldResume: () => Promise.resolve(false),
-    })
-    state.defaultFormatter = pick.label === "Yes" ? true : false
   }
 
   async function collectInputs() {
