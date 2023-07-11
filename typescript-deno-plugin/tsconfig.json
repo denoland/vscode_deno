@@ -8,7 +8,7 @@
     "outDir": "out",
     "rootDir": "src",
     "sourceMap": true,
-    "strict": true,
+    "strict": true
   },
   "include": [
     "src",

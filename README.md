@@ -69,13 +69,15 @@ The extension provides several commands:
   > ℹ️ &nbsp; If there are missing dependencies in a module, the extension will
   > provide a quick fix to fetch and cache those dependencies, which invokes
   > this command for you.
+
 - _Deno: Initialize Workspace Configuration_ - will enabled Deno on the current
   workspace and allow you to choose to enable linting and Deno _unstable_ API
   options.
 - _Deno: Language Server Status_ - displays a page of information about the
   status of the Deno Language Server. Useful when submitting a bug about the
-  extension or the language server. _ _Deno: Reload Import Registries Cache_ -
-  reload any cached responses from the configured import registries.
+  extension or the language server.
+- _Deno: Reload Import Registries Cache_ - reload any cached responses from the
+  configured import registries.
 - _Deno: Welcome_ - displays the information document that appears when the
   extension is first installed.
 
@@ -133,6 +135,8 @@ extension has the following configuration options:
   the extension will disable the built-in VSCode JavaScript and TypeScript
   language services, and will use the Deno Language Server (`deno lsp`) instead.
   _boolean, default `false`_
+- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
+  specific paths of the workspace folder. Defaults to an empty list.
 - `deno.path`: A path to the `deno` executable. If unset, the extension will use
   the environment path to resolve the `deno` executable. If set, the extension
   will use the supplied path. The path should include the executable name (e.g.
@@ -140,6 +144,8 @@ extension has the following configuration options:
 - `deno.cache`: Controls the location of the cache (`DENO_DIR`) for the Deno
   language server. This is similar to setting the `DENO_DIR` environment
   variable on the command line.
+- `deno.cacheOnSave`: Controls if the extension should cache the active
+  document's dependencies on save.
 - `deno.codeLens.implementations`: Enables or disables the display of code lens
   information for implementations for items in the code. _boolean, default
   `false`_
@@ -159,8 +165,9 @@ extension has the following configuration options:
   the workspace, or an absolute path. It is recommended you name this file
   either `deno.json` or `deno.jsonc`. _string, default `null`, examples:
   `./deno.jsonc`, `/path/to/deno.jsonc`, `C:\path\to\deno.jsonc`_
-- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
-  specific paths of the workspace folder. Defaults to an empty list.
+- `deno.documentPreloadLimit`: Maximum number of file system entries to traverse
+  when finding scripts to preload into TypeScript on startup. Set this to `0` to
+  disable document preloading.
 - `deno.importMap`: The file path to an import map. This is the equivalent to
   using `--import-map` on the command line.
   [Import maps](https://deno.land/manual/linking_to_external_code/import_maps)
@@ -188,6 +195,8 @@ extension has the following configuration options:
   internal diagnostic information.
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `true`_
+- `deno.maxTsServerMemory`: Maximum amount of memory the TypeScript isolate can
+  use. Defaults to 3072 (3GB).
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used
   for suggesting import auto completions. (See:
   [ImportCompletions](./docs/ImportCompletions.md) for more information.)
@@ -202,27 +211,8 @@ extension has the following configuration options:
 
 ## Contribute
 
-We appreciate your help!
+[Learn how to setup & contribute to this project](.github/CONTRIBUTING.md)
 
-To build the extension locally, clone this repository and run the following
-steps:
-
-1. Open this folder in VS Code.
-2. Run `npm i`.
-3. Run the `Launch Client` launch task from the VSCode debug menu.
-
-After making changes to the extension you can use the restart button in the
-VSCode debug menu, this makes a new build and reloads the client.
-
-Note that if you already have the deno extension installed from the VSCode
-Marketplace, it will be replaced for the `Launch Client` instance only. So
-there's no need to uninstall your existing Deno extension.
-
-Most changes and feature enhancements do not require changes to the extension
-though, as most information comes from the Deno Language Server itself, which is
-integrated into the Deno CLI. Please check out the
-[contribution guidelines](https://deno.land/manual/contributing) for the Deno
-CLI.
 
 ## Thanks
 

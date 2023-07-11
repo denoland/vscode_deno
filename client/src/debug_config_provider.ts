@@ -10,13 +10,15 @@ export class DenoDebugConfigurationProvider
   #extensionContext: DenoExtensionContext;
 
   #getEnv() {
-    const cache = this.#extensionContext.clientOptions.initializationOptions().cache;
+    const cache =
+      this.#extensionContext.clientOptions.initializationOptions().cache;
     return cache ? { "DENO_DIR": cache } : undefined;
   }
 
   #getAdditionalRuntimeArgs() {
     const args: string[] = [];
-    const settings = this.#extensionContext.clientOptions.initializationOptions();
+    const settings = this.#extensionContext.clientOptions
+      .initializationOptions();
     if (settings.unstable) {
       args.push("--unstable");
     }
@@ -34,8 +36,10 @@ export class DenoDebugConfigurationProvider
   #getInspectArg() {
     const version = this.#extensionContext.serverInfo?.version;
 
-    if (version && semver.valid(version) && semver.satisfies(version, ">=1.29.0")) {
-      return "--inspect-wait"
+    if (
+      version && semver.valid(version) && semver.satisfies(version, ">=1.29.0")
+    ) {
+      return "--inspect-wait";
     } else {
       return "--inspect-brk";
     }
