@@ -30,9 +30,12 @@ const LANGUAGES = [
 /** These are keys of settings that have a scope of window or machine. */
 const workspaceSettingsKeys: Array<keyof Settings> = [
   "cache",
+  "cacheOnSave",
   "certificateStores",
   "codeLens",
   "config",
+  "documentPreloadLimit",
+  "maxTsServerMemory",
   "enable",
   "enablePaths",
   "importMap",
@@ -75,7 +78,8 @@ function configToResourceSettings(
     const value = config.inspect(key);
     assert(value);
     resourceSettings[key] = value.workspaceFolderLanguageValue ??
-      value.workspaceFolderValue ?? value.workspaceLanguageValue ??
+      value.workspaceFolderValue ??
+      value.workspaceLanguageValue ??
       value.workspaceValue ??
       value.globalValue ??
       value.defaultValue;
@@ -97,8 +101,8 @@ function getEnabledPaths(): EnabledPaths[] {
     if (!enabledPaths || !enabledPaths.length) {
       continue;
     }
-    const paths = enabledPaths.map((folder) =>
-      vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath
+    const paths = enabledPaths.map(
+      (folder) => vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath,
     );
     items.push({
       workspace: workspaceFolder.uri.fsPath,
@@ -139,8 +143,11 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
     extensionContext.tsApi.refresh();
     extensionContext.statusBar.refresh(extensionContext);
 
-    // restart when "deno.path" changes
-    if (event.affectsConfiguration("deno.path")) {
+    // restart when certain config changes
+    if (
+      event.affectsConfiguration("deno.path") ||
+      event.affectsConfiguration("deno.maxTsServerMemory")
+    ) {
       vscode.commands.executeCommand("deno.restart");
     }
   }
@@ -168,6 +175,24 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
   }
   if (didChange) {
     extensionContext.tsApi.refresh();
+  }
+}
+
+function handleTextDocumentSave(doc: vscode.TextDocument) {
+  if (!LANGUAGES.includes(doc.languageId)) {
+    return;
+  }
+  if (extensionContext.workspaceSettings.cacheOnSave) {
+    const diagnostics = vscode.languages.getDiagnostics(doc.uri);
+    if (
+      !diagnostics.some(
+        (it) => it.code === "no-cache" || it.code === "no-cache-npm",
+      )
+    ) {
+      return;
+    }
+
+    vscode.commands.executeCommand("deno.cache");
   }
 }
 
@@ -228,6 +253,12 @@ export async function activate(
     context.subscriptions,
   );
 
+  vscode.workspace.onDidSaveTextDocument(
+    handleTextDocumentSave,
+    extensionContext,
+    context.subscriptions,
+  );
+
   extensionContext.statusBar = new DenoStatusBar();
   context.subscriptions.push(extensionContext.statusBar);
 
@@ -242,7 +273,7 @@ export async function activate(
   context.subscriptions.push(
     vscode.debug.registerDebugConfigurationProvider(
       "deno",
-      new DenoDebugConfigurationProvider(getWorkspaceSettings),
+      new DenoDebugConfigurationProvider(extensionContext),
     ),
   );
 
@@ -259,6 +290,7 @@ export async function activate(
   registerCommand("status", commands.status);
   registerCommand("test", commands.test);
   registerCommand("welcome", commands.welcome);
+  registerCommand("openOutput", commands.openOutput);
 
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
