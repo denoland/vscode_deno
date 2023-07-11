@@ -22,7 +22,7 @@ export function pickInitWorkspace() {
 
   const title = "Initialize Project";
 
-  async function pickDefaultFormatter(
+  async function pickFmt(
     input: MultiStepInput,
     state: Partial<State>,
   ) {
@@ -65,7 +65,7 @@ export function pickInitWorkspace() {
 
   async function collectInputs() {
     const state: Partial<State> = {};
-    await MultiStepInput.run((input) => pickLint(input, state));
+    await MultiStepInput.run((input) => pickFmt(input, state));
     return state as InitWorkspaceSettings;
   }
 
