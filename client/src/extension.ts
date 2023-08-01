@@ -9,7 +9,7 @@ import {
 } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
-import { isEnabled, setupCheckConfig } from "./enable";
+import { isEnabled } from "./enable";
 import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
@@ -302,8 +302,8 @@ export async function activate(
   }));
 
   extensionContext.documentSettings = {};
-  extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.enabled = await isEnabled();
+  extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.workspaceSettings = getWorkspaceSettings();
 
   // setup detection of enabling Deno detection
@@ -346,5 +346,32 @@ function createRegisterCommand(
     context.subscriptions.push(
       vscode.commands.registerCommand(fullName, command),
     );
+  };
+}
+
+/** Check the current workspace */
+async function setupCheckConfig(): Promise<vscode.Disposable> {
+  const subscriptions: vscode.Disposable[] = [];
+  // create a file watcher, so if a config file is added to the workspace we
+  // will check enablement
+  const configFileWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/deno.json{c}",
+    false,
+    true,
+    true,
+  );
+  subscriptions.push(configFileWatcher);
+  subscriptions.push(
+    configFileWatcher.onDidCreate(async () => {
+      extensionContext.enabled = await isEnabled();
+    }),
+  );
+
+  return {
+    dispose() {
+      for (const disposable of subscriptions) {
+        disposable.dispose();
+      }
+    },
   };
 }

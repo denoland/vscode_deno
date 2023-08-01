@@ -43,35 +43,6 @@ export async function isEnabled() {
   }
 }
 
-/** Check the current workspace */
-export async function setupCheckConfig(): Promise<vscode.Disposable> {
-  const subscriptions: vscode.Disposable[] = [];
-  // create a file watcher, so if a config file is added to the workspace we
-  // will check enablement
-  // const configFileWatcher = vscode.workspace.createFileSystemWatcher(
-  //   "**/deno.json{c}",
-  //   false,
-  //   true,
-  //   true,
-  // );
-  // subscriptions.push(configFileWatcher);
-  // subscriptions.push(
-  //   configFileWatcher.onDidCreate(async () => {
-  //     // push enabled to extensionContext
-  //     const enabled = await isEnabled();
-      
-  //   }),
-  // );
-
-  return {
-    dispose() {
-      for (const disposable of subscriptions) {
-        disposable.dispose();
-      }
-    },
-  };
-}
-
 async function exists(uri: vscode.Uri): Promise<boolean> {
   try {
     await vscode.workspace.fs.stat(uri);
