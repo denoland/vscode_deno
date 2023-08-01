@@ -27,7 +27,7 @@ export class DenoStatusBar {
 
     // show only when "enable" is true and language server started
     if (
-      extensionContext.workspaceSettings.enable &&
+      extensionContext.enabled &&
       extensionContext.client &&
       extensionContext.serverInfo
     ) {

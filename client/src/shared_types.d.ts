@@ -99,6 +99,7 @@ export interface EnabledPaths {
 
 export interface PluginSettings {
   documents: Record<string, DocumentSettings>;
+  enabled: boolean;
   enabledPaths: EnabledPaths[];
   workspace: Settings;
 }

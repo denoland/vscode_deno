@@ -76,8 +76,8 @@ class Plugin implements ts.server.PluginModule {
   // determines if a deno is enabled "globally" or not for those APIs which
   // don't reference a file name
   #denoEnabled(): boolean {
-    return projectSettings.get(this.#projectName)?.workspace?.enable ??
-      defaultSettings.enable;
+    const isEnabled = projectSettings.get(this.#projectName)?.enabled;
+    return isEnabled === undefined ? defaultSettings.enable : isEnabled;
   }
 
   // determines if a specific filename is Deno enabled or not.

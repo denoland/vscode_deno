@@ -9,7 +9,7 @@ import {
 } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
-import { setupCheckConfig } from "./enable";
+import { isEnabled, setupCheckConfig } from "./enable";
 import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
@@ -117,7 +117,7 @@ function getWorkspaceSettings(): Settings {
   return configToWorkspaceSettings(config);
 }
 
-function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
+async function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
   if (event.affectsConfiguration(EXTENSION_NS)) {
     extensionContext.client?.sendNotification(
       "workspace/didChangeConfiguration",
@@ -140,6 +140,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
       };
     }
     extensionContext.enabledPaths = getEnabledPaths();
+    extensionContext.enabled = await isEnabled();
     extensionContext.tsApi.refresh();
     extensionContext.statusBar.refresh(extensionContext);
 
@@ -153,8 +154,9 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
   }
 }
 
-function handleChangeWorkspaceFolders() {
+async function handleChangeWorkspaceFolders() {
   extensionContext.enabledPaths = getEnabledPaths();
+  extensionContext.enabled = await isEnabled();
   extensionContext.tsApi.refresh();
 }
 
@@ -294,12 +296,14 @@ export async function activate(
 
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
+    enabled: extensionContext.enabled,
     enabledPaths: extensionContext.enabledPaths,
     workspace: extensionContext.workspaceSettings,
   }));
 
   extensionContext.documentSettings = {};
   extensionContext.enabledPaths = getEnabledPaths();
+  extensionContext.enabled = await isEnabled();
   extensionContext.workspaceSettings = getWorkspaceSettings();
 
   // setup detection of enabling Deno detection

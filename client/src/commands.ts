@@ -32,7 +32,7 @@ import type {
   Location,
   Position,
 } from "vscode-languageclient/node";
-import { getWorkspacesEnabledInfo } from "./enable";
+import { isEnabled } from "./enable";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -130,9 +130,7 @@ export function startLanguageServer(
 
       // only show the message if the user has enabled deno or they have
       // a deno configuration file and haven't explicitly disabled deno
-      const enabledInfo = await getWorkspacesEnabledInfo();
-      const shouldShowMessage = enabledInfo
-        .some((e) => e.enabled || e.hasDenoConfig && e.enabled !== false);
+      const shouldShowMessage = await isEnabled();
       if (shouldShowMessage) {
         vscode.window.showErrorMessage(message);
       }

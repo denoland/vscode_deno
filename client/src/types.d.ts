@@ -29,6 +29,7 @@ export interface DenoExtensionContext {
   clientOptions: LanguageClientOptions;
   /** A record of filepaths and their document settings. */
   documentSettings: Record<string, DocumentSettings>;
+  enabled: boolean;
   enabledPaths: EnabledPaths[];
   serverInfo: DenoServerInfo | undefined;
   /** The capabilities returned from the server. */

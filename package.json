@@ -47,7 +47,9 @@
     "onCommand:deno.welcome",
     "onCommand:deno.initializeWorkspace",
     "onCommand:deno.reloadImportRegistries",
-    "onWebviewPanel:welcomeDeno"
+    "onWebviewPanel:welcomeDeno",
+    "workspaceContains:deno.json",
+    "workspaceContains:deno.jsonc"
   ],
   "main": "./client/dist/main",
   "contributes": {
