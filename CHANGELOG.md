@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.20.0](https://github.com/denoland/vscode_deno/compare/3.19.1...3.20.0) / 2023.08.03
+
+- fix: respect user's answers for enabling or disabling lint and the unstable flag during workspace initialization (#799)
+- feat: cache on save (#831, #877)
+- feat: Refreshed icon (#869)
+- feat: show output panel on status bar click (#861)
+
 ### [3.19.1](https://github.com/denoland/vscode_deno/compare/3.19.0...3.19.1) / 2023.05.24
 
 - fix: update default import suggestions (#854)
