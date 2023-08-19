@@ -6,6 +6,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as process from "process";
+import * as semver from "semver";
 import * as vscode from "vscode";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -113,4 +114,15 @@ function fileExists(executableFilePath: string): Promise<boolean> {
     // ignore all errors
     return false;
   });
+}
+
+export function getInspectArg(denoVersion?: string) {
+  if (
+    denoVersion && semver.valid(denoVersion) &&
+    semver.satisfies(denoVersion, ">=1.29.0")
+  ) {
+    return "--inspect-wait";
+  } else {
+    return "--inspect-brk";
+  }
 }

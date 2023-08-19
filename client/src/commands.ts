@@ -19,7 +19,12 @@ import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
 import type { DenoExtensionContext, TestCommandOptions } from "./types";
 import { WelcomePanel } from "./welcome";
-import { assert, getDenoCommandName, getDenoCommandPath } from "./util";
+import {
+  assert,
+  getDenoCommandName,
+  getDenoCommandPath,
+  getInspectArg,
+} from "./util";
 import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
@@ -284,7 +289,7 @@ export function status(
 
 export function test(
   _context: vscode.ExtensionContext,
-  _extensionContext: DenoExtensionContext,
+  extensionContext: DenoExtensionContext,
 ): Callback {
   return async (uriStr: string, name: string, options: TestCommandOptions) => {
     const uri = vscode.Uri.parse(uriStr, true);
@@ -297,7 +302,7 @@ export function test(
       testArgs.push("--unstable");
     }
     if (options?.inspect) {
-      testArgs.push("--inspect-brk");
+      testArgs.push(getInspectArg(extensionContext.serverInfo?.version));
     }
     if (!testArgs.includes("--import-map")) {
       const importMap: string | undefined | null = config.get("importMap");

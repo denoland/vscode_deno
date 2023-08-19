@@ -1,9 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import type { DenoExtensionContext } from "./types";
-import { getDenoCommandName } from "./util";
-import * as semver from "semver";
 import * as vscode from "vscode";
+import type { DenoExtensionContext } from "./types";
+import { getDenoCommandName, getInspectArg } from "./util";
 
 export class DenoDebugConfigurationProvider
   implements vscode.DebugConfigurationProvider {
@@ -34,15 +33,7 @@ export class DenoDebugConfigurationProvider
   }
 
   #getInspectArg() {
-    const version = this.#extensionContext.serverInfo?.version;
-
-    if (
-      version && semver.valid(version) && semver.satisfies(version, ">=1.29.0")
-    ) {
-      return "--inspect-wait";
-    } else {
-      return "--inspect-brk";
-    }
+    return getInspectArg(this.#extensionContext.serverInfo?.version);
   }
 
   constructor(extensionContext: DenoExtensionContext) {
