@@ -310,7 +310,8 @@ export function test(
     if (cacheDir?.trim()) {
       env["DENO_DIR"] = cacheDir.trim();
     }
-    const args = ["test", ...testArgs, "--filter", name, path];
+    const nameRegex = `/^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$/`;
+    const args = ["test", ...testArgs, "--filter", nameRegex, path];
 
     const definition: tasks.DenoTaskDefinition = {
       type: tasks.TASK_TYPE,
