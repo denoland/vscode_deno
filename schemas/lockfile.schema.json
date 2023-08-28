@@ -30,6 +30,15 @@
         "description": "The hash as the value for the remote URL as the key."
       }
     },
+    "redirects": {
+      "description": "A map of redirected URLs.",
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "type": "string",
+        "description": "The redirected specifier as the key and the destination as the value."
+      }
+    },
     "npm": {
       "description": "A map of npm package names and versions to their respective hashes.",
       "type": "object",
