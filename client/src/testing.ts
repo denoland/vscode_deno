@@ -6,6 +6,7 @@ import {
   type TestMessage,
   testModule,
   testModuleDelete,
+  TestModuleParams,
   testRun,
   testRunCancel,
   testRunProgress,
@@ -227,28 +228,41 @@ export class DenoTestController implements vscode.Disposable {
       return testMessage;
     }
 
-    function mergeSteps(
-      parentSteps: TestData[],
-      uri: vscode.Uri,
+    function mergeChildren(
       parent: vscode.TestItem,
-    ): vscode.TestItem[] {
-      const items: vscode.TestItem[] = [];
-      parent.children.forEach((item) => items.push(item));
-      for (const { id, label, range, steps } of parentSteps) {
-        let testItem = parent.children.get(id);
-        if (!testItem) {
-          testItem = testController.createTestItem(id, label, uri);
-          items.push(testItem);
+      newChildrenData: TestData[],
+      kind: TestModuleParams["kind"],
+    ) {
+      const newChildren: vscode.TestItem[] = [];
+      for (const { id, label, range, steps } of newChildrenData) {
+        let newChild = parent.children.get(id);
+        if (!newChild) {
+          newChild = testController.createTestItem(id, label, parent.uri);
         } else {
-          testItem.label = label;
+          newChild.label = label;
         }
-        testItem.range = p2c.asRange(range);
-        const children = steps ? mergeSteps(steps, uri, testItem) : undefined;
-        if (children) {
-          testItem.children.replace(children);
+        newChildren.push(newChild);
+        newChild.range = p2c.asRange(range);
+        if (steps || kind === "replace") {
+          mergeChildren(newChild, steps ?? [], kind);
         }
       }
-      return items;
+      if (kind === "replace") {
+        // TODO(nayeemrmn): This is to prevent dynamically detected steps from
+        // being deleted on every file change. Instead, these should just be
+        // remembered and resent by the LSP. They should also be deleted after
+        // a test run takes place without them having been run.
+        parent.children.forEach((child) => {
+          if (!child.range) {
+            newChildren.push(child);
+          }
+        });
+        parent.children.replace(newChildren);
+      } else if (kind === "insert") {
+        for (const newChild of newChildren) {
+          parent.children.add(newChild);
+        }
+      }
     }
 
     client.onNotification(
@@ -260,27 +274,7 @@ export class DenoTestController implements vscode.Disposable {
           testModule = testController.createTestItem(uriStr, label, uri);
           testController.items.add(testModule);
         }
-        const testItems = tests.map(({ id, label, steps, range }) => {
-          let test = testModule!.children.get(id);
-          if (!test) {
-            test = testController.createTestItem(id, label, uri);
-          } else {
-            test.label = label;
-          }
-          test.range = p2c.asRange(range);
-          const items = steps ? mergeSteps(steps, uri, test) : undefined;
-          if (items) {
-            test.children.replace(items);
-          }
-          return test;
-        });
-        if (kind === "replace") {
-          testModule.children.replace(testItems);
-        } else {
-          for (const testItem of testItems) {
-            testModule.children.add(testItem);
-          }
-        }
+        mergeChildren(testModule, tests, kind);
       },
     );
 
