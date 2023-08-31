@@ -10,6 +10,7 @@ import {
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { setupCheckConfig } from "./enable";
+import * as semver from "semver";
 import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
@@ -65,6 +66,13 @@ function configToWorkspaceSettings(
   const workspaceSettings = Object.create(null);
   for (const key of workspaceSettingsKeys) {
     workspaceSettings[key] = config.get(key);
+    // Deno LSP versions < 1.37.0 require `deno.enable` to be non-null.
+    if (
+      semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0") &&
+      key == "enable"
+    ) {
+      workspaceSettings[key] ??= false;
+    }
   }
   return workspaceSettings;
 }
@@ -292,18 +300,18 @@ export async function activate(
   registerCommand("welcome", commands.welcome);
   registerCommand("openOutput", commands.openOutput);
 
+  context.subscriptions.push(await setupCheckConfig(extensionContext));
+
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
     enabledPaths: extensionContext.enabledPaths,
+    hasDenoConfig: extensionContext.hasDenoConfig,
     workspace: extensionContext.workspaceSettings,
   }));
 
   extensionContext.documentSettings = {};
   extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.workspaceSettings = getWorkspaceSettings();
-
-  // setup detection of enabling Deno detection
-  context.subscriptions.push(await setupCheckConfig());
 
   // when we activate, it might have been because a document was opened that
   // activated us, which we need to grab the config for and send it over to the

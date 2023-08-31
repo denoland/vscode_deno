@@ -38,6 +38,7 @@ export interface DenoExtensionContext {
   statusBar: DenoStatusBar;
   testController: vscode.TestController | undefined;
   tsApi: TsApi;
+  hasDenoConfig: boolean;
   /** The current workspace settings. */
   workspaceSettings: Settings;
   outputChannel: vscode.OutputChannel;
