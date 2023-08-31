@@ -10,6 +10,7 @@ import {
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { setupCheckConfig } from "./enable";
+import * as semver from "semver";
 import type { EnabledPaths } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
@@ -65,6 +66,13 @@ function configToWorkspaceSettings(
   const workspaceSettings = Object.create(null);
   for (const key of workspaceSettingsKeys) {
     workspaceSettings[key] = config.get(key);
+    // Deno LSP versions < 1.37.0 require `deno.enable` to be non-null.
+    if (
+      semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0") &&
+      key == "enable"
+    ) {
+      workspaceSettings[key] ??= false;
+    }
   }
   return workspaceSettings;
 }
