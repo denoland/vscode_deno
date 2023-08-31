@@ -31,7 +31,7 @@ export interface Settings {
   documentPreloadLimit: number | null;
   maxTsServerMemory: number | null;
   /** Is the extension enabled or not. */
-  enable: boolean;
+  enable: boolean | null;
   /** Controls if the extension should cache the active document's dependencies on save. */
   cacheOnSave: boolean;
   /** If set, indicates that only the paths in the workspace should be Deno
@@ -100,6 +100,8 @@ export interface EnabledPaths {
 export interface PluginSettings {
   documents: Record<string, DocumentSettings>;
   enabledPaths: EnabledPaths[];
+  /** Whether or not there is a `deno.json{c,}` at the workspace root. */
+  hasDenoConfig: boolean;
   workspace: Settings;
 }
 

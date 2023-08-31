@@ -31,7 +31,7 @@ const defaultSettings: Settings = {
   cache: null,
   cacheOnSave: false,
   certificateStores: null,
-  enable: false,
+  enable: null,
   enablePaths: [],
   codeLens: null,
   config: null,
@@ -76,8 +76,10 @@ class Plugin implements ts.server.PluginModule {
   // determines if a deno is enabled "globally" or not for those APIs which
   // don't reference a file name
   #denoEnabled(): boolean {
-    return projectSettings.get(this.#projectName)?.workspace?.enable ??
-      defaultSettings.enable;
+    const pluginSettings = projectSettings.get(this.#projectName);
+    const enable = pluginSettings?.workspace?.enable ?? defaultSettings.enable;
+    const hasDenoConfig = pluginSettings?.hasDenoConfig ?? false;
+    return enable ?? hasDenoConfig;
   }
 
   // determines if a specific filename is Deno enabled or not.
@@ -97,7 +99,7 @@ class Plugin implements ts.server.PluginModule {
     // TODO(@kitsonk): rework all of this to be more like the workspace folders
     // used for enabledPaths.
     return settings?.documents?.[fileName]?.settings.enable ??
-      settings?.workspace?.enable ?? defaultSettings.enable;
+      this.#denoEnabled();
   }
 
   #log = (_msg: string) => {};

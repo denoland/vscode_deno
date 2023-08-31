@@ -292,18 +292,18 @@ export async function activate(
   registerCommand("welcome", commands.welcome);
   registerCommand("openOutput", commands.openOutput);
 
+  context.subscriptions.push(await setupCheckConfig(extensionContext));
+
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
     enabledPaths: extensionContext.enabledPaths,
+    hasDenoConfig: extensionContext.hasDenoConfig,
     workspace: extensionContext.workspaceSettings,
   }));
 
   extensionContext.documentSettings = {};
   extensionContext.enabledPaths = getEnabledPaths();
   extensionContext.workspaceSettings = getWorkspaceSettings();
-
-  // setup detection of enabling Deno detection
-  context.subscriptions.push(await setupCheckConfig());
 
   // when we activate, it might have been because a document was opened that
   // activated us, which we need to grab the config for and send it over to the

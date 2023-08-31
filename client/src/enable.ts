@@ -3,6 +3,7 @@
 import { ENABLE, ENABLE_PATHS, EXTENSION_NS } from "./constants";
 
 import * as vscode from "vscode";
+import { DenoExtensionContext } from "./types";
 
 export interface WorkspaceEnabledInfo {
   folder: vscode.WorkspaceFolder;
@@ -51,22 +52,37 @@ export async function getWorkspacesEnabledInfo() {
 }
 
 /** Check the current workspace */
-export async function setupCheckConfig(): Promise<vscode.Disposable> {
-  await checkEnabledWorkspaceFolders();
+export async function setupCheckConfig(
+  extensionContext: DenoExtensionContext,
+): Promise<vscode.Disposable> {
+  async function updateHasDenoConfig() {
+    const uri = vscode.workspace.workspaceFolders?.[0]?.uri;
+    if (!uri) {
+      return;
+    }
+    const prev = extensionContext.hasDenoConfig;
+    extensionContext.hasDenoConfig =
+      await exists(vscode.Uri.joinPath(uri, "./deno.json")) ||
+      await exists(vscode.Uri.joinPath(uri, "./deno.jsonc"));
+    if (extensionContext.hasDenoConfig !== prev) {
+      extensionContext.tsApi?.refresh();
+    }
+  }
+
+  await updateHasDenoConfig();
 
   const subscriptions: vscode.Disposable[] = [];
   // create a file watcher, so if a config file is added to the workspace we
   // will check enablement
   const configFileWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/deno.json{c}",
+    "**/deno.{json,jsonc}",
     false,
     true,
-    true,
+    false,
   );
   subscriptions.push(configFileWatcher);
-  subscriptions.push(
-    configFileWatcher.onDidCreate(checkEnabledWorkspaceFolders),
-  );
+  subscriptions.push(configFileWatcher.onDidCreate(updateHasDenoConfig));
+  subscriptions.push(configFileWatcher.onDidDelete(updateHasDenoConfig));
 
   return {
     dispose() {
@@ -84,56 +100,4 @@ async function exists(uri: vscode.Uri): Promise<boolean> {
     return false;
   }
   return true;
-}
-
-/**
- * @param folder the workspace folder to prompt about enablement
- * @param only the workspace contains only a single folder or not
- */
-async function promptEnableWorkspaceFolder(
-  folder: vscode.WorkspaceFolder,
-  only: boolean,
-): Promise<boolean> {
-  const prompt = only
-    ? `The workspace appears to be a Deno workspace. Do you wish to enable the Deno extension for this workspace?`
-    : `The workspace folder named "${folder.name}" appears to be a Deno workspace. Do you wish to enable the Deno extension for this workspace folder?`;
-  const selection = await vscode.window.showInformationMessage(
-    prompt,
-    "No",
-    "Enable",
-  );
-  return selection === "Enable";
-}
-
-/** Iterate over the workspace folders, checking if the workspace isn't
- * explicitly enabled or disabled, and if there is a Deno config file in the
- * root of the workspace folder, offer to enable it. */
-async function checkEnabledWorkspaceFolders() {
-  const workspacesEnabledInfo = await getWorkspacesEnabledInfo();
-  const only = workspacesEnabledInfo.length === 1;
-  for (const enabledInfo of workspacesEnabledInfo) {
-    // if the user has not configured enablement and either a deno.json or
-    // deno.jsonc exists in the root of the workspace folder, we will prompt
-    // the user to enable Deno or not.
-    if (enabledInfo.enabled == null && enabledInfo.hasDenoConfig) {
-      const enable = await promptEnableWorkspaceFolder(
-        enabledInfo.folder,
-        only,
-      );
-      // enable can be set on a workspace or workspace folder, when there is
-      // only one workspace folder, we still only want to update the config on
-      // the workspace, versus the folder
-      const config = vscode.workspace.getConfiguration(
-        EXTENSION_NS,
-        enabledInfo.folder,
-      );
-      await config.update(
-        "enable",
-        enable,
-        only
-          ? vscode.ConfigurationTarget.Workspace
-          : vscode.ConfigurationTarget.WorkspaceFolder,
-      );
-    }
-  }
 }
