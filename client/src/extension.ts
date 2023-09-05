@@ -228,7 +228,12 @@ export async function activate(
       { scheme: "file", language: "markdown" },
     ],
     diagnosticCollectionName: "deno",
-    initializationOptions: getWorkspaceSettings,
+    initializationOptions: () => {
+      const options: Settings & { enableBuiltinCommands?: true } =
+        getWorkspaceSettings();
+      options.enableBuiltinCommands = true;
+      return options;
+    },
     markdown: {
       isTrusted: true,
     },
@@ -288,18 +293,6 @@ export async function activate(
   // Activate the task provider.
   context.subscriptions.push(activateTaskProvider(extensionContext));
 
-  // Register any commands.
-  const registerCommand = createRegisterCommand(context);
-  registerCommand("cache", commands.cache);
-  registerCommand("initializeWorkspace", commands.initializeWorkspace);
-  registerCommand("restart", commands.startLanguageServer);
-  registerCommand("reloadImportRegistries", commands.reloadImportRegistries);
-  registerCommand("showReferences", commands.showReferences);
-  registerCommand("status", commands.status);
-  registerCommand("test", commands.test);
-  registerCommand("welcome", commands.welcome);
-  registerCommand("openOutput", commands.openOutput);
-
   context.subscriptions.push(await setupCheckConfig(extensionContext));
 
   extensionContext.tsApi = getTsApi(() => ({
@@ -319,6 +312,42 @@ export async function activate(
   handleDocumentOpen(...vscode.workspace.textDocuments);
 
   await commands.startLanguageServer(context, extensionContext)();
+
+  // Register any commands.
+  const registerCommand = createRegisterCommand(context);
+  const builtinCommands = await vscode.commands.getCommands();
+  // TODO(nayeemrmn): As of Deno 1.37.0, the `deno.cache` command is implemented
+  // on the server. Remove this eventually.
+  if (!builtinCommands.includes("deno.cache")) {
+    registerCommand("cache", commands.cache);
+  }
+  if (!builtinCommands.includes("deno.initializeWorkspace")) {
+    registerCommand("initializeWorkspace", commands.initializeWorkspace);
+  }
+  if (!builtinCommands.includes("deno.restart")) {
+    registerCommand("restart", commands.startLanguageServer);
+  }
+  if (!builtinCommands.includes("deno.reloadImportRegistries")) {
+    registerCommand(
+      "reloadImportRegistries",
+      commands.reloadImportRegistries,
+    );
+  }
+  if (!builtinCommands.includes("deno.showReferences")) {
+    registerCommand("showReferences", commands.showReferences);
+  }
+  if (!builtinCommands.includes("deno.status")) {
+    registerCommand("status", commands.status);
+  }
+  if (!builtinCommands.includes("deno.test")) {
+    registerCommand("test", commands.test);
+  }
+  if (!builtinCommands.includes("deno.welcome")) {
+    registerCommand("welcome", commands.welcome);
+  }
+  if (!builtinCommands.includes("deno.openOutput")) {
+    registerCommand("openOutput", commands.openOutput);
+  }
 }
 
 export function deactivate(): Thenable<void> | undefined {
