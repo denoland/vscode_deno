@@ -3,9 +3,25 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.21.0](https://github.com/denoland/vscode_deno/compare/3.20.0...3.21.0) / 2023.09.05
+
+- fix: run only the clicked test via code lens (#798)
+- fix: delete renamed test steps (#898)
+- fix: check for existing commands before registering them (#905)
+- feat: add redirects to lockfile schema (#894)
+- feat: allow --inspect-wait when debugging test (#893)
+
+- feat: enable via config file detection (#902)
+
+  This will only activate with Deno 1.37.0 installed, which is unreleased as of
+  writing. Removes the prompt added in
+  [3.12.0](https://github.com/denoland/vscode_deno/blob/main/CHANGELOG.md#3120--20220330)
+  since it's superseded by this feature.
+
 ### [3.20.0](https://github.com/denoland/vscode_deno/compare/3.19.1...3.20.0) / 2023.08.03
 
-- fix: respect user's answers for enabling or disabling lint and the unstable flag during workspace initialization (#799)
+- fix: respect user's answers for enabling or disabling lint and the unstable
+  flag during workspace initialization (#799)
 - feat: cache on save (#831, #877)
 - feat: Refreshed icon (#869)
 - feat: show output panel on status bar click (#861)
