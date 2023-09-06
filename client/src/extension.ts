@@ -66,7 +66,8 @@ function configToWorkspaceSettings(
   const workspaceSettings = Object.create(null);
   for (const key of workspaceSettingsKeys) {
     workspaceSettings[key] = config.get(key);
-    // Deno LSP versions < 1.37.0 require `deno.enable` to be non-null.
+    // TODO(nayeemrmn): Deno LSP versions < 1.37.0 require `deno.enable` to be
+    // non-null. Eventually remove this.
     if (
       semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0") &&
       key == "enable"
@@ -153,6 +154,8 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
 
     // restart when certain config changes
     if (
+      event.affectsConfiguration("deno.enable") ||
+      event.affectsConfiguration("deno.enablePaths") ||
       event.affectsConfiguration("deno.path") ||
       event.affectsConfiguration("deno.maxTsServerMemory")
     ) {
@@ -312,6 +315,12 @@ export async function activate(
   handleDocumentOpen(...vscode.workspace.textDocuments);
 
   await commands.startLanguageServer(context, extensionContext)();
+  // TODO(nayeemrmn): Deno LSP versions < 1.37.0 has different compat logic.
+  // We restart here if it's detected. Eventually remove this.
+  if (!semver.lt(extensionContext.serverInfo!.version, "1.37.0")) {
+    extensionContext.workspaceSettings = getWorkspaceSettings();
+    await commands.startLanguageServer(context, extensionContext)();
+  }
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
