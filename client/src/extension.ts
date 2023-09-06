@@ -69,7 +69,7 @@ function configToWorkspaceSettings(
     // TODO(nayeemrmn): Deno LSP versions < 1.37.0 require `deno.enable` to be
     // non-null. Eventually remove this.
     if (
-      semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0") &&
+      semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0-rc") &&
       key == "enable"
     ) {
       workspaceSettings[key] ??= false;
@@ -317,7 +317,7 @@ export async function activate(
   await commands.startLanguageServer(context, extensionContext)();
   // TODO(nayeemrmn): Deno LSP versions < 1.37.0 has different compat logic.
   // We restart here if it's detected. Eventually remove this.
-  if (!semver.lt(extensionContext.serverInfo!.version, "1.37.0")) {
+  if (!semver.lt(extensionContext.serverInfo!.version, "1.37.0-rc")) {
     extensionContext.workspaceSettings = getWorkspaceSettings();
     await commands.startLanguageServer(context, extensionContext)();
   }
