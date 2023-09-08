@@ -376,12 +376,6 @@
           "markdownDescription": "Arguments to use when running tests via the Test Explorer.  Defaults to `[ \"--allow-all\" ]`.",
           "scope": "window"
         },
-        "deno.testing.enable": {
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Enable the testing API for the language server. When folder is Deno enabled, tests will be available in the Test Explorer view.",
-          "scope": "window"
-        },
         "deno.tlsCertificate": {
           "type": "string",
           "default": null,
