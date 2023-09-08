@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.22.0](https://github.com/denoland/vscode_deno/compare/3.21.0...3.22.0) / 2023.09.08
+
+- fix: properly detect 1.37.0 (#911)
+- fix: default "deno.enable" to false temporarily (#913)
+- feat: remove dead "deno.testing.enable" setting (#912)
+
 ### [3.21.0](https://github.com/denoland/vscode_deno/compare/3.20.0...3.21.0) / 2023.09.05
 
 - fix: run only the clicked test via code lens (#798)
