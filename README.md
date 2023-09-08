@@ -197,9 +197,6 @@ extension has the following configuration options:
   [ImportCompletions](./docs/ImportCompletions.md) for more information.)
 - `deno.testing.args`: Arguments to use when running tests via the Test
   Explorer. Defaults to `[ \"--allow-all\" ]`.
-- `deno.testing.enable`: Enable the testing API for the language server. When
-  folder is Deno enabled, tests will be available in the Test Explorer view.
-  Defaults to `true`.
 - `deno.unstable`: Controls if code will be type checked with Deno's unstable
   APIs. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_

@@ -79,10 +79,7 @@ export interface Settings {
       hosts: Record<string, boolean>;
     } | null;
   } | null;
-  testing: {
-    args: string[];
-    enable: boolean;
-  } | null;
+  testing: { args: string[] } | null;
   tlsCertificate: string | null;
   unsafelyIgnoreCertificateErrors: string[] | null;
   /** Determine if the extension should be type checking against the unstable
