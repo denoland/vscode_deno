@@ -127,7 +127,7 @@ class Plugin implements ts.server.PluginModule {
       return (...args) => {
         const enabled = fileNameArg !== undefined
           ? this.#fileNameDenoEnabled(args[fileNameArg] as string)
-          : this.#denoEnabled;
+          : this.#denoEnabled();
         return enabled
           // in order to keep the `emptyReturn` separate instances, we do some
           // analysis here to ensure we are returning a "fresh" `emptyReturn`
