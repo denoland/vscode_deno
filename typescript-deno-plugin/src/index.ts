@@ -2,6 +2,8 @@
 
 import type { PluginSettings, Settings } from "../../client/src/shared_types";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
+import * as path from "path";
+import * as os from "os";
 
 /** Extract the return type from a maybe function. */
 // deno-lint-ignore no-explicit-any
@@ -90,10 +92,10 @@ class Plugin implements ts.server.PluginModule {
     const settings = projectSettings.get(this.#projectName);
     if (settings?.enabledPaths) {
       const paths = settings.enabledPaths.find(({ workspace }) =>
-        fileName.startsWith(workspace)
+        pathStartsWith(fileName, workspace)
       )?.paths;
       if (paths && paths.length) {
-        return paths.some((path) => fileName.startsWith(path));
+        return paths.some((path) => pathStartsWith(fileName, path));
       }
     }
     // TODO(@kitsonk): rework all of this to be more like the workspace folders
@@ -406,6 +408,19 @@ class Plugin implements ts.server.PluginModule {
 function init(): ts.server.PluginModule {
   console.log(`INIT typescript-deno-plugin`);
   return new Plugin();
+}
+
+const PARENT_RELATIVE_REGEX = os.platform() === "win32"
+  ? /\.\.(?:[/\\]|$)/
+  : /\.\.(?:\/|$)/;
+
+/** Checks if `parent` is an ancestor of `child`. */
+function pathStartsWith(child: string, parent: string) {
+  if (path.isAbsolute(child) !== path.isAbsolute(parent)) {
+    return false;
+  }
+  const relative = path.relative(parent, child);
+  return !relative.match(PARENT_RELATIVE_REGEX);
 }
 
 export = init;
