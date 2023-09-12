@@ -34,6 +34,8 @@ export interface Settings {
   enable: boolean | null;
   /** Controls if the extension should cache the active document's dependencies on save. */
   cacheOnSave: boolean;
+  /** Paths in the workspace that should be Deno enabled. */
+  disablePaths: string[];
   /** If set, indicates that only the paths in the workspace should be Deno
    * enabled. */
   enablePaths: string[];
@@ -87,16 +89,18 @@ export interface Settings {
   unstable: boolean;
 }
 
-export interface EnabledPaths {
+export interface PathFilter {
   /** The file system path of the workspace folder that is partially enabled. */
   workspace: string;
+  /** The file system paths that are Deno disabled. */
+  disabled: string[];
   /** The file system paths that are Deno enabled. */
-  paths: string[];
+  enabled: string[] | null;
 }
 
 export interface PluginSettings {
   documents: Record<string, DocumentSettings>;
-  enabledPaths: EnabledPaths[];
+  pathFilters: PathFilter[];
   /** Whether or not there is a `deno.json{c,}` at the workspace root. */
   hasDenoConfig: boolean;
   workspace: Settings;

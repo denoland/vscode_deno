@@ -2,6 +2,7 @@
 
 import * as commands from "./commands";
 import {
+  DISABLE_PATHS,
   ENABLE_PATHS,
   ENABLEMENT_FLAG,
   EXTENSION_NS,
@@ -11,7 +12,7 @@ import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { setupCheckConfig } from "./enable";
 import * as semver from "semver";
-import type { EnabledPaths } from "./shared_types";
+import type { PathFilter } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
@@ -38,6 +39,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "documentPreloadLimit",
   "maxTsServerMemory",
   "enable",
+  "disablePaths",
   "enablePaths",
   "importMap",
   "inlayHints",
@@ -56,6 +58,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
 const resourceSettingsKeys: Array<keyof Settings> = [
   "codeLens",
   "enable",
+  "disablePaths",
   "enablePaths",
 ];
 
@@ -96,8 +99,8 @@ function configToResourceSettings(
   return resourceSettings;
 }
 
-function getEnabledPaths(): EnabledPaths[] {
-  const items = [] as EnabledPaths[];
+function getPathFilters(): PathFilter[] {
+  const items = [] as PathFilter[];
   if (!vscode.workspace.workspaceFolders) {
     return items;
   }
@@ -106,16 +109,23 @@ function getEnabledPaths(): EnabledPaths[] {
       EXTENSION_NS,
       workspaceFolder,
     );
-    const enabledPaths = config.get<string[]>(ENABLE_PATHS);
-    if (!enabledPaths || !enabledPaths.length) {
+    const disabled_ = config.get<string[]>(DISABLE_PATHS) ?? [];
+    const disabled = disabled_.map((p) =>
+      vscode.Uri.joinPath(workspaceFolder.uri, p).fsPath
+    );
+    const enabled_ = config.get<string[]>(ENABLE_PATHS);
+    // We convert `enablePaths: []` to `enablePaths: null` for now.
+    // See https://github.com/denoland/vscode_deno/issues/908.
+    const enabled = enabled_?.length
+      ? enabled_.map((p) => vscode.Uri.joinPath(workspaceFolder.uri, p).fsPath)
+      : null;
+    if (disabled.length === 0 && enabled == null) {
       continue;
     }
-    const paths = enabledPaths.map(
-      (folder) => vscode.Uri.joinPath(workspaceFolder.uri, folder).fsPath,
-    );
     items.push({
       workspace: workspaceFolder.uri.fsPath,
-      paths,
+      disabled,
+      enabled,
     });
   }
   return items;
@@ -148,13 +158,14 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         ),
       };
     }
-    extensionContext.enabledPaths = getEnabledPaths();
+    extensionContext.pathFilters = getPathFilters();
     extensionContext.tsApi.refresh();
     extensionContext.statusBar.refresh(extensionContext);
 
     // restart when certain config changes
     if (
       event.affectsConfiguration("deno.enable") ||
+      event.affectsConfiguration("deno.disablePaths") ||
       event.affectsConfiguration("deno.enablePaths") ||
       event.affectsConfiguration("deno.path") ||
       event.affectsConfiguration("deno.maxTsServerMemory")
@@ -165,7 +176,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
 }
 
 function handleChangeWorkspaceFolders() {
-  extensionContext.enabledPaths = getEnabledPaths();
+  extensionContext.pathFilters = getPathFilters();
   extensionContext.tsApi.refresh();
 }
 
@@ -300,13 +311,13 @@ export async function activate(
 
   extensionContext.tsApi = getTsApi(() => ({
     documents: extensionContext.documentSettings,
-    enabledPaths: extensionContext.enabledPaths,
+    pathFilters: extensionContext.pathFilters,
     hasDenoConfig: extensionContext.hasDenoConfig,
     workspace: extensionContext.workspaceSettings,
   }));
 
   extensionContext.documentSettings = {};
-  extensionContext.enabledPaths = getEnabledPaths();
+  extensionContext.pathFilters = getPathFilters();
   extensionContext.workspaceSettings = getWorkspaceSettings();
 
   // when we activate, it might have been because a document was opened that
