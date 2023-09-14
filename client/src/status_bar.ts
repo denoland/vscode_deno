@@ -29,7 +29,7 @@ export class DenoStatusBar {
     if (
       ((extensionContext.workspaceSettings.enable ??
         extensionContext.hasDenoConfig) ||
-        extensionContext.enabledPaths.length !== 0) &&
+        extensionContext.pathFilters.length !== 0) &&
       extensionContext.client &&
       extensionContext.serverInfo
     ) {

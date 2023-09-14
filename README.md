@@ -130,8 +130,10 @@ extension has the following configuration options:
   the extension will disable the built-in VSCode JavaScript and TypeScript
   language services, and will use the Deno Language Server (`deno lsp`) instead.
   _boolean, default `false`_
-- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
+- `deno.disablePaths`: Controls if the Deno Language Server is disabled for
   specific paths of the workspace folder. Defaults to an empty list.
+- `deno.enablePaths`: Controls if the Deno Language Server is enabled for only
+  specific paths of the workspace folder.
 - `deno.path`: A path to the `deno` executable. If unset, the extension will use
   the environment path to resolve the `deno` executable. If set, the extension
   will use the supplied path. The path should include the executable name (e.g.

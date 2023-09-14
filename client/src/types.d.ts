@@ -5,7 +5,7 @@ import type {
   LanguageClientOptions,
 } from "vscode-languageclient/node";
 import type { DenoServerInfo } from "./server_info";
-import type { DocumentSettings, EnabledPaths, Settings } from "./shared_types";
+import type { DocumentSettings, PathFilter, Settings } from "./shared_types";
 import type { DenoStatusBar } from "./status_bar";
 import type * as vscode from "vscode";
 
@@ -29,7 +29,7 @@ export interface DenoExtensionContext {
   clientOptions: LanguageClientOptions;
   /** A record of filepaths and their document settings. */
   documentSettings: Record<string, DocumentSettings>;
-  enabledPaths: EnabledPaths[];
+  pathFilters: PathFilter[];
   serverInfo: DenoServerInfo | undefined;
   /** The capabilities returned from the server. */
   serverCapabilities:

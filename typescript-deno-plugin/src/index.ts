@@ -34,6 +34,7 @@ const defaultSettings: Settings = {
   cacheOnSave: false,
   certificateStores: null,
   enable: null,
+  disablePaths: [],
   enablePaths: [],
   codeLens: null,
   config: null,
@@ -90,12 +91,21 @@ class Plugin implements ts.server.PluginModule {
       fileName = fileName.replace(/\//g, "\\");
     }
     const settings = projectSettings.get(this.#projectName);
-    if (settings?.enabledPaths) {
-      const paths = settings.enabledPaths.find(({ workspace }) =>
+    if (settings?.pathFilters) {
+      const pathFilter = settings.pathFilters.find(({ workspace }) =>
         pathStartsWith(fileName, workspace)
-      )?.paths;
-      if (paths && paths.length) {
-        return paths.some((path) => pathStartsWith(fileName, path));
+      );
+      if (pathFilter) {
+        for (const path of pathFilter.disabled) {
+          if (pathStartsWith(fileName, path)) {
+            return false;
+          }
+        }
+        if (pathFilter?.enabled) {
+          return pathFilter.enabled.some((path) =>
+            pathStartsWith(fileName, path)
+          );
+        }
       }
     }
     // TODO(@kitsonk): rework all of this to be more like the workspace folders

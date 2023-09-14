@@ -143,6 +143,20 @@
             false
           ]
         },
+        "deno.disablePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Disables the Deno Language Server for specific paths. This will leave the built in TypeScript/JavaScript language server enabled for those paths. Takes priority over `deno.enablePaths`.\n\n**Not recommended to be enabled in user settings.**",
+          "scope": "resource",
+          "examples": [
+            [
+              "./worker"
+            ]
+          ]
+        },
         "deno.enablePaths": {
           "type": "array",
           "items": {
