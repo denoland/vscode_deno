@@ -18,6 +18,7 @@ import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
 import type { DenoExtensionContext, Settings } from "./types";
 import { assert } from "./util";
+import * as util from "util";
 
 import * as vscode from "vscode";
 
@@ -216,6 +217,12 @@ function handleTextDocumentSave(doc: vscode.TextDocument) {
 
     vscode.commands.executeCommand("deno.cache");
   }
+}
+
+export function log(...msgs: unknown[]) {
+  extensionContext.outputChannel.appendLine(
+    msgs.map((m) => typeof m === "string" ? m : util.inspect(m)).join(" "),
+  );
 }
 
 const extensionContext = {} as DenoExtensionContext;

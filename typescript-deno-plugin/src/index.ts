@@ -4,6 +4,7 @@ import type { PluginSettings, Settings } from "../../client/src/shared_types";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
 import * as path from "path";
 import * as os from "os";
+import * as util from "util";
 
 /** Extract the return type from a maybe function. */
 // deno-lint-ignore no-explicit-any
@@ -114,12 +115,17 @@ class Plugin implements ts.server.PluginModule {
       this.#denoEnabled();
   }
 
-  #log = (_msg: string) => {};
+  #log = (..._msgs: unknown[]) => {};
 
   create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const { languageService: ls, project, config } = info;
-    this.#log = (msg) =>
-      project.projectService.logger.info(`[typescript-deno-plugin] ${msg}`);
+    this.#log = (...msgs) => {
+      project.projectService.logger.info(
+        `[typescript-deno-plugin] ${
+          msgs.map((m) => typeof m === "string" ? m : util.inspect(m)).join(" ")
+        }`,
+      );
+    };
 
     this.#project = project;
     this.#projectName = project.getProjectName();
