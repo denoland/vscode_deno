@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.23.0](https://github.com/denoland/vscode_deno/compare/3.22.0...3.23.0) / 2023.09.19
+
+- fix: getCompilerOptionsDiagnostics and getNavigateToItems fixed when "deno.enable" is false (#915)
+- feat: Restore "deno.enable" null default for deno.json auto-detection (#921)
+- feat: feat: "deno.disablePaths" setting (#919)
+
 ### [3.22.0](https://github.com/denoland/vscode_deno/compare/3.21.0...3.22.0) / 2023.09.08
 
 - fix: properly detect 1.37.0 (#911)
