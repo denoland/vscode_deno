@@ -215,7 +215,11 @@ function handleTextDocumentSave(doc: vscode.TextDocument) {
       return;
     }
 
-    vscode.commands.executeCommand("deno.cache");
+    vscode.commands.executeCommand(
+      "deno.cache",
+      [doc.uri.toString()],
+      doc.uri.toString(),
+    );
   }
 }
 
