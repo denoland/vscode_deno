@@ -12,7 +12,7 @@ import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
 import { setupCheckConfig } from "./enable";
 import * as semver from "semver";
-import type { PathFilter } from "./shared_types";
+import type { LanguageSettings, PathFilter } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
@@ -28,6 +28,14 @@ const LANGUAGES = [
   "javascript",
   "typescriptreact",
   "javascriptreact",
+];
+
+/** These are keys of settings that have a scope of window or machine. */
+const languageSettingsKeys: Array<keyof LanguageSettings> = [
+  "inlayHints",
+  "preferences",
+  "suggest",
+  "updateImportsOnFileMove",
 ];
 
 /** These are keys of settings that have a scope of window or machine. */
@@ -62,25 +70,6 @@ const resourceSettingsKeys: Array<keyof Settings> = [
   "disablePaths",
   "enablePaths",
 ];
-
-/** Convert a workspace configuration to `Settings` for a workspace. */
-function configToWorkspaceSettings(
-  config: vscode.WorkspaceConfiguration,
-): Settings {
-  const workspaceSettings = Object.create(null);
-  for (const key of workspaceSettingsKeys) {
-    workspaceSettings[key] = config.get(key);
-    // TODO(nayeemrmn): Deno LSP versions < 1.37.0 require `deno.enable` to be
-    // non-null. Eventually remove this.
-    if (
-      semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0-rc") &&
-      key == "enable"
-    ) {
-      workspaceSettings[key] ??= false;
-    }
-  }
-  return workspaceSettings;
-}
 
 /** Convert a workspace configuration to settings that apply to a resource. */
 function configToResourceSettings(
@@ -134,11 +123,35 @@ function getPathFilters(): PathFilter[] {
 
 function getWorkspaceSettings(): Settings {
   const config = vscode.workspace.getConfiguration(EXTENSION_NS);
-  return configToWorkspaceSettings(config);
+  const workspaceSettings = Object.create(null);
+  for (const key of workspaceSettingsKeys) {
+    workspaceSettings[key] = config.get(key);
+    // TODO(nayeemrmn): Deno LSP versions < 1.37.0 require `deno.enable` to be
+    // non-null. Eventually remove this.
+    if (
+      semver.lt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0-rc") &&
+      key == "enable"
+    ) {
+      workspaceSettings[key] ??= false;
+    }
+  }
+  workspaceSettings.javascript = Object.create(null);
+  workspaceSettings.typescript = Object.create(null);
+  const jsConfig = vscode.workspace.getConfiguration("javascript");
+  const tsConfig = vscode.workspace.getConfiguration("typescript");
+  for (const key of languageSettingsKeys) {
+    workspaceSettings.javascript[key] = jsConfig.get(key);
+    workspaceSettings.typescript[key] = tsConfig.get(key);
+  }
+  return workspaceSettings;
 }
 
 function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
-  if (event.affectsConfiguration(EXTENSION_NS)) {
+  if (
+    [EXTENSION_NS, "javascript", "typescript"].some((s) =>
+      event.affectsConfiguration(s)
+    )
+  ) {
     extensionContext.client?.sendNotification(
       "workspace/didChangeConfiguration",
       // We actually set this to empty because the language server will
