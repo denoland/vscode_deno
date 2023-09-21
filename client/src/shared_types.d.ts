@@ -4,6 +4,58 @@ import type { ConfigurationScope } from "vscode";
 
 // types shared with typescript-deno-plugin
 
+export interface InlayHints {
+  parameterNames: {
+    /** Enable/disable inlay hints for parameter names. */
+    enabled: "none" | "literals" | "all";
+    /** Do not display an inlay hint when the argument name matches the parameter. */
+    suppressWhenArgumentMatchesName: boolean;
+  } | null;
+  /** Enable/disable inlay hints for implicit parameter types. */
+  parameterTypes: { enabled: boolean } | null;
+  variableTypes: {
+    /** Enable/disable inlay hints for implicit variable types. */
+    enabled: boolean;
+    /** Suppress type hints where the variable name matches the implicit type. */
+    suppressWhenTypeMatchesName: boolean;
+  } | null;
+  /** Enable/disable inlay hints for implicit property declarations. */
+  propertyDeclarationTypes: { enabled: boolean } | null;
+  /** Enable/disable inlay hints for implicit function return types. */
+  functionLikeReturnTypes: { enabled: boolean } | null;
+  /** Enable/disable inlay hints for enum values. */
+  enumMemberValues: { enabled: boolean } | null;
+}
+
+export interface Suggest {
+  autoImports: boolean;
+  completeFunctionCalls: boolean;
+  names: boolean;
+  paths: boolean;
+}
+
+// Subset of the "javascript" and "typescript" config sections.
+export interface LanguageSettings {
+  inlayHints: InlayHints | null;
+  preferences: {
+    quoteStyle: "auto" | "double" | "single";
+    importModuleSpecifier:
+      | "non-relative"
+      | "project-relative"
+      | "relative"
+      | "shortest";
+    importModuleSpecifierEnding: "auto" | "index" | "js" | "minimal";
+    jsxAttributeCompletionStyle: "auto" | "braces" | "none";
+    autoImportFileExcludePatterns: string[];
+    useAliasesForRenames: boolean;
+    renameMatchingJsxTags: boolean;
+  } | null;
+  suggest: Suggest | null;
+  updateImportsOnFileMove: {
+    enabled: "always" | "prompt" | "never";
+  } | null;
+}
+
 /** When `vscode.WorkspaceSettings` get serialized, they keys of the
  * configuration are available.  This interface should mirror the configuration
  * contributions made by the extension.
@@ -42,28 +94,8 @@ export interface Settings {
   /** A path to an import map that should be applied. */
   importMap: string | null;
   /** Options related to the display of inlay hints. */
-  inlayHints: {
-    parameterNames: {
-      /** Enable/disable inlay hints for parameter names. */
-      enabled: "none" | "literals" | "all";
-      /** Do not display an inlay hint when the argument name matches the parameter. */
-      suppressWhenArgumentMatchesName: boolean;
-    } | null;
-    /** Enable/disable inlay hints for implicit parameter types. */
-    parameterTypes: { enabled: boolean } | null;
-    variableTypes: {
-      /** Enable/disable inlay hints for implicit variable types. */
-      enabled: boolean;
-      /** Suppress type hints where the variable name matches the implicit type. */
-      suppressWhenTypeMatchesName: boolean;
-    } | null;
-    /** Enable/disable inlay hints for implicit property declarations. */
-    propertyDeclarationTypes: { enabled: boolean } | null;
-    /** Enable/disable inlay hints for implicit function return types. */
-    functionLikeReturnTypes: { enabled: boolean } | null;
-    /** Enable/disable inlay hints for enum values. */
-    enumMemberValues: { enabled: boolean } | null;
-  } | null;
+  // TODO(nayeemrmn): Deprecate in favour of `LanguageSettings::inlayHints`.
+  inlayHints: InlayHints | null;
   /** A flag that enables additional internal debug information to be printed
    * to the _Deno Language Server_ output. */
   internalDebug: boolean;
@@ -71,22 +103,24 @@ export interface Settings {
   lint: boolean;
   /** Specify an explicit path to the `deno` binary. */
   path: string | null;
-  suggest: {
-    autoImports: boolean;
-    completeFunctionCalls: boolean;
-    names: boolean;
-    paths: boolean;
-    imports: {
-      autoDiscover: boolean;
-      hosts: Record<string, boolean>;
-    } | null;
-  } | null;
+  // TODO(nayeemrmn): Deprecate the `Suggest` part of this in favour of
+  // `LanguageSettings::suggest`.
+  suggest:
+    | Suggest & {
+      imports: {
+        autoDiscover: boolean;
+        hosts: Record<string, boolean>;
+      } | null;
+    }
+    | null;
   testing: { args: string[] } | null;
   tlsCertificate: string | null;
   unsafelyIgnoreCertificateErrors: string[] | null;
   /** Determine if the extension should be type checking against the unstable
    * APIs. */
   unstable: boolean;
+  javascript?: LanguageSettings | null;
+  typescript?: LanguageSettings | null;
 }
 
 export interface PathFilter {
