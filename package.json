@@ -44,9 +44,9 @@
     "onDebugResolve:typescriptreact",
     "onDebugResolve:javascript",
     "onDebugResolve:javascriptreact",
-    "onCommand:deno.welcome",
-    "onCommand:deno.initializeWorkspace",
-    "onCommand:deno.reloadImportRegistries",
+    "onCommand:deno.client.welcome",
+    "onCommand:deno.client.initializeWorkspace",
+    "onCommand:deno.client.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/dist/main",
@@ -80,40 +80,40 @@
     ],
     "commands": [
       {
-        "command": "deno.cache",
+        "command": "deno.client.cacheActiveDocument",
         "title": "Cache Dependencies",
         "category": "Deno",
         "description": "Cache the active workspace document and its dependencies.",
         "enablement": "deno:lspReady"
       },
       {
-        "command": "deno.initializeWorkspace",
+        "command": "deno.client.initializeWorkspace",
         "title": "Initialize Workspace Configuration",
         "category": "Deno",
         "description": "Initialize the workspace configuration for Deno."
       },
       {
-        "command": "deno.reloadImportRegistries",
+        "command": "deno.client.reloadImportRegistries",
         "title": "Reload Import Registries Cache",
         "category": "Deno",
         "description": "Reload any cached import registry responses.",
         "enablement": "deno:lspReady"
       },
       {
-        "command": "deno.restart",
+        "command": "deno.client.restart",
         "title": "Restart Language Server",
         "category": "Deno",
         "description": "Restart the Deno language server."
       },
       {
-        "command": "deno.status",
+        "command": "deno.client.status",
         "title": "Language Server Status",
         "category": "Deno",
         "description": "Provide a status document of the language server.",
         "enablement": "deno:lspReady"
       },
       {
-        "command": "deno.welcome",
+        "command": "deno.client.welcome",
         "title": "Welcome",
         "category": "Deno",
         "description": "Open the welcome page for the Deno extension."

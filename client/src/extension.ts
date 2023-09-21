@@ -184,7 +184,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
       event.affectsConfiguration("deno.path") ||
       event.affectsConfiguration("deno.maxTsServerMemory")
     ) {
-      vscode.commands.executeCommand("deno.restart");
+      vscode.commands.executeCommand("deno.client.restart");
     }
   }
 }
@@ -363,35 +363,36 @@ export async function activate(
   // TODO(nayeemrmn): As of Deno 1.37.0, the `deno.cache` command is implemented
   // on the server. Remove this eventually.
   if (!builtinCommands.includes("deno.cache")) {
-    registerCommand("cache", commands.cache);
+    registerCommand("deno.cache", commands.cache);
   }
-  if (!builtinCommands.includes("deno.initializeWorkspace")) {
-    registerCommand("initializeWorkspace", commands.initializeWorkspace);
-  }
-  if (!builtinCommands.includes("deno.restart")) {
-    registerCommand("restart", commands.startLanguageServer);
-  }
-  if (!builtinCommands.includes("deno.reloadImportRegistries")) {
-    registerCommand(
-      "reloadImportRegistries",
-      commands.reloadImportRegistries,
-    );
-  }
+  // TODO(nayeemrmn): Change the LSP's invocations of this to
+  // `deno.client.showReferences`. Remove this one eventually.
   if (!builtinCommands.includes("deno.showReferences")) {
-    registerCommand("showReferences", commands.showReferences);
+    registerCommand("deno.showReferences", commands.showReferences);
   }
-  if (!builtinCommands.includes("deno.status")) {
-    registerCommand("status", commands.status);
-  }
+  registerCommand("deno.client.showReferences", commands.showReferences);
+  // TODO(nayeemrmn): Change the LSP's invocations of this to
+  // `deno.client.test`. Remove this one eventually.
   if (!builtinCommands.includes("deno.test")) {
-    registerCommand("test", commands.test);
+    registerCommand("deno.test", commands.test);
   }
-  if (!builtinCommands.includes("deno.welcome")) {
-    registerCommand("welcome", commands.welcome);
-  }
-  if (!builtinCommands.includes("deno.openOutput")) {
-    registerCommand("openOutput", commands.openOutput);
-  }
+  registerCommand("deno.client.test", commands.test);
+  registerCommand(
+    "deno.client.cacheActiveDocument",
+    commands.cacheActiveDocument,
+  );
+  registerCommand(
+    "deno.client.initializeWorkspace",
+    commands.initializeWorkspace,
+  );
+  registerCommand("deno.client.restart", commands.startLanguageServer);
+  registerCommand(
+    "deno.client.reloadImportRegistries",
+    commands.reloadImportRegistries,
+  );
+  registerCommand("deno.client.status", commands.status);
+  registerCommand("deno.client.welcome", commands.welcome);
+  registerCommand("deno.client.openOutput", commands.openOutput);
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -418,10 +419,9 @@ function createRegisterCommand(
       extensionContext: DenoExtensionContext,
     ) => commands.Callback,
   ): void {
-    const fullName = `${EXTENSION_NS}.${name}`;
     const command = factory(context, extensionContext);
     context.subscriptions.push(
-      vscode.commands.registerCommand(fullName, command),
+      vscode.commands.registerCommand(name, command),
     );
   };
 }
