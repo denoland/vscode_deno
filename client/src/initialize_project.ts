@@ -10,6 +10,7 @@ const quickPickYesNo = [
 export interface InitWorkspaceSettings {
   lint: boolean;
   unstable: boolean;
+  fmt: boolean;
 }
 
 export function pickInitWorkspace() {
@@ -21,11 +22,27 @@ export function pickInitWorkspace() {
 
   const title = "Initialize Project";
 
-  async function pickLint(input: MultiStepInput, state: Partial<State>) {
+  async function pickFmt(
+    input: MultiStepInput,
+    state: Partial<State>,
+  ) {
     const pick = await input.showQuickPick({
       title,
       step: 1,
-      totalSteps: 2,
+      totalSteps: 3,
+      placeholder: "Enable Deno formatting?",
+      items: quickPickYesNo,
+      shouldResume: () => Promise.resolve(false),
+    });
+    state.fmt = pick.label === "Yes" ? true : false;
+    return (input: MultiStepInput) => pickLint(input, state);
+  }
+
+  async function pickLint(input: MultiStepInput, state: Partial<State>) {
+    const pick = await input.showQuickPick({
+      title,
+      step: 2,
+      totalSteps: 3,
       placeholder: "Enable Deno linting?",
       items: quickPickYesNo,
       shouldResume: () => Promise.resolve(false),
@@ -37,8 +54,8 @@ export function pickInitWorkspace() {
   async function pickUnstable(input: MultiStepInput, state: Partial<State>) {
     const pick = await input.showQuickPick({
       title,
-      step: 2,
-      totalSteps: 2,
+      step: 3,
+      totalSteps: 3,
       placeholder: "Enable Deno unstable APIs?",
       items: quickPickYesNo,
       shouldResume: () => Promise.resolve(false),
@@ -48,7 +65,7 @@ export function pickInitWorkspace() {
 
   async function collectInputs() {
     const state: Partial<State> = {};
-    await MultiStepInput.run((input) => pickLint(input, state));
+    await MultiStepInput.run((input) => pickFmt(input, state));
     return state as InitWorkspaceSettings;
   }
 
