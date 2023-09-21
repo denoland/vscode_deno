@@ -376,6 +376,11 @@ export async function activate(
   if (!builtinCommands.includes("deno.test")) {
     registerCommand("deno.test", commands.test);
   }
+  // TODO(nayeemrmn): Move server-side as `deno.reloadImportRegistries`.
+  registerCommand(
+    "deno.client.reloadImportRegistries",
+    commands.reloadImportRegistries,
+  );
   registerCommand("deno.client.test", commands.test);
   registerCommand(
     "deno.client.cacheActiveDocument",
@@ -386,10 +391,6 @@ export async function activate(
     commands.initializeWorkspace,
   );
   registerCommand("deno.client.restart", commands.startLanguageServer);
-  registerCommand(
-    "deno.client.reloadImportRegistries",
-    commands.reloadImportRegistries,
-  );
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
   registerCommand("deno.client.openOutput", commands.openOutput);
