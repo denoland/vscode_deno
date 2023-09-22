@@ -112,6 +112,20 @@ Or if you wanted to have Deno be your default formatter overall:
 }
 ```
 
+Troubleshoot: If you choose this option, ensure your **user** settings don't
+have any language-specific settings set for this. VSCode will add this
+automatically in some cases:
+
+```js
+// User `settings.json`:
+{
+  // Remove this:
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
+}
+```
+
 The formatter will respect the settings in your Deno configuration file, which
 can be explicitly set via `deno.config` or automatically detected in the
 workspace. You can find more information about formatter settings at
