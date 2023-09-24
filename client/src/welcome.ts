@@ -48,7 +48,7 @@ export class WelcomePanel {
             return;
           }
           case "init": {
-            vscode.commands.executeCommand("deno.initializeWorkspace");
+            vscode.commands.executeCommand("deno.client.initializeWorkspace");
             return;
           }
         }
@@ -115,7 +115,7 @@ export class WelcomePanel {
           </ul>
         </div>
       </div>
-      
+
       <div class="Cards">
         <div class="Card">
           <div class="Card-inner">
@@ -149,7 +149,7 @@ export class WelcomePanel {
         </div>
       </div>
       </main>
-      
+
       <script nonce="${nonce}" src="${scriptURI}"></script>
       </body>
       </html>`;

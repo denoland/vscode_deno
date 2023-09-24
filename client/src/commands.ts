@@ -52,10 +52,9 @@ export function cache(
   _context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ): Callback {
-  return (uris: DocumentUri[] = []) => {
-    const activeEditor = vscode.window.activeTextEditor;
+  return (uris: DocumentUri[] = [], referrer: DocumentUri) => {
     const client = extensionContext.client;
-    if (!activeEditor || !client) {
+    if (!client) {
       return;
     }
     return vscode.window.withProgress({
@@ -65,12 +64,31 @@ export function cache(
       return client.sendRequest(
         cacheReq,
         {
-          referrer: { uri: activeEditor.document.uri.toString() },
+          referrer: { uri: referrer },
           uris: uris.map((uri) => ({
             uri,
           })),
         },
       );
+    });
+  };
+}
+
+export function cacheActiveDocument(
+  _context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+): Callback {
+  return () => {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+      return;
+    }
+    const uri = activeEditor.document.uri.toString();
+    return vscode.window.withProgress({
+      location: vscode.ProgressLocation.Window,
+      title: "caching",
+    }, () => {
+      return vscode.commands.executeCommand("deno.cache", [uri], uri);
     });
   };
 }
@@ -315,7 +333,7 @@ export function test(
     if (cacheDir?.trim()) {
       env["DENO_DIR"] = cacheDir.trim();
     }
-    const nameRegex = `/^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$/`;
+    const nameRegex = `/^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$/`;
     const args = ["test", ...testArgs, "--filter", nameRegex, path];
 
     const definition: tasks.DenoTaskDefinition = {
