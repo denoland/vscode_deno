@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.24.0](https://github.com/denoland/vscode_deno/compare/3.23.1...3.24.0) / 2023.09.25
+
+- fix: regression when caching via the command palette (#930)
+- feat: include "javascript" and "typescript" settings in LSP init options (#929)
+
 ### [3.23.1](https://github.com/denoland/vscode_deno/compare/3.23.0...3.23.1) / 2023.09.19
 
 - fix: provide args to deno.cache on cache-on-save (#924)
