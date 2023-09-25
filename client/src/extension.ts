@@ -214,8 +214,13 @@ function handleDocumentOpen(...documents: vscode.TextDocument[]) {
   }
 }
 
+// TODO(nayeemrmn): Deno LSP versions > 1.37.0 handle `cacheOnSave`
+// server-side. Eventually remove this handler.
 function handleTextDocumentSave(doc: vscode.TextDocument) {
   if (!LANGUAGES.includes(doc.languageId)) {
+    return;
+  }
+  if (semver.gt(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0")) {
     return;
   }
   if (extensionContext.workspaceSettings.cacheOnSave) {
