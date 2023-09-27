@@ -293,15 +293,24 @@ export function showReferences(
   };
 }
 
+let statusRequestIndex = 0;
+
 /** Open and display the "virtual document" which provides the status of the
  * Deno Language Server. */
 export function status(
   _context: vscode.ExtensionContext,
-  _extensionContext: DenoExtensionContext,
+  extensionContext: DenoExtensionContext,
 ): Callback {
   return () => {
-    const uri = vscode.Uri.parse("deno:/status.md");
-    return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
+    // TODO(nayeemrmn): Deno LSP versions <= 1.37.0 don't allow query strings in
+    // this URI. Eventually remove this.
+    if (semver.lte(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0")) {
+      const uri = vscode.Uri.parse("deno:/status.md");
+      return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
+    } else {
+      const uri = vscode.Uri.parse(`deno:/status.md?${statusRequestIndex++}`);
+      return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
+    }
   };
 }
 
