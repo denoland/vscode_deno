@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.25.0](https://github.com/denoland/vscode_deno/compare/3.24.0...3.25.0) / 2023.09.27
+
+- docs: fix hyperlink to the Deno Language Server manual (#945)
+- fix: append index to status requests (#946)
+- feat: register notebook cells with the language client (#949)
+
 ### [3.24.0](https://github.com/denoland/vscode_deno/compare/3.23.1...3.24.0) / 2023.09.25
 
 - fix: regression when caching via the command palette (#930)
