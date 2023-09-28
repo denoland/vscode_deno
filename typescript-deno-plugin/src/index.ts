@@ -143,6 +143,7 @@ class Plugin implements ts.server.PluginModule {
       // deno-lint-ignore no-explicit-any
       const target = (ls as any)[fn];
       return (...args) => {
+        this.#log(fn, args);
         const enabled = fileNameArg !== undefined
           ? this.#fileNameDenoEnabled(args[fileNameArg] as string)
           : this.#denoEnabled();

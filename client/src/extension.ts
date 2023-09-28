@@ -256,6 +256,7 @@ export async function activate(
 ): Promise<void> {
   extensionContext.outputChannel = extensionContext.outputChannel ??
     vscode.window.createOutputChannel(LANGUAGE_CLIENT_NAME);
+  const p2cMap = new Map<string, string>();
   extensionContext.clientOptions = {
     documentSelector: [
       { scheme: "file", language: "javascript" },
@@ -269,7 +270,30 @@ export async function activate(
       { scheme: "file", language: "json" },
       { scheme: "file", language: "jsonc" },
       { scheme: "file", language: "markdown" },
+      { notebook: "*", language: "javascript" },
+      { notebook: "*", language: "javascriptreact" },
+      { notebook: "*", language: "typescript" },
+      { notebook: "*", language: "typescriptreact" },
     ],
+    uriConverters: {
+      code2Protocol: (uri) => {
+        if (uri.scheme == "vscode-notebook-cell") {
+          const string = uri.with({
+            scheme: "deno-notebook-cell",
+          }).toString();
+          p2cMap.set(string, uri.toString());
+          return string;
+        }
+        return uri.toString();
+      },
+      protocol2Code: (s) => {
+        const maybeMapped = p2cMap.get(s);
+        if (maybeMapped) {
+          return vscode.Uri.parse(maybeMapped);
+        }
+        return vscode.Uri.parse(s);
+      },
+    },
     diagnosticCollectionName: "deno",
     initializationOptions: () => {
       const options: Settings & { enableBuiltinCommands?: true } =
