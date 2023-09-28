@@ -279,7 +279,7 @@ export async function activate(
       code2Protocol: (uri) => {
         if (uri.scheme == "vscode-notebook-cell") {
           const string = uri.with({
-            scheme: "deno-file-fragment",
+            scheme: "deno-notebook-cell",
           }).toString();
           p2cMap.set(string, uri.toString());
           return string;
