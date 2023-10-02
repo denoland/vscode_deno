@@ -19,6 +19,7 @@ import { getTsApi } from "./ts_api";
 import type { DenoExtensionContext, Settings } from "./types";
 import { assert } from "./util";
 import * as util from "util";
+import * as freshExtension from "./fresh/extension";
 
 import * as vscode from "vscode";
 
@@ -423,6 +424,8 @@ export async function activate(
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
   registerCommand("deno.client.openOutput", commands.openOutput);
+
+  freshExtension.activate(context);
 }
 
 export function deactivate(): Thenable<void> | undefined {
