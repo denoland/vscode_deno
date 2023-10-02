@@ -10,8 +10,8 @@ export class FreshRouteViewProvider implements vscode.WebviewViewProvider {
   ) {}
   resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext<unknown>,
-    token: vscode.CancellationToken,
+    _context: vscode.WebviewViewResolveContext<unknown>,
+    _token: vscode.CancellationToken,
   ): void | Thenable<void> {
     this._view = webviewView;
 

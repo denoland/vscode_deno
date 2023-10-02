@@ -14,7 +14,6 @@ import { FreshRouteViewProvider } from "./webview";
 const getRootPath = () => vscode.workspace?.workspaceFolders?.[0]?.uri?.fsPath;
 
 async function isFreshProject() {
-  console.log("isFreshProject", getRootPath());
   const workspace = getRootPath();
   if (!workspace) {
     return false;
@@ -23,7 +22,7 @@ async function isFreshProject() {
     workspace,
     "fresh.gen.ts",
   );
-  return vscode.workspace.fs.stat(vscode.Uri.file(freshGenPath));
+  return await vscode.workspace.fs.stat(vscode.Uri.file(freshGenPath));
 }
 export function activate(context: vscode.ExtensionContext) {
   isFreshProject().then((isFresh) => {
@@ -58,10 +57,10 @@ export function activate(context: vscode.ExtensionContext) {
     "typescriptreact",
     {
       provideCompletionItems(
-        document: vscode.TextDocument,
-        position: vscode.Position,
-        token: vscode.CancellationToken,
-        context: vscode.CompletionContext,
+        _document: vscode.TextDocument,
+        _position: vscode.Position,
+        _token: vscode.CancellationToken,
+        _context: vscode.CompletionContext,
       ) {
         return [
           snippets.simpleRoute,
