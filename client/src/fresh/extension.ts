@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import * as vscode from "vscode";
 import * as snippets from "./snippets";
 import { join } from "path";

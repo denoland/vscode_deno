@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import * as vscode from "vscode";
 import * as fs from "fs";
 import { extname } from "path";
