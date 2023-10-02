@@ -4,7 +4,7 @@
   "description": "A language server client for Deno.",
   "author": "Deno Land Inc.",
   "license": "MIT",
-  "version": "3.25.0",
+  "version": "3.26.0",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -149,7 +149,7 @@
           "when": "is-fresh-project"
         }
       ]
-    },    
+    },
     "menus": {
       "explorer/context": [
         {
