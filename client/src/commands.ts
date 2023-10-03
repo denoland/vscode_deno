@@ -141,7 +141,7 @@ export function startLanguageServer(
       extensionContext.testController = undefined;
       extensionContext.statusBar.refresh(extensionContext);
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
-      await client.stop();
+      await client.stop(1e4);
     }
 
     // Start a new language server
