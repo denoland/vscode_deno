@@ -446,11 +446,6 @@ export async function activate(
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
   registerCommand("deno.client.openOutput", commands.openOutput);
-
-  registerCommand(
-    "deno.tasks.refresh",
-    commands.refreshTasks.bind(null, treeDataProvider),
-  );
 }
 
 export function deactivate(): Thenable<void> | undefined {

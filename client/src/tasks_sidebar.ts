@@ -85,7 +85,7 @@ class DenoTask extends TreeItem {
       workspace.getConfiguration("deno").get<DefaultCommand>(
         "defaultTaskCommand",
       ) ??
-      "open";
+        "open";
 
     const commandList = {
       "open": {
@@ -231,6 +231,10 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
       this.#openTaskDefinition,
       this,
     ));
+    subscriptions.push(commands.registerCommand(
+      "deno.tasks.refresh",
+      this.refresh.bind(this),
+    ));
   }
 
   #runTask(task: DenoTask) {
@@ -297,8 +301,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     if (!this.#taskTree) {
       const taskItems = await this.taskProvider.provideTasks();
       if (taskItems) {
-        this.#taskTree = await this.#buildTaskTree(taskItems);
-        // this.taskTree = this.sortTaskTree(this.#taskTree);
+        this.#taskTree = this.#buildTaskTree(taskItems);
         if (this.#taskTree.length === 0) {
           this.#taskTree = [new NoScripts("No scripts found.")];
         }
