@@ -22,13 +22,7 @@ async function isFreshProject() {
     workspace,
     "fresh.gen.ts",
   );
-  let fileExists = null;
-  try {
-    fileExists = await vscode.workspace.fs.stat(vscode.Uri.file(freshGenPath))
-  } catch (_error) {
-    // do nothing
-  }
-  return !!fileExists;
+  return await vscode.workspace.fs.stat(vscode.Uri.file(freshGenPath));
 }
 export function activate(context: vscode.ExtensionContext) {
   isFreshProject().then((isFresh) => {
