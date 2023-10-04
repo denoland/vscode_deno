@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.25.1](https://github.com/denoland/vscode_deno/compare/3.25.0...3.25.1) / 2023.10.04
+
+- fix: increase client shutdown timeout from 2s to 10s (#954)
+
 ### [3.25.0](https://github.com/denoland/vscode_deno/compare/3.24.0...3.25.0) / 2023.09.27
 
 - docs: fix hyperlink to the Deno Language Server manual (#945)
