@@ -283,23 +283,13 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     this.#onDidChangeTreeData.fire(null);
   }
 
-  getTreeItem(element: TreeItem): TreeItem {
-    return element;
+  getTreeItem(item: TreeItem) {
+    return item;
   }
 
-  getParent(element: TreeItem): TreeItem | null {
-    if (element instanceof Folder) {
-      return null;
-    }
-    if (element instanceof DenoJSON) {
-      return element.folder;
-    }
-    if (element instanceof DenoTask) {
-      return element.denoJson;
-    }
-    if (element instanceof NoScripts) {
-      return null;
-    }
+  getParent(item: TreeItem) {
+    if (item instanceof DenoJSON) return item.folder;
+    if (item instanceof DenoTask) return item.denoJson;
     return null;
   }
 

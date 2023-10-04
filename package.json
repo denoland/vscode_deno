@@ -641,7 +641,8 @@
           "name": "Deno Tasks",
           "icon": "deno-icon.png",
           "contextualTitle": "Deno Tasks",
-          "visibility": "visible",
+          "visibility": "hidden",
+          "when": "deno:lspReady",
           "type": "tree"
         }
       ]
