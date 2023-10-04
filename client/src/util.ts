@@ -7,7 +7,14 @@ import * as os from "os";
 import * as path from "path";
 import * as process from "process";
 import * as semver from "semver";
-import { workspace, WorkspaceFolder, TextDocument, Position, Location, Range } from "vscode";
+import {
+  Location,
+  Position,
+  Range,
+  TextDocument,
+  workspace,
+  WorkspaceFolder,
+} from "vscode";
 import { JSONVisitor, visit } from "jsonc-parser/lib/esm/main.js";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -142,13 +149,13 @@ export interface TaskDefinitionRange {
 
 export function readTaskDefinitions(
   document: TextDocument,
-  content = document.getText()
+  content = document.getText(),
 ) {
   let depth = 0;
   let start: Position | undefined;
   let end: Position | undefined;
   let inTasks = false;
-  let currentTask: { name: string; nameRange: Range; } | undefined;
+  let currentTask: { name: string; nameRange: Range } | undefined;
 
   const tasks: TaskDefinitionRange[] = [];
   const visitor: JSONVisitor = {
@@ -163,20 +170,20 @@ export function readTaskDefinitions(
       depth--;
     },
     onLiteralValue(value: unknown, offset: number, length: number) {
-      if (currentTask && typeof value === 'string') {
+      if (currentTask && typeof value === "string") {
         tasks.push({
           ...currentTask,
           command: value,
           commandRange: new Range(
             document.positionAt(offset),
-            document.positionAt(offset + length)
+            document.positionAt(offset + length),
           ),
         });
         currentTask = undefined;
       }
     },
     onObjectProperty(property: string, offset: number, length: number) {
-      if (depth === 1 && property === 'tasks') {
+      if (depth === 1 && property === "tasks") {
         inTasks = true;
         start = document.positionAt(offset);
       } else if (inTasks) {
@@ -184,8 +191,8 @@ export function readTaskDefinitions(
           name: property,
           nameRange: new Range(
             document.positionAt(offset),
-            document.positionAt(offset + length)
-          )
+            document.positionAt(offset + length),
+          ),
         };
       }
     },

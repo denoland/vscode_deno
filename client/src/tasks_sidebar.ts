@@ -1,13 +1,33 @@
 import * as path from "path";
 import * as fs from "fs";
 import {
-  commands, Event, EventEmitter, ExtensionContext, Task, tasks, ThemeIcon, TreeDataProvider, TreeItem, TreeItemCollapsibleState, Uri, window, workspace, WorkspaceFolder, TaskProvider, ProcessExecution, Position, Selection, TextDocument
+  commands,
+  Event,
+  EventEmitter,
+  ExtensionContext,
+  Position,
+  ProcessExecution,
+  Selection,
+  Task,
+  TaskProvider,
+  tasks,
+  TextDocument,
+  ThemeIcon,
+  TreeDataProvider,
+  TreeItem,
+  TreeItemCollapsibleState,
+  Uri,
+  window,
+  workspace,
+  WorkspaceFolder,
 } from "vscode";
-import { getDenoCommandName, isWorkspaceFolder, readTaskDefinitions } from "./util";
+import {
+  getDenoCommandName,
+  isWorkspaceFolder,
+  readTaskDefinitions,
+} from "./util";
 import { DenoExtensionContext } from "./types";
 import { task as taskReq } from "./lsp_extensions";
-
-
 
 class Folder extends TreeItem {
   configs: DenoJSON[] = [];
@@ -32,17 +52,17 @@ class DenoJSON extends TreeItem {
   constructor(
     public readonly folder: Folder,
     relativePath: string,
-    fileName: string
+    fileName: string,
   ) {
-    const label = relativePath.length > 0 ?
-      path.join(relativePath, fileName) :
-      fileName;
+    const label = relativePath.length > 0
+      ? path.join(relativePath, fileName)
+      : fileName;
     super(label, TreeItemCollapsibleState.Expanded);
 
     this.contextValue = "denoJSON";
 
     this.resourceUri = Uri.file(
-      path.join(folder.resourceUri!.fsPath, relativePath, fileName)
+      path.join(folder.resourceUri!.fsPath, relativePath, fileName),
     );
 
     this.iconPath = ThemeIcon.File;
@@ -58,25 +78,27 @@ type DefaultCommand = "open" | "run";
 class DenoTask extends TreeItem {
   constructor(
     public denoJson: DenoJSON,
-    public task: Task
+    public task: Task,
   ) {
     const name = task.name;
     super(name, TreeItemCollapsibleState.None);
     const defaultCommand =
-      workspace.getConfiguration("deno").get<DefaultCommand>("defaultTaskCommand")
-      ?? "open";
+      workspace.getConfiguration("deno").get<DefaultCommand>(
+        "defaultTaskCommand",
+      ) ??
+        "open";
 
     const commandList = {
       "open": {
         title: "Edit Task",
         command: "deno.task.definition.open",
-        arguments: [this]
+        arguments: [this],
       },
       "run": {
         title: "Run Task",
         command: "deno.task.run",
-        arguments: [this]
-      }
+        arguments: [this],
+      },
     };
     this.contextValue = "script";
     this.denoJson = denoJson;
@@ -155,7 +177,13 @@ class DenoTaskProvider implements TaskProvider {
             }
             for (const { name, detail: command } of configTasks) {
               tasks.push(
-                buildDenoConfigTask(workspaceFolder, process, name, fileName, command),
+                buildDenoConfigTask(
+                  workspaceFolder,
+                  process,
+                  name,
+                  fileName,
+                  command,
+                ),
               );
             }
           }
@@ -187,19 +215,21 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
   constructor(
     context: DenoExtensionContext,
     public taskProvider: DenoTaskProvider,
-    subscriptions: ExtensionContext["subscriptions"]
+    subscriptions: ExtensionContext["subscriptions"],
   ) {
     this.#extensionContext = context;
-    subscriptions.push(commands.registerCommand("deno.task.run", this.#runTask, this));
+    subscriptions.push(
+      commands.registerCommand("deno.task.run", this.#runTask, this),
+    );
     subscriptions.push(commands.registerCommand(
       "deno.task.debug",
       this.#debugTask,
-      this
+      this,
     ));
     subscriptions.push(commands.registerCommand(
       "deno.task.definition.open",
       this.#openTaskDefinition,
-      this
+      this,
     ));
   }
 
@@ -214,7 +244,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
       command,
       task.getFolder(),
       {
-        cwd: path.dirname(task.denoJson.resourceUri!.fsPath)
+        cwd: path.dirname(task.denoJson.resourceUri!.fsPath),
       },
     );
   }
@@ -225,7 +255,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
 
     if (!task) return taskDefinitions.location.range.start;
 
-    return taskDefinitions.tasks.find(s => s.name === task.task.name)
+    return taskDefinitions.tasks.find((s) => s.name === task.task.name)
       ?.commandRange.start;
   }
 
@@ -241,10 +271,10 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     const document = await workspace.openTextDocument(uri);
     const position = this.#findTaskPosition(
       document,
-      selection instanceof DenoTask ? selection : undefined
+      selection instanceof DenoTask ? selection : undefined,
     ) ?? new Position(0, 0);
     await window.showTextDocument(document, {
-      selection: new Selection(position, position)
+      selection: new Selection(position, position),
     });
   }
 
@@ -325,7 +355,11 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
       if (!denoJson) {
         let fileName = "deno.json";
         try {
-          const filePath = path.join(task.scope.uri.fsPath, relativePath, fileName);
+          const filePath = path.join(
+            task.scope.uri.fsPath,
+            relativePath,
+            fileName,
+          );
           fs.accessSync(filePath, fs.constants.F_OK);
         } catch {
           fileName = "deno.jsonc";
@@ -345,7 +379,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
 
 export function registerSidebar(
   context: DenoExtensionContext,
-  subscriptions: ExtensionContext["subscriptions"]
+  subscriptions: ExtensionContext["subscriptions"],
 ): DenoTasksTreeDataProvider | undefined {
   if (!workspace.workspaceFolders) return;
 
@@ -353,11 +387,14 @@ export function registerSidebar(
   subscriptions.push(tasks.registerTaskProvider("denoTasks", taskProvider));
 
   const treeDataProvider = new DenoTasksTreeDataProvider(
-    context, taskProvider, subscriptions);
+    context,
+    taskProvider,
+    subscriptions,
+  );
 
   const view = window.createTreeView("denoTasks", {
     treeDataProvider,
-    showCollapseAll: true
+    showCollapseAll: true,
   });
   subscriptions.push(view);
 

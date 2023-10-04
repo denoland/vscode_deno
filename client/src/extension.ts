@@ -297,7 +297,7 @@ export async function activate(
     },
     diagnosticCollectionName: "deno",
     initializationOptions: () => {
-      const options: Settings & { enableBuiltinCommands?: true; } =
+      const options: Settings & { enableBuiltinCommands?: true } =
         getWorkspaceSettings();
       options.enableBuiltinCommands = true;
       return options;
@@ -387,19 +387,24 @@ export async function activate(
     await commands.startLanguageServer(context, extensionContext)();
   }
 
-  const treeDataProvider = registerSidebar(extensionContext, context.subscriptions)!;
+  const treeDataProvider = registerSidebar(
+    extensionContext,
+    context.subscriptions,
+  )!;
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
     if (e.affectsConfiguration("deno.defaultTaskCommand")) {
       treeDataProvider.refresh();
     }
   }));
-  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(event => {
+  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((event) => {
     if (event.uri.fsPath.match(/\/deno\.jsonc?$/)) {
       treeDataProvider.refresh();
     }
   }));
-  context.subscriptions.push(vscode.workspace.onDidRenameFiles(event => {
-    if (event.files.some(({ oldUri: uri }) => uri.fsPath.match(/\/deno\.jsonc?$/))) {
+  context.subscriptions.push(vscode.workspace.onDidRenameFiles((event) => {
+    if (
+      event.files.some(({ oldUri: uri }) => uri.fsPath.match(/\/deno\.jsonc?$/))
+    ) {
       treeDataProvider.refresh();
     }
   }));
@@ -442,7 +447,10 @@ export async function activate(
   registerCommand("deno.client.welcome", commands.welcome);
   registerCommand("deno.client.openOutput", commands.openOutput);
 
-  registerCommand("deno.tasks.refresh", commands.refreshTasks.bind(null, treeDataProvider));
+  registerCommand(
+    "deno.tasks.refresh",
+    commands.refreshTasks.bind(null, treeDataProvider),
+  );
 }
 
 export function deactivate(): Thenable<void> | undefined {
