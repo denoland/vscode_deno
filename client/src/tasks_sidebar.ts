@@ -2,7 +2,6 @@ import * as path from "path";
 import * as fs from "fs";
 import {
   commands,
-  Event,
   EventEmitter,
   ExtensionContext,
   Position,
@@ -86,7 +85,7 @@ class DenoTask extends TreeItem {
       workspace.getConfiguration("deno").get<DefaultCommand>(
         "defaultTaskCommand",
       ) ??
-        "open";
+      "open";
 
     const commandList = {
       "open": {
@@ -199,6 +198,7 @@ class DenoTaskProvider implements TaskProvider {
     return tasks;
   }
 
+  // deno-lint-ignore require-await
   async resolveTask(task: Task): Promise<Task | undefined> {
     return task;
   }
@@ -233,7 +233,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     ));
   }
 
-  async #runTask(task: DenoTask) {
+  #runTask(task: DenoTask) {
     tasks.executeTask(task.task);
   }
 
@@ -324,9 +324,9 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     return [];
   }
 
-  async #buildTaskTree(tasks: Task[]) {
+  #buildTaskTree(tasks: Task[]) {
     const folders = new Map<string, Folder>();
-    const configs = new Map<String, DenoJSON>();
+    const configs = new Map<string, DenoJSON>();
 
     for (const task of tasks) {
       if (!isWorkspaceFolder(task.scope)) continue;
