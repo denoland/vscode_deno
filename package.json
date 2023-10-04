@@ -47,8 +47,7 @@
     "onCommand:deno.client.welcome",
     "onCommand:deno.client.initializeWorkspace",
     "onCommand:deno.client.reloadImportRegistries",
-    "onWebviewPanel:welcomeDeno",
-    "workspaceContains:fresh.gen.ts"
+    "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/dist/main",
   "contributes": {
@@ -118,82 +117,8 @@
         "title": "Welcome",
         "category": "Deno",
         "description": "Open the welcome page for the Deno extension."
-      },
-      {
-        "command": "deno.fresh.generateRoute",
-        "title": "New Route Component",
-        "when": "is-fresh-project"
-      },
-      {
-        "command": "deno.fresh.generateLayout",
-        "title": "New Layout",
-        "when": "is-fresh-project"
-      },
-      {
-        "command": "deno.fresh.generateComponent",
-        "title": "New Component",
-        "when": "is-fresh-project"
-      },
-      {
-        "command": "deno.fresh.generateIsland",
-        "title": "New Island Component",
-        "when": "is-fresh-project"
       }
     ],
-    "views": {
-      "explorer": [
-        {
-          "type": "webview",
-          "id": "deno.fresh.routeView",
-          "name": "Fresh Routes",
-          "when": "is-fresh-project"
-        }
-      ]
-    },    
-    "menus": {
-      "explorer/context": [
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceFilename =~ /routes/",
-          "command": "deno.fresh.generateRoute",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceDirname =~ /routes/",
-          "command": "deno.fresh.generateRoute",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceFilename =~ /islands/",
-          "command": "deno.fresh.generateIsland",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceDirname =~ /islands/",
-          "command": "deno.fresh.generateIsland",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceFilename =~ /components/",
-          "command": "deno.fresh.generateComponent",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceDirname =~ /components/",
-          "command": "deno.fresh.generateComponent",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceFilename =~ /routes/",
-          "command": "deno.fresh.generateLayout",
-          "group": "Fresh"
-        },
-        {
-          "when": "is-fresh-project && explorerResourceIsFolder && resourceDirname =~ /routes/",
-          "command": "deno.fresh.generateLayout",
-          "group": "Fresh"
-        }
-      ]
-    },
     "configuration": {
       "type": "object",
       "title": "Deno",
