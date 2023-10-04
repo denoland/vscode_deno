@@ -38,6 +38,7 @@ import type {
   Position,
 } from "vscode-languageclient/node";
 import { getWorkspacesEnabledInfo } from "./enable";
+import type { DenoTasksTreeDataProvider } from "./tasks_sidebar";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -402,4 +403,8 @@ export function openOutput(
   return () => {
     extensionContext.outputChannel.show(true);
   };
+}
+
+export function refreshTasks(taskProvider: DenoTasksTreeDataProvider) {
+  return () => taskProvider.refresh();
 }

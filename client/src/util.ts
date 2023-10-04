@@ -7,7 +7,8 @@ import * as os from "os";
 import * as path from "path";
 import * as process from "process";
 import * as semver from "semver";
-import * as vscode from "vscode";
+import { workspace, WorkspaceFolder, TextDocument, Position, Location, Range } from "vscode";
+import { JSONVisitor, visit } from "jsonc-parser/lib/esm/main.js";
 
 /** Assert that the condition is "truthy", otherwise throw. */
 export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
@@ -25,7 +26,7 @@ export async function getDenoCommandName() {
 /** Returns the absolute path to an existing deno command. */
 export async function getDenoCommandPath() {
   const command = getWorkspaceConfigDenoExePath();
-  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const workspaceFolders = workspace.workspaceFolders;
   if (!command || !workspaceFolders) {
     return command ?? await getDefaultDenoCommand();
   } else if (!path.isAbsolute(command)) {
@@ -43,7 +44,7 @@ export async function getDenoCommandPath() {
 }
 
 function getWorkspaceConfigDenoExePath() {
-  const exePath = vscode.workspace.getConfiguration(EXTENSION_NS)
+  const exePath = workspace.getConfiguration(EXTENSION_NS)
     .get<string>("path");
   // it is possible for the path to be blank. In that case, return undefined
   if (typeof exePath === "string" && exePath.trim().length === 0) {
@@ -125,4 +126,79 @@ export function getInspectArg(denoVersion?: string) {
   } else {
     return "--inspect-brk";
   }
+}
+
+export function isWorkspaceFolder(value: unknown): value is WorkspaceFolder {
+  return typeof value === "object" && value != null &&
+    (value as WorkspaceFolder).name !== undefined;
+}
+
+export interface TaskDefinitionRange {
+  name: string;
+  command: string;
+  nameRange: Range;
+  commandRange: Range;
+}
+
+export function readTaskDefinitions(
+  document: TextDocument,
+  content = document.getText()
+) {
+  let depth = 0;
+  let start: Position | undefined;
+  let end: Position | undefined;
+  let inTasks = false;
+  let currentTask: { name: string; nameRange: Range; } | undefined;
+
+  const tasks: TaskDefinitionRange[] = [];
+  const visitor: JSONVisitor = {
+    onObjectBegin() {
+      depth++;
+    },
+    onObjectEnd(offset) {
+      if (inTasks) {
+        end = document.positionAt(offset);
+        inTasks = false;
+      }
+      depth--;
+    },
+    onLiteralValue(value: unknown, offset: number, length: number) {
+      if (currentTask && typeof value === 'string') {
+        tasks.push({
+          ...currentTask,
+          command: value,
+          commandRange: new Range(
+            document.positionAt(offset),
+            document.positionAt(offset + length)
+          ),
+        });
+        currentTask = undefined;
+      }
+    },
+    onObjectProperty(property: string, offset: number, length: number) {
+      if (depth === 1 && property === 'tasks') {
+        inTasks = true;
+        start = document.positionAt(offset);
+      } else if (inTasks) {
+        currentTask = {
+          name: property,
+          nameRange: new Range(
+            document.positionAt(offset),
+            document.positionAt(offset + length)
+          )
+        };
+      }
+    },
+  };
+
+  visit(content, visitor);
+
+  if (start === undefined) {
+    return undefined;
+  }
+
+  return {
+    location: new Location(document.uri, new Range(start, end ?? start)),
+    tasks,
+  };
 }
