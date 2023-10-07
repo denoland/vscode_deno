@@ -21,6 +21,7 @@ import { assert } from "./util";
 import * as util from "util";
 
 import * as vscode from "vscode";
+import { registerSidebar } from "./tasks_sidebar";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -385,6 +386,28 @@ export async function activate(
     extensionContext.workspaceSettings = getWorkspaceSettings();
     await commands.startLanguageServer(context, extensionContext)();
   }
+
+  const treeDataProvider = registerSidebar(
+    extensionContext,
+    context.subscriptions,
+  )!;
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
+    if (e.affectsConfiguration("deno.defaultTaskCommand")) {
+      treeDataProvider.refresh();
+    }
+  }));
+  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((event) => {
+    if (event.uri.fsPath.match(/\/deno\.jsonc?$/)) {
+      treeDataProvider.refresh();
+    }
+  }));
+  context.subscriptions.push(vscode.workspace.onDidRenameFiles((event) => {
+    if (
+      event.files.some(({ oldUri: uri }) => uri.fsPath.match(/\/deno\.jsonc?$/))
+    ) {
+      treeDataProvider.refresh();
+    }
+  }));
 
   // Register any commands.
   const registerCommand = createRegisterCommand(context);

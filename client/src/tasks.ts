@@ -2,7 +2,7 @@
 
 import { task as taskReq } from "./lsp_extensions";
 import type { DenoExtensionContext } from "./types";
-import { getDenoCommandName } from "./util";
+import { getDenoCommandName, isWorkspaceFolder } from "./util";
 
 import * as vscode from "vscode";
 
@@ -76,11 +76,6 @@ function isDenoConfigTaskDefinition(
   value: vscode.TaskDefinition,
 ): value is DenoConfigTaskDefinition {
   return value.type === TASK_TYPE && typeof value.name !== "undefined";
-}
-
-function isWorkspaceFolder(value: unknown): value is vscode.WorkspaceFolder {
-  return typeof value === "object" && value != null &&
-    (value as vscode.WorkspaceFolder).name !== undefined;
 }
 
 class DenoTaskProvider implements vscode.TaskProvider {

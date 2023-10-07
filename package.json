@@ -117,6 +117,34 @@
         "title": "Welcome",
         "category": "Deno",
         "description": "Open the welcome page for the Deno extension."
+      },
+      {
+        "command": "deno.client.runTask",
+        "title": "Run Task",
+        "category": "Deno",
+        "description": "Run a Deno task.",
+        "icon": "$(run)"
+      },
+      {
+        "command": "deno.client.debugTask",
+        "title": "Run Task (Debug)",
+        "category": "Deno",
+        "description": "Run a Deno task in debug mode.",
+        "icon": "$(debug)"
+      },
+      {
+        "command": "deno.client.openTaskDefinition",
+        "title": "Open Task Definition",
+        "category": "Deno",
+        "description": "Open the definition of a Deno task.",
+        "icon": "$(symbol-reference)"
+      },
+      {
+        "command": "deno.client.refreshTasks",
+        "title": "Refresh Tasks",
+        "category": "Deno",
+        "description": "Refresh the list of Deno tasks.",
+        "icon": "$(refresh)"
       }
     ],
     "configuration": {
@@ -434,6 +462,16 @@
             true,
             false
           ]
+        },
+        "deno.defaultTaskCommand": {
+          "type": "string",
+          "enum": [
+            "open",
+            "run"
+          ],
+          "markdownDescription": "Controls the default action when clicking on a task in the _Deno Tasks sidebar_.",
+          "scope": "window",
+          "default": "open"
         }
       }
     },
@@ -595,7 +633,80 @@
         "name": "typescript-deno-plugin",
         "enableForWorkspaceTypeScriptVersions": true
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "denoTasks",
+          "name": "Deno Tasks",
+          "icon": "deno-icon.png",
+          "contextualTitle": "Deno Tasks",
+          "visibility": "hidden",
+          "when": "deno:lspReady",
+          "type": "tree"
+        }
+      ]
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "deno.client.runTask",
+          "when": "false"
+        },
+        {
+          "command": "deno.client.debugTask",
+          "when": "false"
+        },
+        {
+          "command": "deno.client.openTaskDefinition",
+          "when": "false"
+        },
+        {
+          "command": "deno.client.refreshTasks",
+          "when": "false"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "deno.client.runTask",
+          "when": "(resourceFilename == 'deno.json' || resourceFilename == 'deno.jsonc') && resourceScheme == file",
+          "group": "navigation@+1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "deno.client.refreshTasks",
+          "when": "view == denoTasks",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "deno.client.openTaskDefinition",
+          "when": "view == denoTasks"
+        },
+        {
+          "command": "deno.client.runTask",
+          "when": "view == denoTasks && viewItem == script",
+          "group": "navigation@+2"
+        },
+        {
+          "command": "deno.client.debugTask",
+          "when": "view == denoTasks && viewItem == script",
+          "group": "navigation@+3"
+        },
+        {
+          "command": "deno.client.runTask",
+          "when": "view == denoTasks && viewItem == script",
+          "group": "inline"
+        },
+        {
+          "command": "deno.client.debugTask",
+          "when": "view == denoTasks && viewItem == script",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm i && npm run esbuild-plugin && npm i && npm run esbuild-base",
