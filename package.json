@@ -46,7 +46,7 @@
     "onDebugResolve:javascriptreact",
     "onCommand:deno.client.welcome",
     "onCommand:deno.client.initializeWorkspace",
-    "onCommand:deno.client.reloadImportRegistries",
+    "onCommand:deno.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/dist/main",
@@ -93,7 +93,7 @@
         "description": "Initialize the workspace configuration for Deno."
       },
       {
-        "command": "deno.client.reloadImportRegistries",
+        "command": "deno.reloadImportRegistries",
         "title": "Reload Import Registries Cache",
         "category": "Deno",
         "description": "Reload any cached import registry responses.",
