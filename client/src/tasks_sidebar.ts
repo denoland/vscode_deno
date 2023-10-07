@@ -85,17 +85,17 @@ class DenoTask extends TreeItem {
       workspace.getConfiguration("deno").get<DefaultCommand>(
         "defaultTaskCommand",
       ) ??
-        "open";
+      "open";
 
     const commandList = {
       "open": {
         title: "Edit Task",
-        command: "deno.task.definition.open",
+        command: "deno.client.openTaskDefinition",
         arguments: [this],
       },
       "run": {
         title: "Run Task",
-        command: "deno.task.run",
+        command: "deno.client.runTask",
         arguments: [this],
       },
     };
@@ -219,20 +219,20 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
   ) {
     this.#extensionContext = context;
     subscriptions.push(
-      commands.registerCommand("deno.task.run", this.#runTask, this),
+      commands.registerCommand("deno.client.runTask", this.#runTask, this),
     );
     subscriptions.push(commands.registerCommand(
-      "deno.task.debug",
+      "deno.client.debugTask",
       this.#debugTask,
       this,
     ));
     subscriptions.push(commands.registerCommand(
-      "deno.task.definition.open",
+      "deno.client.openTaskDefinition",
       this.#openTaskDefinition,
       this,
     ));
     subscriptions.push(commands.registerCommand(
-      "deno.tasks.refresh",
+      "deno.client.refreshTasks",
       this.refresh.bind(this),
     ));
   }
