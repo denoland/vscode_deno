@@ -412,10 +412,18 @@ export async function activate(
   // Register any commands.
   const registerCommand = createRegisterCommand(context);
   const builtinCommands = await vscode.commands.getCommands();
-  // TODO(nayeemrmn): As of Deno 1.37.0, the `deno.cache` command is implemented
-  // on the server. Remove this eventually.
+  // TODO(nayeemrmn): As of Deno 1.37.0, this command is implemented on the
+  // server. Remove this eventually.
   if (!builtinCommands.includes("deno.cache")) {
     registerCommand("deno.cache", commands.cache);
+  }
+  // TODO(nayeemrmn): As of Deno 1.37.2, this command is implemented on the
+  // server. Remove this eventually.
+  if (!builtinCommands.includes("deno.reloadImportRegistries")) {
+    registerCommand(
+      "deno.reloadImportRegistries",
+      commands.reloadImportRegistries,
+    );
   }
   // TODO(nayeemrmn): Change the LSP's invocations of this to
   // `deno.client.showReferences`. Remove this one eventually.
@@ -428,11 +436,6 @@ export async function activate(
   if (!builtinCommands.includes("deno.test")) {
     registerCommand("deno.test", commands.test);
   }
-  // TODO(nayeemrmn): Move server-side as `deno.reloadImportRegistries`.
-  registerCommand(
-    "deno.client.reloadImportRegistries",
-    commands.reloadImportRegistries,
-  );
   registerCommand("deno.client.test", commands.test);
   registerCommand(
     "deno.client.cacheActiveDocument",
