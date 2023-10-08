@@ -117,7 +117,6 @@ function buildDenoConfigTask(
   sourceUri: Uri,
 ): Task {
   const execution = new ProcessExecution(process, ["task", name]);
-  scope.uri.fs;
   const task = new Task(
     { type: "deno", name, command, sourceUri },
     scope,
