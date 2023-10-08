@@ -42,6 +42,7 @@ export const registryState = new NotificationType<RegistryStateParams>(
 export interface TaskRequestResponse {
   name: string;
   detail: string;
+  sourceUri: string;
 }
 
 /** Requests any tasks from the language server that the language server is

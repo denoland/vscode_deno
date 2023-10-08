@@ -1,5 +1,4 @@
 import * as path from "path";
-import * as fs from "fs";
 import {
   commands,
   EventEmitter,
@@ -50,20 +49,14 @@ class DenoJSON extends TreeItem {
 
   constructor(
     public readonly folder: Folder,
-    relativePath: string,
-    fileName: string,
+    sourceUri: Uri,
   ) {
-    const label = relativePath.length > 0
-      ? path.join(relativePath, fileName)
-      : fileName;
+    const label = folder.resourceUri
+      ? sourceUri.toString().replace(folder.resourceUri.toString() + "/", "")
+      : sourceUri.toString();
     super(label, TreeItemCollapsibleState.Expanded);
-
     this.contextValue = "denoJSON";
-
-    this.resourceUri = Uri.file(
-      path.join(folder.resourceUri!.fsPath, relativePath, fileName),
-    );
-
+    this.resourceUri = sourceUri;
     this.iconPath = ThemeIcon.File;
   }
 
@@ -85,7 +78,7 @@ class DenoTask extends TreeItem {
       workspace.getConfiguration("deno").get<DefaultCommand>(
         "defaultTaskCommand",
       ) ??
-      "open";
+        "open";
 
     const commandList = {
       "open": {
@@ -120,13 +113,13 @@ function buildDenoConfigTask(
   scope: WorkspaceFolder,
   process: string,
   name: string,
-  fileName: string,
-  command?: string,
+  command: string,
+  sourceUri: Uri,
 ): Task {
   const execution = new ProcessExecution(process, ["task", name]);
-
+  scope.uri.fs;
   const task = new Task(
-    { type: "deno", name, command, fileName },
+    { type: "deno", name, command, sourceUri },
     scope,
     name,
     "deno task",
@@ -164,28 +157,28 @@ class DenoTaskProvider implements TaskProvider {
     if (client && supportsConfigTasks) {
       try {
         const configTasks = await client.sendRequest(taskReq);
-        if (configTasks) {
-          for (const workspaceFolder of workspace.workspaceFolders ?? []) {
-            // Check if config file is .json or .jsonc
-            let fileName = "deno.json";
-            try {
-              const filePath = path.join(workspaceFolder.uri.fsPath, fileName);
-              fs.accessSync(filePath, fs.constants.F_OK);
-            } catch {
-              fileName = "deno.jsonc";
-            }
-            for (const { name, detail: command } of configTasks) {
-              tasks.push(
-                buildDenoConfigTask(
-                  workspaceFolder,
-                  process,
-                  name,
-                  fileName,
-                  command,
-                ),
-              );
-            }
+        for (const { name, detail: command, sourceUri } of configTasks ?? []) {
+          // TODO(nayeemrmn): Deno LSP versions < 1.37.2 doesn't provide the
+          // `sourceUri`. Remove this eventually.
+          if (!sourceUri) {
+            continue;
           }
+          const workspaceFolder = (workspace.workspaceFolders ?? []).find((
+            f,
+          ) => sourceUri.startsWith(f.uri.toString()));
+          if (!workspaceFolder) {
+            continue;
+          }
+
+          tasks.push(
+            buildDenoConfigTask(
+              workspaceFolder,
+              process,
+              name,
+              command,
+              Uri.parse(sourceUri),
+            ),
+          );
         }
       } catch (err) {
         window.showErrorMessage("Failed to retrieve config tasks.");
@@ -341,25 +334,13 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
       }
 
       const definition = task.definition;
-      const relativePath = definition.path ? definition.path : "";
-      const fullPath = path.join(task.scope.name, relativePath);
+      const sourceUri = definition.sourceUri;
 
-      let denoJson = configs.get(fullPath);
+      let denoJson = configs.get(sourceUri.toString());
       if (!denoJson) {
-        let fileName = "deno.json";
-        try {
-          const filePath = path.join(
-            task.scope.uri.fsPath,
-            relativePath,
-            fileName,
-          );
-          fs.accessSync(filePath, fs.constants.F_OK);
-        } catch {
-          fileName = "deno.jsonc";
-        }
-        denoJson = new DenoJSON(folder, relativePath, fileName);
+        denoJson = new DenoJSON(folder, sourceUri);
         folder.addConfig(denoJson);
-        configs.set(fullPath, denoJson);
+        configs.set(sourceUri.toString(), denoJson);
       }
       denoJson.addTask(new DenoTask(denoJson, task));
     }
