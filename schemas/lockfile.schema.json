@@ -16,9 +16,9 @@
     "version": {
       "description": "The version of the lockfile.",
       "type": "string",
-      "default": "2",
+      "default": "3",
       "enum": [
-        "2"
+        "3"
       ]
     },
     "remote": {
@@ -39,21 +39,21 @@
         "description": "The redirected specifier as the key and the destination as the value."
       }
     },
-    "npm": {
-      "description": "A map of npm package names and versions to their respective hashes.",
+    "packages": {
+      "description": "Integrity data for package-managed modules imported under custom schemes.",
       "type": "object",
       "default": {},
       "properties": {
         "specifiers": {
           "type": "object",
-          "description": "A map of (usually) shortened npm package specifiers to their full specifier.",
+          "description": "A map of (usually) shortened package specifiers to their full specifier.",
           "default": {},
           "additionalProperties": {
             "type": "string",
             "description": "The full specifier as the value for the shortened specifier as the key."
           }
         },
-        "packages": {
+        "npm": {
           "type": "object",
           "description": "A map of npm package names and versions to their respective hashes.",
           "default": {},
@@ -80,16 +80,5 @@
         }
       }
     }
-  },
-  "oneOf": [
-    {
-      "required": ["version", "remote"]
-    },
-    {
-      "additionalProperties": {
-        "type": "string",
-        "description": "The hash as the value for the remote URL as the key."
-      }
-    }
-  ]
+  }
 }
