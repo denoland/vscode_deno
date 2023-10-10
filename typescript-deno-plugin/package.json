@@ -4,7 +4,7 @@
   "author": "Deno Land Inc.",
   "license": "MIT",
   "private": true,
-  "version": "3.25.1",
+  "version": "3.26.0",
   "publisher": "deno-land",
   "main": "./dist/index",
   "files": [
