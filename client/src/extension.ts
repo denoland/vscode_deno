@@ -396,11 +396,14 @@ export async function activate(
       treeDataProvider.refresh();
     }
   }));
-  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((event) => {
-    if (event.uri.fsPath.match(/\/deno\.jsonc?$/)) {
-      treeDataProvider.refresh();
-    }
-  }));
+  context.subscriptions.push(
+    extensionContext.client!.onNotification(
+      "deno/didChangeDenoConfiguration",
+      () => {
+        treeDataProvider.refresh();
+      },
+    ),
+  );
   context.subscriptions.push(vscode.workspace.onDidRenameFiles((event) => {
     if (
       event.files.some(({ oldUri: uri }) => uri.fsPath.match(/\/deno\.jsonc?$/))
