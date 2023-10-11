@@ -4,6 +4,18 @@ import type { ConfigurationScope } from "vscode";
 
 // types shared with typescript-deno-plugin
 
+/** Settings under `typescript.format` and `javascript.format`. These are passed
+ * through to the LSP without documentation here. */
+export interface Format {
+  [key: string]: unknown;
+}
+
+/** Settings under `typescript.preferences` and `javascript.preferences`. These
+ * are passed through to the LSP without documentation here. */
+export interface Preferences {
+  [key: string]: unknown;
+}
+
 export interface InlayHints {
   parameterNames: {
     /** Enable/disable inlay hints for parameter names. */
@@ -36,20 +48,9 @@ export interface Suggest {
 
 // Subset of the "javascript" and "typescript" config sections.
 export interface LanguageSettings {
+  format: Format;
   inlayHints: InlayHints | null;
-  preferences: {
-    quoteStyle: "auto" | "double" | "single";
-    importModuleSpecifier:
-      | "non-relative"
-      | "project-relative"
-      | "relative"
-      | "shortest";
-    importModuleSpecifierEnding: "auto" | "index" | "js" | "minimal";
-    jsxAttributeCompletionStyle: "auto" | "braces" | "none";
-    autoImportFileExcludePatterns: string[];
-    useAliasesForRenames: boolean;
-    renameMatchingJsxTags: boolean;
-  } | null;
+  preferences: Preferences | null;
   suggest: Suggest | null;
   updateImportsOnFileMove: {
     enabled: "always" | "prompt" | "never";
