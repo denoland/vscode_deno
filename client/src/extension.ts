@@ -31,8 +31,9 @@ const LANGUAGES = [
   "javascriptreact",
 ];
 
-/** These are keys of settings that have a scope of window or machine. */
+/** Keys under `typescript` or `javascript` sections we care about. */
 const languageSettingsKeys: Array<keyof LanguageSettings> = [
+  "format",
   "inlayHints",
   "preferences",
   "suggest",
