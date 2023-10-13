@@ -5,7 +5,6 @@ import {
   TS_LANGUAGE_FEATURES_EXTENSION,
 } from "./constants";
 import type { PluginSettings, TsApi } from "./types";
-import { assert } from "./util";
 
 import * as vscode from "vscode";
 
@@ -28,12 +27,14 @@ export function getTsApi(
     try {
       const extension: vscode.Extension<TsLanguageFeatures> | undefined = vscode
         .extensions.getExtension(TS_LANGUAGE_FEATURES_EXTENSION);
-      const errorMessage =
-        "The Deno extension cannot load the built in TypeScript Language Features. Please try restarting Visual Studio Code.";
-      assert(extension, errorMessage);
+      if (!extension) {
+        return;
+      }
       const languageFeatures = await extension.activate();
       api = languageFeatures.getAPI(0);
-      assert(api, errorMessage);
+      if (!api) {
+        return;
+      }
       const pluginSettings = getPluginSettings();
       api.configurePlugin(EXTENSION_TS_PLUGIN, pluginSettings);
     } catch (e) {
