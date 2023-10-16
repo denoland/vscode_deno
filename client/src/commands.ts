@@ -114,8 +114,12 @@ export function initializeWorkspace(
       await vscode.window.showInformationMessage(
         "Deno is now setup in this workspace.",
       );
-    } catch {
-      vscode.window.showErrorMessage("Deno project initialization failed.");
+    } catch (error) {
+      vscode.window.showErrorMessage(
+        `Deno project initialization failed: ${
+          (error as Error).message ?? error
+        }`,
+      );
     }
   };
 }
