@@ -34,8 +34,10 @@ const LANGUAGES = [
 /** Keys under `typescript` or `javascript` sections we care about. */
 const languageSettingsKeys: Array<keyof LanguageSettings> = [
   "format",
+  "implementationsCodeLens",
   "inlayHints",
   "preferences",
+  "referencesCodeLens",
   "suggest",
   "updateImportsOnFileMove",
 ];

@@ -49,8 +49,10 @@ export interface Suggest {
 // Subset of the "javascript" and "typescript" config sections.
 export interface LanguageSettings {
   format: Format;
+  implementationsCodeLens: unknown;
   inlayHints: InlayHints | null;
   preferences: Preferences | null;
+  referencesCodeLens: unknown;
   suggest: Suggest | null;
   updateImportsOnFileMove: {
     enabled: "always" | "prompt" | "never";
