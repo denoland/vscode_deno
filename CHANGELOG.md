@@ -3,6 +3,14 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.27.0](https://github.com/denoland/vscode_deno/compare/3.26.0...3.27.0) / 2023.11.01
+
+- fix: update tasks sidebar on config change notification (#964)
+- fix: don't error on missing typescript-language-features (#976)
+- fix: send "untitled:///" specifiers to the LSP (#978)
+- fix: show error message for workspace init failure (#980)
+- chore: deprecate "deno.*" mirror settings (#981)
+
 ### [3.26.0](https://github.com/denoland/vscode_deno/compare/3.25.1...3.26.0) / 2023.10.10
 
 - fix: update lockfile schema to v3 (#965)
