@@ -17,10 +17,7 @@ import {
 } from "./lsp_extensions";
 import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
-import type {
-  DenoExtensionContext,
-  TestCommandOptions,
-} from "./types";
+import type { DenoExtensionContext, TestCommandOptions } from "./types";
 import { WelcomePanel } from "./welcome";
 import {
   assert,
