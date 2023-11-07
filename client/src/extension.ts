@@ -16,12 +16,17 @@ import type { LanguageSettings, PathFilter } from "./shared_types";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
-import type { DenoExtensionContext, Settings } from "./types";
+import type {
+  DenoExtensionContext,
+  DenoUpgradeAvailableNotificationParams,
+  Settings,
+} from "./types";
 import { assert } from "./util";
 import * as util from "util";
 
 import * as vscode from "vscode";
 import { registerSidebar } from "./tasks_sidebar";
+import { denoUpgradePromptAndExecute } from "./upgrade";
 
 /** The language IDs we care about. */
 const LANGUAGES = [
@@ -409,6 +414,14 @@ export async function activate(
       treeDataProvider.refresh();
     }
   }));
+  context.subscriptions.push(
+    extensionContext.client!.onNotification(
+      "deno/denoUpgradeAvailable",
+      async (params: DenoUpgradeAvailableNotificationParams) => {
+        await denoUpgradePromptAndExecute(params);
+      },
+    ),
+  );
   context.subscriptions.push(
     extensionContext.client!.onNotification(
       "deno/didChangeDenoConfiguration",
