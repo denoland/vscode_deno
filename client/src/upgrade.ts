@@ -2,12 +2,12 @@
 
 import { EXTENSION_NS } from "./constants";
 import * as tasks from "./tasks";
-import { DenoUpgradeAvailableNotificationParams } from "./types";
+import { UpgradeAvailable } from "./types";
 import { assert, getDenoCommandName } from "./util";
 import * as vscode from "vscode";
 
 export async function denoUpgradePromptAndExecute(
-  { latestVersion, isCanary }: DenoUpgradeAvailableNotificationParams,
+  { latestVersion, isCanary }: UpgradeAvailable,
 ) {
   const config = vscode.workspace.getConfiguration(EXTENSION_NS);
   let prompt = isCanary
@@ -58,7 +58,7 @@ export async function denoUpgradePromptAndExecute(
     panel: vscode.TaskPanelKind.Dedicated,
     clear: true,
   };
-  let execution = await vscode.tasks.executeTask(task);
+  const execution = await vscode.tasks.executeTask(task);
   const disposable = vscode.tasks.onDidEndTask((event) => {
     if (event.execution == execution) {
       disposable.dispose();

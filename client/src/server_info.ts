@@ -1,11 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { InitializeResult } from "vscode-languageclient";
-import { DenoUpgradeAvailableNotificationParams } from "./types";
+import { UpgradeAvailable } from "./types";
 
 export class DenoServerInfo {
   readonly #fullVersion: string;
-  upgradeAvailable: DenoUpgradeAvailableNotificationParams | null;
+  upgradeAvailable: UpgradeAvailable | null;
 
   constructor(serverInfo: InitializeResult["serverInfo"]) {
     this.#fullVersion = serverInfo?.version ?? "";

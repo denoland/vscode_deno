@@ -48,7 +48,7 @@ export interface TestCommandOptions {
   inspect: boolean;
 }
 
-export interface DenoUpgradeAvailableNotificationParams {
+export interface UpgradeAvailable {
   latestVersion: string;
   isCanary: boolean;
 }

@@ -19,7 +19,6 @@ import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
 import type {
   DenoExtensionContext,
-  DenoUpgradeAvailableNotificationParams,
   TestCommandOptions,
 } from "./types";
 import { WelcomePanel } from "./welcome";
