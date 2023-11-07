@@ -17,7 +17,11 @@ import {
 } from "./lsp_extensions";
 import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
-import type { DenoExtensionContext, TestCommandOptions } from "./types";
+import type {
+  DenoExtensionContext,
+  DidUpgradeCheckParams,
+  TestCommandOptions,
+} from "./types";
 import { WelcomePanel } from "./welcome";
 import {
   assert,
@@ -211,13 +215,16 @@ export function startLanguageServer(
     );
     extensionContext.serverCapabilities = client.initializeResult?.capabilities;
     extensionContext.statusBar.refresh(extensionContext);
-    extensionContext.client.sendRequest("deno/upgradeAvailable")
-      .then((result) => {
+    extensionContext.client.onNotification(
+      "deno/didUpgradeCheck",
+      (params: DidUpgradeCheckParams) => {
         if (extensionContext.serverInfo) {
-          (extensionContext.serverInfo.upgradeAvailable as unknown) = result;
+          extensionContext.serverInfo.upgradeAvailable =
+            params.upgradeAvailable;
           extensionContext.statusBar.refresh(extensionContext);
         }
-      }).catch(() => {/* This request isn't available for Deno <= 1.38.0. */});
+      },
+    );
 
     if (testingFeature.enabled) {
       context.subscriptions.push(new DenoTestController(extensionContext));

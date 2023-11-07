@@ -52,3 +52,7 @@ export interface UpgradeAvailable {
   latestVersion: string;
   isCanary: boolean;
 }
+
+export interface DidUpgradeCheckParams {
+  upgradeAvailable: UpgradeAvailable | null;
+}
