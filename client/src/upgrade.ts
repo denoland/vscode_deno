@@ -58,6 +58,11 @@ export async function denoUpgradePromptAndExecute(
     panel: vscode.TaskPanelKind.Dedicated,
     clear: true,
   };
-  await vscode.tasks.executeTask(task);
-  await vscode.commands.executeCommand("deno.client.restart");
+  let execution = await vscode.tasks.executeTask(task);
+  const disposable = vscode.tasks.onDidEndTask((event) => {
+    if (event.execution == execution) {
+      disposable.dispose();
+      vscode.commands.executeCommand("deno.client.restart");
+    }
+  });
 }
