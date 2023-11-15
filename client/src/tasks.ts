@@ -113,6 +113,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
         group: vscode.TaskGroup.Test,
         problemMatchers: ["$deno-test"],
       },
+      { command: "upgrade", group: undefined, problemMatchers: ["$deno"] },
     ];
 
     const tasks: vscode.Task[] = [];

@@ -17,7 +17,11 @@ import {
 } from "./lsp_extensions";
 import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
-import type { DenoExtensionContext, TestCommandOptions } from "./types";
+import type {
+  DenoExtensionContext,
+  DidUpgradeCheckParams,
+  TestCommandOptions,
+} from "./types";
 import { WelcomePanel } from "./welcome";
 import {
   assert,
@@ -38,6 +42,7 @@ import type {
   Position,
 } from "vscode-languageclient/node";
 import { getWorkspacesEnabledInfo } from "./enable";
+import { denoUpgradePromptAndExecute } from "./upgrade";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -210,6 +215,16 @@ export function startLanguageServer(
     );
     extensionContext.serverCapabilities = client.initializeResult?.capabilities;
     extensionContext.statusBar.refresh(extensionContext);
+    extensionContext.client.onNotification(
+      "deno/didUpgradeCheck",
+      (params: DidUpgradeCheckParams) => {
+        if (extensionContext.serverInfo) {
+          extensionContext.serverInfo.upgradeAvailable =
+            params.upgradeAvailable;
+          extensionContext.statusBar.refresh(extensionContext);
+        }
+      },
+    );
 
     if (testingFeature.enabled) {
       context.subscriptions.push(new DenoTestController(extensionContext));
@@ -399,11 +414,15 @@ export function welcome(
   };
 }
 
-export function openOutput(
+export function statusBarClicked(
   _context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ) {
   return () => {
     extensionContext.outputChannel.show(true);
+    if (extensionContext.serverInfo?.upgradeAvailable) {
+      // Async dispatch on purpose.
+      denoUpgradePromptAndExecute(extensionContext.serverInfo.upgradeAvailable);
+    }
   };
 }

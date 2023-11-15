@@ -12,7 +12,7 @@ export class DenoStatusBar {
       vscode.StatusBarAlignment.Right,
       0,
     );
-    this.#inner.command = "deno.client.openOutput";
+    this.#inner.command = "deno.client.statusBarClicked";
   }
 
   dispose() {
@@ -22,6 +22,9 @@ export class DenoStatusBar {
   refresh(extensionContext: DenoExtensionContext) {
     if (extensionContext.serverInfo) {
       this.#inner.text = `Deno ${extensionContext.serverInfo.version}`;
+      if (extensionContext.serverInfo.upgradeAvailable) {
+        this.#inner.text += " (Upgrade available)";
+      }
       this.#inner.tooltip = extensionContext.serverInfo.versionWithBuildInfo;
     }
 

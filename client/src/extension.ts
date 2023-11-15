@@ -464,7 +464,7 @@ export async function activate(
   registerCommand("deno.client.restart", commands.startLanguageServer);
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
-  registerCommand("deno.client.openOutput", commands.openOutput);
+  registerCommand("deno.client.statusBarClicked", commands.statusBarClicked);
 }
 
 export function deactivate(): Thenable<void> | undefined {

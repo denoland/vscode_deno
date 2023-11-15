@@ -47,3 +47,12 @@ export interface DenoExtensionContext {
 export interface TestCommandOptions {
   inspect: boolean;
 }
+
+export interface UpgradeAvailable {
+  latestVersion: string;
+  isCanary: boolean;
+}
+
+export interface DidUpgradeCheckParams {
+  upgradeAvailable: UpgradeAvailable | null;
+}
