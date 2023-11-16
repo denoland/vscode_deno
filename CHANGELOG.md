@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.28.0](https://github.com/denoland/vscode_deno/compare/3.27.0...3.28.0) / 2023.11.15
+
+- feat: deno upgrade prompt (#988)
+- chore: remove compat paths for lsp < 1.37.0 (#992)
+
 ### [3.27.0](https://github.com/denoland/vscode_deno/compare/3.26.0...3.27.0) / 2023.11.01
 
 - fix: update tasks sidebar on config change notification (#964)
