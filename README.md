@@ -222,10 +222,10 @@ extension has the following configuration options:
 To see which versions of the Deno CLI are compatible with which versions of this
 extension, consult the following table.
 
-| vscode-deno  | Deno CLI       |
-| ------------ | -------------- |
-| TODO onwards | 1.37.0 onwards |
-| ? - 3.27.0   | ? - 1.36.4     |
+| vscode-deno    | Deno CLI       |
+| -------------- | -------------- |
+| 3.28.0 onwards | 1.37.0 onwards |
+| ? - 3.27.0     | ? - 1.36.4     |
 
 Version ranges are inclusive. Incompatibilites prior to 3.27.0 were not tracked.
 
