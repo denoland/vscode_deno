@@ -162,9 +162,13 @@ class DenoTaskProvider implements TaskProvider {
           if (!sourceUri) {
             continue;
           }
-          const workspaceFolder = (workspace.workspaceFolders ?? []).find((
-            f,
-          ) => sourceUri.startsWith(f.uri.toString()));
+          const workspaceFolder = (workspace.workspaceFolders ?? []).find((f) =>
+            // NOTE: skipEncoding in Uri.toString(), read more at https://github.com/microsoft/vscode/commit/65cb3397673b922c1b6759d145a3a183feb3ee5d
+            sourceUri
+              .toString(true)
+              .toLocaleLowerCase()
+              .startsWith(f.uri.toString(true).toLocaleLowerCase())
+          );
           if (!workspaceFolder) {
             continue;
           }
