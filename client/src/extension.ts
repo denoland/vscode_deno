@@ -58,6 +58,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "inlayHints",
   "internalDebug",
   "lint",
+  "npmRegistry",
   "path",
   "suggest",
   "testing",
