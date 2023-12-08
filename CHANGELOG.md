@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.29.0](https://github.com/denoland/vscode_deno/compare/3.28.0...3.29.0) / 2023.12.8
+
+- feat: "deno.logFile" setting (#1003)
+- fix: tasks panel empty on win machines (#996)
+
 ### [3.28.0](https://github.com/denoland/vscode_deno/compare/3.27.0...3.28.0) / 2023.11.16
 
 - feat: deno upgrade prompt (#988)
