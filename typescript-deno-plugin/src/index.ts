@@ -45,6 +45,7 @@ const defaultSettings: Settings = {
   inlayHints: null,
   internalDebug: false,
   lint: false,
+  logFile: false,
   path: null,
   suggest: {
     autoImports: true,
