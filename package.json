@@ -475,6 +475,16 @@
             false
           ]
         },
+        "deno.logFile": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Write logs to a file in a project-local directory.",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.defaultTaskCommand": {
           "type": "string",
           "enum": [

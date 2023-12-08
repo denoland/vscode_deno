@@ -58,6 +58,7 @@ const workspaceSettingsKeys: Array<keyof Settings> = [
   "inlayHints",
   "internalDebug",
   "lint",
+  "logFile",
   "path",
   "suggest",
   "testing",
@@ -177,6 +178,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
       event.affectsConfiguration("deno.enable") ||
       event.affectsConfiguration("deno.disablePaths") ||
       event.affectsConfiguration("deno.enablePaths") ||
+      event.affectsConfiguration("deno.logFile") ||
       event.affectsConfiguration("deno.path") ||
       event.affectsConfiguration("deno.maxTsServerMemory")
     ) {

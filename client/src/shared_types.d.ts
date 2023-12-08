@@ -104,6 +104,7 @@ export interface Settings {
   internalDebug: boolean;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
+  logFile: boolean;
   /** Specify an explicit path to the `deno` binary. */
   path: string | null;
   // TODO(nayeemrmn): Deprecate the `Suggest` part of this in favour of
