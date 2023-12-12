@@ -44,6 +44,7 @@ const defaultSettings: Settings = {
   importMap: null,
   inlayHints: null,
   internalDebug: false,
+  internalInspect: false,
   lint: false,
   logFile: false,
   path: null,

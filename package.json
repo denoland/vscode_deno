@@ -475,6 +475,16 @@
             false
           ]
         },
+        "deno.internalInspect": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enables the inspector server for the JS runtime used by the Deno Language Server to host its TS server.",
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.logFile": {
           "type": "boolean",
           "default": false,
