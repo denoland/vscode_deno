@@ -106,6 +106,12 @@
         "description": "Restart the Deno language server."
       },
       {
+        "command": "deno.client.info",
+        "title": "Info",
+        "category": "Deno",
+        "description": "Provide version info for the language server, this extension and VSCode."
+      },
+      {
         "command": "deno.client.status",
         "title": "Language Server Status",
         "category": "Deno",

@@ -136,6 +136,17 @@ export function reloadImportRegistries(
   return () => extensionContext.client?.sendRequest(reloadImportRegistriesReq);
 }
 
+export function info(
+  context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+): Callback {
+  return async () => {
+    await vscode.window.showInformationMessage(
+      `deno ${extensionContext.serverInfo?.versionWithBuildInfo} | vscode_deno ${context.extension.packageJSON?.version} | vscode ${vscode.version}`,
+    );
+  };
+}
+
 /** Start (or restart) the Deno Language Server */
 export function startLanguageServer(
   context: vscode.ExtensionContext,
