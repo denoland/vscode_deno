@@ -437,3 +437,23 @@ export function statusBarClicked(
     }
   };
 }
+
+export function enable(
+  _context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+) {
+  return async () => {
+    const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+    await config.update("enable", true);
+  };
+}
+
+export function disable(
+  _context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+) {
+  return async () => {
+    const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+    await config.update("enable", false);
+  };
+}
