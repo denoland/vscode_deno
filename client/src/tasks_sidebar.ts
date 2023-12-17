@@ -118,7 +118,7 @@ function buildDenoConfigTask(
 ): Task {
   const execution = new ProcessExecution(process, ["task", name]);
   const task = new Task(
-    { type: "deno", name, command, sourceUri },
+    { type: "denoTasks", name, command, sourceUri },
     scope,
     name,
     "deno task",
