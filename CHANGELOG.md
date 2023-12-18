@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.30.0](https://github.com/denoland/vscode_deno/compare/3.29.0...3.30.0) / 2023.12.18
+
+- feat: version info command (#1008)
+- feat: "deno.client.enable" and "deno.client.disable" commands (#1010)
+- fix: use "denoTasks" type for task-sidebar commands (#1013)
+
 ### [3.29.0](https://github.com/denoland/vscode_deno/compare/3.28.0...3.29.0) / 2023.12.8
 
 - feat: "deno.logFile" setting (#1003)
