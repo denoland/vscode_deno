@@ -4,7 +4,7 @@
   "description": "A language server client for Deno.",
   "author": "Deno Land Inc.",
   "license": "MIT",
-  "version": "3.29.0",
+  "version": "3.30.0",
   "icon": "deno.png",
   "galleryBanner": {
     "color": "#3B3738",
@@ -46,6 +46,8 @@
     "onDebugResolve:javascriptreact",
     "onCommand:deno.client.welcome",
     "onCommand:deno.client.initializeWorkspace",
+    "onCommand:deno.client.enable",
+    "onCommand:deno.client.disable",
     "onCommand:deno.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
@@ -106,6 +108,12 @@
         "description": "Restart the Deno language server."
       },
       {
+        "command": "deno.client.info",
+        "title": "Info",
+        "category": "Deno",
+        "description": "Provide version info for the language server, this extension and VSCode."
+      },
+      {
         "command": "deno.client.status",
         "title": "Language Server Status",
         "category": "Deno",
@@ -117,6 +125,18 @@
         "title": "Welcome",
         "category": "Deno",
         "description": "Open the welcome page for the Deno extension."
+      },
+      {
+        "command": "deno.client.enable",
+        "title": "Enable",
+        "category": "Deno",
+        "description": "Enable the Deno language server via workspace settings. This isn't necessary if your workspace root contains a `deno.json` file."
+      },
+      {
+        "command": "deno.client.disable",
+        "title": "Disable",
+        "category": "Deno",
+        "description": "Disable the Deno language server via workspace settings."
       },
       {
         "command": "deno.client.runTask",

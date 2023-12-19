@@ -136,6 +136,17 @@ export function reloadImportRegistries(
   return () => extensionContext.client?.sendRequest(reloadImportRegistriesReq);
 }
 
+export function info(
+  context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+): Callback {
+  return async () => {
+    await vscode.window.showInformationMessage(
+      `deno ${extensionContext.serverInfo?.versionWithBuildInfo} | vscode_deno ${context.extension.packageJSON?.version} | vscode ${vscode.version}`,
+    );
+  };
+}
+
 /** Start (or restart) the Deno Language Server */
 export function startLanguageServer(
   context: vscode.ExtensionContext,
@@ -429,5 +440,25 @@ export function statusBarClicked(
       // Async dispatch on purpose.
       denoUpgradePromptAndExecute(extensionContext.serverInfo.upgradeAvailable);
     }
+  };
+}
+
+export function enable(
+  _context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+) {
+  return async () => {
+    const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+    await config.update("enable", true);
+  };
+}
+
+export function disable(
+  _context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+) {
+  return async () => {
+    const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+    await config.update("enable", false);
   };
 }

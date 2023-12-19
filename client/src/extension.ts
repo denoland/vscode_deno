@@ -452,8 +452,11 @@ export async function activate(
     commands.initializeWorkspace,
   );
   registerCommand("deno.client.restart", commands.startLanguageServer);
+  registerCommand("deno.client.info", commands.info);
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
+  registerCommand("deno.client.enable", commands.enable);
+  registerCommand("deno.client.disable", commands.disable);
   registerCommand("deno.client.statusBarClicked", commands.statusBarClicked);
 }
 
