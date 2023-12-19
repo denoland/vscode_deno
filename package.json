@@ -496,13 +496,14 @@
           ]
         },
         "deno.internalInspect": {
-          "type": "boolean",
+          "type": ["boolean", "string"],
           "default": false,
-          "markdownDescription": "Enables the inspector server for the JS runtime used by the Deno Language Server to host its TS server.",
+          "markdownDescription": "Enables the inspector server for the JS runtime used by the Deno Language Server to host its TS server. Optionally provide an address for the inspector listener e.g. \"127.0.0.1:9222\" (default).",
           "scope": "window",
           "examples": [
             true,
-            false
+            false,
+            "127.0.0.1:9222"
           ]
         },
         "deno.logFile": {

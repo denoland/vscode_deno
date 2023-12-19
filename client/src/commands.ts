@@ -184,16 +184,11 @@ export function startLanguageServer(
       return;
     }
 
-    const env: Record<string, unknown> = {
+    const env = {
       ...process.env,
       "DENO_V8_FLAGS": getV8Flags(),
       "NO_COLOR": true,
     };
-
-    const config = vscode.workspace.getConfiguration(EXTENSION_NS);
-    if (config.get("internalInspect")) {
-      env["DENO_LSP_INSPECTOR"] = 1;
-    }
 
     const serverOptions: ServerOptions = {
       run: {
