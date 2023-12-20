@@ -102,6 +102,7 @@ export interface Settings {
   /** A flag that enables additional internal debug information to be printed
    * to the _Deno Language Server_ output. */
   internalDebug: boolean;
+  internalInspect: boolean | string;
   /** Determine if the extension should be providing linting diagnostics. */
   lint: boolean;
   logFile: boolean;

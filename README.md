@@ -204,6 +204,8 @@ extension has the following configuration options:
   hints where the variable name matches the implicit type.
 - `deno.internalDebug`: If enabled the Deno Language Server will log additional
   internal diagnostic information.
+- `deno.internalInspect`: Enables the inspector server for the JS runtime used
+  by the Deno Language Server to host its TS server.
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `true`_
 - `deno.maxTsServerMemory`: Maximum amount of memory the TypeScript isolate can
