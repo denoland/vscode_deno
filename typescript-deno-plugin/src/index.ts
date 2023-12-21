@@ -185,7 +185,7 @@ class Plugin implements ts.server.PluginModule {
       "findRenameLocations",
       0,
       undefined,
-    );
+    ) as ts.LanguageService["findRenameLocations"];
     const getApplicableRefactors = callIfDisabled(
       "getApplicableRefactors",
       0,
@@ -373,6 +373,11 @@ class Plugin implements ts.server.PluginModule {
       [],
     );
     const uncommentSelection = callIfDisabled("uncommentSelection", 0, []);
+    const getSupportedCodeFixes = callIfDisabled(
+      "getSupportedCodeFixes",
+      0,
+      [],
+    );
 
     return {
       ...ls,
@@ -420,6 +425,7 @@ class Plugin implements ts.server.PluginModule {
       toggleLineComment,
       toggleMultilineComment,
       uncommentSelection,
+      getSupportedCodeFixes,
     };
   }
 
