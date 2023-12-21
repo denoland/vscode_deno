@@ -118,6 +118,7 @@ class Plugin implements ts.server.PluginModule {
   }
 
   #log = (..._msgs: unknown[]) => {};
+  #loggingEnabled = () => true;
 
   create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const { languageService: ls, project, config } = info;
@@ -127,6 +128,9 @@ class Plugin implements ts.server.PluginModule {
           msgs.map((m) => typeof m === "string" ? m : util.inspect(m)).join(" ")
         }`,
       );
+    };
+    this.#loggingEnabled = () => {
+      return project.projectService.logger.loggingEnabled();
     };
 
     this.#project = project;
@@ -145,7 +149,9 @@ class Plugin implements ts.server.PluginModule {
       // deno-lint-ignore no-explicit-any
       const target = (ls as any)[fn];
       return (...args) => {
-        this.#log(fn, args);
+        if (this.#loggingEnabled()) {
+          this.#log(fn, args);
+        }
         const enabled = fileNameArg !== undefined
           ? this.#fileNameDenoEnabled(args[fileNameArg] as string)
           : this.#denoEnabled();
@@ -418,7 +424,9 @@ class Plugin implements ts.server.PluginModule {
   }
 
   onConfigurationChanged(settings: PluginSettings): void {
-    this.#log(`onConfigurationChanged(${JSON.stringify(settings)})`);
+    if (this.#loggingEnabled()) {
+      this.#log(`onConfigurationChanged(${JSON.stringify(settings)})`);
+    }
     updateSettings(this.#project, settings);
     this.#project.refreshDiagnostics();
   }
