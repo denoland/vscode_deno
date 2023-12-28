@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.31.0](https://github.com/denoland/vscode_deno/compare/3.30.0...3.31.0) / 2023.12.28
+
+- chore: upgrade typescript to 5.0.2 (#1020)
+- chore: only construct log string when logging enabled (#1019)
+- feat: "deno.internalInspect" setting (#1007)
+
 ### [3.30.0](https://github.com/denoland/vscode_deno/compare/3.29.0...3.30.0) / 2023.12.18
 
 - feat: version info command (#1008)
