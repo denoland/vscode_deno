@@ -47,8 +47,8 @@ export class WelcomePanel {
             );
             return;
           }
-          case "init": {
-            vscode.commands.executeCommand("deno.client.initializeWorkspace");
+          case "enable": {
+            vscode.commands.executeCommand("deno.client.enable");
             return;
           }
         }
@@ -123,9 +123,10 @@ export class WelcomePanel {
           <p class="Card-content">
             <p>
               The extension does not assume it applies to all workspaces you use
-              with VSCode. You can enable Deno in a workspace by running the
-              <em><a href="#" class="Command" data-command="init">Deno:
-              Initialize Workspace Configuration</a></em> command.
+              with VSCode. You can enable Deno in a workspace by creating a
+              <code>deno.json</code> or <code>deno.jsonc</code> at the root, or
+              by running the <em><a href="#" class="Command"
+              data-command="enable"> Deno: Enable</a></em> command.
             </p>
             <p>
               You can also enable or disable it in the
