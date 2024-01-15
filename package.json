@@ -45,7 +45,6 @@
     "onDebugResolve:javascript",
     "onDebugResolve:javascriptreact",
     "onCommand:deno.client.welcome",
-    "onCommand:deno.client.initializeWorkspace",
     "onCommand:deno.client.enable",
     "onCommand:deno.client.disable",
     "onCommand:deno.reloadImportRegistries",
@@ -87,12 +86,6 @@
         "category": "Deno",
         "description": "Cache the active workspace document and its dependencies.",
         "enablement": "deno:lspReady"
-      },
-      {
-        "command": "deno.client.initializeWorkspace",
-        "title": "Initialize Workspace Configuration",
-        "category": "Deno",
-        "description": "Initialize the workspace configuration for Deno."
       },
       {
         "command": "deno.reloadImportRegistries",

@@ -47,7 +47,7 @@ Studio Code, powered by the Deno language server.
 3. Ensure `deno` is available in the environment path, or set its path via the
    `deno.path` setting in VSCode.
 4. Open the VS Code command palette with `Ctrl+Shift+P`, and run the _Deno:
-   Initialize Workspace Configuration_ command.
+   Enable_ command.
 
 We recognize that not every TypeScript/JavaScript project that you might work on
 in VSCode uses Deno — therefore, by default, this extension will only apply the
@@ -70,9 +70,9 @@ The extension provides several commands:
   > provide a quick fix to fetch and cache those dependencies, which invokes
   > this command for you.
 
-- _Deno: Initialize Workspace Configuration_ - will enabled Deno on the current
-  workspace and allow you to choose to enable linting and Deno _unstable_ API
-  options.
+- _Deno: Enable_ - will enabled Deno on the current workspace. Alternatively
+  you can create a `deno.json` or `deno.jsonc` file at the root of your
+  workspace.
 - _Deno: Language Server Status_ - displays a page of information about the
   status of the Deno Language Server. Useful when submitting a bug about the
   extension or the language server.

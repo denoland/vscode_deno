@@ -97,27 +97,6 @@ export function cacheActiveDocument(
   };
 }
 
-export function initializeWorkspace(
-  _context: vscode.ExtensionContext,
-  _extensionContext: DenoExtensionContext,
-): Callback {
-  return async () => {
-    try {
-      const config = vscode.workspace.getConfiguration(EXTENSION_NS);
-      await config.update("enable", true);
-      await vscode.window.showInformationMessage(
-        "Deno is now setup in this workspace.",
-      );
-    } catch (error) {
-      vscode.window.showErrorMessage(
-        `Deno project initialization failed: ${
-          (error as Error).message ?? error
-        }`,
-      );
-    }
-  };
-}
-
 export function reloadImportRegistries(
   _context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
