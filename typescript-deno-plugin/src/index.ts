@@ -36,7 +36,7 @@ const defaultSettings: Settings = {
   certificateStores: null,
   enable: null,
   disablePaths: [],
-  enablePaths: [],
+  enablePaths: null,
   codeLens: null,
   config: null,
   documentPreloadLimit: null,

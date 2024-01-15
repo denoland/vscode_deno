@@ -41,10 +41,7 @@ export async function getWorkspacesEnabledInfo() {
     }
 
     // check for specific paths being enabled
-    const enabledPaths = config.get<string[]>(ENABLE_PATHS);
-    // We convert `enablePaths: []` to `enablePaths: null` for now.
-    // See https://github.com/denoland/vscode_deno/issues/908.
-    if (enabledPaths && enabledPaths.length) {
+    if (config.get<string[]>(ENABLE_PATHS)) {
       return true;
     }
 

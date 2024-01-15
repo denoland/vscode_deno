@@ -93,7 +93,7 @@ export interface Settings {
   disablePaths: string[];
   /** If set, indicates that only the paths in the workspace should be Deno
    * enabled. */
-  enablePaths: string[];
+  enablePaths: string[] | null;
   /** A path to an import map that should be applied. */
   importMap: string | null;
   /** Options related to the display of inlay hints. */

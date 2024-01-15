@@ -110,9 +110,7 @@ function getPathFilters(): PathFilter[] {
       vscode.Uri.joinPath(workspaceFolder.uri, p).fsPath
     );
     const enabled_ = config.get<string[]>(ENABLE_PATHS);
-    // We convert `enablePaths: []` to `enablePaths: null` for now.
-    // See https://github.com/denoland/vscode_deno/issues/908.
-    const enabled = enabled_?.length
+    const enabled = enabled_
       ? enabled_.map((p) => vscode.Uri.joinPath(workspaceFolder.uri, p).fsPath)
       : null;
     if (disabled.length === 0 && enabled == null) {
