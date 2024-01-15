@@ -10,7 +10,6 @@ import {
   LANGUAGE_CLIENT_NAME,
   SERVER_SEMVER,
 } from "./constants";
-import { pickInitWorkspace } from "./initialize_project";
 import {
   cache as cacheReq,
   reloadImportRegistries as reloadImportRegistriesReq,
@@ -104,18 +103,8 @@ export function initializeWorkspace(
 ): Callback {
   return async () => {
     try {
-      const settings = await pickInitWorkspace();
       const config = vscode.workspace.getConfiguration(EXTENSION_NS);
       await config.update("enable", true);
-
-      const lintInspect = config.inspect("lint");
-      assert(lintInspect);
-      const unstableInspect = config.inspect("unstable");
-      assert(unstableInspect);
-
-      await config.update("lint", settings.lint);
-      await config.update("unstable", settings.unstable);
-
       await vscode.window.showInformationMessage(
         "Deno is now setup in this workspace.",
       );

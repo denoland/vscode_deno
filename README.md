@@ -215,8 +215,9 @@ extension has the following configuration options:
   [ImportCompletions](./docs/ImportCompletions.md) for more information.)
 - `deno.testing.args`: Arguments to use when running tests via the Test
   Explorer. Defaults to `[ \"--allow-all\" ]`.
-- `deno.unstable`: Controls if code will be type checked with Deno's unstable
-  APIs. This is the equivalent to using `--unstable` on the command line.
+- `deno.unstable`: Controls if code will be executed with Deno's unstable APIs.
+  Affects execution which is triggered through the extension, such as test code
+  lenses. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_
 
 ## Compatibility
