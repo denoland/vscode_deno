@@ -5,11 +5,12 @@ import type {
   LanguageClientOptions,
 } from "vscode-languageclient/node";
 import type { DenoServerInfo } from "./server_info";
-import type { DocumentSettings, PathFilter, Settings } from "./shared_types";
+import type { EnableSettings } from "./shared_types";
 import type { DenoStatusBar } from "./status_bar";
 import type * as vscode from "vscode";
 
 import type { ServerCapabilities } from "vscode-languageclient";
+import { DenoTasksTreeDataProvider } from "./tasks_sidebar";
 
 export * from "./shared_types";
 
@@ -27,9 +28,6 @@ interface DenoExperimental {
 export interface DenoExtensionContext {
   client: LanguageClient | undefined;
   clientOptions: LanguageClientOptions;
-  /** A record of filepaths and their document settings. */
-  documentSettings: Record<string, DocumentSettings>;
-  pathFilters: PathFilter[];
   serverInfo: DenoServerInfo | undefined;
   /** The capabilities returned from the server. */
   serverCapabilities:
@@ -38,10 +36,12 @@ export interface DenoExtensionContext {
   statusBar: DenoStatusBar;
   testController: vscode.TestController | undefined;
   tsApi: TsApi;
-  hasDenoConfig: boolean;
-  /** The current workspace settings. */
-  workspaceSettings: Settings;
   outputChannel: vscode.OutputChannel;
+  tasksSidebar: DenoTasksTreeDataProvider;
+  maxTsServerMemory: number | null;
+  enableSettingsUnscoped: EnableSettings;
+  enableSettingsByFolder: [string, EnableSettings][];
+  scopesWithDenoJson: string[];
 }
 
 export interface TestCommandOptions {
