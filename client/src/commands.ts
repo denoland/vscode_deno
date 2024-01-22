@@ -10,10 +10,6 @@ import {
   LANGUAGE_CLIENT_NAME,
   SERVER_SEMVER,
 } from "./constants";
-import {
-  cache as cacheReq,
-  reloadImportRegistries as reloadImportRegistriesReq,
-} from "./lsp_extensions";
 import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
 import type {
@@ -35,11 +31,7 @@ import { DenoServerInfo } from "./server_info";
 import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
-import type {
-  DocumentUri,
-  Location,
-  Position,
-} from "vscode-languageclient/node";
+import type { Location, Position } from "vscode-languageclient/node";
 import { getWorkspacesEnabledInfo } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
 
@@ -49,34 +41,6 @@ export type Factory = (
   context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ) => Callback;
-
-/** For the current document active in the editor tell the Deno LSP to cache
- * the file and all of its dependencies in the local cache. */
-export function cache(
-  _context: vscode.ExtensionContext,
-  extensionContext: DenoExtensionContext,
-): Callback {
-  return (uris: DocumentUri[] = [], referrer: DocumentUri) => {
-    const client = extensionContext.client;
-    if (!client) {
-      return;
-    }
-    return vscode.window.withProgress({
-      location: vscode.ProgressLocation.Window,
-      title: "caching",
-    }, () => {
-      return client.sendRequest(
-        cacheReq,
-        {
-          referrer: { uri: referrer },
-          uris: uris.map((uri) => ({
-            uri,
-          })),
-        },
-      );
-    });
-  };
-}
 
 export function cacheActiveDocument(
   _context: vscode.ExtensionContext,
@@ -95,13 +59,6 @@ export function cacheActiveDocument(
       return vscode.commands.executeCommand("deno.cache", [uri], uri);
     });
   };
-}
-
-export function reloadImportRegistries(
-  _context: vscode.ExtensionContext,
-  extensionContext: DenoExtensionContext,
-): Callback {
-  return () => extensionContext.client?.sendRequest(reloadImportRegistriesReq);
 }
 
 export function info(
@@ -194,7 +151,13 @@ export function startLanguageServer(
     );
     extensionContext.serverCapabilities = client.initializeResult?.capabilities;
     extensionContext.statusBar.refresh(extensionContext);
-    extensionContext.client.onNotification(
+    context.subscriptions.push(extensionContext.client.onNotification(
+      "deno/didChangeDenoConfiguration",
+      () => {
+        extensionContext.tasksSidebar.refresh();
+      },
+    ));
+    context.subscriptions.push(extensionContext.client.onNotification(
       "deno/didUpgradeCheck",
       (params: DidUpgradeCheckParams) => {
         if (extensionContext.serverInfo) {
@@ -203,7 +166,7 @@ export function startLanguageServer(
           extensionContext.statusBar.refresh(extensionContext);
         }
       },
-    );
+    ));
 
     if (testingFeature.enabled) {
       context.subscriptions.push(new DenoTestController(extensionContext));
@@ -234,7 +197,7 @@ export function startLanguageServer(
       v8Flags.includes("--max_old_space_size=");
     if (
       hasMaxOldSpaceSizeFlag &&
-      extensionContext.workspaceSettings.maxTsServerMemory == null
+      extensionContext.maxTsServerMemory == null
     ) {
       // the v8 flags already include a max-old-space-size and the user
       // has not provided a maxTsServerMemory value
@@ -244,7 +207,7 @@ export function startLanguageServer(
     // https://github.com/microsoft/vscode/blob/48d4ba271686e8072fc6674137415bc80d936bc7/extensions/typescript-language-features/src/configuration/configuration.ts#L213-L214
     const maxTsServerMemory = Math.max(
       128,
-      extensionContext.workspaceSettings.maxTsServerMemory ?? 3072,
+      extensionContext.maxTsServerMemory ?? 3072,
     );
     if (v8Flags.length > 0) {
       v8Flags += ",";
@@ -298,18 +261,11 @@ let statusRequestIndex = 0;
  * Deno Language Server. */
 export function status(
   _context: vscode.ExtensionContext,
-  extensionContext: DenoExtensionContext,
+  _extensionContext: DenoExtensionContext,
 ): Callback {
   return () => {
-    // TODO(nayeemrmn): Deno LSP versions <= 1.37.0 don't allow query strings in
-    // this URI. Eventually remove this.
-    if (semver.lte(extensionContext.serverInfo?.version ?? "1.0.0", "1.37.0")) {
-      const uri = vscode.Uri.parse("deno:/status.md");
-      return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
-    } else {
-      const uri = vscode.Uri.parse(`deno:/status.md?${statusRequestIndex++}`);
-      return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
-    }
+    const uri = vscode.Uri.parse(`deno:/status.md?${statusRequestIndex++}`);
+    return vscode.commands.executeCommand("markdown.showPreviewToSide", uri);
   };
 }
 

@@ -19,17 +19,6 @@ import type {
   TextDocumentIdentifier,
 } from "vscode-languageclient";
 
-export interface CacheParams {
-  referrer: TextDocumentIdentifier;
-  uris: TextDocumentIdentifier[];
-}
-
-export const cache = new RequestType<CacheParams, boolean, void>("deno/cache");
-
-export const reloadImportRegistries = new RequestType0<boolean, void>(
-  "deno/reloadImportRegistries",
-);
-
 export interface RegistryStateParams {
   origin: string;
   suggestions: boolean;

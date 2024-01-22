@@ -30,11 +30,13 @@ export class DenoStatusBar {
 
     // show only when "enable" is true and language server started
     if (
-      ((extensionContext.workspaceSettings.enable ??
-        extensionContext.hasDenoConfig) ||
-        extensionContext.pathFilters.length !== 0) &&
-      extensionContext.client &&
-      extensionContext.serverInfo
+      extensionContext.client && extensionContext.serverInfo &&
+      (extensionContext.scopesWithDenoJson.length != 0 ||
+        extensionContext.enableSettingsUnscoped.enable ||
+        extensionContext.enableSettingsUnscoped.enablePaths?.length ||
+        extensionContext.enableSettingsByFolder.find(([_, s]) =>
+          s.enable || s.enablePaths?.length
+        ))
     ) {
       this.#inner.show();
     } else {

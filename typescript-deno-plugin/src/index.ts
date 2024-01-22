@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import type { PluginSettings, Settings } from "../../client/src/shared_types";
+import type { PluginSettings } from "../../client/src/shared_types";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
 import * as path from "path";
 import * as os from "os";
@@ -28,53 +28,6 @@ type CallIfDisabledFunction = <T extends ts.LanguageService, J extends keyof T>(
  * each workspace. */
 const projectSettings = new Map<string, PluginSettings>();
 
-/** The default settings to assume to be true until a configuration message is
- * received from the extension. */
-const defaultSettings: Settings = {
-  cache: null,
-  cacheOnSave: false,
-  certificateStores: null,
-  enable: null,
-  disablePaths: [],
-  enablePaths: null,
-  codeLens: null,
-  config: null,
-  documentPreloadLimit: null,
-  maxTsServerMemory: null,
-  importMap: null,
-  inlayHints: null,
-  internalDebug: false,
-  internalInspect: false,
-  lint: false,
-  logFile: false,
-  path: null,
-  suggest: {
-    autoImports: true,
-    completeFunctionCalls: false,
-    names: true,
-    paths: true,
-    imports: {
-      autoDiscover: true,
-      hosts: {},
-    },
-  },
-  testing: null,
-  tlsCertificate: null,
-  unsafelyIgnoreCertificateErrors: null,
-  unstable: false,
-};
-
-function updateSettings(
-  project: ts.server.Project,
-  settings: PluginSettings,
-): void {
-  projectSettings.set(project.getProjectName(), settings);
-  // We will update the default settings, which helps ensure that when a plugin
-  // is created or re-created, we can assume what the previous settings where
-  // until told otherwise.
-  Object.assign(defaultSettings, settings.workspace);
-}
-
 class Plugin implements ts.server.PluginModule {
   #project!: ts.server.Project;
   #projectName!: string;
@@ -83,9 +36,14 @@ class Plugin implements ts.server.PluginModule {
   // don't reference a file name
   #denoEnabled(): boolean {
     const pluginSettings = projectSettings.get(this.#projectName);
-    const enable = pluginSettings?.workspace?.enable ?? defaultSettings.enable;
-    const hasDenoConfig = pluginSettings?.hasDenoConfig ?? false;
-    return enable ?? hasDenoConfig;
+    if (!pluginSettings) {
+      return false;
+    }
+    const enable = pluginSettings.enableSettingsUnscoped.enable;
+    if (enable != null) {
+      return enable;
+    }
+    return pluginSettings.scopesWithDenoJson.length != 0;
   }
 
   // determines if a specific filename is Deno enabled or not.
@@ -93,28 +51,30 @@ class Plugin implements ts.server.PluginModule {
     if (process.platform === "win32") {
       fileName = fileName.replace(/\//g, "\\");
     }
-    const settings = projectSettings.get(this.#projectName);
-    if (settings?.pathFilters) {
-      const pathFilter = settings.pathFilters.find(({ workspace }) =>
+    const pluginSettings = projectSettings.get(this.#projectName);
+    if (!pluginSettings) {
+      return false;
+    }
+    const enableSettings =
+      pluginSettings.enableSettingsByFolder.find(([workspace, _]) =>
         pathStartsWith(fileName, workspace)
-      );
-      if (pathFilter) {
-        for (const path of pathFilter.disabled) {
-          if (pathStartsWith(fileName, path)) {
-            return false;
-          }
-        }
-        if (pathFilter?.enabled) {
-          return pathFilter.enabled.some((path) =>
-            pathStartsWith(fileName, path)
-          );
-        }
+      )?.[1] ?? pluginSettings.enableSettingsUnscoped;
+    for (const path of enableSettings.disablePaths) {
+      if (pathStartsWith(fileName, path)) {
+        return false;
       }
     }
-    // TODO(@kitsonk): rework all of this to be more like the workspace folders
-    // used for enabledPaths.
-    return settings?.documents?.[fileName]?.settings.enable ??
-      this.#denoEnabled();
+    if (enableSettings.enablePaths) {
+      return enableSettings.enablePaths.some((path) =>
+        pathStartsWith(fileName, path)
+      );
+    }
+    if (enableSettings.enable != null) {
+      return enableSettings.enable;
+    }
+    return pluginSettings.scopesWithDenoJson.some((scope) =>
+      pathStartsWith(fileName, scope)
+    );
   }
 
   #log = (..._msgs: unknown[]) => {};
@@ -135,7 +95,7 @@ class Plugin implements ts.server.PluginModule {
 
     this.#project = project;
     this.#projectName = project.getProjectName();
-    updateSettings(this.#project, config);
+    projectSettings.set(this.#project.getProjectName(), config);
     setImmediate(() => {
       this.#project.refreshDiagnostics();
     });
@@ -168,8 +128,6 @@ class Plugin implements ts.server.PluginModule {
     };
 
     // This "mutes" diagnostics for things like tsconfig files.
-    // TODO(@kitsonk) refine this logic to look at roots of projects against
-    // the workspace folder enablement
     const projectGetGlobalProjectErrors = this.#project.getGlobalProjectErrors;
     this.#project.getGlobalProjectErrors = () =>
       this.#denoEnabled()
@@ -433,7 +391,7 @@ class Plugin implements ts.server.PluginModule {
     if (this.#loggingEnabled()) {
       this.#log(`onConfigurationChanged(${JSON.stringify(settings)})`);
     }
-    updateSettings(this.#project, settings);
+    projectSettings.set(this.#project.getProjectName(), settings);
     this.#project.refreshDiagnostics();
   }
 }

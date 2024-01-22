@@ -70,9 +70,8 @@ The extension provides several commands:
   > provide a quick fix to fetch and cache those dependencies, which invokes
   > this command for you.
 
-- _Deno: Enable_ - will enabled Deno on the current workspace. Alternatively
-  you can create a `deno.json` or `deno.jsonc` file at the root of your
-  workspace.
+- _Deno: Enable_ - will enable Deno on the current workspace. Alternatively you
+  can create a `deno.json` or `deno.jsonc` file at the root of your workspace.
 - _Deno: Language Server Status_ - displays a page of information about the
   status of the Deno Language Server. Useful when submitting a bug about the
   extension or the language server.
@@ -225,10 +224,11 @@ extension has the following configuration options:
 To see which versions of the Deno CLI are compatible with which versions of this
 extension, consult the following table.
 
-| vscode-deno    | Deno CLI       |
-| -------------- | -------------- |
-| 3.28.0 onwards | 1.37.0 onwards |
-| ? - 3.27.0     | ? - 1.36.4     |
+| vscode-deno     | Deno CLI       |
+| --------------- | -------------- |
+| 3.32.0 onwards  | 1.37.1 onwards |
+| 3.28.0 - 3.31.0 | 1.37.0 onwards |
+| ? - 3.27.0      | ? - 1.36.4     |
 
 Version ranges are inclusive. Incompatibilites prior to 3.27.0 were not tracked.
 

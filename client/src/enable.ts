@@ -3,7 +3,7 @@
 import { ENABLE, ENABLE_PATHS, EXTENSION_NS } from "./constants";
 
 import * as vscode from "vscode";
-import { DenoExtensionContext } from "./types";
+import { DenoExtensionContext, EnableSettings } from "./types";
 
 export interface WorkspaceEnabledInfo {
   folder: vscode.WorkspaceFolder;
@@ -50,6 +50,41 @@ export async function getWorkspacesEnabledInfo() {
   }
 }
 
+export function refreshEnableSettings(extensionContext: DenoExtensionContext) {
+  function getEnableSettings(
+    config: vscode.WorkspaceConfiguration,
+    scope: vscode.Uri | null,
+  ): EnableSettings {
+    const enable = config.get<boolean | null>("enable") ?? null;
+    let enablePaths = null;
+    let disablePaths: string[] = [];
+    if (scope) {
+      enablePaths = config.get<string[] | null>("enablePaths")?.map((p) =>
+        vscode.Uri.joinPath(scope, p).fsPath
+      ) ?? null;
+      disablePaths = config.get<string[]>("disablePaths")?.map((p) =>
+        vscode.Uri.joinPath(scope, p).fsPath
+      ) ?? [];
+    }
+    return { enable, enablePaths, disablePaths };
+  }
+  extensionContext.enableSettingsUnscoped = getEnableSettings(
+    vscode.workspace.getConfiguration(EXTENSION_NS),
+    vscode.workspace.workspaceFolders?.[0]?.uri ?? null,
+  );
+  extensionContext.enableSettingsByFolder = [];
+  const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+  for (const workspaceFolder of workspaceFolders) {
+    extensionContext.enableSettingsByFolder.push([
+      workspaceFolder.uri.fsPath,
+      getEnableSettings(
+        vscode.workspace.getConfiguration(EXTENSION_NS, workspaceFolder),
+        workspaceFolder.uri,
+      ),
+    ]);
+  }
+}
+
 /** Check the current workspace */
 export async function setupCheckConfig(
   extensionContext: DenoExtensionContext,
@@ -59,13 +94,14 @@ export async function setupCheckConfig(
     if (!uri) {
       return;
     }
-    const prev = extensionContext.hasDenoConfig;
-    extensionContext.hasDenoConfig =
+    extensionContext.scopesWithDenoJson = [];
+    if (
       await exists(vscode.Uri.joinPath(uri, "./deno.json")) ||
-      await exists(vscode.Uri.joinPath(uri, "./deno.jsonc"));
-    if (extensionContext.hasDenoConfig !== prev) {
-      extensionContext.tsApi?.refresh();
+      await exists(vscode.Uri.joinPath(uri, "./deno.jsonc"))
+    ) {
+      extensionContext.scopesWithDenoJson.push(uri.fsPath);
     }
+    extensionContext.tsApi?.refresh();
   }
 
   await updateHasDenoConfig();
