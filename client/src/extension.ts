@@ -8,7 +8,7 @@ import {
 } from "./constants";
 import { DenoTextDocumentContentProvider, SCHEME } from "./content_provider";
 import { DenoDebugConfigurationProvider } from "./debug_config_provider";
-import { refreshEnableSettings, setupCheckConfig } from "./enable";
+import { refreshEnableSettings } from "./enable";
 import { DenoStatusBar } from "./status_bar";
 import { activateTaskProvider } from "./tasks";
 import { getTsApi } from "./ts_api";
@@ -175,18 +175,18 @@ export async function activate(
   // Activate the task provider.
   context.subscriptions.push(activateTaskProvider(extensionContext));
 
-  extensionContext.tsApi = getTsApi(() => ({
-    enableSettingsUnscoped: extensionContext.enableSettingsUnscoped,
-    enableSettingsByFolder: extensionContext.enableSettingsByFolder,
-    scopesWithDenoJson: extensionContext.scopesWithDenoJson,
-  }));
+  extensionContext.tsApi = getTsApi(() => {
+    return {
+      enableSettingsUnscoped: extensionContext.enableSettingsUnscoped,
+      enableSettingsByFolder: extensionContext.enableSettingsByFolder,
+      scopesWithDenoJson: Array.from(extensionContext.scopesWithDenoJson ?? []),
+    };
+  });
 
   extensionContext.maxTsServerMemory =
     vscode.workspace.getConfiguration(EXTENSION_NS).get("maxTsServerMemory") ??
       null;
   refreshEnableSettings(extensionContext);
-  extensionContext.scopesWithDenoJson = [];
-  context.subscriptions.push(await setupCheckConfig(extensionContext));
 
   extensionContext.tasksSidebar = registerSidebar(
     extensionContext,
@@ -235,6 +235,10 @@ export function deactivate(): Thenable<void> | undefined {
 
   const client = extensionContext.client;
   extensionContext.client = undefined;
+  for (const disposable of extensionContext.clientSubscriptions ?? []) {
+    disposable.dispose();
+  }
+  extensionContext.clientSubscriptions = undefined;
   extensionContext.statusBar.refresh(extensionContext);
   vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
   return client.stop();

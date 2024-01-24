@@ -27,21 +27,21 @@ interface DenoExperimental {
 
 export interface DenoExtensionContext {
   client: LanguageClient | undefined;
+  clientSubscriptions: { dispose(): unknown }[] | undefined;
   clientOptions: LanguageClientOptions;
   serverInfo: DenoServerInfo | undefined;
   /** The capabilities returned from the server. */
   serverCapabilities:
     | ServerCapabilities<DenoExperimental>
     | undefined;
+  scopesWithDenoJson: Set<string> | undefined;
   statusBar: DenoStatusBar;
-  testController: vscode.TestController | undefined;
   tsApi: TsApi;
   outputChannel: vscode.OutputChannel;
   tasksSidebar: DenoTasksTreeDataProvider;
   maxTsServerMemory: number | null;
   enableSettingsUnscoped: EnableSettings;
   enableSettingsByFolder: [string, EnableSettings][];
-  scopesWithDenoJson: string[];
 }
 
 export interface TestCommandOptions {
@@ -55,4 +55,15 @@ export interface UpgradeAvailable {
 
 export interface DidUpgradeCheckParams {
   upgradeAvailable: UpgradeAvailable | null;
+}
+
+export interface DenoConfigurationChangeEvent {
+  scopeUri: string;
+  fileUri: string;
+  type: "added" | "changed" | "removed";
+  configurationType: "denoJson" | "packageJson";
+}
+
+export interface DidChangeDenoConfigurationParams {
+  changes: DenoConfigurationChangeEvent[];
 }
