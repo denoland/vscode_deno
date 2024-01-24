@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.32.0](https://github.com/denoland/vscode_deno/compare/3.31.0...3.32.0) / 2024.01.24
+
+- chore: default "deno.enablePaths" to null (#1028)
+- feat: remove init workspace command (#1027)
+- feat: accept notifications for subdirectory deno.json files (#1034)
+
 ### [3.31.0](https://github.com/denoland/vscode_deno/compare/3.30.0...3.31.0) / 2023.12.28
 
 - chore: upgrade typescript to 5.0.2 (#1020)
