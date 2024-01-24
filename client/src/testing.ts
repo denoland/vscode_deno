@@ -11,14 +11,13 @@ import {
   testRunCancel,
   testRunProgress,
 } from "./lsp_extensions";
-import type { DenoExtensionContext } from "./types";
-import { assert } from "./util";
 
 import * as vscode from "vscode";
 import { FeatureState, MarkupKind } from "vscode-languageclient/node";
 import type {
   ClientCapabilities,
   DocumentSelector,
+  LanguageClient,
   MarkupContent,
   ServerCapabilities,
   StaticFeature,
@@ -136,19 +135,13 @@ export class DenoTestController implements vscode.Disposable {
   #runCount = 0;
   #runs = new Map<number, vscode.TestRun>();
   #subscriptions: vscode.Disposable[] = [];
-  #testController: vscode.TestController;
 
-  constructor(extensionContext: DenoExtensionContext) {
-    const testController = extensionContext.testController =
-      this
-        .#testController =
-        vscode.tests
-          .createTestController("denoTestController", "Deno");
+  constructor(client: LanguageClient) {
+    const testController = vscode.tests.createTestController(
+      "denoTestController",
+      "Deno",
+    );
     this.#subscriptions.push(testController);
-
-    const { client } = extensionContext;
-    assert(client);
-
     const runHandler = async (
       request: vscode.TestRunRequest,
       cancellation: vscode.CancellationToken,

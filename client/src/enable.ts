@@ -94,12 +94,12 @@ export async function setupCheckConfig(
     if (!uri) {
       return;
     }
-    extensionContext.scopesWithDenoJson = [];
+    extensionContext.scopesWithDenoJson = new Set();
     if (
       await exists(vscode.Uri.joinPath(uri, "./deno.json")) ||
       await exists(vscode.Uri.joinPath(uri, "./deno.jsonc"))
     ) {
-      extensionContext.scopesWithDenoJson.push(uri.fsPath);
+      extensionContext.scopesWithDenoJson.add(uri.fsPath);
     }
     extensionContext.tsApi?.refresh();
   }

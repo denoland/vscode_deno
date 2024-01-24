@@ -14,6 +14,7 @@ import * as tasks from "./tasks";
 import { DenoTestController, TestingFeature } from "./testing";
 import type {
   DenoExtensionContext,
+  DidChangeDenoConfigurationParams,
   DidUpgradeCheckParams,
   TestCommandOptions,
 } from "./types";
@@ -32,7 +33,7 @@ import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type { Location, Position } from "vscode-languageclient/node";
-import { getWorkspacesEnabledInfo } from "./enable";
+import { getWorkspacesEnabledInfo, setupCheckConfig } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
 
 // deno-lint-ignore no-explicit-any
@@ -82,13 +83,15 @@ export function startLanguageServer(
     if (extensionContext.client) {
       const client = extensionContext.client;
       extensionContext.client = undefined;
-      extensionContext.testController?.dispose();
-      extensionContext.testController = undefined;
+      for (const disposable of extensionContext.clientSubscriptions ?? []) {
+        disposable.dispose();
+      }
       extensionContext.statusBar.refresh(extensionContext);
       vscode.commands.executeCommand("setContext", ENABLEMENT_FLAG, false);
       const timeoutMs = 10_000;
       await client.stop(timeoutMs);
     }
+    extensionContext.clientSubscriptions = [];
 
     // Start a new language server
     const command = await getDenoCommandPath();
@@ -151,33 +154,75 @@ export function startLanguageServer(
     );
     extensionContext.serverCapabilities = client.initializeResult?.capabilities;
     extensionContext.statusBar.refresh(extensionContext);
-    context.subscriptions.push(extensionContext.client.onNotification(
-      "deno/didChangeDenoConfiguration",
-      () => {
-        extensionContext.tasksSidebar.refresh();
-      },
-    ));
-    context.subscriptions.push(extensionContext.client.onNotification(
-      "deno/didUpgradeCheck",
-      (params: DidUpgradeCheckParams) => {
-        if (extensionContext.serverInfo) {
-          extensionContext.serverInfo.upgradeAvailable =
-            params.upgradeAvailable;
-          extensionContext.statusBar.refresh(extensionContext);
-        }
-      },
-    ));
+
+    extensionContext.clientSubscriptions.push(
+      extensionContext.client.onNotification(
+        "deno/didUpgradeCheck",
+        (params: DidUpgradeCheckParams) => {
+          if (extensionContext.serverInfo) {
+            extensionContext.serverInfo.upgradeAvailable =
+              params.upgradeAvailable;
+            extensionContext.statusBar.refresh(extensionContext);
+          }
+        },
+      ),
+    );
 
     if (testingFeature.enabled) {
-      context.subscriptions.push(new DenoTestController(extensionContext));
+      extensionContext.clientSubscriptions.push(
+        new DenoTestController(extensionContext.client),
+      );
     }
 
-    context.subscriptions.push(
+    extensionContext.clientSubscriptions.push(
       client.onNotification(
         registryState,
         createRegistryStateHandler(),
       ),
     );
+
+    // TODO(nayeemrmn): LSP version < 1.40.0 don't support the required API for
+    // "deno/didChangeDenoConfiguration". Remove this eventually.
+    if (semver.lt(extensionContext.serverInfo.version, "1.40.0")) {
+      extensionContext.scopesWithDenoJson = new Set();
+      extensionContext.clientSubscriptions.push(
+        extensionContext.client.onNotification(
+          "deno/didChangeDenoConfiguration",
+          () => {
+            extensionContext.tasksSidebar.refresh();
+          },
+        ),
+      );
+      extensionContext.clientSubscriptions.push(
+        await setupCheckConfig(extensionContext),
+      );
+    } else {
+      const scopesWithDenoJson = new Set<string>();
+      extensionContext.scopesWithDenoJson = scopesWithDenoJson;
+      extensionContext.clientSubscriptions.push(
+        extensionContext.client.onNotification(
+          "deno/didChangeDenoConfiguration",
+          ({ changes }: DidChangeDenoConfigurationParams) => {
+            let changedScopes = false;
+            for (const change of changes) {
+              if (change.type == "added") {
+                const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
+                scopesWithDenoJson.add(scopePath);
+                changedScopes = true;
+              } else if (change.type == "removed") {
+                const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
+                scopesWithDenoJson.delete(scopePath);
+                changedScopes = true;
+              }
+            }
+            if (changedScopes) {
+              extensionContext.tsApi?.refresh();
+            }
+            extensionContext.tasksSidebar.refresh();
+          },
+        ),
+      );
+    }
 
     extensionContext.tsApi.refresh();
 
