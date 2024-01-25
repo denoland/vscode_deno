@@ -39,11 +39,13 @@ class Plugin implements ts.server.PluginModule {
     if (!pluginSettings) {
       return false;
     }
-    const enable = pluginSettings.enableSettingsUnscoped.enable;
-    if (enable != null) {
-      return enable;
+    const enableSettingsUnscoped = pluginSettings.enableSettingsUnscoped ??
+      { enable: null, enablePaths: null, disablePaths: [] };
+    const scopesWithDenoJson = pluginSettings.scopesWithDenoJson ?? [];
+    if (enableSettingsUnscoped.enable != null) {
+      return enableSettingsUnscoped.enable;
     }
-    return pluginSettings.scopesWithDenoJson.length != 0;
+    return scopesWithDenoJson.length != 0;
   }
 
   // determines if a specific filename is Deno enabled or not.
@@ -56,9 +58,11 @@ class Plugin implements ts.server.PluginModule {
       return false;
     }
     const enableSettings =
-      pluginSettings.enableSettingsByFolder.find(([workspace, _]) =>
+      pluginSettings.enableSettingsByFolder?.find(([workspace, _]) =>
         pathStartsWith(fileName, workspace)
-      )?.[1] ?? pluginSettings.enableSettingsUnscoped;
+      )?.[1] ?? pluginSettings.enableSettingsUnscoped ??
+        { enable: null, enablePaths: null, disablePaths: [] };
+    const scopesWithDenoJson = pluginSettings.scopesWithDenoJson ?? [];
     for (const path of enableSettings.disablePaths) {
       if (pathStartsWith(fileName, path)) {
         return false;
@@ -72,9 +76,7 @@ class Plugin implements ts.server.PluginModule {
     if (enableSettings.enable != null) {
       return enableSettings.enable;
     }
-    return pluginSettings.scopesWithDenoJson.some((scope) =>
-      pathStartsWith(fileName, scope)
-    );
+    return scopesWithDenoJson.some((scope) => pathStartsWith(fileName, scope));
   }
 
   #log = (..._msgs: unknown[]) => {};
