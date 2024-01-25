@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.33.0](https://github.com/denoland/vscode_deno/compare/3.32.0...3.33.0) / 2024.01.24
+
+- feat: add workspace and jsr fields to lockfile schema (#1038)
+
 ### [3.32.0](https://github.com/denoland/vscode_deno/compare/3.31.0...3.32.0) / 2024.01.24
 
 - chore: default "deno.enablePaths" to null (#1028)
