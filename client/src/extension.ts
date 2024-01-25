@@ -175,6 +175,11 @@ export async function activate(
   // Activate the task provider.
   context.subscriptions.push(activateTaskProvider(extensionContext));
 
+  extensionContext.maxTsServerMemory =
+    vscode.workspace.getConfiguration(EXTENSION_NS).get("maxTsServerMemory") ??
+      null;
+  refreshEnableSettings(extensionContext);
+
   extensionContext.tsApi = getTsApi(() => {
     return {
       enableSettingsUnscoped: extensionContext.enableSettingsUnscoped,
@@ -182,11 +187,6 @@ export async function activate(
       scopesWithDenoJson: Array.from(extensionContext.scopesWithDenoJson ?? []),
     };
   });
-
-  extensionContext.maxTsServerMemory =
-    vscode.workspace.getConfiguration(EXTENSION_NS).get("maxTsServerMemory") ??
-      null;
-  refreshEnableSettings(extensionContext);
 
   extensionContext.tasksSidebar = registerSidebar(
     extensionContext,
