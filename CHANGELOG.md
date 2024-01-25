@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.33.2](https://github.com/denoland/vscode_deno/compare/3.33.1...3.33.2) / 2024.01.25
+
+- fix: treat enable settings as optional in plugin (#1046)
+
 ### [3.33.1](https://github.com/denoland/vscode_deno/compare/3.33.0...3.33.1) / 2024.01.25
 
 - fix: refresh enable settings before initializing plugin (#1044)
