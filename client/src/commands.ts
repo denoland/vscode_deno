@@ -205,6 +205,9 @@ export function startLanguageServer(
           ({ changes }: DidChangeDenoConfigurationParams) => {
             let changedScopes = false;
             for (const change of changes) {
+              if (change.configurationType != "denoJson") {
+                continue;
+              }
               if (change.type == "added") {
                 const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
                 scopesWithDenoJson.add(scopePath);
