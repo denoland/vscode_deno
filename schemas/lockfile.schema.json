@@ -98,7 +98,7 @@
       }
     },
     "workspace": {
-      "$ref": "#/definitions/workspaceMemberConfigContent",
+      "type": "object",
       "default": {},
       "properties": {
         "members": {
