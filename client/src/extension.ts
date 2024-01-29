@@ -198,23 +198,15 @@ export async function activate(
     }
   }));
 
-  await commands.startLanguageServer(context, extensionContext)();
-
-  // Register any commands.
   const registerCommand = createRegisterCommand(context);
-  const builtinCommands = await vscode.commands.getCommands();
-  // TODO(nayeemrmn): Change the LSP's invocations of this to
-  // `deno.client.showReferences`. Remove this one eventually.
-  if (!builtinCommands.includes("deno.showReferences")) {
-    registerCommand("deno.showReferences", commands.showReferences);
-  }
   registerCommand("deno.client.showReferences", commands.showReferences);
-  // TODO(nayeemrmn): Change the LSP's invocations of this to
-  // `deno.client.test`. Remove this one eventually.
-  if (!builtinCommands.includes("deno.test")) {
-    registerCommand("deno.test", commands.test);
-  }
+  // TODO(nayeemrmn): LSP versions <= 1.40.2 use this alias. Remove it
+  // eventually.
+  registerCommand("deno.showReferences", commands.showReferences);
   registerCommand("deno.client.test", commands.test);
+  // TODO(nayeemrmn): LSP versions <= 1.40.2 use this alias. Remove it
+  // eventually.
+  registerCommand("deno.test", commands.test);
   registerCommand(
     "deno.client.cacheActiveDocument",
     commands.cacheActiveDocument,
@@ -226,6 +218,8 @@ export async function activate(
   registerCommand("deno.client.enable", commands.enable);
   registerCommand("deno.client.disable", commands.disable);
   registerCommand("deno.client.statusBarClicked", commands.statusBarClicked);
+
+  await commands.startLanguageServer(context, extensionContext)();
 }
 
 export function deactivate(): Thenable<void> | undefined {
