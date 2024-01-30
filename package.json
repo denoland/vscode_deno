@@ -126,6 +126,12 @@
         "description": "Enable the Deno language server via workspace settings. This isn't necessary if your workspace root contains a `deno.json` file."
       },
       {
+        "command": "deno.client.initializeWorkspace",
+        "title": "Initialize Workspace Configuration",
+        "category": "Deno",
+        "description": "Legacy alias for the 'Deno: Enable' command."
+      },
+      {
         "command": "deno.client.disable",
         "title": "Disable",
         "category": "Deno",
