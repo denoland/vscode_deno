@@ -216,6 +216,8 @@ export async function activate(
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
   registerCommand("deno.client.enable", commands.enable);
+  // Legacy alias for `deno.client.enable`.
+  registerCommand("deno.client.initializeWorkspace", commands.enable);
   registerCommand("deno.client.disable", commands.disable);
   registerCommand("deno.client.statusBarClicked", commands.statusBarClicked);
 
