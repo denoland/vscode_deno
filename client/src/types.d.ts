@@ -20,8 +20,8 @@ export interface TsApi {
 }
 
 interface DenoExperimental {
-  /** Support for the `deno/task` request, which returns any tasks that are
-   * defined in configuration files. */
+  /** Support for the `deno/taskDefinitions` request, which returns any tasks
+   * that are defined in configuration files. */
   denoConfigTasks?: boolean;
 }
 

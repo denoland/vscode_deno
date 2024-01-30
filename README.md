@@ -221,14 +221,15 @@ extension has the following configuration options:
 
 ## Compatibility
 
-To see which versions of the Deno CLI are compatible with which versions of this
-extension, consult the following table.
+To see which versions of this extension can be used with each version of the
+Deno CLI, consult the following table.
 
-| vscode-deno     | Deno CLI       |
-| --------------- | -------------- |
-| 3.32.0 onwards  | 1.37.1 onwards |
-| 3.28.0 - 3.31.0 | 1.37.0 onwards |
-| ? - 3.27.0      | ? - 1.36.4     |
+| Deno CLI       | vscode-deno     |
+| -------------- | --------------- |
+| 1.37.2 onwards | TODO onwards    |
+| 1.37.1         | 3.32.0 - 3.33.3 |
+| 1.37.0         | 3.28.0 - 3.31.0 |
+| ? - 1.36.4     | 3.27.0          |
 
 Version ranges are inclusive. Incompatibilites prior to 3.27.0 were not tracked.
 
