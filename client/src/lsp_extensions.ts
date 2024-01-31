@@ -40,7 +40,7 @@ export const task = new RequestType0<
   TaskRequestResponse[] | undefined,
   void
 >(
-  "deno/task",
+  "deno/taskDefinitions",
 );
 
 export interface TestData {

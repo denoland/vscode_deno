@@ -157,11 +157,6 @@ class DenoTaskProvider implements TaskProvider {
       try {
         const configTasks = await client.sendRequest(taskReq);
         for (const { name, detail: command, sourceUri } of configTasks ?? []) {
-          // TODO(nayeemrmn): Deno LSP versions < 1.37.2 doesn't provide the
-          // `sourceUri`. Remove this eventually.
-          if (!sourceUri) {
-            continue;
-          }
           const workspaceFolder = (workspace.workspaceFolders ?? []).find((f) =>
             // NOTE: skipEncoding in Uri.toString(), read more at https://github.com/microsoft/vscode/commit/65cb3397673b922c1b6759d145a3a183feb3ee5d
             sourceUri
