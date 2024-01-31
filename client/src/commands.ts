@@ -417,6 +417,7 @@ export function enable(
   return async () => {
     const config = vscode.workspace.getConfiguration(EXTENSION_NS);
     await config.update("enable", true);
+    vscode.window.showInformationMessage("Deno workspace initialized.");
   };
 }
 
