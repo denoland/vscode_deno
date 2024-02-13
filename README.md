@@ -219,6 +219,11 @@ extension has the following configuration options:
   lenses. This is the equivalent to using `--unstable` on the command line.
   _boolean, default `false`_
 
+There are other settings that will affect whether this extension will be triggered to perform certain actions:
+
+- `javascript.updateImportsOnFileMove.enabled` and
+- `typescript.updateImportsOnFileMove.enabled`: Setting these to either `prompt` or `always` will ensure that the Deno extension steps in for moving or renaming relevant files.
+
 ## Compatibility
 
 To see which versions of this extension can be used with each version of the
