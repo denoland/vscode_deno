@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.34.0](https://github.com/denoland/vscode_deno/compare/3.33.3...3.34.0) / 2024.02.25
+
+- chore: rename "deno/task" request to "deno.taskDefinitions" (#1057)
+- fix: register commands before starting language server (#1056)
+- feat: restore init workspace command as alias (#1059)
+- feat: show a modal dialog after workspace init (#1060)
+
 ### [3.33.3](https://github.com/denoland/vscode_deno/compare/3.33.2...3.33.3) / 2024.01.26
 
 - fix: check configuration type for deno.json detection (#1053)
