@@ -171,7 +171,10 @@
       "title": "Deno",
       "properties": {
         "deno.enable": {
-          "type": "boolean",
+          "type": [
+            "boolean",
+            "null"
+          ],
           "default": null,
           "markdownDescription": "Controls if the Deno Language Server is enabled. When enabled, the extension will disable the built-in VSCode JavaScript and TypeScript language services, and will use the Deno Language Server instead.\n\nIf omitted, your preference will be inferred as true if there is a `deno.json[c]` at your workspace root and false if not.\n\nIf you want to enable only part of your workspace folder, consider using `deno.enablePaths` setting instead.\n\n**Not recommended to be enabled globally.**",
           "scope": "resource",
@@ -495,7 +498,10 @@
           ]
         },
         "deno.internalInspect": {
-          "type": ["boolean", "string"],
+          "type": [
+            "boolean",
+            "string"
+          ],
           "default": false,
           "markdownDescription": "Enables the inspector server for the JS runtime used by the Deno Language Server to host its TS server. Optionally provide an address for the inspector listener e.g. \"127.0.0.1:9222\" (default).",
           "scope": "window",
