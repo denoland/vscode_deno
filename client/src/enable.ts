@@ -83,6 +83,8 @@ export function refreshEnableSettings(extensionContext: DenoExtensionContext) {
       ),
     ]);
   }
+  extensionContext.enableSettingsByFolder.sort();
+  extensionContext.enableSettingsByFolder.reverse();
 }
 
 /** Check the current workspace */
