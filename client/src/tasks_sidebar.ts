@@ -211,6 +211,13 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     subscriptions.push(
       commands.registerCommand("deno.client.runTask", this.#runTask, this),
     );
+    subscriptions.push(
+      commands.registerCommand(
+        "deno.client.runSelectedTask",
+        this.#runSelectedTask,
+        this,
+      ),
+    );
     subscriptions.push(commands.registerCommand(
       "deno.client.debugTask",
       this.#debugTask,
@@ -229,6 +236,45 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
 
   #runTask(task: DenoTask) {
     tasks.executeTask(task.task);
+  }
+
+  async #runSelectedTask() {
+    if (!window.activeTextEditor) {
+      window.showErrorMessage("No active text editor.");
+      return;
+    }
+    const taskDefinitions = readTaskDefinitions(
+      window.activeTextEditor.document,
+    );
+    if (!taskDefinitions) {
+      window.showErrorMessage("Could not read task definitions.");
+      return;
+    }
+    const anchor = window.activeTextEditor.selection.anchor;
+    for (const task of taskDefinitions.tasks) {
+      if (
+        anchor.isAfterOrEqual(task.nameRange.start) &&
+        anchor.isBeforeOrEqual(task.commandRange.end)
+      ) {
+        const sourceUri = window.activeTextEditor.document.uri;
+        const workspaceFolder = (workspace.workspaceFolders ?? []).find((f) =>
+          sourceUri.toString().startsWith(f.uri.toString())
+        ) ?? workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+          window.showErrorMessage("No workspace folder to use as task scope.");
+          return;
+        }
+        await tasks.executeTask(buildDenoConfigTask(
+          workspaceFolder,
+          await getDenoCommandName(),
+          task.name,
+          task.command,
+          sourceUri,
+        ));
+        return;
+      }
+    }
+    window.showErrorMessage("Could not find a Deno task at the selection.");
   }
 
   async #debugTask(task: DenoTask) {
