@@ -145,6 +145,13 @@
         "icon": "$(run)"
       },
       {
+        "command": "deno.client.runSelectedTask",
+        "title": "Run Task",
+        "category": "Deno",
+        "description": "Run the selected Deno task.",
+        "icon": "$(run)"
+      },
+      {
         "command": "deno.client.debugTask",
         "title": "Run Task (Debug)",
         "category": "Deno",
@@ -726,7 +733,7 @@
       ],
       "editor/context": [
         {
-          "command": "deno.client.runTask",
+          "command": "deno.client.runSelectedTask",
           "when": "(resourceFilename == 'deno.json' || resourceFilename == 'deno.jsonc') && resourceScheme == file",
           "group": "navigation@+1"
         }
