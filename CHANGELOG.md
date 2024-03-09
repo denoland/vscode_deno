@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.35.0](https://github.com/denoland/vscode_deno/compare/3.34.0...3.35.0) / 2024.03.09
+
+- fix: explicitly allow null in deno.enable (#1083)
+- fix: sort enable settings by folder (#1086)
+- feat: run task via context menu (#1087)
+
 ### [3.34.0](https://github.com/denoland/vscode_deno/compare/3.33.3...3.34.0) / 2024.02.25
 
 - chore: rename "deno/task" request to "deno.taskDefinitions" (#1057)
