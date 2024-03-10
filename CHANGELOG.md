@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.35.1](https://github.com/denoland/vscode_deno/compare/3.35.0...3.35.1) / 2024.03.10
+
+- ci: add write permission (#1090)
+
 ### [3.35.0](https://github.com/denoland/vscode_deno/compare/3.34.0...3.35.0) / 2024.03.09
 
 - fix: explicitly allow null in deno.enable (#1083)
