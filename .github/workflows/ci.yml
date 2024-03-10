@@ -1,4 +1,6 @@
 name: ci
+permissions:
+  contents: write
 
 on: [push, pull_request]
 
