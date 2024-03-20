@@ -192,7 +192,7 @@
         },
         "deno.cacheOnSave": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "Controls if the extension should cache the active document's dependencies on save.",
           "scope": "resource",
           "examples": [
