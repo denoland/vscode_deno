@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.36.0](https://github.com/denoland/vscode_deno/compare/3.35.1...3.36.0) / 2024.03.27
+
+- chore: enable "deno.cacheOnSave" by default (#1092)
+
 ### [3.35.1](https://github.com/denoland/vscode_deno/compare/3.35.0...3.35.1) / 2024.03.10
 
 - ci: add write permission (#1090)
