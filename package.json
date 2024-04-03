@@ -323,6 +323,16 @@
             1000
           ]
         },
+        "deno.future": {
+          "type": "boolean",
+          "markdownDescription": "Enable breaking features likely to be shipped in Deno 2.0.",
+          "default": false,
+          "scope": "window",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.importMap": {
           "type": "string",
           "default": null,

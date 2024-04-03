@@ -9,9 +9,16 @@ export class DenoDebugConfigurationProvider
   #extensionContext: DenoExtensionContext;
 
   #getEnv() {
-    const cache =
-      this.#extensionContext.clientOptions.initializationOptions().cache;
-    return cache ? { "DENO_DIR": cache } : undefined;
+    const settings = this.#extensionContext.clientOptions
+      .initializationOptions();
+    const env: Record<string, string> = {};
+    if (settings.cache) {
+      env["DENO_DIR"] = settings.cache;
+    }
+    if (settings.future) {
+      env["DENO_FUTURE"] = "1";
+    }
+    return env;
   }
 
   #getAdditionalRuntimeArgs() {
