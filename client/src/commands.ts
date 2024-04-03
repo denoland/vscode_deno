@@ -112,11 +112,16 @@ export function startLanguageServer(
       return;
     }
 
-    const env = {
+    const config = vscode.workspace.getConfiguration(EXTENSION_NS);
+
+    const env: Record<string, string> = {
       ...process.env,
       "DENO_V8_FLAGS": getV8Flags(),
-      "NO_COLOR": true,
+      "NO_COLOR": "1",
     };
+    if (config.get<boolean>("future")) {
+      env["DENO_FUTURE"] = "1";
+    }
 
     const serverOptions: ServerOptions = {
       run: {
@@ -344,6 +349,9 @@ export function test(
     const cacheDir: string | undefined | null = config.get("cache");
     if (cacheDir?.trim()) {
       env["DENO_DIR"] = cacheDir.trim();
+    }
+    if (config.get<boolean>("future")) {
+      env["DENO_FUTURE"] = "1";
     }
     const nameRegex = `/^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$/`;
     const args = ["test", ...testArgs, "--filter", nameRegex, path];

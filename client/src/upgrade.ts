@@ -36,6 +36,9 @@ export async function denoUpgradePromptAndExecute(
   if (cacheDir?.trim()) {
     env["DENO_DIR"] = cacheDir.trim();
   }
+  if (config.get<boolean>("future")) {
+    env["DENO_FUTURE"] = "1";
+  }
   const definition: tasks.DenoTaskDefinition = {
     type: tasks.TASK_TYPE,
     command: "upgrade",
