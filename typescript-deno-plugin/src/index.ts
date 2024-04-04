@@ -53,6 +53,7 @@ class Plugin implements ts.server.PluginModule {
     if (process.platform === "win32") {
       fileName = fileName.replace(/\//g, "\\");
     }
+    fileName = fileName.replace(/^\^\/vscode-notebook-cell\/[^/]*/, "");
     const pluginSettings = projectSettings.get(this.#projectName);
     if (!pluginSettings) {
       return false;
