@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.37.0](https://github.com/denoland/vscode_deno/compare/3.36.0...3.37.0) / 2024.04.12
+
+- fix: normalize notebook cell filename in plugin (#1103)
+- feat: add "deno.future" setting (#1101)
+
 ### [3.36.0](https://github.com/denoland/vscode_deno/compare/3.35.1...3.36.0) / 2024.03.27
 
 - chore: enable "deno.cacheOnSave" by default (#1092)
