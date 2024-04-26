@@ -93,6 +93,10 @@ export function startLanguageServer(
     }
     extensionContext.clientSubscriptions = [];
 
+    if (isDenoDisabledCompletely()) {
+      return;
+    }
+
     // Start a new language server
     const command = await getDenoCommandPath();
     if (command == null) {
@@ -437,4 +441,22 @@ export function disable(
     const config = vscode.workspace.getConfiguration(EXTENSION_NS);
     await config.update("enable", false);
   };
+}
+
+function isDenoDisabledCompletely(): boolean {
+  function isScopeDisabled(config: vscode.WorkspaceConfiguration): boolean {
+    const enable = config.get<boolean | null>("enable") ?? null;
+    const enablePaths = config.get<string[] | null>("enablePaths") ?? null;
+    if (enablePaths && enablePaths.length == 0) {
+      return true;
+    }
+    return enable === false && enablePaths == null;
+  }
+  const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+  if (workspaceFolders.length == 0) {
+    return isScopeDisabled(vscode.workspace.getConfiguration(EXTENSION_NS));
+  }
+  return workspaceFolders.map((f) =>
+    vscode.workspace.getConfiguration(EXTENSION_NS, f)
+  ).every(isScopeDisabled);
 }
