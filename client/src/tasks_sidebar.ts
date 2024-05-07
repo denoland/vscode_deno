@@ -1,10 +1,10 @@
+import { task as taskReq } from "./lsp_extensions";
 import * as path from "path";
 import {
   commands,
   EventEmitter,
   ExtensionContext,
   Position,
-  ProcessExecution,
   Selection,
   Task,
   TaskProvider,
@@ -25,7 +25,7 @@ import {
   readTaskDefinitions,
 } from "./util";
 import { DenoExtensionContext } from "./types";
-import { task as taskReq } from "./lsp_extensions";
+import { buildDenoConfigTask, TASK_TYPE } from "./tasks";
 
 class Folder extends TreeItem {
   configs: DenoJSON[] = [];
@@ -109,26 +109,6 @@ class DenoTask extends TreeItem {
   }
 }
 
-function buildDenoConfigTask(
-  scope: WorkspaceFolder,
-  process: string,
-  name: string,
-  command: string,
-  sourceUri: Uri,
-): Task {
-  const execution = new ProcessExecution(process, ["task", name]);
-  const task = new Task(
-    { type: "denoTasks", name, command, sourceUri },
-    scope,
-    name,
-    "deno task",
-    execution,
-    ["$deno"],
-  );
-  task.detail = command;
-  return task;
-}
-
 class NoScripts extends TreeItem {
   constructor(message: string) {
     super(message, TreeItemCollapsibleState.None);
@@ -144,47 +124,45 @@ class DenoTaskProvider implements TaskProvider {
   }
 
   async provideTasks(): Promise<Task[]> {
-    const tasks: Task[] = [];
-
     const process = await getDenoCommandName();
-
-    // we retrieve config tasks from the language server, if the language server
-    // supports the capability
     const client = this.#extensionContext.client;
     const supportsConfigTasks = this.#extensionContext.serverCapabilities
       ?.experimental?.denoConfigTasks;
-    if (client && supportsConfigTasks) {
-      try {
-        const configTasks = await client.sendRequest(taskReq);
-        for (const { name, detail: command, sourceUri } of configTasks ?? []) {
-          const workspaceFolder = (workspace.workspaceFolders ?? []).find((f) =>
-            // NOTE: skipEncoding in Uri.toString(), read more at https://github.com/microsoft/vscode/commit/65cb3397673b922c1b6759d145a3a183feb3ee5d
-            sourceUri
-              .toLocaleLowerCase()
-              .startsWith(f.uri.toString(true).toLocaleLowerCase())
-          );
-          if (!workspaceFolder) {
-            continue;
-          }
-
-          tasks.push(
-            buildDenoConfigTask(
-              workspaceFolder,
-              process,
-              name,
-              command,
-              Uri.parse(sourceUri),
-            ),
-          );
-        }
-      } catch (err) {
-        window.showErrorMessage("Failed to retrieve config tasks.");
-        this.#extensionContext.outputChannel.appendLine(
-          `Error retrieving config tasks: ${err}`,
-        );
-      }
+    if (!client || !supportsConfigTasks) {
+      return [];
     }
-
+    const tasks = [];
+    try {
+      const configTasks = await client.sendRequest(taskReq);
+      for (const configTask of configTasks ?? []) {
+        const workspaceFolders = Array.from(
+          workspace.workspaceFolders ?? [],
+        );
+        workspaceFolders.reverse();
+        const workspaceFolder = workspaceFolders.find((f) =>
+          // NOTE: skipEncoding in Uri.toString(), read more at https://github.com/microsoft/vscode/commit/65cb3397673b922c1b6759d145a3a183feb3ee5d
+          configTask.sourceUri
+            .toLocaleLowerCase()
+            .startsWith(f.uri.toString(true).toLocaleLowerCase())
+        );
+        if (!workspaceFolder) {
+          continue;
+        }
+        const task = buildDenoConfigTask(
+          workspaceFolder,
+          process,
+          configTask.name,
+          configTask.command ?? configTask.detail,
+          Uri.parse(configTask.sourceUri),
+        );
+        tasks.push(task);
+      }
+    } catch (err) {
+      window.showErrorMessage("Failed to retrieve config tasks.");
+      this.#extensionContext.outputChannel.appendLine(
+        `Error retrieving config tasks: ${err}`,
+      );
+    }
     return tasks;
   }
 
@@ -198,16 +176,13 @@ type TaskTree = Folder[] | DenoJSON[] | NoScripts[];
 
 export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
   #taskTree: TaskTree | null = null;
-  #extensionContext: DenoExtensionContext;
   #onDidChangeTreeData = new EventEmitter<TreeItem | null>();
   readonly onDidChangeTreeData = this.#onDidChangeTreeData.event;
 
   constructor(
-    context: DenoExtensionContext,
     public taskProvider: DenoTaskProvider,
     subscriptions: ExtensionContext["subscriptions"],
   ) {
-    this.#extensionContext = context;
     subscriptions.push(
       commands.registerCommand("deno.client.runTask", this.#runTask, this),
     );
@@ -401,10 +376,11 @@ export function registerSidebar(
   if (!workspace.workspaceFolders) return;
 
   const taskProvider = new DenoTaskProvider(context);
-  subscriptions.push(tasks.registerTaskProvider("denoTasks", taskProvider));
+  subscriptions.push(
+    tasks.registerTaskProvider(TASK_TYPE, taskProvider),
+  );
 
   const treeDataProvider = new DenoTasksTreeDataProvider(
-    context,
     taskProvider,
     subscriptions,
   );

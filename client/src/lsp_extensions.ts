@@ -30,6 +30,9 @@ export const registryState = new NotificationType<RegistryStateParams>(
 
 export interface TaskRequestResponse {
   name: string;
+  // TODO(nayeemrmn): `detail` is being renamed to `command`. Eventually update
+  // the server's serialization of this field to `command` and remove `detail`.
+  command: string | null;
   detail: string;
   sourceUri: string;
 }
