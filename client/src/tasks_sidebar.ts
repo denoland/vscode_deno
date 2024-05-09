@@ -141,6 +141,7 @@ class DenoTaskProvider implements TaskProvider {
         workspaceFolders.reverse();
         const workspaceFolder = workspaceFolders.find((f) =>
           // NOTE: skipEncoding in Uri.toString(), read more at https://github.com/microsoft/vscode/commit/65cb3397673b922c1b6759d145a3a183feb3ee5d
+          // See https://github.com/denoland/vscode_deno/issues/991#issuecomment-1825340906.
           configTask.sourceUri
             .toLocaleLowerCase()
             .startsWith(f.uri.toString(true).toLocaleLowerCase())
