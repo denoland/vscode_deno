@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { task as taskReq } from "./lsp_extensions";
+import * as path from "path";
 import type { DenoExtensionContext } from "./types";
 import { getDenoCommandName, isWorkspaceFolder } from "./util";
 
@@ -8,7 +8,6 @@ import * as vscode from "vscode";
 
 export const TASK_TYPE = "deno";
 export const TASK_SOURCE = "deno";
-export const TASK_CONFIG_SOURCE = "deno task";
 
 interface DenoConfigTaskDefinition extends vscode.TaskDefinition {
   name: string;
@@ -46,23 +45,37 @@ export function buildDenoTask(
   );
 }
 
-function buildDenoConfigTask(
+export function buildDenoConfigTask(
   scope: vscode.WorkspaceFolder,
   process: string,
   name: string,
-  detail?: string,
+  command: string | undefined,
+  sourceUri?: vscode.Uri,
 ): vscode.Task {
-  const execution = new vscode.ProcessExecution(process, ["task", name]);
-
+  const args = [];
+  if (
+    sourceUri &&
+    vscode.Uri.joinPath(sourceUri, "..").toString() != scope.uri.toString()
+  ) {
+    const configPath = path.relative(scope.uri.fsPath, sourceUri.fsPath);
+    args.push("-c", configPath);
+  }
+  args.push(name);
   const task = new vscode.Task(
-    { type: TASK_TYPE, name, detail },
+    {
+      type: TASK_TYPE,
+      name: name,
+      command: "task",
+      args,
+      sourceUri,
+    },
     scope,
     name,
-    TASK_CONFIG_SOURCE,
-    execution,
+    TASK_SOURCE,
+    new vscode.ProcessExecution(process, ["task", ...args]),
     ["$deno"],
   );
-  task.detail = detail;
+  task.detail = `$ ${command}`;
   return task;
 }
 
@@ -131,31 +144,6 @@ class DenoTaskProvider implements vscode.TaskProvider {
         );
         task.group = group;
         tasks.push(task);
-      }
-    }
-
-    // we retrieve config tasks from the language server, if the language server
-    // supports the capability
-    const client = this.#extensionContext.client;
-    const supportsConfigTasks = this.#extensionContext.serverCapabilities
-      ?.experimental?.denoConfigTasks;
-    if (client && supportsConfigTasks) {
-      try {
-        const configTasks = await client.sendRequest(taskReq);
-        for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
-          if (configTasks) {
-            for (const { name, detail } of configTasks) {
-              tasks.push(
-                buildDenoConfigTask(workspaceFolder, process, name, detail),
-              );
-            }
-          }
-        }
-      } catch (err) {
-        vscode.window.showErrorMessage("Failed to retrieve config tasks.");
-        this.#extensionContext.outputChannel.appendLine(
-          `Error retrieving config tasks: ${err}`,
-        );
       }
     }
 
