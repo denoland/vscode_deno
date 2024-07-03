@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.38.0](https://github.com/denoland/vscode_deno/compare/3.37.1...3.38.0) / 2024.07.03
+
+- feat: "deno.env" and "deno.envFile" settings (#1128)
+
 ### [3.37.1](https://github.com/denoland/vscode_deno/compare/3.37.0...3.37.1) / 2024.05.09
 
 - fix: handle nested config files in tasks sidebar (#1111)
