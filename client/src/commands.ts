@@ -29,12 +29,15 @@ import { registryState } from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
 
+import * as dotenv from "dotenv";
 import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type { Location, Position } from "vscode-languageclient/node";
 import { getWorkspacesEnabledInfo, setupCheckConfig } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
+import { join } from "path";
+import { readFileSync } from "fs";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -118,14 +121,34 @@ export function startLanguageServer(
 
     const config = vscode.workspace.getConfiguration(EXTENSION_NS);
 
-    const env: Record<string, string> = {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    const env: Record<string, string | undefined> = {
       ...process.env,
-      "DENO_V8_FLAGS": getV8Flags(),
-      "NO_COLOR": "1",
     };
+    const denoEnvFile = config.get<string>("envFile");
+    if (denoEnvFile) {
+      if (workspaceFolder) {
+        const denoEnvPath = join(workspaceFolder.uri.fsPath, denoEnvFile);
+        try {
+          const content = readFileSync(denoEnvPath, { encoding: "utf8" });
+          const parsed = dotenv.parse(content);
+          Object.assign(env, parsed);
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            `Could not read env file "${denoEnvPath}": ${error}`,
+          );
+        }
+      }
+    }
+    const denoEnv = config.get<Record<string, string>>("env");
+    if (denoEnv) {
+      Object.assign(env, denoEnv);
+    }
     if (config.get<boolean>("future")) {
       env["DENO_FUTURE"] = "1";
     }
+    env["NO_COLOR"] = "1";
+    env["DENO_V8_FLAGS"] = getV8Flags();
 
     const serverOptions: ServerOptions = {
       run: {
@@ -349,7 +372,27 @@ export function test(
         testArgs.push("--import-map", importMap.trim());
       }
     }
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     const env = {} as Record<string, string>;
+    const denoEnvFile = config.get<string>("envFile");
+    if (denoEnvFile) {
+      if (workspaceFolder) {
+        const denoEnvPath = join(workspaceFolder.uri.fsPath, denoEnvFile);
+        try {
+          const content = readFileSync(denoEnvPath, { encoding: "utf8" });
+          const parsed = dotenv.parse(content);
+          Object.assign(env, parsed);
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            `Could not read env file "${denoEnvPath}": ${error}`,
+          );
+        }
+      }
+    }
+    const denoEnv = config.get<Record<string, string>>("env");
+    if (denoEnv) {
+      Object.assign(env, denoEnv);
+    }
     const cacheDir: string | undefined | null = config.get("cache");
     if (cacheDir?.trim()) {
       env["DENO_DIR"] = cacheDir.trim();
@@ -367,11 +410,10 @@ export function test(
       env,
     };
 
-    assert(vscode.workspace.workspaceFolders);
-    const target = vscode.workspace.workspaceFolders[0];
+    assert(workspaceFolder);
     const denoCommand = await getDenoCommandName();
     const task = tasks.buildDenoTask(
-      target,
+      workspaceFolder,
       denoCommand,
       definition,
       `test "${name}"`,
@@ -389,7 +431,7 @@ export function test(
     const createdTask = await vscode.tasks.executeTask(task);
 
     if (options?.inspect) {
-      await vscode.debug.startDebugging(target, {
+      await vscode.debug.startDebugging(workspaceFolder, {
         name,
         request: "attach",
         type: "node",
