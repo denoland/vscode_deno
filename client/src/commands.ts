@@ -135,7 +135,7 @@ export function startLanguageServer(
           Object.assign(env, parsed);
         } catch (error) {
           vscode.window.showErrorMessage(
-            `Could not read env file "${denoEnvPath}": ${process.cwd()} ${error}`,
+            `Could not read env file "${denoEnvPath}": ${error}`,
           );
         }
       }
@@ -384,7 +384,7 @@ export function test(
           Object.assign(env, parsed);
         } catch (error) {
           vscode.window.showErrorMessage(
-            `Could not read env file "${denoEnvPath}": ${process.cwd()} ${error}`,
+            `Could not read env file "${denoEnvPath}": ${error}`,
           );
         }
       }
