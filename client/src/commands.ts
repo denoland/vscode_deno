@@ -263,9 +263,7 @@ export function startLanguageServer(
 
     if (
       semver.valid(extensionContext.serverInfo.version) &&
-      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER, {
-        includePrerelease: true,
-      })
+      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER)
     ) {
       notifyServerSemver(extensionContext.serverInfo.version);
     } else {
