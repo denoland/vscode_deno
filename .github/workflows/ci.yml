@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: "15.14.0"
+          node-version: "20.16.0"
 
       - name: Get npm cache directory
         id: npm-cache
