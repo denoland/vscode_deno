@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VSCE_COMMAND: ${{ 'vsce@1.99.0' }}
+      VSCE_COMMAND: ${{ '@vscode/vsce@1.99.0' }}
     name: ci
     steps:
       - name: Checkout
