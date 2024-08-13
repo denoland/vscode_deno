@@ -8,11 +8,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VSCE_COMMAND: ${{ '@vscode/vsce@2.31.1' }}
+      VSCE_COMMAND: ${{ '@vscode/vsce@2.31.0' }}
     name: ci
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v1
@@ -24,7 +24,7 @@ jobs:
         run: |
           echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
