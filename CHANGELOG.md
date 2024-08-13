@@ -5,7 +5,7 @@ Releases of the extension can be downloaded from
 
 ### [3.38.2](https://github.com/denoland/vscode_deno/compare/3.38.1...3.38.2) / 2024.08.13
 
-- fix: downgrade vsce to 2.31.0 (#1147)
+- fix: downgrade vsce to 2.31.0 to fix broken imports (#1147)
 
 ### [3.38.1](https://github.com/denoland/vscode_deno/compare/3.38.0...3.38.1) / 2024.08.13
 
