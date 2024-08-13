@@ -8,6 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      # WARNING: Test extension with packaged .vsix whenever upgrading vsce
       VSCE_COMMAND: ${{ '@vscode/vsce@2.31.0' }}
     name: ci
     steps:
