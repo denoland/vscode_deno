@@ -30,7 +30,6 @@ import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
 
 import * as dotenv from "dotenv";
-import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type { Location, Position } from "vscode-languageclient/node";
@@ -39,6 +38,7 @@ import { denoUpgradePromptAndExecute } from "./upgrade";
 import { join } from "path";
 import { readFileSync } from "fs";
 import * as process from "process";
+import { semver } from "./semver";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -261,9 +261,7 @@ export function startLanguageServer(
 
     if (
       semver.valid(extensionContext.serverInfo.version) &&
-      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER, {
-        includePrerelease: true,
-      })
+      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER)
     ) {
       notifyServerSemver(extensionContext.serverInfo.version);
     } else {

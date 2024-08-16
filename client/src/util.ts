@@ -6,7 +6,6 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as process from "process";
-import * as semver from "semver";
 import {
   Location,
   Position,
@@ -16,6 +15,7 @@ import {
   WorkspaceFolder,
 } from "vscode";
 import { JSONVisitor, visit } from "jsonc-parser/lib/esm/main.js";
+import { semver } from "./semver";
 
 /** Assert that the condition is "truthy", otherwise throw. */
 export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
