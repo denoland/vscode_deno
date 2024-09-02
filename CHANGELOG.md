@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.39.0](https://github.com/denoland/vscode_deno/compare/3.38.2...3.39.0) / 2024.09.02
+
+- chore: sync html/css/yaml documents with the lsp (#1154)
+
 ### [3.38.2](https://github.com/denoland/vscode_deno/compare/3.38.1...3.38.2) / 2024.08.13
 
 - fix: downgrade vsce to 2.31.0 to fix broken imports (#1147)
