@@ -3,7 +3,9 @@
 import type { PluginSettings } from "../../client/src/shared_types";
 import type * as ts from "../node_modules/typescript/lib/tsserverlibrary";
 import * as path from "path";
+import * as process from "process";
 import * as os from "os";
+import { setImmediate } from "timers";
 import * as util from "util";
 
 /** Extract the return type from a maybe function. */

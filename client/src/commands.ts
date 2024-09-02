@@ -38,6 +38,7 @@ import { getWorkspacesEnabledInfo, setupCheckConfig } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
 import { join } from "path";
 import { readFileSync } from "fs";
+import * as process from "process";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
