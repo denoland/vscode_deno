@@ -138,8 +138,12 @@ export async function activate(
     },
     diagnosticCollectionName: "deno",
     initializationOptions: () => {
+      const denoConfiguration = vscode.workspace.getConfiguration().get(
+        EXTENSION_NS,
+      ) as Record<string, unknown>;
+      commands.transformDenoConfiguration(extensionContext, denoConfiguration);
       return {
-        ...vscode.workspace.getConfiguration().get(EXTENSION_NS),
+        ...denoConfiguration,
         javascript: vscode.workspace.getConfiguration().get("javascript"),
         typescript: vscode.workspace.getConfiguration().get("typescript"),
         enableBuiltinCommands: true,

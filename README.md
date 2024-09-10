@@ -224,12 +224,13 @@ extension has the following configuration options:
 To see which versions of this extension can be used with each version of the
 Deno CLI, consult the following table.
 
-| Deno CLI       | vscode-deno     |
-| -------------- | --------------- |
-| 1.37.2 onwards | 3.34.0 onwards  |
-| 1.37.1         | 3.32.0 - 3.33.3 |
-| 1.37.0         | 3.28.0 - 3.31.0 |
-| ? - 1.36.4     | 3.27.0          |
+| Deno CLI        | vscode-deno     |
+| --------------- | --------------- |
+| 1.40.0 onwards  | TODO onwards    |
+| 1.37.2 - 1.39.4 | 3.34.0 - 3.39.0 |
+| 1.37.1          | 3.32.0 - 3.33.3 |
+| 1.37.0          | 3.28.0 - 3.31.0 |
+| ? - 1.36.4      | 3.27.0          |
 
 Version ranges are inclusive. Incompatibilites prior to 3.27.0 were not tracked.
 

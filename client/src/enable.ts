@@ -87,49 +87,6 @@ export function refreshEnableSettings(extensionContext: DenoExtensionContext) {
   extensionContext.enableSettingsByFolder.reverse();
 }
 
-/** Check the current workspace */
-export async function setupCheckConfig(
-  extensionContext: DenoExtensionContext,
-): Promise<vscode.Disposable> {
-  async function updateHasDenoConfig() {
-    const uri = vscode.workspace.workspaceFolders?.[0]?.uri;
-    if (!uri) {
-      return;
-    }
-    extensionContext.scopesWithDenoJson = new Set();
-    if (
-      await exists(vscode.Uri.joinPath(uri, "./deno.json")) ||
-      await exists(vscode.Uri.joinPath(uri, "./deno.jsonc"))
-    ) {
-      extensionContext.scopesWithDenoJson.add(uri.fsPath);
-    }
-    extensionContext.tsApi?.refresh();
-  }
-
-  await updateHasDenoConfig();
-
-  const subscriptions: vscode.Disposable[] = [];
-  // create a file watcher, so if a config file is added to the workspace we
-  // will check enablement
-  const configFileWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/deno.{json,jsonc}",
-    false,
-    true,
-    false,
-  );
-  subscriptions.push(configFileWatcher);
-  subscriptions.push(configFileWatcher.onDidCreate(updateHasDenoConfig));
-  subscriptions.push(configFileWatcher.onDidDelete(updateHasDenoConfig));
-
-  return {
-    dispose() {
-      for (const disposable of subscriptions) {
-        disposable.dispose();
-      }
-    },
-  };
-}
-
 async function exists(uri: vscode.Uri): Promise<boolean> {
   try {
     await vscode.workspace.fs.stat(uri);

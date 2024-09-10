@@ -26,8 +26,9 @@ export async function denoUpgradePromptAndExecute(
     return;
   }
   const args = ["upgrade"];
-  if (config.get("unstable")) {
-    args.push("--unstable");
+  const unstable = config.get("unstable") as string[] ?? [];
+  for (const unstableFeature of unstable) {
+    args.push(`--${unstableFeature}`);
   }
   if (isCanary) {
     args.push("--canary");
