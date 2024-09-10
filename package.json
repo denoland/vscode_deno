@@ -508,14 +508,13 @@
           "scope": "window"
         },
         "deno.unstable": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Controls if tests will be run with the the `--unstable` flag when running tests via the explorer.\n\n**Not recommended to be enabled globally.**",
-          "scope": "resource",
-          "examples": [
-            true,
-            false
-          ]
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Controls which `--unstable-*` features tests will be run with when running them via the explorer.\n\n**Not recommended to be enabled globally.**",
+          "scope": "resource"
         },
         "deno.lint": {
           "type": "boolean",

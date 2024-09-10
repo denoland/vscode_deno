@@ -34,7 +34,7 @@ import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type { Location, Position } from "vscode-languageclient/node";
-import { getWorkspacesEnabledInfo, setupCheckConfig } from "./enable";
+import { getWorkspacesEnabledInfo } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
 import { join } from "path";
 import { readFileSync } from "fs";
@@ -171,6 +171,20 @@ export function startLanguageServer(
       serverOptions,
       {
         outputChannel: extensionContext.outputChannel,
+        middleware: {
+          workspace: {
+            configuration: (params, token, next) => {
+              const response = next(params, token) as Record<string, unknown>[];
+              for (let i = 0; i < response.length; i++) {
+                const item = params.items[i];
+                if (item.section == "deno") {
+                  transformDenoConfiguration(extensionContext, response[i]);
+                }
+              }
+              return response;
+            },
+          },
+        },
         ...extensionContext.clientOptions,
       },
     );
@@ -214,51 +228,34 @@ export function startLanguageServer(
       ),
     );
 
-    // TODO(nayeemrmn): LSP version < 1.40.0 don't support the required API for
-    // "deno/didChangeDenoConfiguration". Remove this eventually.
-    if (semver.lt(extensionContext.serverInfo.version, "1.40.0")) {
-      extensionContext.scopesWithDenoJson = new Set();
-      extensionContext.clientSubscriptions.push(
-        extensionContext.client.onNotification(
-          "deno/didChangeDenoConfiguration",
-          () => {
-            extensionContext.tasksSidebar.refresh();
-          },
-        ),
-      );
-      extensionContext.clientSubscriptions.push(
-        await setupCheckConfig(extensionContext),
-      );
-    } else {
-      const scopesWithDenoJson = new Set<string>();
-      extensionContext.scopesWithDenoJson = scopesWithDenoJson;
-      extensionContext.clientSubscriptions.push(
-        extensionContext.client.onNotification(
-          "deno/didChangeDenoConfiguration",
-          ({ changes }: DidChangeDenoConfigurationParams) => {
-            let changedScopes = false;
-            for (const change of changes) {
-              if (change.configurationType != "denoJson") {
-                continue;
-              }
-              if (change.type == "added") {
-                const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
-                scopesWithDenoJson.add(scopePath);
-                changedScopes = true;
-              } else if (change.type == "removed") {
-                const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
-                scopesWithDenoJson.delete(scopePath);
-                changedScopes = true;
-              }
+    const scopesWithDenoJson = new Set<string>();
+    extensionContext.scopesWithDenoJson = scopesWithDenoJson;
+    extensionContext.clientSubscriptions.push(
+      extensionContext.client.onNotification(
+        "deno/didChangeDenoConfiguration",
+        ({ changes }: DidChangeDenoConfigurationParams) => {
+          let changedScopes = false;
+          for (const change of changes) {
+            if (change.configurationType != "denoJson") {
+              continue;
             }
-            if (changedScopes) {
-              extensionContext.tsApi?.refresh();
+            if (change.type == "added") {
+              const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
+              scopesWithDenoJson.add(scopePath);
+              changedScopes = true;
+            } else if (change.type == "removed") {
+              const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
+              scopesWithDenoJson.delete(scopePath);
+              changedScopes = true;
             }
-            extensionContext.tasksSidebar.refresh();
-          },
-        ),
-      );
-    }
+          }
+          if (changedScopes) {
+            extensionContext.tsApi?.refresh();
+          }
+          extensionContext.tasksSidebar.refresh();
+        },
+      ),
+    );
 
     extensionContext.tsApi.refresh();
 
@@ -306,6 +303,20 @@ function notifyServerSemver(serverVersion: string) {
     `The version of Deno language server ("${serverVersion}") does not meet the requirements of the extension ("${SERVER_SEMVER}"). Please update Deno and restart.`,
     "OK",
   );
+}
+
+/** Mutates the `config` parameter. For compatibility currently. */
+export function transformDenoConfiguration(
+  extensionContext: DenoExtensionContext,
+  config: Record<string, unknown>,
+) {
+  // TODO(nayeemrmn): Deno > 2.0.0-rc.1 expects `deno.unstable` as
+  // an array of features. Remove this eventually.
+  if (
+    semver.lte(extensionContext.serverInfo?.version || "1.0.0", "2.0.0-rc.1")
+  ) {
+    config.unstable = !!config.unstable;
+  }
 }
 
 function showWelcomePageIfFirstUse(
@@ -363,8 +374,12 @@ export function test(
     const testArgs: string[] = [
       ...(config.get<string[]>("codeLens.testArgs") ?? []),
     ];
-    if (config.get("unstable")) {
-      testArgs.push("--unstable");
+    const unstable = config.get("unstable") as string[] ?? [];
+    for (const unstableFeature of unstable) {
+      const flag = `--unstable-${unstableFeature}`;
+      if (!testArgs.includes(flag)) {
+        testArgs.push(flag);
+      }
     }
     if (options?.inspect) {
       testArgs.push(getInspectArg(extensionContext.serverInfo?.version));
