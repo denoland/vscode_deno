@@ -376,9 +376,9 @@ export function test(
     ];
     const unstable = config.get("unstable") as string[] ?? [];
     for (const unstableFeature of unstable) {
-      const flag = `--${unstableFeature}`;
+      const flag = `--unstable-${unstableFeature}`;
       if (!testArgs.includes(flag)) {
-        testArgs.push(unstableFeature);
+        testArgs.push(flag);
       }
     }
     if (options?.inspect) {
