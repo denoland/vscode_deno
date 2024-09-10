@@ -226,7 +226,7 @@ Deno CLI, consult the following table.
 
 | Deno CLI        | vscode-deno     |
 | --------------- | --------------- |
-| 1.40.0 onwards  | TODO onwards    |
+| 1.40.0 onwards  | 3.40.0 onwards  |
 | 1.37.2 - 1.39.4 | 3.34.0 - 3.39.0 |
 | 1.37.1          | 3.32.0 - 3.33.3 |
 | 1.37.0          | 3.28.0 - 3.31.0 |
