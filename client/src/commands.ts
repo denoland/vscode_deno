@@ -30,7 +30,6 @@ import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
 
 import * as dotenv from "dotenv";
-import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type { Location, Position } from "vscode-languageclient/node";
@@ -40,6 +39,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as process from "process";
 import * as jsoncParser from "jsonc-parser/lib/esm/main.js";
+import { semver } from "./semver";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -280,9 +280,7 @@ export function startLanguageServer(
 
     if (
       semver.valid(extensionContext.serverInfo.version) &&
-      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER, {
-        includePrerelease: true,
-      })
+      !semver.satisfies(extensionContext.serverInfo.version, SERVER_SEMVER)
     ) {
       notifyServerSemver(extensionContext.serverInfo.version);
     } else {
@@ -359,7 +357,7 @@ function isObject(value: unknown) {
  * For a discovered deno.json file, see if there's an adjacent tsconfig.json.
  * Offer options to either copy over the compiler options from it, or disable
  * the Deno LSP if it contains plugins.
-*/
+ */
 async function maybeShowTsConfigPrompt(
   context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
