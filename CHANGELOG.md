@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.41.0](https://github.com/denoland/vscode_deno/compare/3.40.0...3.41.0) / 2024.09.23
+
+- feat: helper prompts for tsconfig.json compiler options (#1166)
+- feat: use --inspect-wait for prerelease deno (#1150)
+
 ### [3.40.0](https://github.com/denoland/vscode_deno/compare/3.39.0...3.40.0) / 2024.09.10
 
 - feat: unstable setting as list (#1159)
