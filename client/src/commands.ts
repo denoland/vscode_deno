@@ -418,7 +418,7 @@ async function maybeShowTsConfigPrompt(
     }
     const [scopeFolderPath, scopeFolder] = scopeFolderEntry;
     selection = await vscode.window.showInformationMessage(
-      `A tsconfig.json with compiler options was discovered in a Deno-enabled folder (${tsConfigPath}). For projects with compiler plugins, it is recommended to disable the Deno language server if you are seeing errors.`,
+      `A tsconfig.json with compiler options was discovered in a Deno-enabled folder. For projects with compiler plugins, it is recommended to disable the Deno language server if you are seeing errors (${tsConfigPath}).`,
       "Disable Deno LSP",
       "Hide this message",
     );
@@ -460,7 +460,7 @@ async function maybeShowTsConfigPrompt(
       return;
     }
     selection = await vscode.window.showInformationMessage(
-      `A tsconfig.json with compiler options was discovered in a Deno-enabled folder (${tsConfigPath}). Would you like to copy these to your Deno configuration file? Note that only a subset of options are supported.`,
+      `A tsconfig.json with compiler options was discovered in a Deno-enabled folder. Would you like to copy these to your Deno configuration file? Note that only a subset of options are supported (${tsConfigPath}).`,
       "Copy to deno.json[c]",
       "Hide this message",
     );
