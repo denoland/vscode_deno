@@ -227,6 +227,10 @@ export async function activate(
     "deno.client.cacheActiveDocument",
     commands.cacheActiveDocument,
   );
+  registerCommand(
+    "deno.client.clearHiddenPromptStorage",
+    commands.clearHiddenPromptStorage,
+  );
   registerCommand("deno.client.restart", commands.startLanguageServer);
   registerCommand("deno.client.info", commands.info);
   registerCommand("deno.client.status", commands.status);

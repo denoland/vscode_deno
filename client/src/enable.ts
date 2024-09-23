@@ -4,11 +4,52 @@ import { ENABLE, ENABLE_PATHS, EXTENSION_NS } from "./constants";
 
 import * as vscode from "vscode";
 import { DenoExtensionContext, EnableSettings } from "./types";
+import * as os from "os";
+import * as path from "path";
 
 export interface WorkspaceEnabledInfo {
   folder: vscode.WorkspaceFolder;
   enabled: boolean | undefined;
   hasDenoConfig: boolean;
+}
+
+const PARENT_RELATIVE_REGEX = os.platform() === "win32"
+  ? /\.\.(?:[/\\]|$)/
+  : /\.\.(?:\/|$)/;
+
+/** Checks if `parent` is an ancestor of `child`. */
+function pathStartsWith(child: string, parent: string) {
+  if (path.isAbsolute(child) !== path.isAbsolute(parent)) {
+    return false;
+  }
+  const relative = path.relative(parent, child);
+  return !relative.match(PARENT_RELATIVE_REGEX);
+}
+
+export function isPathEnabled(
+  extensionContext: DenoExtensionContext,
+  filePath: string,
+) {
+  const enableSettings =
+    extensionContext.enableSettingsByFolder?.find(([workspace, _]) =>
+      pathStartsWith(filePath, workspace)
+    )?.[1] ?? extensionContext.enableSettingsUnscoped ??
+      { enable: null, enablePaths: null, disablePaths: [] };
+  const scopesWithDenoJson = extensionContext.scopesWithDenoJson ?? new Set();
+  for (const path of enableSettings.disablePaths) {
+    if (pathStartsWith(filePath, path)) {
+      return false;
+    }
+  }
+  if (enableSettings.enablePaths) {
+    return enableSettings.enablePaths.some((p) => pathStartsWith(filePath, p));
+  }
+  if (enableSettings.enable != null) {
+    return enableSettings.enable;
+  }
+  return [...scopesWithDenoJson].some((scope) =>
+    pathStartsWith(filePath, scope)
+  );
 }
 
 export async function getWorkspacesEnabledInfo() {
