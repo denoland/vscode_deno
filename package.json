@@ -47,6 +47,7 @@
     "onCommand:deno.client.welcome",
     "onCommand:deno.client.enable",
     "onCommand:deno.client.disable",
+    "onCommand:deno.client.clearHiddenPromptStorage",
     "onCommand:deno.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
@@ -85,6 +86,13 @@
         "title": "Cache Dependencies",
         "category": "Deno",
         "description": "Cache the active workspace document and its dependencies.",
+        "enablement": "deno:lspReady"
+      },
+      {
+        "command": "deno.client.clearHiddenPromptStorage",
+        "title": "Clear Hidden Prompt Storage",
+        "category": "Deno",
+        "description": "Undo all 'hide this message' actions.",
         "enablement": "deno:lspReady"
       },
       {

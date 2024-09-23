@@ -34,11 +34,12 @@ import * as semver from "semver";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
 import type { Location, Position } from "vscode-languageclient/node";
-import { getWorkspacesEnabledInfo } from "./enable";
+import { getWorkspacesEnabledInfo, isPathEnabled } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
-import { join } from "path";
-import { readFileSync } from "fs";
+import * as fs from "fs";
+import * as path from "path";
 import * as process from "process";
+import * as jsoncParser from "jsonc-parser/lib/esm/main.js";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -63,6 +64,15 @@ export function cacheActiveDocument(
     }, () => {
       return vscode.commands.executeCommand("deno.cache", [uri], uri);
     });
+  };
+}
+
+export function clearHiddenPromptStorage(
+  context: vscode.ExtensionContext,
+  _extensionContext: DenoExtensionContext,
+): Callback {
+  return () => {
+    context.globalState.update("deno.tsConfigPathsWithPromptHidden", []);
   };
 }
 
@@ -129,9 +139,9 @@ export function startLanguageServer(
     const denoEnvFile = config.get<string>("envFile");
     if (denoEnvFile) {
       if (workspaceFolder) {
-        const denoEnvPath = join(workspaceFolder.uri.fsPath, denoEnvFile);
+        const denoEnvPath = path.join(workspaceFolder.uri.fsPath, denoEnvFile);
         try {
-          const content = readFileSync(denoEnvPath, { encoding: "utf8" });
+          const content = fs.readFileSync(denoEnvPath, { encoding: "utf8" });
           const parsed = dotenv.parse(content);
           Object.assign(env, parsed);
         } catch (error) {
@@ -233,8 +243,9 @@ export function startLanguageServer(
     extensionContext.clientSubscriptions.push(
       extensionContext.client.onNotification(
         "deno/didChangeDenoConfiguration",
-        ({ changes }: DidChangeDenoConfigurationParams) => {
+        async ({ changes }: DidChangeDenoConfigurationParams) => {
           let changedScopes = false;
+          const addedDenoJsonUris = [];
           for (const change of changes) {
             if (change.configurationType != "denoJson") {
               continue;
@@ -243,6 +254,7 @@ export function startLanguageServer(
               const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
               scopesWithDenoJson.add(scopePath);
               changedScopes = true;
+              addedDenoJsonUris.push(vscode.Uri.parse(change.fileUri));
             } else if (change.type == "removed") {
               const scopePath = vscode.Uri.parse(change.scopeUri).fsPath;
               scopesWithDenoJson.delete(scopePath);
@@ -253,6 +265,13 @@ export function startLanguageServer(
             extensionContext.tsApi?.refresh();
           }
           extensionContext.tasksSidebar.refresh();
+          for (const addedDenoJsonUri of addedDenoJsonUris) {
+            await maybeShowTsConfigPrompt(
+              context,
+              extensionContext,
+              addedDenoJsonUri,
+            );
+          }
         },
       ),
     );
@@ -332,6 +351,151 @@ function showWelcomePageIfFirstUse(
   }
 }
 
+function isObject(value: unknown) {
+  return value && typeof value == "object" && !Array.isArray(value);
+}
+
+/**
+ * For a discovered deno.json file, see if there's an adjacent tsconfig.json.
+ * Offer options to either copy over the compiler options from it, or disable
+ * the Deno LSP if it contains plugins.
+*/
+async function maybeShowTsConfigPrompt(
+  context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+  denoJsonUri: vscode.Uri,
+) {
+  const denoJsonPath = denoJsonUri.fsPath;
+  if (!isPathEnabled(extensionContext, denoJsonPath)) {
+    return;
+  }
+  const scopePath = path.dirname(denoJsonPath) + path.sep;
+  const tsConfigPath = path.join(scopePath, "tsconfig.json");
+  const tsConfigPathsWithPromptHidden = context.globalState.get<string[]>(
+    "deno.tsConfigPathsWithPromptHidden",
+  ) ?? [];
+  if (tsConfigPathsWithPromptHidden?.includes?.(tsConfigPath)) {
+    return;
+  }
+  let tsConfigContent;
+  try {
+    const tsConfigText = await fs.promises.readFile(tsConfigPath, {
+      encoding: "utf8",
+    });
+    tsConfigContent = jsoncParser.parse(tsConfigText);
+  } catch {
+    return;
+  }
+  const compilerOptions = tsConfigContent?.compilerOptions;
+  if (!isObject(compilerOptions)) {
+    return;
+  }
+  for (const key of UNSUPPORTED_COMMON_COMPILER_OPTIONS) {
+    delete compilerOptions[key];
+  }
+  if (Object.entries(compilerOptions).length == 0) {
+    return;
+  }
+  const plugins = compilerOptions?.plugins;
+  let selection;
+  if (Array.isArray(plugins) && plugins.length) {
+    // This tsconfig.json contains plugins. Prompt to disable the LSP.
+    const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+    let scopeFolderEntry = null;
+    const folderEntries = workspaceFolders.map((f) =>
+      [f.uri.fsPath + path.sep, f] as const
+    );
+    folderEntries.sort();
+    folderEntries.reverse();
+    for (const folderEntry of folderEntries) {
+      if (scopePath.startsWith(folderEntry[0])) {
+        scopeFolderEntry = folderEntry;
+        break;
+      }
+    }
+    if (!scopeFolderEntry) {
+      return;
+    }
+    const [scopeFolderPath, scopeFolder] = scopeFolderEntry;
+    selection = await vscode.window.showInformationMessage(
+      `A tsconfig.json with compiler options was discovered in a Deno-enabled folder (${tsConfigPath}). For projects with compiler plugins, it is recommended to disable the Deno language server if you are seeing errors.`,
+      "Disable Deno LSP",
+      "Hide this message",
+    );
+    if (selection == "Disable Deno LSP") {
+      const config = vscode.workspace.getConfiguration(
+        EXTENSION_NS,
+        scopeFolder,
+      );
+      if (scopePath == scopeFolderPath) {
+        await config.update("enable", false);
+      } else {
+        let disablePaths = config.get<string[]>("disablePaths");
+        if (!Array.isArray(disablePaths)) {
+          disablePaths = [];
+        }
+        const relativeUri = scopePath.substring(scopeFolderPath.length).replace(
+          /\\/g,
+          "/",
+        ).replace(/\/*$/, "");
+        disablePaths.push(relativeUri);
+        await config.update("disablePaths", disablePaths);
+      }
+    }
+  } else {
+    // This tsconfig.json has compiler options which may be copied to a
+    // deno.json. If the deno.json has no compiler options, prompt to copy them
+    // over.
+    let denoJsonText;
+    let denoJsonContent;
+    try {
+      denoJsonText = await fs.promises.readFile(denoJsonPath, {
+        encoding: "utf8",
+      });
+      denoJsonContent = jsoncParser.parse(denoJsonText);
+    } catch {
+      return;
+    }
+    if (!isObject(denoJsonContent) || "compilerOptions" in denoJsonContent) {
+      return;
+    }
+    selection = await vscode.window.showInformationMessage(
+      `A tsconfig.json with compiler options was discovered in a Deno-enabled folder (${tsConfigPath}). Would you like to copy these to your Deno configuration file? Note that only a subset of options are supported.`,
+      "Copy to deno.json[c]",
+      "Hide this message",
+    );
+    if (selection == "Copy to deno.json[c]") {
+      try {
+        const editResult = jsoncParser.modify(
+          denoJsonText,
+          ["compilerOptions"],
+          compilerOptions,
+          { formattingOptions: { insertSpaces: true, tabSize: 2 } },
+        );
+        const newDenoJsonContent = jsoncParser.applyEdits(
+          denoJsonText,
+          editResult,
+        );
+        await fs.promises.writeFile(denoJsonPath, newDenoJsonContent);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Could not modify "${denoJsonPath}": ${error}`,
+        );
+      }
+    }
+  }
+  if (selection == "Hide this message") {
+    const tsConfigPathsWithPromptHidden = context.globalState.get<string[]>(
+      "deno.tsConfigPathsWithPromptHidden",
+    ) ?? [];
+    tsConfigPathsWithPromptHidden?.push?.(tsConfigPath);
+    context.globalState.update(
+      "deno.tsConfigPathsWithPromptHidden",
+      tsConfigPathsWithPromptHidden,
+    );
+  }
+}
+
 export function showReferences(
   _content: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
@@ -369,7 +533,7 @@ export function test(
 ): Callback {
   return async (uriStr: string, name: string, options: TestCommandOptions) => {
     const uri = vscode.Uri.parse(uriStr, true);
-    const path = uri.fsPath;
+    const filePath = uri.fsPath;
     const config = vscode.workspace.getConfiguration(EXTENSION_NS, uri);
     const testArgs: string[] = [
       ...(config.get<string[]>("codeLens.testArgs") ?? []),
@@ -395,9 +559,9 @@ export function test(
     const denoEnvFile = config.get<string>("envFile");
     if (denoEnvFile) {
       if (workspaceFolder) {
-        const denoEnvPath = join(workspaceFolder.uri.fsPath, denoEnvFile);
+        const denoEnvPath = path.join(workspaceFolder.uri.fsPath, denoEnvFile);
         try {
-          const content = readFileSync(denoEnvPath, { encoding: "utf8" });
+          const content = fs.readFileSync(denoEnvPath, { encoding: "utf8" });
           const parsed = dotenv.parse(content);
           Object.assign(env, parsed);
         } catch (error) {
@@ -419,7 +583,7 @@ export function test(
       env["DENO_FUTURE"] = "1";
     }
     const nameRegex = `/^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$/`;
-    const args = ["test", ...testArgs, "--filter", nameRegex, path];
+    const args = ["test", ...testArgs, "--filter", nameRegex, filePath];
 
     const definition: tasks.DenoTaskDefinition = {
       type: tasks.TASK_TYPE,
@@ -520,3 +684,41 @@ function isDenoDisabledCompletely(): boolean {
     vscode.workspace.getConfiguration(EXTENSION_NS, f)
   ).every(isScopeDisabled);
 }
+
+const UNSUPPORTED_COMMON_COMPILER_OPTIONS = [
+  "baseUrl",
+  "composite",
+  "declaration",
+  "declarationDir",
+  "declarationMap",
+  "emitBOM",
+  "emitDeclarationOnly",
+  "emitDecoratorMetadata",
+  "generateCpuProfile",
+  "importHelpers",
+  "incremental",
+  "inlineSourceMap",
+  "inlineSources",
+  "moduleResolution",
+  "newLine",
+  "noEmit",
+  "noEmitHelpers",
+  "noEmitOnError",
+  "outDir",
+  "outFile",
+  "paths",
+  "preserveSymlinks",
+  "preserveWatchOutput",
+  "removeComments",
+  "rootDir",
+  "rootDirs",
+  "skipLibCheck",
+  "sourceMap",
+  "sourceRoot",
+  "stripInternal",
+  "tsBuildInfoFile",
+  "typeRoots",
+  "watch",
+  "watchDirectory",
+  "watchFile",
+];
