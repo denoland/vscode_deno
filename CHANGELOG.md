@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.41.1](https://github.com/denoland/vscode_deno/compare/3.41.0...3.41.1) / 2024.10.07
+
+- chore: log to the output window if disabled completely (#1172)
+
 ### [3.41.0](https://github.com/denoland/vscode_deno/compare/3.40.0...3.41.0) / 2024.09.23
 
 - feat: helper prompts for tsconfig.json compiler options (#1166)
