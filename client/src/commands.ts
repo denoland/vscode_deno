@@ -108,6 +108,9 @@ export function startLanguageServer(
     extensionContext.clientSubscriptions = [];
 
     if (isDenoDisabledCompletely()) {
+      extensionContext.outputChannel.appendLine(
+        'Warning: The Deno language server is explicitly disabled for every directory. If this is not intentional, check your user and workspace settings for entries like `"deno.enable": false` and `"deno.enablePaths": []`.',
+      );
       return;
     }
 
