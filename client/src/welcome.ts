@@ -143,7 +143,7 @@ export class WelcomePanel {
             <p class="Card-title">Getting started with Deno</p>
             <p class="Card-content">
               If you are new to Deno, check out the
-              <a href="https://deno.land/manual/getting_started">getting started
+              <a href="https://docs.deno.com/runtime/">getting started
               section</a> of the Deno manual.
             </p>
           </div>
