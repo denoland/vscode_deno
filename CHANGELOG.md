@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.42.0](https://github.com/denoland/vscode_deno/compare/3.41.1...3.42.0) / 2024.10.13
+
+- feat: lockfile v4 schema (#1182)
+- feat: update icon for Deno 2 (#1175)
+- chore: update links (#1174)
+
 ### [3.41.1](https://github.com/denoland/vscode_deno/compare/3.41.0...3.41.1) / 2024.10.07
 
 - chore: log to the output window if disabled completely (#1172)
