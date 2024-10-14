@@ -16,10 +16,70 @@
     "version": {
       "description": "The version of the lockfile.",
       "type": "string",
-      "default": "3",
+      "default": "4",
       "enum": [
-        "3"
+        "4"
       ]
+    },
+    "specifiers": {
+      "description": "Map of package specifiers to their resolved versions.",
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "type": "string",
+        "description": "Key: specifier. Value: version."
+      }
+    },
+    "jsr": {
+      "type": "object",
+      "description": "Map of jsr package entries to associated info.",
+      "default": {},
+      "additionalProperties": {
+        "type": "object",
+        "description": "Info associated with a jsr package.",
+        "default": {},
+        "properties": {
+          "integrity": {
+            "type": "string",
+            "description": "Hash for integrity checking."
+          },
+          "dependencies": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "npm": {
+      "type": "object",
+      "description": "Map of npm package entries to associated info.",
+      "default": {},
+      "additionalProperties": {
+        "type": "object",
+        "description": "Info associated with a npm package.",
+        "default": {},
+        "properties": {
+          "integrity": {
+            "type": "string",
+            "description": "Hash for integrity checking."
+          },
+          "dependencies": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "redirects": {
+      "description": "Map of redirected URLs.",
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "type": "string",
+        "description": "Key: redirected URL. Value: destination."
+      }
     },
     "remote": {
       "description": "A map of remote URLs to their respective hashes.",
@@ -27,80 +87,35 @@
       "default": {},
       "additionalProperties": {
         "type": "string",
-        "description": "The hash as the value for the remote URL as the key."
-      }
-    },
-    "redirects": {
-      "description": "A map of redirected URLs.",
-      "type": "object",
-      "default": {},
-      "additionalProperties": {
-        "type": "string",
-        "description": "The redirected specifier as the key and the destination as the value."
-      }
-    },
-    "packages": {
-      "description": "Integrity data for package-managed modules imported under custom schemes.",
-      "type": "object",
-      "default": {},
-      "properties": {
-        "specifiers": {
-          "type": "object",
-          "description": "A map of (usually) shortened package specifiers to their full specifier.",
-          "default": {},
-          "additionalProperties": {
-            "type": "string",
-            "description": "The full specifier as the value for the shortened specifier as the key."
-          }
-        },
-        "jsr": {
-          "type": "object",
-          "description": "Mapping between resolved jsr specifiers and their associated info.",
-          "default": {},
-          "additionalProperties": {
-            "type": "object",
-            "description": "Info associated with a jsr module.",
-            "default": {},
-            "properties": {
-              "dependencies": {
-                "type": "array",
-                "items": { "type": "string" },
-                "uniqueItems": true
-              }
-            }
-          }
-        },
-        "npm": {
-          "type": "object",
-          "description": "A map of npm package names and versions to their respective hashes.",
-          "default": {},
-          "additionalProperties": {
-            "type": "object",
-            "description": "The npm package name to information about hashes about itself and dependencies",
-            "default": {},
-            "properties": {
-              "integrity": {
-                "type": "string",
-                "description": "The hash of the npm package itself as well as the name of the hash."
-              },
-              "dependencies": {
-                "type": "object",
-                "default": {},
-                "description": "A map of npm package names to the version and name of the package",
-                "additionalProperties": {
-                  "type": "string",
-                  "description": "The package name as the key to the package name + version as the value."
-                }
-              }
-            }
-          }
-        }
+        "description": "Key: remote URL. Value: hash for integrity checking."
       }
     },
     "workspace": {
       "type": "object",
       "default": {},
       "properties": {
+        "root": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "dependencies": {
+              "type": "array",
+              "items": { "type": "string" },
+              "uniqueItems": true
+            },
+            "packageJson": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "dependencies": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "uniqueItems": true
+                }
+              }
+            }
+          }
+        },
         "members": {
           "type": "object",
           "default": {},
@@ -124,22 +139,6 @@
                   }
                 }
               }
-            }
-          }
-        },
-        "dependencies": {
-          "type": "array",
-          "items": { "type": "string" },
-          "uniqueItems": true
-        },
-        "packageJson": {
-          "type": "object",
-          "default": {},
-          "properties": {
-            "dependencies": {
-              "type": "array",
-              "items": { "type": "string" },
-              "uniqueItems": true
             }
           }
         }
