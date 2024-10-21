@@ -477,6 +477,12 @@
           "markdownDescription": "If enabled, when new hosts/origins are encountered that support import suggestions, you will be prompted to enable or disable it.  Defaults to `true`.",
           "scope": "resource"
         },
+        "deno.trace.server": {
+          "enum": ["messages", "off", "verbose"],
+          "default": "off",
+          "markdownDescription": "Traces the communication between VS Code and the Deno Language Server.",
+          "scope": "window"
+        },
         "deno.suggest.imports.hosts": {
           "type": "object",
           "default": {
