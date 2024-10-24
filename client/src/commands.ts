@@ -655,6 +655,25 @@ export function enable(
     const config = vscode.workspace.getConfiguration(EXTENSION_NS);
     await config.update("enable", true);
     vscode.window.showInformationMessage("Deno workspace initialized.");
+    const tsserverConfig = vscode.workspace.getConfiguration(
+      "typescript.tsserver",
+    );
+    if (tsserverConfig.get<boolean>("experimental.enableProjectDiagnostics")) {
+      try {
+        await tsserverConfig.update(
+          "experimental.enableProjectDiagnostics",
+          false,
+          vscode.ConfigurationTarget.Workspace,
+        );
+        vscode.window.showInformationMessage(
+          'Disabled "typescript.tsserver.experimental.enableProjectDiagnostics" for the workspace. The Deno extension is incompatible with this setting. See: https://github.com/denoland/vscode_deno/issues/437#issuecomment-1720393193.',
+        );
+      } catch {
+        vscode.window.showWarningMessage(
+          'Setting "typescript.tsserver.experimental.enableProjectDiagnostics" is incompatible with the Deno extension. Either disable it in your user settings, or create a workspace and run the "Deno: Enable" command again. See: https://github.com/denoland/vscode_deno/issues/437#issuecomment-1720393193.',
+        );
+      }
+    }
   };
 }
 
