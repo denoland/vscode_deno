@@ -467,16 +467,30 @@ async function maybeShowTsConfigPrompt(
     );
     if (selection == "Copy to deno.json[c]") {
       try {
-        const editResult = jsoncParser.modify(
+        let newDenoJsonContent = jsoncParser.applyEdits(
           denoJsonText,
-          ["compilerOptions"],
-          compilerOptions,
-          { formattingOptions: { insertSpaces: true, tabSize: 2 } },
+          jsoncParser.modify(
+            denoJsonText,
+            ["compilerOptions"],
+            compilerOptions,
+            { formattingOptions: { insertSpaces: true, tabSize: 2 } },
+          ),
         );
-        const newDenoJsonContent = jsoncParser.applyEdits(
-          denoJsonText,
-          editResult,
-        );
+        const unstable = Array.isArray(denoJsonContent.unstable)
+          ? denoJsonContent.unstable as unknown[]
+          : [];
+        if (!unstable.includes("sloppy-imports")) {
+          unstable.push("sloppy-imports");
+          newDenoJsonContent = jsoncParser.applyEdits(
+            newDenoJsonContent,
+            jsoncParser.modify(
+              newDenoJsonContent,
+              ["unstable"],
+              unstable,
+              { formattingOptions: { insertSpaces: true, tabSize: 2 } },
+            ),
+          );
+        }
         await fs.promises.writeFile(denoJsonPath, newDenoJsonContent);
       } catch (error) {
         vscode.window.showErrorMessage(
