@@ -3,6 +3,13 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.43.0](https://github.com/denoland/vscode_deno/compare/3.42.0...3.43.0) / 2024.11.26
+
+- feat: "deno.trace.server" setting (#1189)
+- feat: enable "sloppy-imports" by tsconfig prompt (#1208)
+- feat: disable "enableProjectDiagnostics" on enable (#1191)
+- fix: support task object notation in sidebar (#1214)
+
 ### [3.42.0](https://github.com/denoland/vscode_deno/compare/3.41.1...3.42.0) / 2024.10.13
 
 - feat: lockfile v4 schema (#1182)
