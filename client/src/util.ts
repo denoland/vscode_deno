@@ -8,13 +8,12 @@ import * as path from "path";
 import * as process from "process";
 import {
   Location,
-  Position,
   Range,
   TextDocument,
   workspace,
   WorkspaceFolder,
 } from "vscode";
-import { JSONVisitor, visit } from "jsonc-parser/lib/esm/main.js";
+import * as jsoncParser from "jsonc-parser/lib/esm/main.js";
 import { semver } from "./semver";
 
 /** Assert that the condition is "truthy", otherwise throw. */
@@ -144,68 +143,82 @@ export interface TaskDefinitionRange {
   name: string;
   command: string;
   nameRange: Range;
-  commandRange: Range;
+  valueRange: Range;
 }
 
 export function readTaskDefinitions(
   document: TextDocument,
   content = document.getText(),
 ) {
-  let depth = 0;
-  let start: Position | undefined;
-  let end: Position | undefined;
-  let inTasks = false;
-  let currentTask: { name: string; nameRange: Range } | undefined;
-
-  const tasks: TaskDefinitionRange[] = [];
-  const visitor: JSONVisitor = {
-    onObjectBegin() {
-      depth++;
-    },
-    onObjectEnd(offset) {
-      if (inTasks) {
-        end = document.positionAt(offset);
-        inTasks = false;
-      }
-      depth--;
-    },
-    onLiteralValue(value: unknown, offset: number, length: number) {
-      if (currentTask && typeof value === "string") {
-        tasks.push({
-          ...currentTask,
-          command: value,
-          commandRange: new Range(
-            document.positionAt(offset),
-            document.positionAt(offset + length),
-          ),
-        });
-        currentTask = undefined;
-      }
-    },
-    onObjectProperty(property: string, offset: number, length: number) {
-      if (depth === 1 && property === "tasks") {
-        inTasks = true;
-        start = document.positionAt(offset);
-      } else if (inTasks) {
-        currentTask = {
-          name: property,
-          nameRange: new Range(
-            document.positionAt(offset),
-            document.positionAt(offset + length),
-          ),
-        };
-      }
-    },
-  };
-
-  visit(content, visitor);
-
-  if (start === undefined) {
+  const root = jsoncParser.parseTree(content);
+  if (!root) {
     return undefined;
+  }
+  if (root.type != "object" || !root.children) {
+    return undefined;
+  }
+  const tasksProperty = root.children.find((n) =>
+    n.type == "property" && n.children?.[0]?.value == "tasks"
+  );
+  if (!tasksProperty) {
+    return undefined;
+  }
+  const tasksValue = tasksProperty.children?.[1];
+  if (!tasksValue || tasksValue.type != "object" || !tasksValue.children) {
+    return undefined;
+  }
+  const tasks: TaskDefinitionRange[] = [];
+  for (const taskProperty of tasksValue.children) {
+    const taskKey = taskProperty.children?.[0];
+    if (
+      taskProperty.type != "property" || !taskKey || taskKey.type != "string"
+    ) {
+      continue;
+    }
+    const taskValue = taskProperty.children?.[1];
+    if (!taskValue) {
+      continue;
+    }
+    let command;
+    if (taskValue.type == "string") {
+      command = taskValue.value;
+    } else if (taskValue.type == "object" && taskValue.children) {
+      const commandProperty = taskValue.children.find((n) =>
+        n.type == "property" && n.children?.[0]?.value == "command"
+      );
+      if (!commandProperty) {
+        continue;
+      }
+      const commandValue = commandProperty.children?.[1];
+      if (!commandValue || commandValue.type != "string") {
+        continue;
+      }
+      command = commandValue.value;
+    } else {
+      continue;
+    }
+    tasks.push({
+      name: taskKey.value,
+      nameRange: new Range(
+        document.positionAt(taskKey.offset),
+        document.positionAt(taskKey.offset + taskKey.length),
+      ),
+      command,
+      valueRange: new Range(
+        document.positionAt(taskValue.offset),
+        document.positionAt(taskValue.offset + taskValue.length),
+      ),
+    });
   }
 
   return {
-    location: new Location(document.uri, new Range(start, end ?? start)),
+    location: new Location(
+      document.uri,
+      new Range(
+        document.positionAt(tasksProperty.offset),
+        document.positionAt(tasksProperty.offset + tasksProperty.length),
+      ),
+    ),
     tasks,
   };
 }

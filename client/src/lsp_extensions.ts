@@ -30,8 +30,8 @@ export const registryState = new NotificationType<RegistryStateParams>(
 
 export interface TaskRequestResponse {
   name: string;
-  // TODO(nayeemrmn): `detail` is being renamed to `command`. Eventually update
-  // the server's serialization of this field to `command` and remove `detail`.
+  // TODO(nayeemrmn): `detail` is renamed to `command` for Deno > 2.1.1. Remove
+  // `detail` eventually.
   command: string | null;
   detail: string;
   sourceUri: string;
