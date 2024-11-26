@@ -230,7 +230,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     for (const task of taskDefinitions.tasks) {
       if (
         anchor.isAfterOrEqual(task.nameRange.start) &&
-        anchor.isBeforeOrEqual(task.commandRange.end)
+        anchor.isBeforeOrEqual(task.valueRange.end)
       ) {
         const sourceUri = window.activeTextEditor.document.uri;
         const workspaceFolder = (workspace.workspaceFolders ?? []).find((f) =>
@@ -272,7 +272,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
     if (!task) return taskDefinitions.location.range.start;
 
     return taskDefinitions.tasks.find((s) => s.name === task.task.name)
-      ?.commandRange.start;
+      ?.valueRange.start;
   }
 
   async #openTaskDefinition(selection: DenoJSON | DenoTask) {
