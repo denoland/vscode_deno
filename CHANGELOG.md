@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.43.1](https://github.com/denoland/vscode_deno/compare/3.43.0...3.43.1) / 2024.12.13
+
+- chore: sync sql and component documents with the lsp (#1223)
+
 ### [3.43.0](https://github.com/denoland/vscode_deno/compare/3.42.0...3.43.0) / 2024.11.26
 
 - feat: "deno.trace.server" setting (#1189)
