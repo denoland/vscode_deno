@@ -5,8 +5,7 @@
   "description": "A lockfile that stores the hashes of all dependencies in a project to ensure integrity.\n\nSee https://deno.land/manual@v1.28.2/basics/modules/integrity_checking in the Deno documentation for more information.",
   "type": "object",
   "required": [
-    "version",
-    "remote"
+    "version"
   ],
   "additionalProperties": {
     "type": "string",
