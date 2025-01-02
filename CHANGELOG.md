@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.43.2](https://github.com/denoland/vscode_deno/compare/3.43.1...3.43.2) / 2025.01.02
+
+- chore: sync css preprocessor documents with the lsp (#1233)
+- fix: add svelte as a recognised file for deno extension (#1227)
+- fix: lockfile schema - remote is not required (#1225)
+
 ### [3.43.1](https://github.com/denoland/vscode_deno/compare/3.43.0...3.43.1) / 2024.12.13
 
 - chore: sync sql and component documents with the lsp (#1223)
