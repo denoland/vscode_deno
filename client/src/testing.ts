@@ -159,6 +159,7 @@ export class DenoTestController implements vscode.Disposable {
           kind = "debug";
           break;
       }
+      const isContinuous = request.continuous ?? false;
       const include = request.include
         ? request.include.map(asTestIdentifier)
         : undefined;
@@ -168,6 +169,7 @@ export class DenoTestController implements vscode.Disposable {
       const { enqueued } = await client.sendRequest(testRun, {
         id,
         kind,
+        isContinuous,
         include,
         exclude,
       });
@@ -194,6 +196,8 @@ export class DenoTestController implements vscode.Disposable {
       vscode.TestRunProfileKind.Run,
       runHandler,
       true,
+      undefined,
+      true
     );
     // TODO(@kitsonk) add debug run profile
     // TODO(@kitsonk) add coverage run profile
@@ -213,7 +217,7 @@ export class DenoTestController implements vscode.Disposable {
           expectedOutput,
           actualOutput,
         )
-        : new vscode.TestMessage(msg);
+          : new vscode.TestMessage(msg);
 
       if (location) {
         testMessage.location = p2c.asLocation(location);
