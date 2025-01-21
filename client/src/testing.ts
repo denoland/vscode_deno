@@ -131,9 +131,18 @@ function getTestItem(
   }
 }
 
+interface TestRunRequestInfo {
+  readonly include: readonly vscode.TestItem[] | undefined;
+  readonly exclude: readonly vscode.TestItem[] | undefined;
+  readonly profile: vscode.TestRunProfile | undefined;
+}
+
 export class DenoTestController implements vscode.Disposable {
   #runCount = 0;
-  #runs = new Map<number, vscode.TestRun>();
+  #runs = new Map<
+    number,
+    { run: vscode.TestRun; request: TestRunRequestInfo }
+  >();
   #subscriptions: vscode.Disposable[] = [];
 
   constructor(client: LanguageClient) {
@@ -148,7 +157,14 @@ export class DenoTestController implements vscode.Disposable {
     ) => {
       const run = testController.createTestRun(request);
       const id = ++this.#runCount;
-      this.#runs.set(id, run);
+      this.#runs.set(id, {
+        run,
+        request: {
+          include: request.include,
+          exclude: request.exclude,
+          profile: request.profile,
+        },
+      });
       // currently on "run" is implemented and exposed
       let kind: "run" | "coverage" | "debug" = "run";
       switch (request.profile?.kind) {
@@ -176,7 +192,9 @@ export class DenoTestController implements vscode.Disposable {
 
       cancellation.onCancellationRequested(async () => {
         await client.sendRequest(testRunCancel, { id });
-        run.end();
+        // The run can be replaced
+        const runData = this.#runs.get(id);
+        runData?.run.end();
         this.#runs.delete(id);
       });
 
@@ -197,7 +215,7 @@ export class DenoTestController implements vscode.Disposable {
       runHandler,
       true,
       undefined,
-      true
+      true,
     );
     // TODO(@kitsonk) add debug run profile
     // TODO(@kitsonk) add coverage run profile
@@ -217,7 +235,7 @@ export class DenoTestController implements vscode.Disposable {
           expectedOutput,
           actualOutput,
         )
-          : new vscode.TestMessage(msg);
+        : new vscode.TestMessage(msg);
 
       if (location) {
         testMessage.location = p2c.asLocation(location);
@@ -281,10 +299,11 @@ export class DenoTestController implements vscode.Disposable {
     );
 
     client.onNotification(testRunProgress, ({ id, message }) => {
-      const run = this.#runs.get(id);
-      if (!run) {
+      const runData = this.#runs.get(id);
+      if (!runData) {
         return;
       }
+      const { run } = runData;
       switch (message.type) {
         case "enqueued":
         case "started":
@@ -319,6 +338,29 @@ export class DenoTestController implements vscode.Disposable {
           const item = test ? getTestItem(testController, test) : undefined;
           const loc = location ? p2c.asLocation(location) : undefined;
           run.appendOutput(value, loc, item);
+          break;
+        }
+        case "restart": {
+          const { enqueued } = message;
+          run.end();
+          const newRun = testController.createTestRun(
+            new vscode.TestRunRequest(
+              runData.request.include,
+              runData.request.exclude,
+              runData.request.profile,
+              true,
+            ),
+          );
+          for (const { textDocument, ids } of enqueued) {
+            for (const id of ids) {
+              const item = getTestItem(testController, { textDocument, id });
+              if (!item) {
+                continue;
+              }
+              newRun.enqueued(item);
+            }
+          }
+          this.#runs.set(id, { run: newRun, request: runData.request });
           break;
         }
         case "end": {

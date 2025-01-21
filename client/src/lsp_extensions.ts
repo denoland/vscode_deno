@@ -213,6 +213,11 @@ interface TestOutput {
   location?: Location;
 }
 
+interface TestRunRestart {
+  type: "restart";
+  enqueued: EnqueuedTestModule[]
+}
+
 interface TestEnd {
   /** The test run has ended. */
   type: "end";
@@ -223,6 +228,7 @@ type TestRunProgressMessage =
   | TestFailedErrored
   | TestPassed
   | TestOutput
+  | TestRunRestart
   | TestEnd;
 
 export interface TestRunProgressParams {
