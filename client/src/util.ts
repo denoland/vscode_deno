@@ -50,14 +50,8 @@ export async function getDenoCommandPath() {
 }
 
 function getWorkspaceConfigDenoExePath() {
-  const exePath = workspace.getConfiguration(EXTENSION_NS)
-    .get<string>("path");
-  // it is possible for the path to be blank. In that case, return undefined
-  if (typeof exePath === "string" && exePath.trim().length === 0) {
-    return undefined;
-  } else {
-    return exePath;
-  }
+  const exePath = workspace.getConfiguration(EXTENSION_NS).get<string>("path")?.trim();
+  return exePath ? resolveVariables(exePath) : undefined;
 }
 
 async function getDefaultDenoCommand() {
@@ -221,4 +215,45 @@ export function readTaskDefinitions(
     ),
     tasks,
   };
+}
+
+/**
+ * Resolves a subset of configuration variables supported by VSCode.
+ * 
+ * Variables are of the form `${variable}` or `${prefix:variable}`.
+ * 
+ * @see https://code.visualstudio.com/docs/editor/variables-reference
+ */
+function resolveVariables(value: string): string {
+  // Quick check if any variable substitution is needed
+  if (!value.includes("${")) {
+    return value;
+  }
+
+  const regex = /\${(?:([^:}]+)|([^:}]+):([^}]+))}/g;
+  return value.replace(regex, (_, simpleVar, prefix, name) => {
+    if (simpleVar) {
+      // Handle simple variables like ${userHome}, ${workspaceFolder}, ${cwd}
+      switch (simpleVar) {
+        case "userHome":
+          return process.env.HOME || process.env.USERPROFILE || "";
+        case "workspaceFolder":
+          return workspace.workspaceFolders?.[0]?.uri.fsPath ?? ".";
+        case "cwd":
+          return process.cwd();
+        default:
+          return "";
+      }
+    } else {
+      // Handle prefixed variables like ${workspaceFolder:name} or ${env:VAR}
+      switch (prefix) {
+        case "workspaceFolder":
+          return workspace.workspaceFolders?.find(w => w.name === name)?.uri.fsPath ?? "";
+        case "env":
+          return process.env[name] ?? "";
+        default:
+          return "";
+      }
+    }
+  });
 }
