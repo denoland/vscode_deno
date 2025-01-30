@@ -98,6 +98,9 @@ export interface TestRunRequestParams {
   /** The run kind. Currently Deno only supports `"run"` */
   kind: "run" | "coverage" | "debug";
 
+  /** Whether the run should watch the files and continously re-run. */
+  isContinuous: boolean;
+
   /** Test modules or tests to exclude from the test run. */
   exclude?: TestIdentifier[];
 
@@ -210,6 +213,11 @@ interface TestOutput {
   location?: Location;
 }
 
+interface TestRunRestart {
+  type: "restart";
+  enqueued: EnqueuedTestModule[]
+}
+
 interface TestEnd {
   /** The test run has ended. */
   type: "end";
@@ -220,6 +228,7 @@ type TestRunProgressMessage =
   | TestFailedErrored
   | TestPassed
   | TestOutput
+  | TestRunRestart
   | TestEnd;
 
 export interface TestRunProgressParams {

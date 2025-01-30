@@ -29,7 +29,7 @@
     "deno"
   ],
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.77.0"
   },
   "activationEvents": [
     "onLanguage:typescript",
@@ -257,7 +257,9 @@
           "markdownDescription": "Additional environment variables to pass to Deno processes. Overrides the user's env and `deno.envFile`. These will be overridden by more specific settings such as `deno.future` for `DENO_FUTURE`, and invariables like `NO_COLOR=1`.",
           "scope": "window",
           "examples": [
-            { "HTTP_PROXY": "http://localhost:8080" }
+            {
+              "HTTP_PROXY": "http://localhost:8080"
+            }
           ]
         },
         "deno.envFile": {
@@ -479,7 +481,11 @@
           "scope": "resource"
         },
         "deno.trace.server": {
-          "enum": ["messages", "off", "verbose"],
+          "enum": [
+            "messages",
+            "off",
+            "verbose"
+          ],
           "default": "off",
           "markdownDescription": "Traces the communication between VS Code and the Deno Language Server.",
           "scope": "window"
