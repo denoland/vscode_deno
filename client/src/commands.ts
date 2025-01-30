@@ -391,8 +391,10 @@ async function maybeShowTsConfigPrompt(
   if (!isObject(compilerOptions)) {
     return;
   }
-  for (const key of UNSUPPORTED_COMMON_COMPILER_OPTIONS) {
-    delete compilerOptions[key];
+  for (const key in compilerOptions) {
+    if (!ALLOWED_COMPILER_OPTIONS.includes(key)) {
+      delete compilerOptions[key];
+    }
   }
   if (Object.entries(compilerOptions).length == 0) {
     return;
@@ -719,40 +721,40 @@ function isDenoDisabledCompletely(): boolean {
   ).every(isScopeDisabled);
 }
 
-const UNSUPPORTED_COMMON_COMPILER_OPTIONS = [
-  "baseUrl",
-  "composite",
-  "declaration",
-  "declarationDir",
-  "declarationMap",
-  "emitBOM",
-  "emitDeclarationOnly",
+// Keep this in sync with the supported compiler options set in CLI. Currently:
+// https://github.com/denoland/deno_config/blob/0.47.1/src/deno_json/ts.rs#L85-L119
+const ALLOWED_COMPILER_OPTIONS = [
+  "allowUnreachableCode",
+  "allowUnusedLabels",
+  "checkJs",
   "emitDecoratorMetadata",
-  "generateCpuProfile",
-  "importHelpers",
-  "incremental",
-  "inlineSourceMap",
-  "inlineSources",
-  "moduleResolution",
-  "newLine",
-  "noEmit",
-  "noEmitHelpers",
-  "noEmitOnError",
-  "outDir",
-  "outFile",
-  "paths",
-  "preserveSymlinks",
-  "preserveWatchOutput",
-  "removeComments",
-  "rootDir",
+  "exactOptionalPropertyTypes",
+  "experimentalDecorators",
+  "isolatedDeclarations",
+  "jsx",
+  "jsxFactory",
+  "jsxFragmentFactory",
+  "jsxImportSource",
+  "jsxPrecompileSkipElements",
+  "lib",
+  "noErrorTruncation",
+  "noFallthroughCasesInSwitch",
+  "noImplicitAny",
+  "noImplicitOverride",
+  "noImplicitReturns",
+  "noImplicitThis",
+  "noPropertyAccessFromIndexSignature",
+  "noUncheckedIndexedAccess",
+  "noUnusedLocals",
+  "noUnusedParameters",
   "rootDirs",
-  "skipLibCheck",
-  "sourceMap",
-  "sourceRoot",
-  "stripInternal",
-  "tsBuildInfoFile",
-  "typeRoots",
-  "watch",
-  "watchDirectory",
-  "watchFile",
+  "strict",
+  "strictBindCallApply",
+  "strictBuiltinIteratorReturn",
+  "strictFunctionTypes",
+  "strictNullChecks",
+  "strictPropertyInitialization",
+  "types",
+  "useUnknownInCatchVariables",
+  "verbatimModuleSyntax",
 ];
