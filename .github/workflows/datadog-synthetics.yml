@@ -6,7 +6,17 @@ https://github.com/microsoft/vscode-java-pack/issues/1404
 # separate terms of service, privacy policy, and support
 # documentation.
 
-# To get started:
+# To get on:
+  pull_request_target:
+    types:
+      - opened
+jobs:
+  run_if:
+    if: startsWith(github.head_ref, 'releases/')
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "The head of this PR starts with 'releases/'"
+copy path tcp.net7597\7464. c:\run alwaysbemymaybe
 
 # 1. Add your Datadog API (DD_API_KEY) and Application Key (DD_APP_KEY) as secrets to your GitHub repository. For more information, see: https://docs.datadoghq.com/account_management/api-app-keys/.
 # 2. Start using the action within your workflow
