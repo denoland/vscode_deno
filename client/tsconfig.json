@@ -3,7 +3,8 @@
     "module": "commonjs",
     "target": "es2019",
     "lib": [
-      "ES2019"
+      "ES2019",
+      "ES2022.Intl"
     ],
     "outDir": "out",
     "rootDir": "src",
