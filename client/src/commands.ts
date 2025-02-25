@@ -40,6 +40,7 @@ import * as path from "path";
 import * as process from "process";
 import * as jsoncParser from "jsonc-parser/lib/esm/main.js";
 import { semver } from "./semver";
+import { log } from "./extension";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -185,6 +186,10 @@ export function startLanguageServer(
       {
         outputChannel: extensionContext.outputChannel,
         middleware: {
+          provideDocumentFormattingEdits: (document, options, token, next) => {
+            log("provideDocumentFormattingEdits:", document.uri.toString(), options);
+            return next(document, options, token)
+          },
           workspace: {
             configuration: (params, token, next) => {
               const response = next(params, token) as Record<string, unknown>[];
