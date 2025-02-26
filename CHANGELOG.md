@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.43.4](https://github.com/denoland/vscode_deno/compare/3.43.4...3.43.5) / 2025.02.26
+
+- Revert "fix: move extended language formatting to client" (#1261)
+
 ### [3.43.4](https://github.com/denoland/vscode_deno/compare/3.43.3...3.43.4) / 2025.02.25
 
 - fix: move extended language formatting to client (#1258)
