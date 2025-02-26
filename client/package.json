@@ -14,8 +14,6 @@
     "vscode": "^1.77.0"
   },
   "dependencies": {
-    "@types/diff": "^7.0.1",
-    "diff": "^7.0.0",
     "dotenv": "^16.4.5",
     "jsonc-parser": "^3.2.0",
     "semver": "7.5.2",
