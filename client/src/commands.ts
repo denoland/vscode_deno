@@ -40,7 +40,6 @@ import * as path from "path";
 import * as process from "process";
 import * as jsoncParser from "jsonc-parser/lib/esm/main.js";
 import { semver } from "./semver";
-import { log } from "./extension";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
