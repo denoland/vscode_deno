@@ -165,8 +165,7 @@ extension has the following configuration options:
   code lens information for all functions in the code. Requires
   `deno.codeLens.references` to be enabled as well. _boolean, default `false`_
 - `deno.codeLens.test`: Enables or disables the display of test code lens on
-  Deno tests. _boolean, default `false`_. _This feature is deprecated, see
-  `deno.testing` below_
+  Deno tests. _boolean, default `false`_.
 - `deno.codeLens.testArgs`: Provides additional arguments that should be set
   when invoking the Deno CLI test from a code lens. _array of strings, default
   `[ "--allow-all" ]`_.
