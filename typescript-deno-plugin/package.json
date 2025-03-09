@@ -19,6 +19,10 @@
     "vscode": "^1.77.0"
   },
   "devDependencies": {
+    "@types/picomatch": "^3.0.2",
     "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "picomatch": "^4.0.2"
   }
 }
