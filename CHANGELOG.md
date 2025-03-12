@@ -3,7 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-### [3.43.4](https://github.com/denoland/vscode_deno/compare/3.43.4...3.43.5) / 2025.02.26
+### [3.43.6](https://github.com/denoland/vscode_deno/compare/3.43.5...3.43.6) / 2025.03.12
+
+- fix(client): set `{ shell: true }` in server options for "deno.{bat,cmd}" (#1273)
+- docs: `deno.codeLens.test` is not deprecated (#1268)
+
+### [3.43.5](https://github.com/denoland/vscode_deno/compare/3.43.4...3.43.5) / 2025.02.26
 
 - Revert "fix: move extended language formatting to client" (#1261)
 
