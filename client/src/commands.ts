@@ -32,7 +32,11 @@ import { DenoServerInfo } from "./server_info";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
-import type { Location, Position } from "vscode-languageclient/node";
+import type {
+  Executable,
+  Location,
+  Position,
+} from "vscode-languageclient/node";
 import { getWorkspacesEnabledInfo, isPathEnabled } from "./enable";
 import { denoUpgradePromptAndExecute } from "./upgrade";
 import * as fs from "fs";
@@ -164,19 +168,21 @@ export function startLanguageServer(
     env["NO_COLOR"] = "1";
     env["DENO_V8_FLAGS"] = getV8Flags();
 
+    const shell = process.platform === "win32" &&
+      /\.([Cc][Mm][Dd]|[Bb][Aa][Tt])$/.test(command);
     const serverOptions: ServerOptions = {
       run: {
         command,
         args: ["lsp"],
-        options: { env },
-      },
+        options: { env, shell },
+      } as Executable,
       debug: {
         command,
         // disabled for now, as this gets super chatty during development
         // args: ["lsp", "-L", "debug"],
         args: ["lsp"],
-        options: { env },
-      },
+        options: { env, shell },
+      } as Executable,
     };
     const client = new LanguageClient(
       LANGUAGE_CLIENT_ID,
