@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 import { DenoExtensionContext, EnableSettings } from "./types";
 import * as os from "os";
 import * as path from "path";
+import { isMatch } from "picomatch";
 
 export interface WorkspaceEnabledInfo {
   folder: vscode.WorkspaceFolder;
@@ -36,13 +37,15 @@ export function isPathEnabled(
     )?.[1] ?? extensionContext.enableSettingsUnscoped ??
       { enable: null, enablePaths: null, disablePaths: [] };
   const scopesWithDenoJson = extensionContext.scopesWithDenoJson ?? new Set();
+  if (isMatch(filePath, enableSettings.disablePaths)) return false;
   for (const path of enableSettings.disablePaths) {
     if (pathStartsWith(filePath, path)) {
       return false;
     }
   }
   if (enableSettings.enablePaths) {
-    return enableSettings.enablePaths.some((p) => pathStartsWith(filePath, p));
+    return isMatch(filePath, enableSettings.enablePaths) ||
+      enableSettings.enablePaths.some((path) => pathStartsWith(filePath, path));
   }
   if (enableSettings.enable != null) {
     return enableSettings.enable;
