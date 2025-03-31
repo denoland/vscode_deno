@@ -60,6 +60,11 @@ class Plugin implements ts.server.PluginModule {
     if (!pluginSettings) {
       return false;
     }
+    if (pluginSettings.npmCache) {
+      if (pathStartsWith(fileName, pluginSettings.npmCache)) {
+        return true;
+      }
+    }
     const enableSettings =
       pluginSettings.enableSettingsByFolder?.find(([workspace, _]) =>
         pathStartsWith(fileName, workspace)
