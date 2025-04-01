@@ -143,6 +143,7 @@ export async function activate(
       { scheme: "deno", language: "astro" },
       { scheme: "deno", language: "vento" },
       { scheme: "deno", language: "nunjucks" },
+      { scheme: "vscode-userdata", language: "jsonc" },
       { notebook: "*", language: "javascript" },
       { notebook: "*", language: "javascriptreact" },
       { notebook: "*", language: "typescript" },
