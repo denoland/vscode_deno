@@ -35,6 +35,7 @@ export interface DenoExtensionContext {
     | ServerCapabilities<DenoExperimental>
     | undefined;
   scopesWithDenoJson: Set<string> | undefined;
+  denoInfoJson: DenoInfoJson | null;
   statusBar: DenoStatusBar;
   tsApi: TsApi;
   outputChannel: vscode.OutputChannel;
@@ -46,6 +47,10 @@ export interface DenoExtensionContext {
 
 export interface TestCommandOptions {
   inspect: boolean;
+}
+
+export interface DenoInfoJson {
+  npmCache?: string;
 }
 
 export interface UpgradeAvailable {

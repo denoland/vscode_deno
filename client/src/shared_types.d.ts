@@ -12,4 +12,5 @@ export interface PluginSettings {
   enableSettingsUnscoped: EnableSettings;
   enableSettingsByFolder: [string, EnableSettings][];
   scopesWithDenoJson: string[];
+  npmCache: string | null;
 }

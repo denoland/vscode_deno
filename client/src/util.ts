@@ -15,6 +15,9 @@ import {
 } from "vscode";
 import * as jsoncParser from "jsonc-parser/lib/esm/main.js";
 import { semver } from "./semver";
+import type { DenoInfoJson } from "./types";
+import { spawnSync } from "child_process";
+import type * as vscode from "vscode";
 
 /** Assert that the condition is "truthy", otherwise throw. */
 export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
@@ -109,6 +112,37 @@ async function getDefaultDenoCommand() {
 
   function getUserDenoBinDir() {
     return path.join(os.homedir(), ".deno", "bin");
+  }
+}
+
+export async function getDenoInfoJson(
+  outputChannel: vscode.OutputChannel,
+): Promise<DenoInfoJson | null> {
+  try {
+    const command = await getDenoCommandName();
+    const { stdout, stderr, status, error } = spawnSync(command, [
+      "info",
+      "--json",
+    ], {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      env: {
+        ...process.env,
+        "NO_COLOR": "1",
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    if (status != 0) {
+      throw `Command failed: ${stderr}`;
+    }
+    return JSON.parse(stdout);
+  } catch (error) {
+    outputChannel.appendLine(
+      `Couldn't get 'deno info --json' output: ${error}`,
+    );
+    return null;
   }
 }
 
