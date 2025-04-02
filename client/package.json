@@ -16,10 +16,12 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "jsonc-parser": "^3.2.0",
+    "picomatch": "^4.0.2",
     "semver": "7.5.2",
     "vscode-languageclient": "^8.0.1"
   },
   "devDependencies": {
+    "@types/picomatch": "^3.0.2",
     "@types/semver": "7.3.9",
     "@types/vscode": "1.77.0",
     "vscode-test": "^1.6.1"
