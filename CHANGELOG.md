@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.44.0](https://github.com/denoland/vscode_deno/compare/3.43.6...3.44.0) / 2025.04.29
+
+- feat: lockfile v5 schema (#1286)
+- feat: sync vscode-userdata schemed documents with the lsp (#1278)
+- fix: enable paths in the global npm cache (#1277)
+
 ### [3.43.6](https://github.com/denoland/vscode_deno/compare/3.43.5...3.43.6) / 2025.03.12
 
 - fix(client): set `{ shell: true }` in server options for "deno.{bat,cmd}" (#1273)
