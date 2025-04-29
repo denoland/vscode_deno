@@ -100,11 +100,11 @@
             "type": "boolean",
             "default": false
           },
-          "hasScripts": {
+          "scripts": {
             "type": "boolean",
             "default": false
           },
-          "hasBin": {
+          "bin": {
             "type": "boolean",
             "default": false
           },
