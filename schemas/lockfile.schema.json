@@ -17,6 +17,7 @@
       "type": "string",
       "default": "4",
       "enum": [
+        "5",
         "4",
         "3"
       ]
@@ -61,13 +62,55 @@
         "default": {},
         "properties": {
           "integrity": {
-            "type": "string",
+            "type": ["string", "null"],
+            "default": null,
             "description": "Hash for integrity checking."
           },
           "dependencies": {
             "type": "array",
+            "default": [],
             "items": { "type": "string" },
             "uniqueItems": true
+          },
+          "optionalDependencies": {
+            "type": "array",
+            "default": [],
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "optionalPeers": {
+            "type": "array",
+            "default": [],
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "os": {
+            "type": "array",
+            "default": [],
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "cpu": {
+            "type": "array",
+            "default": [],
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "deprecated": {
+            "type": "boolean",
+            "default": false
+          },
+          "scripts": {
+            "type": "boolean",
+            "default": false
+          },
+          "bin": {
+            "type": "boolean",
+            "default": false
+          },
+          "tarball": {
+            "type": ["string", "null"],
+            "default": null
           }
         }
       }
