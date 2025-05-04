@@ -421,6 +421,9 @@ function pathStartsWith(child: string, parent: string) {
     return false;
   }
   const relative = path.relative(parent, child);
+  if (path.isAbsolute(relative)) {
+    return false;
+  }
   return !relative.match(PARENT_RELATIVE_REGEX);
 }
 
