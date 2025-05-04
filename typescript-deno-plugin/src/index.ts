@@ -7,6 +7,7 @@ import * as process from "process";
 import * as os from "os";
 import { setImmediate } from "timers";
 import * as util from "util";
+import { isMatch } from "picomatch";
 
 /** Extract the return type from a maybe function. */
 // deno-lint-ignore no-explicit-any
@@ -71,15 +72,17 @@ class Plugin implements ts.server.PluginModule {
       )?.[1] ?? pluginSettings.enableSettingsUnscoped ??
         { enable: null, enablePaths: null, disablePaths: [] };
     const scopesWithDenoJson = pluginSettings.scopesWithDenoJson ?? [];
+    if (isMatch(fileName, enableSettings.disablePaths)) return false;
     for (const path of enableSettings.disablePaths) {
       if (pathStartsWith(fileName, path)) {
         return false;
       }
     }
     if (enableSettings.enablePaths) {
-      return enableSettings.enablePaths.some((path) =>
-        pathStartsWith(fileName, path)
-      );
+      return isMatch(fileName, enableSettings.enablePaths) ||
+        enableSettings.enablePaths.some((path) =>
+          pathStartsWith(fileName, path)
+        );
     }
     if (enableSettings.enable != null) {
       return enableSettings.enable;
