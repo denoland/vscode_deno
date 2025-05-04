@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.44.1](https://github.com/denoland/vscode_deno/compare/3.44.0...3.44.1) / 2025.05.04
+
+- fix: handle different drive letters in pathStartsWith() (#1291)
+
 ### [3.44.0](https://github.com/denoland/vscode_deno/compare/3.43.6...3.44.0) / 2025.04.29
 
 - feat: lockfile v5 schema (#1286)
