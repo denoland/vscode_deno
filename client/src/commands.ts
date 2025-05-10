@@ -159,6 +159,7 @@ export function startLanguageServer(
       }
     }
     const denoEnv = config.get<Record<string, string>>("env");
+    env["FORCE_COLOR"] = "1";
     if (denoEnv) {
       Object.assign(env, denoEnv);
     }
