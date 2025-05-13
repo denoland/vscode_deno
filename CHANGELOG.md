@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.44.2](https://github.com/denoland/vscode_deno/compare/3.44.1...3.44.2) / 2025.05.13
+
+- fix: empty tasks pane on win machines (#1296)
+
 ### [3.44.1](https://github.com/denoland/vscode_deno/compare/3.44.0...3.44.1) / 2025.05.04
 
 - fix: handle different drive letters in pathStartsWith() (#1291)
