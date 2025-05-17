@@ -35,6 +35,7 @@ export interface TaskRequestResponse {
   command: string | null;
   detail: string;
   sourceUri: string;
+  description: string | null;
 }
 
 /** Requests any tasks from the language server that the language server is
