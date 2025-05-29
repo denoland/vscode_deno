@@ -98,10 +98,8 @@ class DenoTask extends TreeItem {
     this.command = commandList[defaultCommand];
     this.iconPath = new ThemeIcon("wrench");
 
-    if (this.task.definition.command) {
-      this.tooltip = this.task.definition.command;
-      this.description = this.task.definition.command;
-    }
+    this.tooltip = this.task.detail;
+    this.description = this.task.detail;
   }
 
   getFolder(): WorkspaceFolder {
@@ -153,6 +151,7 @@ class DenoTaskProvider implements TaskProvider {
           configTask.name,
           configTask.command ?? configTask.detail,
           Uri.parse(configTask.sourceUri),
+          configTask.description ?? "",
         );
         tasks.push(task);
       }

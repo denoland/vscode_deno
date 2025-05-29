@@ -51,6 +51,7 @@ export function buildDenoConfigTask(
   name: string,
   command: string | undefined,
   sourceUri?: vscode.Uri,
+  description: string = "",
 ): vscode.Task {
   const args = [];
   if (
@@ -75,7 +76,7 @@ export function buildDenoConfigTask(
     new vscode.ProcessExecution(process, ["task", ...args]),
     ["$deno"],
   );
-  task.detail = `$ ${command}`;
+  task.detail = description || `$ ${command}`;
   return task;
 }
 
