@@ -159,13 +159,13 @@ export function startLanguageServer(
       }
     }
     const denoEnv = config.get<Record<string, string>>("env");
+    env["FORCE_COLOR"] = "1";
     if (denoEnv) {
       Object.assign(env, denoEnv);
     }
     if (config.get<boolean>("future")) {
       env["DENO_FUTURE"] = "1";
     }
-    env["NO_COLOR"] = "1";
     env["DENO_V8_FLAGS"] = getV8Flags();
 
     const shell = process.platform === "win32" &&
