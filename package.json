@@ -214,7 +214,7 @@
             "type": "string"
           },
           "default": [],
-          "markdownDescription": "Disables the Deno Language Server for specific paths. This will leave the built in TypeScript/JavaScript language server enabled for those paths. Takes priority over `deno.enablePaths`.\n\n**Not recommended to be enabled in user settings.**",
+          "markdownDescription": "Disables the Deno Language Server for specific paths. This will leave the built in TypeScript/JavaScript language server enabled for those paths. Glob patterns are supported via picomatch. Takes priority over `deno.enablePaths`.\n\n**Not recommended to be enabled in user settings.**",
           "scope": "resource",
           "examples": [
             [
@@ -228,7 +228,7 @@
             "type": "string"
           },
           "default": null,
-          "markdownDescription": "Enables the Deno Language Server for specific paths, instead of for the whole workspace folder. This will disable the built in TypeScript/JavaScript language server for those paths.\n\nWhen a value is set, the value of `\"deno.enable\"` is ignored.\n\nThe workspace folder is used as the base for the supplied paths. If for example you have all your Deno code in `worker` path in your workspace, you can add an item with the value of `./worker`, and the Deno will only provide diagnostics for the files within `worker` or any of its sub paths.\n\n**Not recommended to be enabled in user settings.**",
+          "markdownDescription": "Enables the Deno Language Server for specific paths, instead of for the whole workspace folder. This will disable the built in TypeScript/JavaScript language server for those paths. Glob patterns are supported via picomatch.\n\nWhen a value is set, the value of `\"deno.enable\"` is ignored.\n\nThe workspace folder is used as the base for the supplied paths. If for example you have all your Deno code in `worker` path in your workspace, you can add an item with the value of `./worker`, and the Deno will only provide diagnostics for the files within `worker` or any of its sub paths.\n\n**Not recommended to be enabled in user settings.**",
           "scope": "resource",
           "examples": [
             [
