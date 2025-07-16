@@ -3,6 +3,12 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.45.0](https://github.com/denoland/vscode_deno/compare/3.44.2...3.45.0) / 2025.07.16
+
+- feat: show task description from deno.json in tasks view and command palette (#1304)
+- fix: enable colored output in tests (#1298)
+- chore: remove tsconfig helper prompt (#1315)
+
 ### [3.44.2](https://github.com/denoland/vscode_deno/compare/3.44.1...3.44.2) / 2025.05.13
 
 - fix: empty tasks pane on win machines (#1296)
