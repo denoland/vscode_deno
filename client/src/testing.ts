@@ -49,6 +49,8 @@ export class TestingFeature implements StaticFeature {
     this.#enabled = capabilities.experimental?.testingApi ?? false;
   }
 
+  clear(): void {}
+
   dispose(): void {}
 }
 

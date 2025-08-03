@@ -17,7 +17,7 @@
     "dotenv": "^16.4.5",
     "jsonc-parser": "^3.2.0",
     "semver": "7.5.2",
-    "vscode-languageclient": "^8.0.1"
+    "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
     "@types/semver": "7.3.9",
