@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.45.1](https://github.com/denoland/vscode_deno/compare/3.45.0...3.45.1) / 2025.08.04
+
+- chore: update vscode-languageclient (#1322)
+
 ### [3.45.0](https://github.com/denoland/vscode_deno/compare/3.44.2...3.45.0) / 2025.07.16
 
 - feat: show task description from deno.json in tasks view and command palette (#1304)
