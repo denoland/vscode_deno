@@ -11,17 +11,17 @@
     "url": "https://github.com/denoland/vscode_deno"
   },
   "engines": {
-    "vscode": "^1.77.0"
+    "vscode": "^1.91.0"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
     "jsonc-parser": "^3.2.0",
     "semver": "7.5.2",
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^10.0.0-next.13"
   },
   "devDependencies": {
     "@types/semver": "7.3.9",
-    "@types/vscode": "1.77.0",
+    "@types/vscode": "1.91.0",
     "vscode-test": "^1.6.1"
   }
 }

@@ -38,7 +38,7 @@ export interface DenoExtensionContext {
   denoInfoJson: DenoInfoJson | null;
   statusBar: DenoStatusBar;
   tsApi: TsApi;
-  outputChannel: vscode.OutputChannel;
+  outputChannel: vscode.LogOutputChannel;
   tasksSidebar: DenoTasksTreeDataProvider;
   maxTsServerMemory: number | null;
   enableSettingsUnscoped: EnableSettings;
