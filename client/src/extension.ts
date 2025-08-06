@@ -79,7 +79,7 @@ export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
   extensionContext.outputChannel = extensionContext.outputChannel ??
-    vscode.window.createOutputChannel(LANGUAGE_CLIENT_NAME);
+    vscode.window.createOutputChannel(LANGUAGE_CLIENT_NAME, { log: true });
   extensionContext.denoInfoJson = await getDenoInfoJson(
     extensionContext.outputChannel,
   );
