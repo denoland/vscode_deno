@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.46.0](https://github.com/denoland/vscode_deno/compare/3.45.2...3.46.0) / 2025.10.17
+
+- feat: "DENO_DISABLE_WELCOME_PAGE" env var (#1339)
+
 ### [3.45.2](https://github.com/denoland/vscode_deno/compare/3.45.1...3.45.2) / 2025.08.06
 
 - chore: update vscode-languageclient to 10.0.0-next.13 (#1324)
