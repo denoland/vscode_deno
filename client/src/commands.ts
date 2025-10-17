@@ -340,13 +340,16 @@ function showWelcomePageIfFirstUse(
   context: vscode.ExtensionContext,
   extensionContext: DenoExtensionContext,
 ) {
+  if (process.env.DENO_DISABLE_WELCOME_PAGE != null) {
+    return;
+  }
   const welcomeShown = context.globalState.get<boolean>("deno.welcomeShown") ??
     false;
-
-  if (!welcomeShown) {
-    welcome(context, extensionContext)();
-    context.globalState.update("deno.welcomeShown", true);
+  if (welcomeShown) {
+    return;
   }
+  welcome(context, extensionContext)();
+  context.globalState.update("deno.welcomeShown", true);
 }
 
 export function showReferences(
