@@ -52,6 +52,9 @@ class Plugin implements ts.server.PluginModule {
 
   // determines if a specific filename is Deno enabled or not.
   #fileNameDenoEnabled(fileName: string): boolean {
+    if (fileName.endsWith(".vue") || fileName.endsWith(".svelte")) {
+      return false;
+    }
     if (process.platform === "win32") {
       fileName = fileName.replace(/\//g, "\\");
     }
