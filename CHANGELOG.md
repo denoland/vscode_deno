@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.46.1](https://github.com/denoland/vscode_deno/compare/3.46.0...3.46.1) / 2025.10.21
+
+- fix: do not enable for vue and svelte files (#1342)
+
 ### [3.46.0](https://github.com/denoland/vscode_deno/compare/3.45.2...3.46.0) / 2025.10.17
 
 - feat: "DENO_DISABLE_WELCOME_PAGE" env var (#1339)
