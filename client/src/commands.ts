@@ -31,7 +31,7 @@ import { DenoServerInfo } from "./server_info";
 
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
-import { LanguageClient, ServerOptions } from "vscode-languageclient/node";
+import { ServerOptions } from "vscode-languageclient/node";
 import type {
   Executable,
   Location,
@@ -43,6 +43,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as process from "process";
 import { semver } from "./semver";
+import { DenoLanguageClient } from "./deno_language_client";
 
 // deno-lint-ignore no-explicit-any
 export type Callback = (...args: any[]) => unknown;
@@ -184,7 +185,7 @@ export function startLanguageServer(
         options: { env, shell },
       } as Executable,
     };
-    const client = new LanguageClient(
+    const client = new DenoLanguageClient(
       LANGUAGE_CLIENT_ID,
       LANGUAGE_CLIENT_NAME,
       serverOptions,
