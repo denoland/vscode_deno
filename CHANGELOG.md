@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.47.0](https://github.com/denoland/vscode_deno/compare/3.46.1...3.47.0) / 2025.12.08
+
+- feat: set "clientProvidedOrganizeImports" capability (#1348)
+
 ### [3.46.1](https://github.com/denoland/vscode_deno/compare/3.46.0...3.46.1) / 2025.10.21
 
 - fix: do not enable for vue and svelte files (#1342)
