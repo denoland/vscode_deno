@@ -209,6 +209,21 @@ export function startLanguageServer(
     );
     const testingFeature = new TestingFeature();
     client.registerFeature(testingFeature);
+    client.registerFeature({
+      fillClientCapabilities(capabilities) {
+        capabilities.experimental ??= {};
+        const experimental: { clientProvidedOrganizeImports?: boolean } =
+          capabilities.experimental ??
+            {};
+        experimental.clientProvidedOrganizeImports = true;
+        capabilities.experimental = experimental;
+      },
+      getState() {
+        return { kind: "static" };
+      },
+      initialize() {},
+      clear() {},
+    });
     await client.start();
 
     // set this after a successful start
