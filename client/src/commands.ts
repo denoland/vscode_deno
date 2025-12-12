@@ -168,6 +168,14 @@ export function startLanguageServer(
     }
     env["DENO_V8_FLAGS"] = getV8Flags();
 
+    const isProvideSettingEnabled = (
+      setting: string,
+      resource?: vscode.Uri,
+    ) =>
+      vscode.workspace.getConfiguration(EXTENSION_NS, resource).get<boolean>(
+        setting,
+      ) ?? true;
+
     const shell = process.platform === "win32" &&
       /\.([Cc][Mm][Dd]|[Bb][Aa][Tt])$/.test(command);
     const serverOptions: ServerOptions = {
@@ -202,6 +210,37 @@ export function startLanguageServer(
               }
               return response;
             },
+          },
+          provideCodeActions: async (
+            document,
+            range,
+            context,
+            token,
+            next,
+          ) => {
+            const actions = await next(document, range, context, token);
+            if (
+              actions == null || !Array.isArray(actions) ||
+              isProvideSettingEnabled("provide.organizeImports", document.uri)
+            ) {
+              return actions;
+            }
+            return actions.filter((action) => {
+              const kind = (action as vscode.CodeAction).kind;
+              return !kind?.contains(vscode.CodeActionKind.SourceOrganizeImports);
+            });
+          },
+          provideDocumentSymbols: async (document, token, next) => {
+            if (!isProvideSettingEnabled("provide.symbols.document", document.uri)) {
+              return [];
+            }
+            return next(document, token);
+          },
+          provideWorkspaceSymbols: async (query, token, next) => {
+            if (!isProvideSettingEnabled("provide.symbols.workspace")) {
+              return [];
+            }
+            return next(query, token);
           },
         },
         ...extensionContext.clientOptions,
