@@ -230,13 +230,13 @@ export function startLanguageServer(
               return !kind?.contains(vscode.CodeActionKind.SourceOrganizeImports);
             });
           },
-          provideDocumentSymbols: async (document, token, next) => {
+          provideDocumentSymbols: (document, token, next) => {
             if (!isProvideSettingEnabled("provide.symbols.document", document.uri)) {
               return [];
             }
             return next(document, token);
           },
-          provideWorkspaceSymbols: async (query, token, next) => {
+          provideWorkspaceSymbols: (query, token, next) => {
             if (!isProvideSettingEnabled("provide.symbols.workspace")) {
               return [];
             }
