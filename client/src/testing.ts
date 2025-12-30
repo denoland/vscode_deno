@@ -1,6 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import {
+  type CoverageNotificationParams,
+  type FileCoverage,
+  testCoverage,
   type TestData,
   type TestIdentifier,
   type TestMessage,
@@ -220,7 +223,15 @@ export class DenoTestController implements vscode.Disposable {
       true,
     );
     // TODO(@kitsonk) add debug run profile
-    // TODO(@kitsonk) add coverage run profile
+
+    testController.createRunProfile(
+      "Run with Coverage",
+      vscode.TestRunProfileKind.Coverage,
+      runHandler,
+      false,
+      undefined,
+      true,
+    );
 
     const p2c = client.protocol2CodeConverter;
 
@@ -299,6 +310,75 @@ export class DenoTestController implements vscode.Disposable {
       testModuleDelete,
       ({ textDocument: { uri } }) => testController.items.delete(uri),
     );
+
+    const coveredDecorationType = vscode.window.createTextEditorDecorationType({
+      backgroundColor: new vscode.ThemeColor(
+        "diffEditor.insertedTextBackground",
+      ),
+      isWholeLine: true,
+      overviewRulerColor: new vscode.ThemeColor(
+        "diffEditor.insertedTextBackground",
+      ),
+      overviewRulerLane: vscode.OverviewRulerLane.Left,
+    });
+    const uncoveredDecorationType = vscode.window
+      .createTextEditorDecorationType({
+        backgroundColor: new vscode.ThemeColor(
+          "diffEditor.removedTextBackground",
+        ),
+        isWholeLine: true,
+        overviewRulerColor: new vscode.ThemeColor(
+          "diffEditor.removedTextBackground",
+        ),
+        overviewRulerLane: vscode.OverviewRulerLane.Left,
+      });
+    this.#subscriptions.push(coveredDecorationType);
+    this.#subscriptions.push(uncoveredDecorationType);
+
+    let currentCoverage: Map<string, FileCoverage> = new Map();
+
+    const applyCoverageDecorations = () => {
+      for (const editor of vscode.window.visibleTextEditors) {
+        const uri = editor.document.uri.toString();
+        const coverage = currentCoverage.get(uri);
+        if (coverage) {
+          const coveredRanges = coverage.coveredLines.map(
+            (line) => new vscode.Range(line - 1, 0, line - 1, 0),
+          );
+          const uncoveredRanges = coverage.uncoveredLines.map(
+            (line) => new vscode.Range(line - 1, 0, line - 1, 0),
+          );
+          editor.setDecorations(coveredDecorationType, coveredRanges);
+          editor.setDecorations(uncoveredDecorationType, uncoveredRanges);
+        } else {
+          editor.setDecorations(coveredDecorationType, []);
+          editor.setDecorations(uncoveredDecorationType, []);
+        }
+      }
+    };
+
+    this.#subscriptions.push(
+      vscode.window.onDidChangeVisibleTextEditors(() => {
+        applyCoverageDecorations();
+      }),
+    );
+
+    client.onNotification(testCoverage, ({ id, files }) => {
+      currentCoverage.clear();
+      for (const file of files) {
+        currentCoverage.set(file.uri, file);
+      }
+
+      applyCoverageDecorations();
+
+      const totalFiles = files.length;
+      const avgCoverage = files.length > 0
+        ? files.reduce((sum, f) => sum + f.coveragePercent, 0) / files.length
+        : 0;
+      vscode.window.showInformationMessage(
+        `Coverage: ${avgCoverage.toFixed(1)}% across ${totalFiles} files`,
+      );
+    });
 
     client.onNotification(testRunProgress, ({ id, message }) => {
       const runData = this.#runs.get(id);
