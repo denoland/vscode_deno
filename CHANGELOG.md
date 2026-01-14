@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.48.0](https://github.com/denoland/vscode_deno/compare/3.47.0...3.48.0) / 2026.01.14
+
+- feat: "deno.forcePushBasedDiagnostics" setting (#1354)
+
 ### [3.47.0](https://github.com/denoland/vscode_deno/compare/3.46.1...3.47.0) / 2025.12.08
 
 - feat: set "clientProvidedOrganizeImports" capability (#1348)
