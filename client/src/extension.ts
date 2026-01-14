@@ -47,6 +47,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
       event.affectsConfiguration("deno.enablePaths") ||
       event.affectsConfiguration("deno.env") ||
       event.affectsConfiguration("deno.envFile") ||
+      event.affectsConfiguration("deno.forcePushBasedDiagnostics") ||
       event.affectsConfiguration("deno.future") ||
       event.affectsConfiguration("deno.internalInspect") ||
       event.affectsConfiguration("deno.logFile") ||
