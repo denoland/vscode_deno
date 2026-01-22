@@ -41,7 +41,7 @@ export async function getDenoCommandPath(approvedPaths: ApprovedConfigPaths) {
   // check for approval if using a workspace-configured path
   const approved = await approvedPaths.promptForApproval(pathInfo);
   if (!approved) {
-    return undefined;
+    return await getDefaultDenoCommand();
   }
 
   const command = pathInfo?.path;

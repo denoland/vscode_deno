@@ -77,7 +77,7 @@ export class ApprovedConfigPaths {
     }
 
     const allow = "Allow";
-    const deny = "Don't Allow";
+    const deny = "Deny";
     const result = await vscode.window.showWarningMessage(
       `A workspace setting wants to run a custom Deno executable: ${path}`,
       allow,
