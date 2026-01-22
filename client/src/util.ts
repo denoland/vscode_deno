@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { type ApprovedConfigPaths, getDenoPathInfo } from "./config_paths";
-import { EXTENSION_NS } from "./constants";
 
 import * as fs from "fs";
 import * as os from "os";
