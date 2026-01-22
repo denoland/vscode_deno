@@ -132,7 +132,9 @@ class DenoTaskProvider implements vscode.TaskProvider {
 
     const tasks: vscode.Task[] = [];
 
-    const process = await getDenoCommandName(this.#extensionContext.approvedPaths);
+    const process = await getDenoCommandName(
+      this.#extensionContext.approvedPaths,
+    );
     for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
       for (const { command, group, problemMatchers } of defs) {
         const task = buildDenoTask(

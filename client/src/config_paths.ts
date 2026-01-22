@@ -19,8 +19,9 @@ export function getDenoPathInfo(): DenoPathInfo | undefined {
     // check if path is set in workspace or folder settings (not global/user)
     const workspaceValue = inspection?.workspaceValue;
     const folderValue = inspection?.workspaceFolderValue;
-    const isFromWorkspace = (typeof workspaceValue === "string" && workspaceValue.trim().length > 0)
-      || (typeof folderValue === "string" && folderValue.trim().length > 0);
+    const isFromWorkspace = (typeof workspaceValue === "string" &&
+      workspaceValue.trim().length > 0) ||
+      (typeof folderValue === "string" && folderValue.trim().length > 0);
     return {
       path: rawPath.trim(),
       isFromWorkspace,
@@ -55,12 +56,17 @@ export class ApprovedConfigPaths {
     const approvedPaths = this.#getApprovedPaths();
     if (!approvedPaths.includes(path)) {
       approvedPaths.push(path);
-      await this.#context.workspaceState.update(APPROVED_PATHS_KEY, approvedPaths);
+      await this.#context.workspaceState.update(
+        APPROVED_PATHS_KEY,
+        approvedPaths,
+      );
     }
   }
 
   /** Prompts the user for approval if the path hasn't been approved yet. */
-  async promptForApproval(pathInfo: DenoPathInfo | undefined): Promise<boolean> {
+  async promptForApproval(
+    pathInfo: DenoPathInfo | undefined,
+  ): Promise<boolean> {
     // null and global paths don't need approval
     if (pathInfo == null || !pathInfo.isFromWorkspace) {
       return true;

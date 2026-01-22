@@ -122,7 +122,9 @@ class DenoTaskProvider implements TaskProvider {
   }
 
   async provideTasks(): Promise<Task[]> {
-    const process = await getDenoCommandName(this.#extensionContext.approvedPaths);
+    const process = await getDenoCommandName(
+      this.#extensionContext.approvedPaths,
+    );
     const client = this.#extensionContext.client;
     const supportsConfigTasks = this.#extensionContext.serverCapabilities
       ?.experimental?.denoConfigTasks;
@@ -254,7 +256,9 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
   }
 
   async #debugTask(task: DenoTask) {
-    const command = `${await getDenoCommandName(this.#extensionContext.approvedPaths)} task ${task.task.name}`;
+    const command = `${await getDenoCommandName(
+      this.#extensionContext.approvedPaths,
+    )} task ${task.task.name}`;
     commands.executeCommand(
       "extension.js-debug.createDebuggerTerminal",
       command,

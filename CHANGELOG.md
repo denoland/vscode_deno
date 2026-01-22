@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.49.0](https://github.com/denoland/vscode_deno/compare/3.48.0...3.49.0) / 2026.01.22
+
+- feat: prompt for custom workspace `"deno.path"` setting
+
 ### [3.48.0](https://github.com/denoland/vscode_deno/compare/3.47.0...3.48.0) / 2026.01.14
 
 - feat: "deno.forcePushBasedDiagnostics" setting (#1354)
@@ -30,7 +34,8 @@ Releases of the extension can be downloaded from
 
 ### [3.45.0](https://github.com/denoland/vscode_deno/compare/3.44.2...3.45.0) / 2025.07.16
 
-- feat: show task description from deno.json in tasks view and command palette (#1304)
+- feat: show task description from deno.json in tasks view and command palette
+  (#1304)
 - fix: enable colored output in tests (#1298)
 - chore: remove tsconfig helper prompt (#1315)
 
@@ -50,7 +55,8 @@ Releases of the extension can be downloaded from
 
 ### [3.43.6](https://github.com/denoland/vscode_deno/compare/3.43.5...3.43.6) / 2025.03.12
 
-- fix(client): set `{ shell: true }` in server options for "deno.{bat,cmd}" (#1273)
+- fix(client): set `{ shell: true }` in server options for "deno.{bat,cmd}"
+  (#1273)
 - docs: `deno.codeLens.test` is not deprecated (#1268)
 
 ### [3.43.5](https://github.com/denoland/vscode_deno/compare/3.43.4...3.43.5) / 2025.02.26
@@ -219,7 +225,8 @@ Releases of the extension can be downloaded from
 ### [3.24.0](https://github.com/denoland/vscode_deno/compare/3.23.1...3.24.0) / 2023.09.25
 
 - fix: regression when caching via the command palette (#930)
-- feat: include "javascript" and "typescript" settings in LSP init options (#929)
+- feat: include "javascript" and "typescript" settings in LSP init options
+  (#929)
 
 ### [3.23.1](https://github.com/denoland/vscode_deno/compare/3.23.0...3.23.1) / 2023.09.19
 
@@ -227,7 +234,8 @@ Releases of the extension can be downloaded from
 
 ### [3.23.0](https://github.com/denoland/vscode_deno/compare/3.22.0...3.23.0) / 2023.09.19
 
-- fix: getCompilerOptionsDiagnostics and getNavigateToItems fixed when "deno.enable" is false (#915)
+- fix: getCompilerOptionsDiagnostics and getNavigateToItems fixed when
+  "deno.enable" is false (#915)
 - feat: Restore "deno.enable" null default for deno.json auto-detection (#921)
 - feat: feat: "deno.disablePaths" setting (#919)
 

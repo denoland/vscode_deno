@@ -216,7 +216,7 @@ interface TestOutput {
 
 interface TestRunRestart {
   type: "restart";
-  enqueued: EnqueuedTestModule[]
+  enqueued: EnqueuedTestModule[];
 }
 
 interface TestEnd {
