@@ -119,7 +119,7 @@ export function startLanguageServer(
     }
 
     // Start a new language server
-    const command = await getDenoCommandPath();
+    const command = await getDenoCommandPath(extensionContext.approvedPaths);
     if (command == null) {
       const message =
         "Could not resolve Deno executable. Please ensure it is available " +
@@ -464,7 +464,7 @@ export function test(
     };
 
     assert(workspaceFolder);
-    const denoCommand = await getDenoCommandName();
+    const denoCommand = await getDenoCommandName(extensionContext.approvedPaths);
     const task = tasks.buildDenoTask(
       workspaceFolder,
       denoCommand,
@@ -512,7 +512,10 @@ export function statusBarClicked(
     extensionContext.outputChannel.show(true);
     if (extensionContext.serverInfo?.upgradeAvailable) {
       // Async dispatch on purpose.
-      denoUpgradePromptAndExecute(extensionContext.serverInfo.upgradeAvailable);
+      denoUpgradePromptAndExecute(
+        extensionContext.serverInfo.upgradeAvailable,
+        extensionContext.approvedPaths,
+      );
     }
   };
 }

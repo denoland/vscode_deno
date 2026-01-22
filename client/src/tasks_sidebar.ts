@@ -122,7 +122,7 @@ class DenoTaskProvider implements TaskProvider {
   }
 
   async provideTasks(): Promise<Task[]> {
-    const process = await getDenoCommandName();
+    const process = await getDenoCommandName(this.#extensionContext.approvedPaths);
     const client = this.#extensionContext.client;
     const supportsConfigTasks = this.#extensionContext.serverCapabilities
       ?.experimental?.denoConfigTasks;
@@ -175,12 +175,15 @@ type TaskTree = Folder[] | DenoJSON[] | NoScripts[];
 export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
   #taskTree: TaskTree | null = null;
   #onDidChangeTreeData = new EventEmitter<TreeItem | null>();
+  #extensionContext: DenoExtensionContext;
   readonly onDidChangeTreeData = this.#onDidChangeTreeData.event;
 
   constructor(
     public taskProvider: DenoTaskProvider,
     subscriptions: ExtensionContext["subscriptions"],
+    extensionContext: DenoExtensionContext,
   ) {
+    this.#extensionContext = extensionContext;
     subscriptions.push(
       commands.registerCommand("deno.client.runTask", this.#runTask, this),
     );
@@ -239,7 +242,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
         }
         await tasks.executeTask(buildDenoConfigTask(
           workspaceFolder,
-          await getDenoCommandName(),
+          await getDenoCommandName(this.#extensionContext.approvedPaths),
           task.name,
           task.command,
           sourceUri,
@@ -251,7 +254,7 @@ export class DenoTasksTreeDataProvider implements TreeDataProvider<TreeItem> {
   }
 
   async #debugTask(task: DenoTask) {
-    const command = `${await getDenoCommandName()} task ${task.task.name}`;
+    const command = `${await getDenoCommandName(this.#extensionContext.approvedPaths)} task ${task.task.name}`;
     commands.executeCommand(
       "extension.js-debug.createDebuggerTerminal",
       command,
@@ -381,6 +384,7 @@ export function registerSidebar(
   const treeDataProvider = new DenoTasksTreeDataProvider(
     taskProvider,
     subscriptions,
+    context,
   );
 
   const view = window.createTreeView("denoTasks", {

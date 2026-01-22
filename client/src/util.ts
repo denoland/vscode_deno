@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { EXTENSION_NS } from "./constants";
+import { type ApprovedConfigPaths, getDenoPathInfo } from "./config_paths";
 
 import * as fs from "fs";
 import * as os from "os";
@@ -28,13 +28,22 @@ export function assert(cond: unknown, msg = "Assertion failed."): asserts cond {
 
 /** Returns the absolute path to an existing deno command or
  * the "deno" command name if not found. */
-export async function getDenoCommandName() {
-  return await getDenoCommandPath() ?? "deno";
+export async function getDenoCommandName(approvedPaths: ApprovedConfigPaths) {
+  return await getDenoCommandPath(approvedPaths) ?? "deno";
 }
 
-/** Returns the absolute path to an existing deno command. */
-export async function getDenoCommandPath() {
-  const command = getWorkspaceConfigDenoExePath();
+/** Returns the absolute path to an existing deno command.
+ * Returns undefined if the path is not approved by the user. */
+export async function getDenoCommandPath(approvedPaths: ApprovedConfigPaths) {
+  const pathInfo = getDenoPathInfo();
+
+  // check for approval if using a workspace-configured path
+  const approved = await approvedPaths.promptForApproval(pathInfo);
+  if (!approved) {
+    return await getDefaultDenoCommand();
+  }
+
+  const command = pathInfo?.path;
   const workspaceFolders = workspace.workspaceFolders;
   if (!command || !workspaceFolders) {
     return command ?? await getDefaultDenoCommand();
@@ -49,17 +58,6 @@ export async function getDenoCommandPath() {
     return undefined;
   } else {
     return command;
-  }
-}
-
-function getWorkspaceConfigDenoExePath() {
-  const exePath = workspace.getConfiguration(EXTENSION_NS)
-    .get<string>("path");
-  // it is possible for the path to be blank. In that case, return undefined
-  if (typeof exePath === "string" && exePath.trim().length === 0) {
-    return undefined;
-  } else {
-    return exePath;
   }
 }
 
@@ -117,9 +115,10 @@ async function getDefaultDenoCommand() {
 
 export async function getDenoInfoJson(
   outputChannel: vscode.OutputChannel,
+  approvedPaths: ApprovedConfigPaths,
 ): Promise<DenoInfoJson | null> {
   try {
-    const command = await getDenoCommandName();
+    const command = await getDenoCommandName(approvedPaths);
     const { stdout, stderr, status, error } = spawnSync(command, [
       "info",
       "--json",

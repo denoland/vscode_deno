@@ -62,7 +62,7 @@ export class DenoDebugConfigurationProvider
       program: "${workspaceFolder}/main.ts",
       cwd: "${workspaceFolder}",
       env: this.#getEnv(),
-      runtimeExecutable: await getDenoCommandName(),
+      runtimeExecutable: await getDenoCommandName(this.#extensionContext.approvedPaths),
       runtimeArgs: [
         "run",
         ...this.#getAdditionalRuntimeArgs(),
@@ -99,7 +99,7 @@ export class DenoDebugConfigurationProvider
           type: "node",
           program: "${file}",
           env: this.#getEnv(),
-          runtimeExecutable: await getDenoCommandName(),
+          runtimeExecutable: await getDenoCommandName(this.#extensionContext.approvedPaths),
           runtimeArgs: [
             "run",
             ...this.#getAdditionalRuntimeArgs(),
