@@ -464,7 +464,9 @@ export function test(
     };
 
     assert(workspaceFolder);
-    const denoCommand = await getDenoCommandName(extensionContext.approvedPaths);
+    const denoCommand = await getDenoCommandName(
+      extensionContext.approvedPaths,
+    );
     const task = tasks.buildDenoTask(
       workspaceFolder,
       denoCommand,
