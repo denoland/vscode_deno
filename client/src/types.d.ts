@@ -4,6 +4,7 @@ import type {
   LanguageClient,
   LanguageClientOptions,
 } from "vscode-languageclient/node";
+import type { ApprovedConfigPaths } from "./config_paths";
 import type { DenoServerInfo } from "./server_info";
 import type { EnableSettings } from "./shared_types";
 import type { DenoStatusBar } from "./status_bar";
@@ -26,6 +27,7 @@ interface DenoExperimental {
 }
 
 export interface DenoExtensionContext {
+  approvedPaths: ApprovedConfigPaths;
   client: LanguageClient | undefined;
   clientSubscriptions: { dispose(): unknown }[] | undefined;
   clientOptions: LanguageClientOptions;

@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { readFileSync } from "fs";
+import type { ApprovedConfigPaths } from "./config_paths";
 import { EXTENSION_NS } from "./constants";
 import * as tasks from "./tasks";
 import { UpgradeAvailable } from "./types";
@@ -11,6 +12,7 @@ import { join } from "path";
 
 export async function denoUpgradePromptAndExecute(
   { latestVersion, isCanary }: UpgradeAvailable,
+  approvedPaths: ApprovedConfigPaths,
 ) {
   const config = vscode.workspace.getConfiguration(EXTENSION_NS);
   let prompt = isCanary
@@ -70,7 +72,7 @@ export async function denoUpgradePromptAndExecute(
     env,
   };
   assert(workspaceFolder);
-  const denoCommand = await getDenoCommandName();
+  const denoCommand = await getDenoCommandName(approvedPaths);
   const task = tasks.buildDenoTask(
     workspaceFolder,
     denoCommand,

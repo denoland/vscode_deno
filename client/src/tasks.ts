@@ -132,7 +132,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
 
     const tasks: vscode.Task[] = [];
 
-    const process = await getDenoCommandName();
+    const process = await getDenoCommandName(this.#extensionContext.approvedPaths);
     for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
       for (const { command, group, problemMatchers } of defs) {
         const task = buildDenoTask(
@@ -159,7 +159,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
       if (isWorkspaceFolder(task.scope)) {
         return buildDenoTask(
           task.scope,
-          await getDenoCommandName(),
+          await getDenoCommandName(this.#extensionContext.approvedPaths),
           definition,
           task.name,
           args,
@@ -170,7 +170,7 @@ class DenoTaskProvider implements vscode.TaskProvider {
       if (isWorkspaceFolder(task.scope)) {
         return buildDenoConfigTask(
           task.scope,
-          await getDenoCommandName(),
+          await getDenoCommandName(this.#extensionContext.approvedPaths),
           definition.name,
           definition.detail,
         );

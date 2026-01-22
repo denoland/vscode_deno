@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import { ApprovedConfigPaths } from "./config_paths";
 import * as commands from "./commands";
 import {
   ENABLEMENT_FLAG,
@@ -79,10 +80,12 @@ const extensionContext = {} as DenoExtensionContext;
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
+  extensionContext.approvedPaths = new ApprovedConfigPaths(context);
   extensionContext.outputChannel = extensionContext.outputChannel ??
     vscode.window.createOutputChannel(LANGUAGE_CLIENT_NAME, { log: true });
   extensionContext.denoInfoJson = await getDenoInfoJson(
     extensionContext.outputChannel,
+    extensionContext.approvedPaths,
   );
   const p2cMap = new Map<string, string>();
   extensionContext.clientOptions = {
