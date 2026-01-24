@@ -50,6 +50,7 @@ function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
       event.affectsConfiguration("deno.envFile") ||
       event.affectsConfiguration("deno.forcePushBasedDiagnostics") ||
       event.affectsConfiguration("deno.future") ||
+      event.affectsConfiguration("deno.semanticHighlighting.enabled") ||
       event.affectsConfiguration("deno.internalInspect") ||
       event.affectsConfiguration("deno.logFile") ||
       event.affectsConfiguration("deno.path") ||
