@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.50.0](https://github.com/denoland/vscode_deno/compare/3.49.0...3.50.0) / 2026.02.03
+
+- feat: add toggles for organize imports and symbols (#1350)
+
 ### [3.49.0](https://github.com/denoland/vscode_deno/compare/3.48.0...3.49.0) / 2026.01.22
 
 - feat: prompt for custom workspace `"deno.path"` setting
