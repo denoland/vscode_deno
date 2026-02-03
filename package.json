@@ -557,6 +557,36 @@
             false
           ]
         },
+        "deno.organizeImports.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Controls if the Deno language server contributes organize imports code actions. Disable to rely on VS Code's built-in TypeScript/JavaScript organize imports instead.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "deno.symbols.document.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Controls if the Deno language server provides document symbols. Disable to rely on VS Code's built-in providers instead.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "deno.symbols.workspace.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Controls if the Deno language server provides workspace symbols. Disable to rely on VS Code's built-in providers instead.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.internalDebug": {
           "type": "boolean",
           "default": false,
