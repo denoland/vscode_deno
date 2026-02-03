@@ -881,7 +881,7 @@
   },
   "devDependencies": {
     "@types/node": "^14.14.25",
-    "esbuild": "^0.14.23",
+    "esbuild": "^0.25.0",
     "typescript": "^5.0.2"
   }
 }
