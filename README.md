@@ -206,13 +206,13 @@ extension has the following configuration options:
   by the Deno Language Server to host its TS server.
 - `deno.lint`: Controls if linting information will be provided by the Deno
   Language Server. _boolean, default `true`_
-- `deno.provide.organizeImports`: Controls if the Deno language server
+- `deno.organizeImports.enabled`: Controls if the Deno language server
   contributes organize imports code actions. Disable to rely on VS Code's
   built-in TypeScript/JavaScript organizer. _boolean, default `true`_
-- `deno.provide.symbols.document`: Controls if the Deno language server
+- `deno.symbols.document.enabled`: Controls if the Deno language server
   contributes document symbols. Disable to rely on VS Code's built-in provider.
   _boolean, default `true`_
-- `deno.provide.symbols.workspace`: Controls if the Deno language server
+- `deno.symbols.workspace.enabled`: Controls if the Deno language server
   contributes workspace symbols. Disable to rely on VS Code's built-in
   provider. _boolean, default `true`_
 - `deno.maxTsServerMemory`: Maximum amount of memory the TypeScript isolate can

@@ -221,7 +221,7 @@ export function startLanguageServer(
             const actions = await next(document, range, context, token);
             if (
               actions == null || !Array.isArray(actions) ||
-              isProvideSettingEnabled("provide.organizeImports", document.uri)
+              isProvideSettingEnabled("organizeImports.enabled", document.uri)
             ) {
               return actions;
             }
@@ -231,13 +231,13 @@ export function startLanguageServer(
             });
           },
           provideDocumentSymbols: (document, token, next) => {
-            if (!isProvideSettingEnabled("provide.symbols.document", document.uri)) {
+            if (!isProvideSettingEnabled("symbols.document.enabled", document.uri)) {
               return [];
             }
             return next(document, token);
           },
           provideWorkspaceSymbols: (query, token, next) => {
-            if (!isProvideSettingEnabled("provide.symbols.workspace")) {
+            if (!isProvideSettingEnabled("symbols.workspace.enabled")) {
               return [];
             }
             return next(query, token);
