@@ -264,3 +264,29 @@ export const virtualTextDocument = new RequestType<
   string,
   void
 >("deno/virtualTextDocument");
+
+export interface FileCoverage {
+  /** The URI of the file */
+  uri: string;
+
+  /** Lines that were executed (1-indexed line numbers) */
+  coveredLines: number[];
+
+  /** Lines that were not executed (1-indexed line numbers) */
+  uncoveredLines: number[];
+
+  /** Coverage percentage for this file */
+  coveragePercent: number;
+}
+
+export interface CoverageNotificationParams {
+  /** The test run ID this coverage belongs to */
+  id: number;
+
+  /** Coverage data for each file */
+  files: FileCoverage[];
+}
+
+export const testCoverage = new NotificationType<CoverageNotificationParams>(
+  "deno/testCoverage",
+);
