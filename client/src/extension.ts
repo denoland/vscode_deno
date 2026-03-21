@@ -174,15 +174,20 @@ export async function activate(
     },
     diagnosticCollectionName: "deno",
     initializationOptions: () => {
-      const denoConfiguration = vscode.workspace.getConfiguration().get(
-        EXTENSION_NS,
-      ) as Record<string, unknown>;
-      commands.transformDenoConfiguration(extensionContext, denoConfiguration);
+      const config = vscode.workspace.getConfiguration();
+      const denoConfig = config.get(EXTENSION_NS) as Record<string, unknown>;
+      commands.transformDenoConfiguration(extensionContext, denoConfig);
+      const jsTsConfig = JSON.parse(JSON.stringify(config.get("js/ts")));
+      commands.transformToRawConfig("js/ts", null, jsTsConfig);
+      const tsConfig = config.get("typescript");
+      const jsConfig = config.get("javascript");
+      const editorConfig = config.get("editor");
       return {
-        ...denoConfiguration,
-        javascript: vscode.workspace.getConfiguration().get("javascript"),
-        typescript: vscode.workspace.getConfiguration().get("typescript"),
-        enableBuiltinCommands: true,
+        ...denoConfig,
+        "js/ts": jsTsConfig,
+        typescript: tsConfig,
+        javascript: jsConfig,
+        editor: editorConfig,
       } as object;
     },
     markdown: {

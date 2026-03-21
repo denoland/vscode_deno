@@ -201,11 +201,23 @@ export function startLanguageServer(
         middleware: {
           workspace: {
             configuration: (params, token, next) => {
-              const response = next(params, token) as Record<string, unknown>[];
+              const response =
+                (next(params, token) as Record<string, unknown>[]).map((item) =>
+                  JSON.parse(JSON.stringify(item))
+                ) as Record<string, unknown>[];
               for (let i = 0; i < response.length; i++) {
                 const item = params.items[i];
                 if (item.section == "deno") {
                   transformDenoConfiguration(extensionContext, response[i]);
+                }
+                if (item.section == "js/ts") {
+                  transformToRawConfig(
+                    item.section,
+                    item.scopeUri != null
+                      ? vscode.Uri.parse(item.scopeUri)
+                      : null,
+                    response[i],
+                  );
                 }
               }
               return response;
@@ -227,11 +239,15 @@ export function startLanguageServer(
             }
             return actions.filter((action) => {
               const kind = (action as vscode.CodeAction).kind;
-              return !kind?.contains(vscode.CodeActionKind.SourceOrganizeImports);
+              return !kind?.contains(
+                vscode.CodeActionKind.SourceOrganizeImports,
+              );
             });
           },
           provideDocumentSymbols: (document, token, next) => {
-            if (!isProvideSettingEnabled("symbols.document.enabled", document.uri)) {
+            if (
+              !isProvideSettingEnabled("symbols.document.enabled", document.uri)
+            ) {
               return [];
             }
             return next(document, token);
@@ -387,6 +403,41 @@ export function transformDenoConfiguration(
     semver.lte(extensionContext.serverInfo?.version || "1.0.0", "2.0.0-rc.1")
   ) {
     config.unstable = !!config.unstable;
+  }
+}
+
+/** Remove fields that weren't explicitly set by the user. */
+export function transformToRawConfig(
+  sectionName: string | undefined,
+  scopeUri: vscode.Uri | null,
+  sectionConfig: unknown,
+) {
+  const config = vscode.workspace.getConfiguration(sectionName, scopeUri);
+  if (typeof sectionConfig != "object" || sectionConfig == null) {
+    return;
+  }
+  for (const [key, value] of Object.entries(sectionConfig)) {
+    const inspection = config.inspect(key);
+    if (
+      inspection != null &&
+      inspection.globalValue === undefined &&
+      inspection.workspaceValue === undefined &&
+      inspection.workspaceFolderValue === undefined &&
+      inspection.globalLanguageValue === undefined &&
+      inspection.workspaceLanguageValue === undefined &&
+      inspection.workspaceFolderLanguageValue === undefined
+    ) {
+      delete (sectionConfig as Record<string, unknown>)[key];
+    } else if (value != null && typeof value == "object") {
+      transformToRawConfig(
+        `${sectionName}.${key}`,
+        scopeUri,
+        value as Record<string, unknown>,
+      );
+      if (Object.keys(value).length == 0) {
+        delete (sectionConfig as Record<string, unknown>)[key];
+      }
+    }
   }
 }
 
