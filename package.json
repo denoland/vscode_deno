@@ -388,100 +388,10 @@
             "C:\\path\\to\\import_map.json"
           ]
         },
-        "deno.inlayHints.parameterNames.enabled": {
-          "deprecationMessage": "Use `typescript.inlayHints.parameterNames.enabled` and `javascript.inlayHints.parameterNames.enabled`.",
-          "type": "string",
-          "enum": [
-            "none",
-            "literals",
-            "all"
-          ],
-          "enumDescriptions": [
-            "Disable inlay hints for parameters.",
-            "Display inlay hints for literal arguments.",
-            "Display inlay hints for all literal and non-literal arguments."
-          ],
-          "default": "none",
-          "markdownDescription": "Enable/disable inlay hints for parameter names.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.parameterNames.suppressWhenArgumentMatchesName": {
-          "deprecationMessage": "Use `typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName` and `javascript.inlayHints.parameterNames.suppressWhenArgumentMatchesName`.",
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Do not display an inlay hint when the argument name matches the parameter.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.parameterTypes.enabled": {
-          "deprecationMessage": "Use `typescript.inlayHints.parameterTypes.enabled` and `javascript.inlayHints.parameterTypes.enabled`.",
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable/disable inlay hints for implicit parameter types.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.variableTypes.enabled": {
-          "deprecationMessage": "Use `typescript.inlayHints.variableTypes.enabled` and `javascript.inlayHints.variableTypes.enabled`.",
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable/disable inlay hints for implicit variable types.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.variableTypes.suppressWhenTypeMatchesName": {
-          "deprecationMessage": "Use `typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName` and `javascript.inlayHints.variableTypes.suppressWhenTypeMatchesName`.",
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Suppress type hints where the variable name matches the implicit type.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.propertyDeclarationTypes.enabled": {
-          "deprecationMessage": "Use `typescript.inlayHints.propertyDeclarationTypes.enabled` and `javascript.inlayHints.propertyDeclarationTypes.enabled`.",
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable/disable inlay hints for implicit property declarations.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.functionLikeReturnTypes.enabled": {
-          "deprecationMessage": "Use `typescript.inlayHints.functionLikeReturnTypes.enabled` and `javascript.inlayHints.functionLikeReturnTypes.enabled`.",
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable/disable inlay hints for implicit function return types.",
-          "scope": "resource"
-        },
-        "deno.inlayHints.enumMemberValues.enabled": {
-          "deprecationMessage": "Use `typescript.inlayHints.enumMemberValues.enabled` and `javascript.inlayHints.enumMemberValues.enabled`.",
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable/disable inlay hints for enum values.",
-          "scope": "resource"
-        },
         "deno.maxTsServerMemory": {
           "type": "number",
           "markdownDescription": "Maximum amount of memory the TypeScript isolate can use. Defaults to 3072 (3GB).",
           "default": 3072,
-          "scope": "resource"
-        },
-        "deno.suggest.autoImports": {
-          "deprecationMessage": "Use `typescript.suggest.autoImports` and `javascript.suggest.autoImports`.",
-          "type": "boolean",
-          "default": true,
-          "scope": "resource"
-        },
-        "deno.suggest.completeFunctionCalls": {
-          "deprecationMessage": "Use `typescript.suggest.completeFunctionCalls` and `javascript.suggest.completeFunctionCalls`.",
-          "type": "boolean",
-          "default": false,
-          "scope": "resource"
-        },
-        "deno.suggest.names": {
-          "deprecationMessage": "Use `typescript.suggest.names` and `javascript.suggest.names`.",
-          "type": "boolean",
-          "default": true,
-          "scope": "resource"
-        },
-        "deno.suggest.paths": {
-          "deprecationMessage": "Use `typescript.suggest.paths` and `javascript.suggest.paths`.",
-          "type": "boolean",
-          "default": true,
           "scope": "resource"
         },
         "deno.suggest.imports.autoDiscover": {
