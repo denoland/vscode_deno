@@ -3,6 +3,11 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.51.0](https://github.com/denoland/vscode_deno/compare/3.50.0...3.51.0) / 2026.03.24
+
+- chore(deps): bump minimatch in /client (#1364)
+- chore: send "js/ts" and "editor" settings in initialization options (#1367)
+
 ### [3.50.0](https://github.com/denoland/vscode_deno/compare/3.49.0...3.50.0) / 2026.02.03
 
 - feat: add toggles for organize imports and symbols (#1350)
