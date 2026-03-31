@@ -177,7 +177,10 @@ export async function activate(
       const config = vscode.workspace.getConfiguration();
       const denoConfig = config.get(EXTENSION_NS) as Record<string, unknown>;
       commands.transformDenoConfiguration(extensionContext, denoConfig);
-      const jsTsConfig = JSON.parse(JSON.stringify(config.get("js/ts")));
+      const jsTsConfig_ = config.get("js/ts");
+      const jsTsConfig = jsTsConfig_ != null
+        ? JSON.parse(JSON.stringify(jsTsConfig_))
+        : undefined;
       commands.transformToRawConfig("js/ts", null, jsTsConfig);
       const tsConfig = config.get("typescript");
       const jsConfig = config.get("javascript");
