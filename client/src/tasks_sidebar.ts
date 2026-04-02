@@ -135,14 +135,14 @@ class DenoTaskProvider implements TaskProvider {
     try {
       const configTasks = await client.sendRequest(taskReq);
       for (const configTask of configTasks ?? []) {
-        const workspaceFolders = Array.from(
-          workspace.workspaceFolders ?? [],
-        );
+        // Deno LSP keeps disk drive colons unencoded, while vscode encodes them.
+        // Re-parsing sourceUri ensures it matches vscode's internal format.
+        const sourceUri = Uri.parse(configTask.sourceUri);
+        const workspaceFolders = Array.from(workspace.workspaceFolders ?? []);
         workspaceFolders.reverse();
         const workspaceFolder = workspaceFolders.find((f) =>
-          configTask.sourceUri
-            .toLocaleLowerCase()
-            .startsWith(f.uri.toString().toLocaleLowerCase())
+          sourceUri.toString().toLowerCase()
+            .startsWith(f.uri.toString().toLowerCase())
         );
         if (!workspaceFolder) {
           continue;
@@ -152,7 +152,7 @@ class DenoTaskProvider implements TaskProvider {
           process,
           configTask.name,
           configTask.command ?? configTask.detail,
-          Uri.parse(configTask.sourceUri),
+          sourceUri,
           configTask.description ?? "",
         );
         tasks.push(task);
