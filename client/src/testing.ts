@@ -235,7 +235,7 @@ export class DenoTestController implements vscode.Disposable {
     // Register coverage handler for coverage profile
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (workspaceFolder) {
-      const { handleCoverageOutput, getCoverageFilePath } =
+      const { getCoverageFilePath } =
         createCoverageHandler(workspaceFolder);
       coverageProfile.onDidRequestCoverage = async (coverage) => {
         try {
