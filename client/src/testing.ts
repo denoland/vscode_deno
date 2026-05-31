@@ -240,7 +240,7 @@ export class DenoTestController implements vscode.Disposable {
       true,
     );
     if (coverageHandler) {
-      coverageProfile.loadDetailedCoverage = (
+      coverageProfile.loadDetailedCoverage = async (
         _testRun: vscode.TestRun,
         fileCoverage: vscode.FileCoverage,
         token: vscode.CancellationToken,
