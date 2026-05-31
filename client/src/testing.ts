@@ -148,6 +148,9 @@ export class DenoTestController implements vscode.Disposable {
     { run: vscode.TestRun; request: TestRunRequestInfo }
   >();
   #subscriptions: vscode.Disposable[] = [];
+  #coverageHandler:
+    | ReturnType<typeof createCoverageHandler>
+    | undefined;
 
   constructor(client: LanguageClient) {
     const testController = vscode.tests.createTestController(
@@ -222,40 +225,23 @@ export class DenoTestController implements vscode.Disposable {
       true,
     );
 
-    // Coverage run profile: runs `deno test --coverage` then `deno coverage`
-    const coverageProfile = testController.createRunProfile(
+    // Coverage run profile: runs `deno test --coverage`
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+      this.#coverageHandler = createCoverageHandler(workspaceFolder);
+    }
+    const coverageHandler = this.#coverageHandler;
+    testController.createRunProfile(
       "Run Tests with Coverage",
       vscode.TestRunProfileKind.Coverage,
       runHandler,
       true,
-      undefined,
+      coverageHandler
+        ? (_testRun, fileCoverage, token) =>
+          coverageHandler.loadDetailedCoverage(_testRun, fileCoverage, token)
+        : undefined,
       true,
     );
-
-    // Register coverage handler for coverage profile
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (workspaceFolder) {
-      const { getCoverageFilePath } =
-        createCoverageHandler(workspaceFolder);
-      coverageProfile.onDidRequestCoverage = async (coverage) => {
-        try {
-          const coveragePath = getCoverageFilePath();
-          const coverageUri = vscode.Uri.file(coveragePath);
-          const lcovContent = await vscode.workspace.fs
-            .readFile(coverageUri)
-            .then((data) => new TextDecoder().decode(data));
-          coverage.coverageLoaded(lcovContent);
-          // Clean up the temp file
-          try {
-            await vscode.workspace.fs.delete(coverageUri);
-          } catch {
-            // Ignore cleanup errors
-          }
-        } catch {
-          // Coverage file not found or couldn't be read
-        }
-      };
-    }
 
     // TODO(@kitsonk) add debug run profile
 
@@ -403,6 +389,10 @@ export class DenoTestController implements vscode.Disposable {
           break;
         }
         case "end": {
+          // If this was a coverage run, load the coverage data
+          if (runData.request.profile?.kind === vscode.TestRunProfileKind.Coverage) {
+            coverageHandler?.loadCoverage(run);
+          }
           run.end();
           this.#runs.delete(id);
           break;
