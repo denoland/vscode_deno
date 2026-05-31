@@ -231,17 +231,22 @@ export class DenoTestController implements vscode.Disposable {
       this.#coverageHandler = createCoverageHandler(workspaceFolder);
     }
     const coverageHandler = this.#coverageHandler;
-    testController.createRunProfile(
+    const coverageProfile = testController.createRunProfile(
       "Run Tests with Coverage",
       vscode.TestRunProfileKind.Coverage,
       runHandler,
       true,
-      coverageHandler
-        ? (_testRun, fileCoverage, token) =>
-          coverageHandler.loadDetailedCoverage(_testRun, fileCoverage, token)
-        : undefined,
+      undefined,
       true,
     );
+    if (coverageHandler) {
+      coverageProfile.loadDetailedCoverage = (
+        _testRun: vscode.TestRun,
+        fileCoverage: vscode.FileCoverage,
+        token: vscode.CancellationToken,
+      ) =>
+        coverageHandler.loadDetailedCoverage(_testRun, fileCoverage, token);
+    }
 
     // TODO(@kitsonk) add debug run profile
 
