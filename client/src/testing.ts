@@ -245,7 +245,11 @@ export class DenoTestController implements vscode.Disposable {
         fileCoverage: vscode.FileCoverage,
         token: vscode.CancellationToken,
       ) =>
-        coverageHandler.loadDetailedCoverage(_testRun, fileCoverage, token);
+        await coverageHandler.loadDetailedCoverage(
+          _testRun,
+          fileCoverage,
+          token,
+        );
     }
 
     // TODO(@kitsonk) add debug run profile
