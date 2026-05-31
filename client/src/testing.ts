@@ -12,6 +12,8 @@ import {
   testRunProgress,
 } from "./lsp_extensions";
 
+import { createCoverageHandler } from "./coverage";
+
 import * as vscode from "vscode";
 import { FeatureState, MarkupKind } from "vscode-languageclient/node";
 import type {
@@ -219,8 +221,43 @@ export class DenoTestController implements vscode.Disposable {
       undefined,
       true,
     );
+
+    // Coverage run profile: runs `deno test --coverage` then `deno coverage`
+    const coverageProfile = testController.createRunProfile(
+      "Run Tests with Coverage",
+      vscode.TestRunProfileKind.Coverage,
+      runHandler,
+      true,
+      undefined,
+      true,
+    );
+
+    // Register coverage handler for coverage profile
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+      const { handleCoverageOutput, getCoverageFilePath } =
+        createCoverageHandler(workspaceFolder);
+      coverageProfile.onDidRequestCoverage = async (coverage) => {
+        try {
+          const coveragePath = getCoverageFilePath();
+          const coverageUri = vscode.Uri.file(coveragePath);
+          const lcovContent = await vscode.workspace.fs
+            .readFile(coverageUri)
+            .then((data) => new TextDecoder().decode(data));
+          coverage.coverageLoaded(lcovContent);
+          // Clean up the temp file
+          try {
+            await vscode.workspace.fs.delete(coverageUri);
+          } catch {
+            // Ignore cleanup errors
+          }
+        } catch {
+          // Coverage file not found or couldn't be read
+        }
+      };
+    }
+
     // TODO(@kitsonk) add debug run profile
-    // TODO(@kitsonk) add coverage run profile
 
     const p2c = client.protocol2CodeConverter;
 
