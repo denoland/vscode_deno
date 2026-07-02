@@ -143,6 +143,9 @@ extension has the following configuration options:
   the extension will disable the built-in VSCode JavaScript and TypeScript
   language services, and will use the Deno Language Server (`deno lsp`) instead.
   _boolean, default `false`_
+- `deno.semanticHighlighting.enabled`: Controls if the extension provides semantic
+  tokens to VS Code. Disable this to use VS Code's built-in JavaScript and
+  TypeScript syntax highlighting instead. _boolean, default `true`_
 - `deno.disablePaths`: Controls if the Deno Language Server is disabled for
   specific paths of the workspace folder. Defaults to an empty list.
 - `deno.enablePaths`: Controls if the Deno Language Server is enabled for only

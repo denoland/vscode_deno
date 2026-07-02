@@ -198,6 +198,16 @@
             false
           ]
         },
+        "deno.semanticHighlighting.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Controls if the extension provides semantic tokens for files it manages. Set to false to rely on the built-in VS Code JavaScript and TypeScript syntax highlighting instead. Requires restarting the Deno language server to take effect.",
+          "scope": "resource",
+          "examples": [
+            true,
+            false
+          ]
+        },
         "deno.cacheOnSave": {
           "type": "boolean",
           "default": true,
