@@ -559,6 +559,14 @@
         "url": "https://raw.githubusercontent.com/denoland/deno/main/cli/schemas/config-file.v1.json"
       },
       {
+        "fileMatch": [],
+        "url": "https://raw.githubusercontent.com/denoland/deno/main/cli/schemas/lint-rules.v1.json"
+      },
+      {
+        "fileMatch": [],
+        "url": "https://raw.githubusercontent.com/denoland/deno/main/cli/schemas/lint-tags.v1.json"
+      },
+      {
         "fileMatch": "deno-import-intellisense.json",
         "url": "./schemas/registry-completions.schema.json"
       },
