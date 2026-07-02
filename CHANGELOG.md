@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.53.0](https://github.com/denoland/vscode_deno/compare/3.52.0...3.53.0) / 2026.07.02
+
+- fix: register $ref'd config sub-schemas so VS Code trusts them (#1385)
+
 ### [3.52.0](https://github.com/denoland/vscode_deno/compare/3.51.0...3.52.0) / 2026.04.01
 
 - fix: check "js/ts" config for undefined before json stringify (#1373)
