@@ -12,6 +12,8 @@ import {
   testRunProgress,
 } from "./lsp_extensions";
 
+import { createCoverageHandler } from "./coverage";
+
 import * as vscode from "vscode";
 import { FeatureState, MarkupKind } from "vscode-languageclient/node";
 import type {
@@ -146,6 +148,9 @@ export class DenoTestController implements vscode.Disposable {
     { run: vscode.TestRun; request: TestRunRequestInfo }
   >();
   #subscriptions: vscode.Disposable[] = [];
+  #coverageHandler:
+    | ReturnType<typeof createCoverageHandler>
+    | undefined;
 
   constructor(client: LanguageClient) {
     const testController = vscode.tests.createTestController(
@@ -219,8 +224,35 @@ export class DenoTestController implements vscode.Disposable {
       undefined,
       true,
     );
+
+    // Coverage run profile: runs `deno test --coverage`
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+      this.#coverageHandler = createCoverageHandler(workspaceFolder);
+    }
+    const coverageHandler = this.#coverageHandler;
+    const coverageProfile = testController.createRunProfile(
+      "Run Tests with Coverage",
+      vscode.TestRunProfileKind.Coverage,
+      runHandler,
+      true,
+      undefined,
+      true,
+    );
+    if (coverageHandler) {
+      coverageProfile.loadDetailedCoverage = async (
+        _testRun: vscode.TestRun,
+        fileCoverage: vscode.FileCoverage,
+        token: vscode.CancellationToken,
+      ) =>
+        await coverageHandler.loadDetailedCoverage(
+          _testRun,
+          fileCoverage,
+          token,
+        );
+    }
+
     // TODO(@kitsonk) add debug run profile
-    // TODO(@kitsonk) add coverage run profile
 
     const p2c = client.protocol2CodeConverter;
 
@@ -366,6 +398,10 @@ export class DenoTestController implements vscode.Disposable {
           break;
         }
         case "end": {
+          // If this was a coverage run, load the coverage data
+          if (runData.request.profile?.kind === vscode.TestRunProfileKind.Coverage) {
+            coverageHandler?.loadCoverage(run);
+          }
           run.end();
           this.#runs.delete(id);
           break;
