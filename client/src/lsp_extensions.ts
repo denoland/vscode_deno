@@ -15,6 +15,7 @@ import {
 import type {
   Location,
   MarkupContent,
+  Position,
   Range,
   TextDocumentIdentifier,
 } from "vscode-languageclient";
@@ -27,6 +28,22 @@ export interface RegistryStateParams {
 export const registryState = new NotificationType<RegistryStateParams>(
   "deno/registryState",
 );
+
+export interface InferredTypeParams {
+  textDocument: TextDocumentIdentifier;
+  position: Position;
+}
+
+export interface InferredTypeResponse {
+  text: string;
+  range: Range;
+}
+
+export const inferredType = new RequestType<
+  InferredTypeParams,
+  InferredTypeResponse | null,
+  void
+>("deno/inferredType");
 
 export interface TaskRequestResponse {
   name: string;
