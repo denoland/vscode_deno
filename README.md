@@ -213,8 +213,8 @@ extension has the following configuration options:
   contributes document symbols. Disable to rely on VS Code's built-in provider.
   _boolean, default `true`_
 - `deno.symbols.workspace.enabled`: Controls if the Deno language server
-  contributes workspace symbols. Disable to rely on VS Code's built-in
-  provider. _boolean, default `true`_
+  contributes workspace symbols. Disable to rely on VS Code's built-in provider.
+  _boolean, default `true`_
 - `deno.maxTsServerMemory`: Maximum amount of memory the TypeScript isolate can
   use. Defaults to 3072 (3GB).
 - `deno.suggest.imports.hosts`: A map of domain hosts (origins) that are used

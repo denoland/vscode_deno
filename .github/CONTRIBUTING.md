@@ -7,15 +7,14 @@ Thank you, we appreciate your help!
 
 ## Prerequisites
 
-Most changes & feature enhancements don't require the extension to be
-modified, as the majority of the data used in the extension is supplied by
-the **Deno Language Server** which is integrated into the **[Deno CLI]**.
+Most changes & feature enhancements don't require the extension to be modified,
+as the majority of the data used in the extension is supplied by the **Deno
+Language Server** which is integrated into the **[Deno CLI]**.
 
 <br>
 
-If you already have this VSCode extension installed from the Marketplace,
-note that there is no need to uninstall it for development as it is
-automatically
+If you already have this VSCode extension installed from the Marketplace, note
+that there is no need to uninstall it for development as it is automatically
 replaced when the `Launch Client` instance is running.
 
 <br>
@@ -33,12 +32,10 @@ replaced when the `Launch Client` instance is running.
    npm install
    ```
 
-4. In the **VSCode Debug Menu**
-   start the `Launch Client` task
+4. In the **VSCode Debug Menu** start the `Launch Client` task
 
-5. In the **VSCode Debug Menu**
-   use the restart button after you
-   have made changes to reload
+5. In the **VSCode Debug Menu** use the restart button after you have made
+   changes to reload
 
 <br>
 <br>
@@ -46,8 +43,8 @@ replaced when the `Launch Client` instance is running.
 ## Pull Requests
 
 Once you are ready to open a ( draft ) pull request, give it a 𝗧𝗶𝘁𝗹𝗲 and
-𝗗𝗲𝘀𝗰𝗿𝗶𝗽𝘁𝗶𝗼𝗻 that help people - that don't know of your changes - to
-understand what, how and why you did what you did.
+𝗗𝗲𝘀𝗰𝗿𝗶𝗽𝘁𝗶𝗼𝗻 that help people - that don't know of your changes - to understand
+what, how and why you did what you did.
 
 _It's helpful to link related [𝗜𝘀𝘀𝘂𝗲𝘀] & [𝗗𝗶𝘀𝗰𝘂𝘀𝘀𝗶𝗼𝗻𝘀] !_
 
