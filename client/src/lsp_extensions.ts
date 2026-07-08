@@ -224,12 +224,28 @@ interface TestEnd {
   type: "end";
 }
 
+export interface TestRunLineCoverage {
+  line: number;
+  count: number;
+}
+
+export interface TestRunCoverage {
+  textDocument: TextDocumentIdentifier;
+  lineCoverage: TestRunLineCoverage[];
+}
+
+interface TestCoverage {
+  type: "coverage";
+  value: TestRunCoverage[];
+}
+
 type TestRunProgressMessage =
   | TestEnqueuedStartedSkipped
   | TestFailedErrored
   | TestPassed
   | TestOutput
   | TestRunRestart
+  | TestCoverage
   | TestEnd;
 
 export interface TestRunProgressParams {

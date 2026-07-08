@@ -219,8 +219,14 @@ export class DenoTestController implements vscode.Disposable {
       undefined,
       true,
     );
-    // TODO(@kitsonk) add debug run profile
-    // TODO(@kitsonk) add coverage run profile
+    testController.createRunProfile(
+      "Run with Coverage",
+      vscode.TestRunProfileKind.Coverage,
+      runHandler,
+      true,
+      undefined,
+      true,
+    );
 
     const p2c = client.protocol2CodeConverter;
 
@@ -363,6 +369,26 @@ export class DenoTestController implements vscode.Disposable {
             }
           }
           this.#runs.set(id, { run: newRun, request: runData.request });
+          break;
+        }
+        case "coverage": {
+          for (const fileCoverage of message.value) {
+            const uri = p2c.asUri(fileCoverage.textDocument.uri);
+            const statementCoverage: vscode.StatementCoverage[] = [];
+            for (const lineCoverage of fileCoverage.lineCoverage) {
+              statementCoverage.push(
+                new vscode.StatementCoverage(
+                  lineCoverage.count,
+                  new vscode.Position(lineCoverage.line, 0),
+                ),
+              );
+            }
+            const vscodeFileCoverage = vscode.FileCoverage.fromDetails(
+              uri,
+              statementCoverage,
+            );
+            run.addCoverage(vscodeFileCoverage);
+          }
           break;
         }
         case "end": {
