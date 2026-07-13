@@ -49,6 +49,7 @@
     "onCommand:deno.client.disable",
     "onCommand:deno.client.clearHiddenPromptStorage",
     "onCommand:deno.reloadImportRegistries",
+    "onCommand:deno.client.showTestCoverage",
     "onWebviewPanel:welcomeDeno"
   ],
   "main": "./client/dist/main",
@@ -144,6 +145,12 @@
         "title": "Disable",
         "category": "Deno",
         "description": "Disable the Deno language server via workspace settings."
+      },
+      {
+        "command": "deno.client.showTestCoverage",
+        "title": "Show Test Coverage",
+        "category": "Deno",
+        "description": "Run deno test with coverage and display covered/uncovered line decorations in the editor."
       },
       {
         "command": "deno.client.runTask",

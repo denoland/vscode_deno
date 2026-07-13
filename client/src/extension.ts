@@ -19,6 +19,7 @@ import * as util from "util";
 import * as vscode from "vscode";
 import { registerSidebar } from "./tasks_sidebar";
 import { getDenoInfoJson } from "./util";
+import { showTestCoverage } from "./coverage";
 
 function handleConfigurationChange(event: vscode.ConfigurationChangeEvent) {
   if (
@@ -285,6 +286,7 @@ export async function activate(
   registerCommand("deno.client.initializeWorkspace", commands.enable);
   registerCommand("deno.client.disable", commands.disable);
   registerCommand("deno.client.statusBarClicked", commands.statusBarClicked);
+  registerCommand("deno.client.showTestCoverage", showTestCoverage);
 
   await commands.startLanguageServer(context, extensionContext)();
 }
