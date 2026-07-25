@@ -10,6 +10,9 @@ import {
   testRun,
   testRunCancel,
   testRunProgress,
+  testCoverage,
+  type FileCoverage,
+  type CoverageNotificationParams,
 } from "./lsp_extensions";
 
 import * as vscode from "vscode";
@@ -220,7 +223,14 @@ export class DenoTestController implements vscode.Disposable {
       true,
     );
     // TODO(@kitsonk) add debug run profile
-    // TODO(@kitsonk) add coverage run profile
+    testController.createRunProfile(
+      "Run with Coverage",
+      vscode.TestRunProfileKind.Coverage,
+      runHandler,
+      true,
+      undefined,
+      true,
+    );
 
     const p2c = client.protocol2CodeConverter;
 
@@ -370,6 +380,71 @@ export class DenoTestController implements vscode.Disposable {
           this.#runs.delete(id);
           break;
         }
+      }
+    });
+
+    // Coverage notification: apply green/red line decorations
+    const coveredDecoration =
+      vscode.window.createTextEditorDecorationType({
+        backgroundColor: { id: "diffEditor.insertedTextBackground" },
+        overviewRulerColor: "rgba(0, 255, 0, 0.6)",
+        overviewRulerLane: vscode.OverviewRulerLane.Right,
+      });
+    const uncoveredDecoration =
+      vscode.window.createTextEditorDecorationType({
+        backgroundColor: { id: "diffEditor.removedTextBackground" },
+        overviewRulerColor: "rgba(255, 0, 0, 0.6)",
+        overviewRulerLane: vscode.OverviewRulerLane.Right,
+      });
+
+    let activeCoverageUri: string | undefined;
+    let activeCoverageFiles: FileCoverage[] = [];
+
+    const applyCoverageDecorations = (editor: vscode.TextEditor) => {
+      const uri = editor.document.uri.toString();
+      const file = activeCoverageFiles.find((f) => f.uri === uri);
+      if (!file) {
+        editor.setDecorations(coveredDecoration, []);
+        editor.setDecorations(uncoveredDecoration, []);
+        return;
+      }
+      const coveredRanges = file.coveredLines.map((line) =>
+        new vscode.Range(line - 1, 0, line - 1, Number.MAX_SAFE_INTEGER)
+      );
+      const uncoveredRanges = file.uncoveredLines.map((line) =>
+        new vscode.Range(line - 1, 0, line - 1, Number.MAX_SAFE_INTEGER)
+      );
+      editor.setDecorations(coveredDecoration, coveredRanges);
+      editor.setDecorations(uncoveredDecoration, uncoveredRanges);
+    };
+
+    client.onNotification(testCoverage, ({ id, files }) => {
+      activeCoverageFiles = files;
+
+      // Compute average coverage for the summary message
+      const total = files.length;
+      if (total > 0) {
+        const avgCoverage =
+          files.reduce((sum, f) => sum + f.coveragePercent, 0) / total;
+        vscode.window.showInformationMessage(
+          `Coverage: ${avgCoverage.toFixed(1)}% across ${total} file${
+            total === 1 ? "" : "s"
+          }`,
+        );
+      }
+
+      // Apply to current editor
+      if (vscode.window.activeTextEditor) {
+        applyCoverageDecorations(vscode.window.activeTextEditor);
+      }
+
+      // Listen for editor switches to re-apply
+      activeCoverageUri = undefined;
+    });
+
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        applyCoverageDecorations(editor);
       }
     });
   }
