@@ -3,6 +3,10 @@
 Releases of the extension can be downloaded from
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
+### [3.53.1](https://github.com/denoland/vscode_deno/compare/3.53.0...3.53.1) / 2026.09.24
+
+- chore(deps): bump brace-expansion in /client (#1394)
+
 ### [3.53.0](https://github.com/denoland/vscode_deno/compare/3.52.0...3.53.0) / 2026.07.02
 
 - fix: register $ref'd config sub-schemas so VS Code trusts them (#1385)
