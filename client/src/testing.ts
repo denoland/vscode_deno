@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import {
+  type FileCoverage,
   type TestData,
   type TestIdentifier,
   type TestMessage,
@@ -9,6 +10,7 @@ import {
   TestModuleParams,
   testRun,
   testRunCancel,
+  testCoverage,
   testRunProgress,
 } from "./lsp_extensions";
 
@@ -139,6 +141,33 @@ interface TestRunRequestInfo {
   readonly profile: vscode.TestRunProfile | undefined;
 }
 
+class DenoFileCoverage extends vscode.FileCoverage {
+  readonly details: vscode.StatementCoverage[];
+
+  constructor(file: FileCoverage) {
+    const details: vscode.StatementCoverage[] = [];
+    for (const line of file.coveredLines) {
+      const index = Math.max(0, line - 1);
+      details.push(new vscode.StatementCoverage(
+        true,
+        new vscode.Range(index, 0, index, Number.MAX_SAFE_INTEGER),
+      ));
+    }
+    for (const line of file.uncoveredLines) {
+      const index = Math.max(0, line - 1);
+      details.push(new vscode.StatementCoverage(
+        false,
+        new vscode.Range(index, 0, index, Number.MAX_SAFE_INTEGER),
+      ));
+    }
+    super(vscode.Uri.parse(file.uri), {
+      covered: file.coveredLines.length,
+      total: file.coveredLines.length + file.uncoveredLines.length,
+    });
+    this.details = details;
+  }
+}
+
 export class DenoTestController implements vscode.Disposable {
   #runCount = 0;
   #runs = new Map<
@@ -219,8 +248,19 @@ export class DenoTestController implements vscode.Disposable {
       undefined,
       true,
     );
+    const coverageProfile = testController.createRunProfile(
+      "Run Tests with Coverage",
+      vscode.TestRunProfileKind.Coverage,
+      runHandler,
+      false,
+      undefined,
+      true,
+    );
+    coverageProfile.loadDetailedCoverage = (_run, coverage) =>
+      Promise.resolve(
+        coverage instanceof DenoFileCoverage ? coverage.details : [],
+      );
     // TODO(@kitsonk) add debug run profile
-    // TODO(@kitsonk) add coverage run profile
 
     const p2c = client.protocol2CodeConverter;
 
@@ -299,6 +339,16 @@ export class DenoTestController implements vscode.Disposable {
       testModuleDelete,
       ({ textDocument: { uri } }) => testController.items.delete(uri),
     );
+
+    client.onNotification(testCoverage, ({ id, files }) => {
+      const runData = this.#runs.get(id);
+      if (!runData) {
+        return;
+      }
+      for (const file of files) {
+        runData.run.addCoverage(new DenoFileCoverage(file));
+      }
+    });
 
     client.onNotification(testRunProgress, ({ id, message }) => {
       const runData = this.#runs.get(id);

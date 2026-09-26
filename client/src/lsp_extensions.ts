@@ -244,6 +244,30 @@ export const testRunProgress = new NotificationType<TestRunProgressParams>(
   "deno/testRunProgress",
 );
 
+export interface FileCoverage {
+  /** The file URI this coverage data belongs to. */
+  uri: string;
+
+  /** 1-indexed lines that were executed. */
+  coveredLines: number[];
+
+  /** 1-indexed lines that were not executed. */
+  uncoveredLines: number[];
+
+  /** Percentage of covered lines in the file. */
+  coveragePercent: number;
+}
+
+export interface CoverageNotificationParams {
+  /** The test run ID this coverage data belongs to. */
+  id: number;
+  files: FileCoverage[];
+}
+
+export const testCoverage = new NotificationType<CoverageNotificationParams>(
+  "deno/testCoverage",
+);
+
 export interface TestRunCancelParams {
   /** The test id to be cancelled. */
   id: number;
