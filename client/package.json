@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "@types/semver": "7.3.9",
-    "@types/vscode": "1.91.0",
-    "vscode-test": "^1.6.1"
+    "@types/vscode": "1.91.0"
   }
 }
