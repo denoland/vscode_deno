@@ -39,6 +39,8 @@
     "onLanguage:markdown",
     "onLanguage:json",
     "onLanguage:jsonc",
+    "onLanguage:yaml",
+    "onLanguage:github-actions-workflow",
     "onDebugInitialConfigurations",
     "onDebugResolve:typescript",
     "onDebugResolve:typescriptreact",
