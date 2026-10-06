@@ -48,6 +48,7 @@
     "onCommand:deno.client.enable",
     "onCommand:deno.client.disable",
     "onCommand:deno.client.clearHiddenPromptStorage",
+    "onCommand:deno.client.copyInferredType",
     "onCommand:deno.reloadImportRegistries",
     "onWebviewPanel:welcomeDeno"
   ],
@@ -100,6 +101,13 @@
         "title": "Reload Import Registries Cache",
         "category": "Deno",
         "description": "Reload any cached import registry responses.",
+        "enablement": "deno:lspReady"
+      },
+      {
+        "command": "deno.client.copyInferredType",
+        "title": "Copy Inferred Type",
+        "category": "Deno",
+        "description": "Copy the full inferred type at the cursor.",
         "enablement": "deno:lspReady"
       },
       {
@@ -743,6 +751,11 @@
         }
       ],
       "editor/context": [
+        {
+          "command": "deno.client.copyInferredType",
+          "when": "deno:lspReady && editorTextFocus && (resourceLangId == javascript || resourceLangId == javascriptreact || resourceLangId == typescript || resourceLangId == typescriptreact)",
+          "group": "1_modification@9"
+        },
         {
           "command": "deno.client.runSelectedTask",
           "when": "(resourceFilename == 'deno.json' || resourceFilename == 'deno.jsonc') && resourceScheme == file",

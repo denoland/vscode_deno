@@ -278,6 +278,8 @@ export async function activate(
   );
   registerCommand("deno.client.restart", commands.startLanguageServer);
   registerCommand("deno.client.info", commands.info);
+  registerCommand("deno.client.copyInferredType", commands.copyInferredType);
+  registerCommand("deno.inferredType", commands.copyInferredType);
   registerCommand("deno.client.status", commands.status);
   registerCommand("deno.client.welcome", commands.welcome);
   registerCommand("deno.client.enable", commands.enable);

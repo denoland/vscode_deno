@@ -25,7 +25,11 @@ import {
   getDenoCommandPath,
   getInspectArg,
 } from "./util";
-import { registryState } from "./lsp_extensions";
+import { inferredType, registryState } from "./lsp_extensions";
+import type {
+  InferredTypeParams,
+  InferredTypeResponse,
+} from "./lsp_extensions";
 import { createRegistryStateHandler } from "./notification_handlers";
 import { DenoServerInfo } from "./server_info";
 
@@ -87,6 +91,56 @@ export function info(
   return async () => {
     await vscode.window.showInformationMessage(
       `deno ${extensionContext.serverInfo?.versionWithBuildInfo} | vscode_deno ${context.extension.packageJSON?.version} | vscode ${vscode.version}`,
+    );
+  };
+}
+
+export function copyInferredType(
+  _context: vscode.ExtensionContext,
+  extensionContext: DenoExtensionContext,
+): Callback {
+  return async (
+    params?: InferredTypeParams,
+    cachedResponse?: InferredTypeResponse,
+  ) => {
+    const client = extensionContext.client;
+    if (!client) {
+      await vscode.window.showWarningMessage(
+        "Deno language server has not started.",
+      );
+      return;
+    }
+
+    let response: InferredTypeResponse | null | undefined = cachedResponse;
+    if (!response) {
+      if (!params) {
+        const activeEditor = vscode.window.activeTextEditor;
+        if (!activeEditor) {
+          await vscode.window.showWarningMessage(
+            "Open a Deno document to copy its inferred type.",
+          );
+          return;
+        }
+        params = {
+          textDocument: client.code2ProtocolConverter
+            .asTextDocumentIdentifier(activeEditor.document),
+          position: client.code2ProtocolConverter
+            .asPosition(activeEditor.selection.active),
+        };
+      }
+      response = await client.sendRequest(inferredType, params);
+    }
+
+    if (!response) {
+      await vscode.window.showWarningMessage(
+        "No inferred type is available at the current cursor position.",
+      );
+      return;
+    }
+
+    await vscode.env.clipboard.writeText(response.text);
+    await vscode.window.showInformationMessage(
+      "Copied inferred type to clipboard.",
     );
   };
 }
